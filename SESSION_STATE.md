@@ -170,13 +170,14 @@ harness/
 
 ## 10. 재개 절차 (다음 세션)
 
-**현재 위치(2026-07-22 기준)**: **M1 완료** — T05(운영층 `acgh/layout.py`)·T10·
-T11·T12·T13·T14·T15 전부 **커밋·푸시**. `pytest` **57 통과**, 결정성 2회 동일,
+**현재 위치(2026-07-22 기준)**: **M1·M1.5 완료** — T05(운영층)·T10·T11·T12·T13·
+T14·T15·**T30·T31** 전부 **커밋·푸시**. `pytest` **74 통과**, 결정성 2회 동일,
 실제 OM smoke/경로 검증 통과. 주요 커밋: 스캐폴드 `7ccc00e`, T10/T11/T05운영층
-`3cc0539`, T15/T14 `f38b124`. **다음 착수 = M1.5 T30**(커밋 단위 불변식 —
-업스트림 경로 커밋은 정확히 1 ID, ID 없는 커밋 실패, merge/empty 실패, core·
-governance 혼합 실패; 선행 T12) **→ T31**(ID 단위 불변식 — series 정합·의존
-순환·비연속·retired 재사용 금지; 선행 T30·T11). 이후 M2 재적용(T20/21/23/22).
+`3cc0539`, T15/T14 `f38b124`, T30/T31 `e5729dd`. **다음 착수 = M2 재적용
+파이프라인 T20**(CI 탐지 모드 — 임시 worktree에서 patch-lock 순서대로 cherry-pick,
+충돌 시 ID·파일 리포트 후 worktree 폐기·트리 clean 유지, P0-2) → T21(담당자 해결
+모드) → T23(resolve 직렬화/단일 integrator CAS, 부칙 A-2.5) → T22(clean-room
+replay: 재생 tree == candidate tree, P0-5·C-5). 실제 OM 미러로 cherry-pick 검증.
 
 의존 패키지: `jsonschema`, `pathspec`(pip 설치됨; pyproject deps 반영). 경로
 문법은 pathspec factory=`gitignore` 고정. 하네스 모듈: layout·manifest·
@@ -186,7 +187,7 @@ patchlock·gitprim·verdict·result_io·evidence(+ `schema/` JSON Schema 5종).
 2. `/home/user/om-mirror` 존재 확인(없으면 §7 명령으로 재획득).
 3. `harness/` 존재 확인 → `cd harness && python -m pytest` 로 57 통과 재확인
    (`jsonschema`·`pathspec` 미설치면 `pip install jsonschema pathspec`).
-4. ✅ M1 완료(T05·T10·T11·T12·T13·T14·T15). 다음: **T30→T31**(M1.5 preflight)
-   → M2 T20/21/23/22.
+4. ✅ M1·M1.5 완료(T05·T10·T11·T12·T13·T14·T15·T30·T31). 다음: **M2 T20**
+   (재적용 CI 탐지)→T21→T23→T22.
 5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4.1 태스크 로그 갱신.
 6. 커밋마다 §1 트레일러 사용, 이 브랜치로 push.
