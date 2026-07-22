@@ -283,10 +283,13 @@ T93·T42 · T50 · T70 최소.
 
 | 태스크 | 상태 | 산출물 | 검증 |
 |---|---|---|---|
-| T05 path-ownership·glob 정본 | ✅ 완료 | `harness/policies/repository-layout.yaml` | 실제 OM 1.12.13/1.13.0 모듈 루트로 검증, `upstream_base_sha` 결속 |
+| T05 path-ownership·glob 정본 | ✅ 완료 | `policies/repository-layout.yaml` + **운영층** `acgh/layout.py` | 실제 OM 모듈 루트로 검증, `upstream_base_sha` 결속, 모든 게이트 공용 문법(부칙 A-3.1), pathspec factory=`gitignore` 고정 |
 | T12 git 프리미티브 | ✅ 완료 | `harness/acgh/gitprim.py` | 4 테스트 통과(ID-less 커밋 보존 P0-5 가드 포함) |
 | T13 verdict 엔진 | ✅ 완료 | `harness/acgh/verdict.py` | 9 테스트 통과(P0-3 mutation guard·P0-4 fail-closed·digest 제외) |
-| — 하네스 스캐폴드 | ✅ 완료 | `harness/pyproject.toml`·`fixtures/`·`.gitignore` | `pytest` 13 통과, 결정성 2회 동일, 실제 OM smoke 통과 |
+| T10 manifest 스키마·의미검증 | ✅ 완료 | `acgh/manifest.py` + `schema/manifest.schema.json` | 10 테스트. `verification.command` 구조적 금지(P0-8), required⊆allowed·literal·소유일치·assurance 분리(부칙 A-3.2/3.3), set 내 ID 유일 |
+| T11 patch-lock | ✅ 완료 | `acgh/patchlock.py` + `schema/patch-source-lock.schema.json` | 10 테스트. source/application lock 분리(부칙 A-2.1), 고정 40-hex SHA, canonical digest, topological order(A-3.7), source object preflight(A-2.4) |
+| — 하네스 스캐폴드 | ✅ 완료 | `harness/pyproject.toml`·`fixtures/`·`.gitignore` | `pytest` 40 통과, 결정성 2회 동일, 실제 OM smoke 통과 |
 
-> **다음(M1 잔여)**: T10·T11(SRS 부칙 A의 path/severity 반영 후 동결) →
-> T15·T14 → M1.5 T30·T31(preflight 불변식). 순서 근거는 §2·§10.
+> **다음(M1 잔여)**: T15(result/CI adapter — 원자적 생성·canonical digest·
+> attestation 분리, 부칙 A-1) → T14(감사카드). 이후 M1.5 T30·T31(preflight
+> 불변식). 순서 근거는 §2·§10.

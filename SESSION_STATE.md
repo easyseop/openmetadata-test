@@ -170,14 +170,20 @@ harness/
 
 ## 10. 재개 절차 (다음 세션)
 
-**현재 위치(2026-07-22 기준)**: 하네스 스캐폴드 + T05·T12·T13 **커밋·푸시 완료**
-(커밋 `7ccc00e`, 로드맵 §4.1 반영 `84b0595`). `pytest` 13 통과, 결정성 2회 동일,
-실제 OM smoke 통과. **다음 착수 태스크 = T10·T11** (SRS 부칙 A의 path/severity 반영
-후 동결) → T15·T14 → M1.5 T30·T31.
+**현재 위치(2026-07-22 기준)**: M1 코어 5태스크 **커밋·푸시 완료** —
+T05(운영층 `acgh/layout.py`)·T12·T13·**T10·T11**. `pytest` **40 통과**, 결정성
+2회 동일, 실제 OM smoke/경로 검증 통과. 커밋: 스캐폴드 `7ccc00e`,
+T10/T11/T05운영층 `3cc0539`. **다음 착수 태스크 = T15**(result/CI adapter,
+부칙 A-1: exit/result 불일치=analysis_error·원자적 생성·canonical digest·
+attestation 분리) **→ T14**(감사카드). 이후 M1.5 T30·T31(preflight 불변식).
+
+의존 패키지: `jsonschema`, `pathspec`(pip 설치됨; pyproject deps에 반영). 경로
+문법은 pathspec factory=`gitignore` 고정.
 
 1. 이 파일(SESSION_STATE.md) + `openmetadata_build_plan.md` + SRS 부칙 A 읽기.
 2. `/home/user/om-mirror` 존재 확인(없으면 §7 명령으로 재획득).
-3. `harness/` 존재 확인 → `cd harness && pytest` 로 13 통과 재확인.
-4. ✅ T05·T12·T13 완료. 다음: T10·T11(부칙 A 반영 후 동결)→T15·T14→T30/T31 순.
+3. `harness/` 존재 확인 → `cd harness && python -m pytest` 로 40 통과 재확인
+   (`jsonschema`·`pathspec` 미설치면 `pip install jsonschema pathspec`).
+4. ✅ T05·T10·T11·T12·T13 완료. 다음: **T15**(부칙 A-1)→**T14**→M1.5 T30/T31 순.
 5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4.1 태스크 로그 갱신.
 6. 커밋마다 §1 트레일러 사용, 이 브랜치로 push.
