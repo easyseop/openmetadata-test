@@ -19,10 +19,13 @@
 > - ✅ **REQ-RA-01/02/03**: 충돌 탐지/해결 2-모드, 해결본의 patch-lock 리비전 고정 (P0-2)
 > - ✅ **REQ-EV-01**: 선언형 verifier — `verification.command` 폐기 (P0-8)
 >
-> **정정 대상 (P0-b — 본문은 아직 초안, Build Plan 기준으로 구현):**
-> - ⏳ **REQ-CB-02**: range-diff 기계 파싱 → patch-lock+trailer+raw diff 판정 (P0-1, Build Plan T11)
-> - ⏳ **REQ-MF-01**: `affected_paths` 단일 → allowed/required_changed_paths + upgrade_watch (P0-6, T10)
-> - ⏳ **REQ-CG 계열**: "ID 일치=누락 없음" → "등록·재적용 완전성"으로 축소 + 커밋/ID/최종상태 불변식 (P0-5, T30~33)
+> **정정 완료 (P0-b — 본문에 정정본 반영됨):**
+> - ✅ **REQ-CB-02**: range-diff 기계 파싱 제거 → patch-lock+trailer+raw diff 판정, range-diff는 리뷰용 (P0-1)
+> - ✅ **REQ-MF-01**: `affected_paths` 폐기 → allowed/required_changed_paths + upgrade_watch 분리 (P0-6)
+> - ✅ **REQ-CG-01~05**: "등록·재적용 완전성"으로 축소 + 커밋/ID·series/최종상태 불변식 (P0-5)
+>
+> P0 9건 전부 SRS 본문에 반영 완료. P1 항목(patch-lock 상세·patch-kill·evidence
+> provider·break-glass 등)은 Build Plan(M5~M9)을 따른다.
 >
 > 정정 근거·상세: `openmetadata_review_response.md`
 > 정정 반영 개발 순서: `openmetadata_build_plan.md`
@@ -179,17 +182,41 @@ git (base..head) ─────┘     G-CB 정본·range-diff    │   + 종�
 
 ### 5.1 명세 시스템 (MF)
 
-#### REQ-MF-01 · 명세 스키마 검증
-- **충족**: P3·P6 기반, Gate 2의 전제
+#### REQ-MF-01 · 명세 스키마 검증 — 정정본 (P0-6 반영)
+- **충족**: P3·P6 기반, Gate 2의 전제, P0-6(경로 역할 분리)
 - **목적**: 커스터마이징 명세가 필수 필드·상태·ID 규칙을 지키는지 검증
-- **입력→출력**: `customizations/*.yaml` → 위반 목록(있으면 exit 1)
+- **정정 배경**: 초안의 `affected_paths` 하나가 "실제 변경 범위"와 "업그레이드
+  감시 범위"를 동시에 맡았다. 두 범위는 일반적으로 다르다(SSO 패치는
+  AuthenticationFilter만 수정하지만, 감시 대상은 인증 DTO·설정 스키마·JWT
+  의존성까지). 하나로 쓰면 drift 오탐 또는 감시 협소가 발생한다(P0-6).
+  **`affected_paths`는 폐기**하고 역할별 필드로 분리한다.
+- **입력→출력**: `customizations/*.yaml` → 위반 목록(있으면 block)
 - **구현 방법**:
-  - `schemas/customization.schema.json` (JSON Schema 2020-12)
-  - Python `jsonschema` 라이브러리로 각 YAML 검증
-  - 추가 규칙(스키마로 표현 곤란): 중복 ID, `core-patch`인데 `affected_paths` 없음,
-    `active`인데 `retirement.target`·`requirement.id` 없음 → 코드로 별도 검사
+  - 경로 필드 스키마 (역할 분리):
+    ```yaml
+    implementation:
+      allowed_changed_paths:      # 이 패치가 변경해도 되는 파일 (상한)
+        - "openmetadata-service/**/AuthenticationFilter.java"
+      required_changed_paths:     # 반드시 변경돼야 하는 파일 (하한)
+        - "openmetadata-service/**/AuthenticationFilter.java"
+      patch_series:               # 1 ID = 순서형 커밋 series (P0-5)
+        ordered: true
+
+    upgrade_watch:                # 업스트림 변경 감시 (편집하지 않는 의존 대상)
+      paths:
+        - "openmetadata-service/**/authentication/**"
+        - "openmetadata-spec/**/user*.json"
+      configuration_keys: ["BANK_SSO_USER_CLAIM"]
+      dependencies: ["jwt-library"]
+      contracts: ["AUTH-IDENTITY-SCOPE"]   # 업무 불변식 ID (테스트 결속용)
+    ```
+  - `schemas/customization.schema.json`(2020-12) + `jsonschema` 검증
+  - 코드 규칙: 중복 ID / `core-patch`인데 `required_changed_paths` 없음 /
+    `active`인데 `retirement.target`·`requirement.id` 없음 /
+    **`affected_paths`·`verification.command` 필드 존재 시 스키마 거부**(구버전 차단)
 - **수용 기준**: 필수 필드 누락·잘못된 상태값·중복 ID·ID 패턴(`^BANK-OM-[0-9]{3,}$`)
-  위반을 각각 탐지하는 픽스처 테스트가 존재하고 통과한다
+  위반을 각각 탐지하고, 구버전 필드(`affected_paths`)를 쓴 명세를 거부하는
+  픽스처 테스트가 존재하고 통과한다
 
 #### REQ-MF-02 · 명세 로딩 API
 - **충족**: 하위 게이트 공통 기반
@@ -273,42 +300,84 @@ git (base..head) ─────┘     G-CB 정본·range-diff    │   + 종�
 
 ---
 
-### 5.3 완전성 게이트 (CG) — Gate 2
+### 5.3 등록·재적용 완전성 게이트 (CG) — 정정본 (P0-5 반영)
 
-#### REQ-CG-01 · 방향 A (커밋 → 명세)
-- **충족**: **Gate 2**, P1·P3
-- **목적**: 스택의 모든 코어 커밋이 등록된 유효 ID를 가지는지 검증
-- **입력→출력**: `git <base>..HEAD` + 명세 → 위반 목록, exit 0/1
+> **정정 배경 및 보장 범위**: 초안의 "명세 ID 집합 = 커밋 ID 집합" 비교는
+> **등록된 ID가 이력에 존재함**만 증명한다. revert로 순효과가 0이 되거나,
+> 빈 커밋만 있거나, 충돌 해결에서 로직이 빠져도 집합은 일치할 수 있다(P0-5).
+> 따라서 (1) 게이트 이름을 "등록·재적용 완전성"으로 축소하고, (2) 집합 비교를
+> **커밋 경계 유지 파싱 + 커밋/ID/최종상태 3단 불변식**으로 강화한다.
+> 기능 의미·로직 생존의 최종 입증은 테스트 계층(contract·patch-kill)이 담당한다.
+
+| 이 게이트가 보장 | 보장하지 않음 (담당 계층) |
+|---|---|
+| 등록된 ID가 규칙대로 이력에 재적용됨 | 로직이 최종 상태에 살아 있음 (최종상태 불변식이 부분 보강, 입증은 테스트) |
+
+#### REQ-CG-01 · 커밋 단위 불변식 (방향 A 확장)
+- **충족**: **Gate 2**, P0-5, P1·P3
+- **목적**: 코어를 건드린 모든 커밋이 등록 규칙을 지키는지 **커밋 경계에서** 검증
+- **입력→출력**: `git <base>..HEAD` + 명세 → 위반 목록(커밋 SHA별), verdict
 - **구현 방법**:
-  - 커밋별 trailer 추출: `git log --format='%(trailers:key=Customization-ID,valueonly)' <base>..HEAD`
-  - 검사: ID 없는 코어 커밋 → 실패 / 미등록 ID → 실패 / `retired` ID 신규 사용 → 실패
-  - trailer 파싱만 사용(본문 정규식 금지 — 오탐 방지)
-- **수용 기준**: ID 없는 커밋·미등록 ID·retired 사용을 각각 실패로 잡는 픽스처 통과
+  - **커밋별로** 파싱(집합으로 축약 금지 — ID 없는 커밋을 놓치는 원인):
+    `git log --format='%H%x00%(trailers:key=Customization-ID,valueonly)%x00...' -z`
+  - 불변식: 업스트림 원본 경로를 건드린 커밋은 **정확히 1개 ID** /
+    ID 없는 코어 커밋 → block / 한 커밋에 여러 ID → block /
+    merge commit → block / 빈 커밋 → block /
+    미등록 ID·`retired` ID 사용 → block /
+    core 변경과 governance-only 변경 혼합 → block
+    (governance 커밋은 `Change-Type: governance` trailer로 분리)
+- **수용 기준**: 위 7개 위반 각각을 잡는 픽스처 통과. 특히 "ID 있는 커밋들
+  사이에 ID 없는 커밋이 끼어 있는" 픽스처에서 그 커밋을 SHA로 지목한다
 
-#### REQ-CG-02 · 방향 B (명세 → 커밋)
-- **충족**: **Gate 2**, P1
-- **목적**: 모든 `active`/`deprecated` core-patch 명세가 스택에 실재하는지 검증
-- **입력→출력**: 명세 + 스택 trailer 집합 → 누락 ID 목록, exit 0/1
-- **구현 방법**: `active_core_patch_ids - stack_trailer_ids` **집합 차집합**.
-  비어있지 않으면 누락으로 실패
-- **수용 기준**: active core-patch 1건을 스택에서 제거하면 그 ID를 누락으로 실패시킨다
-
-#### REQ-CG-03 · 방향 C (affected_paths drift)
-- **충족**: **Gate 2**, P1
-- **목적**: 명세의 `affected_paths` 선언이 커밋 실제 변경파일과 어긋나는지 검출
-- **입력→출력**: 커밋 SHA + 명세 → drift 목록, exit 0/1(또는 경고 2)
+#### REQ-CG-02 · ID·series 불변식 (방향 B 확장)
+- **충족**: **Gate 2**, P0-5, P1
+- **목적**: 모든 active/deprecated core-patch ID가 스택에 **선언된 series 그대로**
+  실재하는지 검증
+- **입력→출력**: 명세(patch_series) + 스택 커밋 목록 → 누락·불일치 목록, verdict
 - **구현 방법**:
-  - 커밋 실제 변경파일: `git show --name-only --format= <sha>`
-  - 명세 glob 매칭: `pathspec`(gitignore 문법) 또는 `wcmatch`로 `**` 지원
-  - 커밋이 선언 밖 파일을 건드림 / 선언 경로가 아무 커밋에도 안 나타남 → drift
-- **수용 기준**: 커밋이 affected_paths 밖 파일을 수정하면 drift로 잡고, 카드에 파일 나열
+  - 존재: `active_core_patch_ids − stack_ids` 차집합 → 누락 block
+  - series: 한 ID가 여러 커밋이면 명세 선언과 **순서·개수** 일치 검증,
+    비연속 분산(다른 ID 커밋이 series 사이에 끼어듦) → approval,
+    의존 관계(`depends_on`) 순환 → block, retired ID 영구 재사용 금지
+- **수용 기준**: active 1건 제거 → 누락 검출 / series 3커밋 중 2개만 적용 →
+  불일치 검출 / 순환 의존 → block 픽스처 통과
+
+#### REQ-CG-03 · 구현 범위 drift (방향 C — allowed/required 기준)
+- **충족**: **Gate 2**, P0-6, P1
+- **목적**: 패치의 실제 변경 파일이 선언 범위와 어긋나는지 검출
+- **입력→출력**: 커밋 SHA들 + 명세 → drift 목록, verdict
+- **구현 방법**:
+  - 실제 변경: `git diff-tree --no-commit-id --name-only -r -z <sha>` 합산
+    → `observed_changed_paths` 생성(감사카드 기록)
+  - `observed ⊄ allowed_changed_paths` → 선언 밖 변경, block(또는 approval)
+  - `required_changed_paths` 중 observed에 없는 패턴 → 필수 미변경, block
+  - **`upgrade_watch.paths`는 drift 검사에서 제외** — 감시 대상이지 변경
+    선언이 아니므로(P0-6 오탐 방지 핵심)
+- **수용 기준**: allowed 밖 수정·required 미변경을 각각 잡고, upgrade_watch에만
+  있는 경로를 패치가 수정하지 않아도 **오탐 0**인 픽스처 통과
 
 #### REQ-CG-04 · 필수 테스트 존재 검증
 - **충족**: **Gate 2**, P2(촉발)
-- **목적**: `active` 명세의 `tests.required` ID가 테스트 카탈로그에 실재하는지 검증
-- **입력→출력**: 명세 + `test-catalog/*.yaml` → 미연결 테스트 목록, exit 0/1
-- **구현 방법**: 명세의 test ID 집합 ⊆ 카탈로그 ID 집합인지 **집합 포함** 검사
-- **수용 기준**: 카탈로그에 없는 test ID를 참조하는 active 명세를 실패시킨다
+- **목적**: `active` 명세의 `tests.required`·`upgrade_watch.contracts`가
+  테스트 카탈로그·contract 정의에 실재하는지 검증
+- **입력→출력**: 명세 + `test-catalog/*.yaml` + `contracts/*.yaml`
+  → 미연결 목록, verdict
+- **구현 방법**: test ID 집합 ⊆ 카탈로그 / contract ID ⊆ contract 정의 /
+  contract에 연결된 required_tests 존재 — 3중 포함 검사
+- **수용 기준**: 카탈로그에 없는 test ID, 정의 없는 contract를 각각 실패시킨다
+
+#### REQ-CG-05 · 최종 상태 불변식 (신규)
+- **충족**: P0-5 ("등록 ≠ 생존" 보강)
+- **목적**: 이력엔 있으나 최종 결과물에서 사라진 패치를 검출
+- **입력→출력**: candidate 브랜치 + patch-lock → 위반 목록, verdict
+- **구현 방법**:
+  - **순효과 검사**: ID별 series 전체의 누적 diff가 비어 있으면(뒤 커밋이
+    revert·덮어씀) → block 또는 retirement 절차 요구
+  - active ID를 revert하는 커밋 → manifest 상태 전환 + ADR 없으면 block
+  - candidate HEAD tree == clean-room replay tree (REQ-RA-02의 재생 검증과 결속)
+  - candidate에 커밋이 추가되면 기존 테스트·승인 결과 무효화 플래그
+- **수용 기준**: "패치 커밋 + 그것을 되돌리는 커밋"이 함께 있는 픽스처에서
+  집합 비교는 통과하더라도 이 게이트가 순효과 0을 잡는다
 
 ---
 
@@ -428,13 +497,32 @@ git (base..head) ─────┘     G-CB 정본·range-diff    │   + 종�
 - **구현 방법**: 정규식 매칭. CI에서 브랜치 생성·푸시 시 검사
 - **수용 기준**: 규약 위반 브랜치명을 실패시킨다
 
-#### REQ-CB-02 · 정본 소스 검증 (range-diff)
-- **충족**: **보완책 4**, P1
-- **목적**: 재적용 소스가 직전 릴리스 최신 리비전인지, 패치 내용이 유실·변형됐는지 비교
-- **입력→출력**: `<UPSTREAM_A>..<RELEASE_A>` `<UPSTREAM_B>..<CAND_B>` → 비교 리포트, exit 0/2
-- **구현 방법**: `git range-diff` 실행 → ID별 존재/누락/변형 파싱 → 리포트.
-  누락·예상외 신규 패치 → 승인필요(2)
-- **수용 기준**: 직전 리비전 대비 패치가 빠지거나 크게 달라지면 리포트에 표시하고 2로 닫는다
+#### REQ-CB-02 · 정본 소스 검증 — 정정본 (P0-1 반영)
+- **충족**: **보완책 4**, P0-1, P1
+- **목적**: 재적용 소스가 patch-lock에 고정된 SHA 기준인지, 패치가 유실·변형됐는지를
+  **기계 판정**한다
+- **정정 배경**: 초안은 `git range-diff` 출력을 파싱해 판정했다. range-diff는
+  사람 리뷰용 출력이라 git 버전 간 포맷 안정성이 보장되지 않아 기계 판정
+  입력으로 부적합하다(P0-1). **기계 판정과 사람 리뷰를 분리**한다.
+- **입력→출력**: 이전 patch-lock + 신규 candidate → ID별 판정 JSON, verdict
+- **구현 방법**:
+  - **기계 판정 (정본)**:
+    1. 이전 patch-lock의 ID별 `source_commits`(고정 SHA) ↔ 신규 브랜치의
+       커밋 trailer(`Customization-ID`·`Source-Commit`·`Patch-Revision`) 대조
+    2. 각 적용 커밋의 변경 메타데이터를 `git diff-tree --raw -z`로 추출해
+       파일 집합·변경 유형 비교 (자체 구조화 JSON 생성)
+    3. 보조 지문: `git patch-id --stable` — **"거의 같은 패치" 후보 탐색
+       힌트로만** 사용, 판정 근거로 쓰지 않음(베이스가 다르면 값이 변함)
+    4. 판정: lock에 있는 ID가 candidate에 없음 → block /
+       lock에 없는 신규 코어 패치 → approval /
+       Source-Commit이 lock의 SHA와 불일치 → block /
+       재적용 소스가 lock이 아닌 동적 브랜치 참조 → block
+  - **사람 리뷰 (참고 산출물)**: `git range-diff <old_range> <new_range>`
+    결과를 리뷰 보고서로 첨부 — 파싱하지 않는다
+- **수용 기준**: (a) lock의 ID 1건을 candidate에서 제거 → block
+  (b) 미등록 신규 패치 추가 → approval
+  (c) git 버전을 바꿔도(range-diff 출력이 달라져도) 기계 판정 결과는 동일
+  (d) range-diff 출력은 사람용 산출물로만 존재하며 판정 코드가 읽지 않는다
 
 ---
 
@@ -524,7 +612,7 @@ git (base..head) ─────┘     G-CB 정본·range-diff    │   + 종�
 | 보완책 4 · 정본 규칙 | REQ-CB-01, CB-02 | P1 |
 | 보완책 5 · 기본 미사용 | REQ-GR-01(비활성) | P1 |
 | Gate 1 · 재적용 | REQ-RA-01 | P1 |
-| Gate 2 · 완전성 | REQ-CG-01/02/03/04 | P1·P3 |
+| Gate 2 · 등록·재적용 완전성 | REQ-CG-01/02/03/04/05 | P1·P3 |
 | Gate 3 · rerere 검출 | REQ-GR-01 | P1 |
 | Gate 4 · 부채 상한 | REQ-GD-01/02 | P1 |
 | 명세 시스템 | REQ-MF-01/02 | P3·P6 |
