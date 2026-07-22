@@ -13,14 +13,16 @@
 > **상태:** Draft v0.1 · GPT 검토 반영 진행 중
 
 > ⚠ **정정 안내 (GPT 검토 반영)**
-> 이 SRS의 일부 요구사항은 GPT 검토(P0)에서 결함이 확인되어 **정정 대상**이다.
-> 아래 요구사항은 반드시 정정본을 기준으로 구현한다:
-> - **REQ-CB-02**: range-diff 기계 파싱 → patch-lock+trailer+raw diff 판정 (P0-1)
-> - **REQ-RA-01/02**: 충돌 시 abort 흐름 → 탐지/해결 2-모드 (P0-2)
-> - **REQ-OR-01/02**: verdict `max()` 집계 → severity rank, 분석실패=차단 (P0-3·4)
-> - **REQ-MF-01**: `affected_paths` 단일 → allowed/required_changed_paths + upgrade_watch (P0-6)
-> - **§9.7 verification.command**: 임의 shell → 선언형 verifier (P0-8)
-> - **완전성 게이트**: "ID 일치=누락 없음" → "등록·재적용 완전성"으로 축소, 불변식 추가 (P0-5)
+>
+> **정정 완료 (P0-a — 본문에 정정본 반영됨):**
+> - ✅ **§1.4 + REQ-OR-01/02**: severity rank 집계, 분석실패=차단, 4-상태 결과 계약 (P0-3·4)
+> - ✅ **REQ-RA-01/02/03**: 충돌 탐지/해결 2-모드, 해결본의 patch-lock 리비전 고정 (P0-2)
+> - ✅ **REQ-EV-01**: 선언형 verifier — `verification.command` 폐기 (P0-8)
+>
+> **정정 대상 (P0-b — 본문은 아직 초안, Build Plan 기준으로 구현):**
+> - ⏳ **REQ-CB-02**: range-diff 기계 파싱 → patch-lock+trailer+raw diff 판정 (P0-1, Build Plan T11)
+> - ⏳ **REQ-MF-01**: `affected_paths` 단일 → allowed/required_changed_paths + upgrade_watch (P0-6, T10)
+> - ⏳ **REQ-CG 계열**: "ID 일치=누락 없음" → "등록·재적용 완전성"으로 축소 + 커밋/ID/최종상태 불변식 (P0-5, T30~33)
 >
 > 정정 근거·상세: `openmetadata_review_response.md`
 > 정정 반영 개발 순서: `openmetadata_build_plan.md`
@@ -88,16 +90,33 @@
 | 감사카드 | 게이트 결과를 집계한 기계·사람 판독용 산출물(YAML) |
 | 스파인 | 언어 무관 판정 코어 (경로·git·YAML만 사용) |
 
-### 1.4 판정 종료코드 계약 (전 게이트 공통)
+### 1.4 판정 계약 (전 게이트 공통) — 정정본 (P0-3·P0-4 반영)
+
+판정은 **내부 심각도(severity)** 와 **외부 종료코드(exit)** 를 분리한다.
+집계는 심각도 rank로 하고, 종료코드 변환은 맨 마지막에 한 번만 한다.
 
 ```
-0 = 통과 (pass)
-1 = 차단 (block)         — 사람이 풀기 전 진행 불가
-2 = 승인필요 (approval)   — 차단은 아니나 지정 승인자 없이는 진행 불가
+내부 심각도 (rank 오름차순):
+  pass(0) < approval(1) < block(2) < analysis_error(3)
+
+외부 exit code (변환표 — 순서가 rank와 다름에 주의):
+  pass           → 0   통과
+  block          → 1   차단 (사람이 풀기 전 진행 불가)
+  approval       → 2   승인필요 (지정 승인자 없이는 진행 불가)
+  analysis_error → 3   검증 미수행 (차단으로 취급)
 ```
 
-> ⚠ CI 러너가 exit≠0을 일괄 fail로 뭉개면 1(차단)과 2(승인필요)가 구분되지 않는다.
-> 이 구분 보존은 REQ-OR-02의 필수 요구사항이다.
+핵심 규칙:
+
+1. **집계는 exit code의 `max()`가 아니라 severity rank의 `max()`로 한다.**
+   exit code로 `max()`하면 `2(approval) > 1(block)`이 되어 차단이 승인필요로
+   격하되는 버그가 생긴다(P0-3).
+2. **analysis_error는 승인으로 우회할 수 없다.** 검사기가 고장 난 것은
+   "위험을 발견"한 게 아니라 "검증을 수행하지 못한" 상태이므로 차단이다(P0-4).
+   긴급 시에는 별도 break-glass 절차만 허용한다.
+3. 게이트 결과는 exit code와 **별도로** 정본 결과 파일(`acgh-result.yaml`,
+   REQ-OR-02)로 산출하며, CI required-check는 이 파일을 읽는다.
+   (CI가 exit≠0을 일괄 fail로 뭉개면 1과 2가 구분되지 않기 때문)
 
 ---
 
@@ -181,30 +200,76 @@ git (base..head) ─────┘     G-CB 정본·range-diff    │   + 종�
 
 ---
 
-### 5.2 재적용 자동화 (RA)
+### 5.2 재적용 자동화 (RA) — 정정본 (P0-2 반영)
 
-#### REQ-RA-01 · 순서 고정 cherry-pick 재적용
-- **충족**: **보완책 1(자동화)**, **Gate 1(재적용)**, P1
-- **목적**: 패치 스택을 새 업스트림 위에 스크립트로 재적용, 충돌 시 어느 ID에서
-  멈췄는지 보고하고 안전 중단
-- **입력→출력**: `patch-order.txt`(커밋 또는 ID 순서) + 대상 브랜치
-  → 재적용 결과 + `reapply-report.json`, 종료코드 0/1
+> **정정 배경**: 초안은 "충돌 시 리포트 후 `--abort`, 사람이 해결하고 재실행"
+> 이었다. 그러나 `--abort`하면 충돌 상태가 사라져 **사람이 해결할 작업 트리가
+> 남지 않는다**. 재실행하면 같은 충돌이 그대로 재현될 뿐이다. 따라서 재적용을
+> **탐지 모드**와 **해결 모드**의 2-모드로 분리한다.
+
+#### REQ-RA-01 · 재적용 — CI 탐지 모드 (detect)
+- **충족**: **Gate 1(재적용)**, P0-2, P1
+- **목적**: 본 작업 트리를 오염시키지 않고 "충돌이 있는가, 어디서 나는가"만
+  안전하게 탐지한다. CI에서 반복 실행되는 모드.
+- **입력→출력**: patch-lock(ID별 `source_commits` 고정 SHA 목록, REQ-CB 계열)
+  + 대상 태그 → `reapply-report.json`, severity pass/block
 - **구현 방법**:
-  - bash 또는 Python이 `patch-order.txt`를 순회하며 `git cherry-pick <ref>`
-  - 실패 시 stderr·`git status`로 충돌 파일 수집 → 리포트 기록 → `git cherry-pick --abort`
+  ```bash
+  # 1. 임시 worktree 생성 (본 트리 격리)
+  git worktree add --detach "$TMP_WT" "$TARGET_TAG"
+  # 2. patch-lock 순서대로 재적용
+  for sha in $(locked_source_commits); do
+      git -C "$TMP_WT" cherry-pick "$sha" || {
+          collect_conflict_files "$TMP_WT" >> report   # ID·파일·hunk 수 수집
+          git -C "$TMP_WT" cherry-pick --abort
+          break
+      }
+  done
+  # 3. 임시 worktree 폐기 (성공/실패 무관)
+  git worktree remove --force "$TMP_WT"
+  ```
   - 커밋→ID 매핑은 `git log --format='%(trailers:key=Customization-ID,valueonly)'`
-- **수용 기준**: (a) 충돌 없는 스택은 전량 자동 적용 후 exit 0,
-  (b) 중간 충돌 시 해당 ID·파일을 리포트에 남기고 exit 1, 작업트리는 clean 복구
+    (커밋 경계 유지, 본문 정규식 금지)
+  - report 스키마: `{target_tag, lock_sha, results:[{id, source_commit,
+    status: applied|conflict|skipped, conflict_files:[], resolved_by: null}]}`
+- **수용 기준**: (a) 무충돌 스택 → 전량 적용 확인 후 pass, 임시 worktree 잔존 0
+  (b) 충돌 → 해당 ID·파일이 report에 남고 block, **본 작업 트리는 시작 전과
+  동일**(오염 0) (c) 동일 입력 재실행 시 동일 report(결정성)
 
-#### REQ-RA-02 · 충돌 해결 기록
-- **충족**: **보완책 2(격리+기록)**, P3
-- **목적**: 충돌 해결의 배경·결정을 구조화 기록(자동화 아님, 강제 산출물)
+#### REQ-RA-02 · 재적용 — 담당자 해결 모드 (resolve)
+- **충족**: P0-2, **보완책 2(격리)**, P1
+- **목적**: 충돌을 사람이 실제로 해결할 수 있는 작업 공간을 제공하고,
+  해결 결과를 **재현 가능한 새 패치 리비전으로 고정**한다.
+- **입력→출력**: 탐지 모드의 report + 담당자 작업 → 갱신된 patch-lock
+  (새 `source_commits` + revision 증가) + Resolution 기록
+- **구현 방법**:
+  1. **전용 worktree**를 만들고 충돌 상태를 **유지**한 채 담당자에게 전달
+     (`git worktree add`, cherry-pick 충돌 지점에서 정지 — abort하지 않음)
+  2. 담당자가 충돌 해결 → `git cherry-pick --continue`
+  3. 해결된 커밋에 trailer 각인:
+     ```
+     Customization-ID: BANK-OM-001
+     Source-Commit: <원본 패치 SHA>
+     Patch-Revision: <n+1>
+     Resolution-Record: docs/upgrade/<ver>/conflicts.json#<항목>
+     ```
+  4. 해결 커밋 SHA를 patch-lock의 새 `source_commits`로 등록(revision 증가)
+  5. **깨끗한 환경에서 전체 스택을 처음부터 재생**하여 검증(clean-room replay,
+     REQ 신규 — 해결본 포함 재현 확인). 이후 이 해결본이 다음 버전의 정본이 됨
+- **수용 기준**: (a) 담당자가 충돌 상태의 실제 작업 트리를 받는다
+  (b) 해결 결과가 patch-lock 리비전으로 고정되어, 같은 lock으로 재적용하면
+  **사람 개입 없이 동일 결과가 재현**된다 (c) 해결 커밋에 위 trailer 4종이
+  모두 존재하지 않으면 완전성 게이트가 block
+
+#### REQ-RA-03 · 충돌 해결 기록
+- **충족**: **보완책 2(기록)**, P3
+- **목적**: 충돌 해결의 배경·결정을 구조화 기록(강제 산출물)
 - **입력→출력**: 충돌 발생 ID → `docs/upgrade/<version>/conflicts.json` 항목
-- **구현 방법**: 재적용 스크립트가 충돌 시 템플릿 항목(ID·충돌파일·업스트림
+- **구현 방법**: 해결 모드(RA-02)가 충돌 시 템플릿 항목(ID·충돌파일·업스트림
   변경사유 칸·해결유형 enum[유지|공식대체|재작성])을 생성, 사람이 채움.
-  빈 필수 칸이 있으면 REQ-GD-02가 누적 검사에서 미완으로 표시
-- **수용 기준**: 충돌 1건당 conflicts.json 항목이 자동 생성되고, 필수 칸 미기입 시
-  후속 게이트가 승인필요(2)로 닫는다
+  `Resolution-Record` trailer가 이 항목을 가리켜야 함
+- **수용 기준**: 충돌 1건당 항목이 자동 생성되고, 필수 칸 미기입 또는
+  trailer-항목 불일치 시 후속 게이트가 approval로 닫는다
 
 ---
 
@@ -287,10 +352,48 @@ git (base..head) ─────┘     G-CB 정본·range-diff    │   + 종�
 - **구현 방법**:
   - 카드 스키마 `templates/change-evidence.template.yaml`
   - zone의 `required_approval` + criticality → routing 규칙으로 승인자 결정
-  - 최종 종료코드 = max(각 게이트 심각도) (1 > 2 > 0 우선순위 규칙 명문화)
+  - 최종 판정 = severity rank 집계(REQ-OR-01의 `SEVERITY_RANK` 사용,
+    exit code `max()` 금지 — P0-3)
   - 기본 출력 경로 주의: 대상 repo 밖 또는 `.gitignore` 등록(다음 diff 오염 방지)
 - **수용 기준**: 3개 게이트 조합 결과가 하나의 카드로 집계되고, protected 접촉 시
   해당 승인자가 카드에 명시된다
+
+#### REQ-EV-01 · 선언형 verifier — 정정본 (P0-8 반영)
+- **충족**: P0-8(임의 코드 실행 차단), core-patch 외 유형(§9.7)의 존재 검증
+- **목적**: config·deployment·extension 커스터마이징이 실제 릴리스에 반영됐는지를
+  검증하되, **manifest에 임의 shell 명령을 넣는 통로를 원천 봉쇄**한다
+- **정정 배경**: 초안(설계서 9.7절)은 `verification.command`에 shell 문자열을
+  선언하고 CI가 실행하는 방식이었다. 이러면 manifest를 수정할 수 있는 누구나
+  **CI 권한으로 임의 코드를 실행**할 수 있다(P0-8). command 필드는 폐기한다
+- **입력→출력**: 명세의 `verification` 블록 + 대상 산출물(렌더링 결과·이미지 등)
+  → verifier별 pass/fail, 미검증 항목 목록
+- **구현 방법**: shell 문자열이 아니라 **타입이 정해진 선언**만 허용
+  ```yaml
+  verification:
+    - type: helm_jsonpath_equals        # 렌더링된 Helm 산출물 검사
+      artifact: rendered-manifest.yaml
+      expression: "$.spec.template.spec.containers[0].env[?(@.name=='BANK_SSO_ENABLED')].value"
+      expected: "true"
+    - type: file_exists_in_image        # 이미지 내 파일 존재
+      image: bank/openmetadata-connector
+      path: /app/connectors/bank_db2/__init__.py
+    - type: python_import_succeeds      # 패키지 import 가능
+      image: bank/ingestion
+      module: bank_db2_connector
+  ```
+  - 지원 타입(초기 세트): `yaml_value_equals` · `helm_jsonpath_equals` ·
+    `file_exists_in_image` · `python_import_succeeds` · `api_schema_contains` ·
+    `package_version_equals`
+  - 각 타입은 하네스 코드에 구현된 **고정 로직**이며, 파라미터는 데이터로만 해석
+    (문자열을 shell·eval에 전달하는 코드 경로 자체가 없어야 함)
+  - 커스텀 검증이 꼭 필요하면: manifest에는 **보호 저장소의 allowlist 스크립트
+    경로 + 해당 파일 해시**만 참조. 해시 불일치 시 analysis_error
+- **수용 기준**:
+  (a) `command`·shell 문자열 형태의 verification은 스키마 검증에서 거부됨
+  (b) 각 지원 타입의 pass/fail 픽스처 통과
+  (c) allowlist 스크립트의 해시 불일치 → analysis_error
+  (d) `active` 상태의 config/deployment/extension 명세에 verification이 없으면
+      관리 지표로 집계(§9.7 정책 유지)
 
 ---
 
@@ -350,22 +453,55 @@ git (base..head) ─────┘     G-CB 정본·range-diff    │   + 종�
 
 ### 5.8 오케스트레이션·CI (OR)
 
-#### REQ-OR-01 · 게이트 조립 러너
-- **충족**: 전 게이트 통합
-- **목적**: 모든 판정 게이트를 빠짐없이 조립해 단일 진입점 제공
-- **입력→출력**: `run.sh <base>..<head> --repo <r> --policies <dir>` → 카드 + 종료코드
-- **구현 방법**: bash 러너가 게이트를 순서 호출, 각 종료코드 수집, 우선순위 규칙으로
-  최종 종료코드 산출. 게이트 파일 부재·Traceback·타임아웃은 정상판정으로 흡수 금지
-  → 분석실패로 표시하고 최소 승인필요(2)로 닫음(fail-safe)
-- **수용 기준**: 게이트 하나를 지워도 러너가 이를 분석실패로 감지해 2 이상으로 닫는다
+#### REQ-OR-01 · 게이트 조립 러너 + verdict 엔진 — 정정본 (P0-3·P0-4 반영)
+- **충족**: 전 게이트 통합, P0-3(집계 버그), P0-4(분석실패 우회)
+- **목적**: 모든 판정 게이트를 조립하고, 심각도 rank로 집계해 최종 판정을 산출
+- **입력→출력**: `run.sh <base>..<head> --repo <r> --policies <dir>`
+  → 감사카드 + `acgh-result.yaml` + exit code
+- **구현 방법**:
+  ```python
+  # 내부 심각도 — 집계는 반드시 이 rank로 (exit code max() 금지)
+  SEVERITY_RANK = {"pass": 0, "approval": 1, "block": 2, "analysis_error": 3}
+  # 외부 exit — 변환은 최종 1회만 (rank와 순서가 다름)
+  EXIT_CODE     = {"pass": 0, "block": 1, "approval": 2, "analysis_error": 3}
 
-#### REQ-OR-02 · 3상태 보존 계약
-- **충족**: G2 무결성 (참조 하네스의 알려진 갭 해소)
-- **목적**: 0/1/2 판정이 CI 경계에서 2단계(0/비0)로 붕괴되지 않게 함
-- **입력→출력**: 게이트 결과 → 정본 결과 파일(`acgh-result.yaml`) + CI 매핑
-- **구현 방법**: 종료코드와 별도로 결과 YAML(verdict: pass|block|approval)을 산출,
-  CI는 이 파일을 읽어 required-check를 구성(exit code에만 의존 금지)
-- **수용 기준**: 차단(1)과 승인필요(2)가 CI 상태로 서로 구분되어 나타난다
+  def aggregate(gate_results: list[str]) -> str:
+      return max(gate_results, key=SEVERITY_RANK.__getitem__)
+  ```
+  - 각 게이트는 문자열 verdict(enum)를 반환하고, 러너가 rank 집계 후
+    **최종 단계에서 한 번만** exit code로 변환
+  - **analysis_error 판정 조건**(정상판정으로 흡수 금지): 게이트 파일 부재 /
+    게이트 프로세스 Traceback·비정상 종료 / 타임아웃 / 정책 파일 파싱 실패 /
+    필수 입력(patch-lock·manifest) 누락
+  - analysis_error는 **차단으로 취급**하며 승인으로 우회 불가(P0-4).
+    긴급 예외는 break-glass 절차(별도 REQ)만 허용
+- **수용 기준**:
+  (a) `block + approval` 동시 발생 → 최종 **block** (approval로 격하되지 않음)
+  (b) 게이트 하나를 삭제 → analysis_error → exit 3, CI에서 차단으로 표시
+  (c) 게이트가 Traceback으로 죽어도 최종 판정은 analysis_error (pass 흡수 0건)
+  (d) 뮤테이션: EXIT_CODE로 집계하도록 바꾸면 (a) 픽스처가 실패해야 함
+
+#### REQ-OR-02 · 4-상태 결과 계약 (acgh-result.yaml)
+- **충족**: 판정 무결성 (CI 경계에서의 상태 붕괴 방지)
+- **목적**: pass/approval/block/analysis_error 4상태가 CI 경계에서
+  2단계(0/비0)로 붕괴되지 않게 함
+- **입력→출력**: 게이트 결과 → 정본 결과 파일 + CI 매핑
+- **구현 방법**: 결과 YAML 스키마
+  ```yaml
+  schema_version: 1
+  verdict: pass | approval | block | analysis_error   # 정본
+  gates:
+    - name: reapply
+      verdict: block
+      reasons: ["BANK-OM-001 conflict: AuthenticationFilter.java"]
+  required_approvers: []        # approval일 때
+  analysis_errors: []           # analysis_error일 때 원인
+  inputs: { base: <sha>, head: <sha>, patch_lock: <sha>, policies: <sha> }
+  harness_version: <ver>
+  ```
+  CI required-check는 exit code가 아니라 **이 파일의 `verdict`를 읽어** 구성
+- **수용 기준**: 4상태 각각이 CI 상태로 서로 구분되어 나타난다.
+  exit code만 보고 판단하는 경로가 없다
 
 #### REQ-OR-03 · 자기보호 (dogfooding)
 - **충족**: **G5**

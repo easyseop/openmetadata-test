@@ -940,15 +940,22 @@ ccc333
 `active` 상태임에도 실제 릴리스에서 빠지는 것을 Git 이력만으로 검출할 수 없다.
 예를 들어 Helm Values 한 줄이 실수로 되돌려져도 양방향 검증은 통과한다.
 
-따라서 이 유형의 명세에는 존재 검증 커맨드를 선언하고 CI가 실행한다.
+따라서 이 유형의 명세에는 존재 검증을 **선언형 verifier**로 선언하고 CI가 실행한다.
 
 ```yaml
 verification:
-  command: >
-    helm template ... | yq '... BANK_SSO_ENABLED ...' | grep -q true
-  description: >
-    렌더링된 배포 산출물에 행내 설정 키가 존재하는지 확인한다.
+  - type: helm_jsonpath_equals
+    artifact: rendered-manifest.yaml
+    expression: "$..env[?(@.name=='BANK_SSO_ENABLED')].value"
+    expected: "true"
+    description: 렌더링된 배포 산출물에 행내 설정 키가 존재하는지 확인
 ```
+
+> **주의 (보안)**: shell 명령 문자열(`command:`)을 명세에 넣고 CI가 실행하는
+> 방식은 금지한다 — 명세를 수정할 수 있는 누구나 CI 권한으로 임의 코드를
+> 실행할 수 있게 되기 때문이다. 반드시 타입이 정해진 선언형 verifier
+> (`yaml_value_equals`, `helm_jsonpath_equals`, `file_exists_in_image`,
+> `python_import_succeeds` 등)만 사용한다.
 
 - `active` 상태의 `config`·`deployment`·`extension` 명세에
   `verification.command`가 없으면 관리 지표에서 "테스트 없는 패치"와
