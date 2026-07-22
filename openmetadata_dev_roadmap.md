@@ -276,3 +276,17 @@ T93·T42 · T50 · T70 최소.
 
 > 이 표를 **진행 추적**에 쓴다. 마일스톤을 완료할 때마다 "켜지는 것" 열이
 > 현재 커버리지다.
+
+### 4.1 태스크 단위 완료 로그
+
+마일스톤 표는 커버리지 지도이고, 아래는 개별 태스크의 실제 완료 현황이다.
+
+| 태스크 | 상태 | 산출물 | 검증 |
+|---|---|---|---|
+| T05 path-ownership·glob 정본 | ✅ 완료 | `harness/policies/repository-layout.yaml` | 실제 OM 1.12.13/1.13.0 모듈 루트로 검증, `upstream_base_sha` 결속 |
+| T12 git 프리미티브 | ✅ 완료 | `harness/acgh/gitprim.py` | 4 테스트 통과(ID-less 커밋 보존 P0-5 가드 포함) |
+| T13 verdict 엔진 | ✅ 완료 | `harness/acgh/verdict.py` | 9 테스트 통과(P0-3 mutation guard·P0-4 fail-closed·digest 제외) |
+| — 하네스 스캐폴드 | ✅ 완료 | `harness/pyproject.toml`·`fixtures/`·`.gitignore` | `pytest` 13 통과, 결정성 2회 동일, 실제 OM smoke 통과 |
+
+> **다음(M1 잔여)**: T10·T11(SRS 부칙 A의 path/severity 반영 후 동결) →
+> T15·T14 → M1.5 T30·T31(preflight 불변식). 순서 근거는 §2·§10.
