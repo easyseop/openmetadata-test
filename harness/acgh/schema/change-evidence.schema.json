@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bank.local/acgh/change-evidence.schema.json",
+  "title": "change-evidence card (T14)",
+  "description": "Human-facing aggregation of gate verdicts + evidence for one candidate. The machine_verdict/result_digest are copied verbatim from the immutable acgh-result; approvals and llm_suggestions are SEPARATE, non-authoritative fields (G4/REQ-GZ-04, §7 LLM advisory-only).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "machine_verdict", "result_digest", "inputs", "harness_version", "gates", "approvals", "llm_suggestions"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "machine_verdict": {"enum": ["pass", "approval", "block", "analysis_error"]},
+    "result_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "inputs": {"type": "object"},
+    "harness_version": {"type": "string", "minLength": 1},
+    "gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "verdict", "reasons", "evidence"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "verdict": {"enum": ["pass", "approval", "block", "analysis_error"]},
+          "reasons": {"type": "array", "items": {"type": "string"}},
+          "evidence": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "approvals": {
+      "type": "array",
+      "description": "References to approval-attestation artifacts (human). Never alters machine_verdict.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["approver", "target_result_digest"],
+        "properties": {
+          "approver": {"type": "string", "minLength": 1},
+          "target_result_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+          "scope": {"type": "string"}
+        }
+      }
+    },
+    "llm_suggestions": {
+      "type": "array",
+      "description": "Advisory Impact-Memo output. Carries NO verdict field by construction (§7): it can hint, never decide.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["gate", "memo"],
+        "properties": {
+          "gate": {"type": "string", "minLength": 1},
+          "memo": {"type": "string"},
+          "severity_hint": {"enum": ["info", "low", "medium", "high"]}
+        }
+      }
+    },
+    "observational_metadata": {"type": "object"}
+  }
+}
