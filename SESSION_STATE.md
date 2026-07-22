@@ -170,9 +170,14 @@ harness/
 
 ## 10. 재개 절차 (다음 세션)
 
+**현재 위치(2026-07-22 기준)**: 하네스 스캐폴드 + T05·T12·T13 **커밋·푸시 완료**
+(커밋 `7ccc00e`, 로드맵 §4.1 반영 `84b0595`). `pytest` 13 통과, 결정성 2회 동일,
+실제 OM smoke 통과. **다음 착수 태스크 = T10·T11** (SRS 부칙 A의 path/severity 반영
+후 동결) → T15·T14 → M1.5 T30·T31.
+
 1. 이 파일(SESSION_STATE.md) + `openmetadata_build_plan.md` + SRS 부칙 A 읽기.
 2. `/home/user/om-mirror` 존재 확인(없으면 §7 명령으로 재획득).
-3. `harness/` 존재 확인 → 없으면 §9 스캐폴딩부터, 있으면 미완 태스크 이어서.
-4. T12·T13 구현→`pytest` 통과 확인→커밋. 이후 T05→T30/T31 순.
-5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4 체크리스트 갱신.
+3. `harness/` 존재 확인 → `cd harness && pytest` 로 13 통과 재확인.
+4. ✅ T05·T12·T13 완료. 다음: T10·T11(부칙 A 반영 후 동결)→T15·T14→T30/T31 순.
+5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4.1 태스크 로그 갱신.
 6. 커밋마다 §1 트레일러 사용, 이 브랜치로 push.
