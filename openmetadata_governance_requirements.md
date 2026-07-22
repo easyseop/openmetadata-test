@@ -10,7 +10,21 @@
 > - 상세 설계: `openmetadata_upstream_customization_design.md`
 > - 참조 구현: `easyseop/ai-change-governance-harness` (개념·구조 참조, 코드 재사용은 선택)
 >
-> **상태:** Draft v0.1 · 리뷰 후 개발 착수
+> **상태:** Draft v0.1 · GPT 검토 반영 진행 중
+
+> ⚠ **정정 안내 (GPT 검토 반영)**
+> 이 SRS의 일부 요구사항은 GPT 검토(P0)에서 결함이 확인되어 **정정 대상**이다.
+> 아래 요구사항은 반드시 정정본을 기준으로 구현한다:
+> - **REQ-CB-02**: range-diff 기계 파싱 → patch-lock+trailer+raw diff 판정 (P0-1)
+> - **REQ-RA-01/02**: 충돌 시 abort 흐름 → 탐지/해결 2-모드 (P0-2)
+> - **REQ-OR-01/02**: verdict `max()` 집계 → severity rank, 분석실패=차단 (P0-3·4)
+> - **REQ-MF-01**: `affected_paths` 단일 → allowed/required_changed_paths + upgrade_watch (P0-6)
+> - **§9.7 verification.command**: 임의 shell → 선언형 verifier (P0-8)
+> - **완전성 게이트**: "ID 일치=누락 없음" → "등록·재적용 완전성"으로 축소, 불변식 추가 (P0-5)
+>
+> 정정 근거·상세: `openmetadata_review_response.md`
+> 정정 반영 개발 순서: `openmetadata_build_plan.md`
+> 검증기 전체 목록: `openmetadata_verifier_catalog.md`
 
 ---
 
@@ -44,7 +58,7 @@
 
 | 용어 | 쉬운 설명 |
 |---|---|
-| 커밋 (commit) | 변경 한 묶음을 기록한 단위. "수정 1건 = 커밋 1개" 규칙 |
+| 커밋 (commit) | 변경 한 묶음을 기록한 단위. 규칙: **커밋 하나 = ID 하나**, ID 하나는 짧은 순서형 commit series 허용 |
 | 식별 꼬리표 (trailer) | 커밋 기록 끝에 붙이는 식별표. `Customization-ID`를 넣음 |
 | 골라 재적용 (cherry-pick) | 특정 커밋만 골라 새 공식 버전 위에 다시 적용 |
 | 묶음 비교 (range-diff) | 이전/새 버전의 패치 묶음을 나란히 비교 |
