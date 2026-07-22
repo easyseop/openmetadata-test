@@ -295,9 +295,10 @@ T93·T42 · T50 · T70 최소.
 | T30 커밋 단위 불변식 | ✅ 완료 | `acgh/invariants.py`(+`gitprim` parents/change_type 확장) | 13 테스트(실제 temp git·실제 OM 경로). ID없는 core 커밋 block(P0-5), 다중 ID·merge·empty·core/governance 혼합·unknown=analysis_error |
 | T31 ID 단위 불변식 | ✅ 완료 | `acgh/invariants.py` | series 미승인·비연속(A-3.7)·의존 순환(DFS)·retired 재사용·미등록 ID 각각 검출 |
 
+| T20 재적용 CI 탐지 모드 | ✅ 완료 | `acgh/reapply.py` | 6 테스트(실제 OM auth 소스 기반). 임시 worktree cherry-pick, A-2.6 상태 분류(applied/content_conflict/redundant/missing/skip), 충돌=block·missing=analysis_error, worktree 폐기·트리 clean 유지(P0-2) |
+
 > **M1 완료** ✅ (T05·T10·T11·T12·T13·T14·T15). **M1.5 완료** ✅ (T30·T31 —
-> 등록 완전성 불변식, P0-5). **다음(M2 재적용 파이프라인)**: T20(CI 탐지 모드 —
-> 임시 worktree에서 patch-lock 순서 cherry-pick, 충돌 시 ID·파일 리포트+트리
-> clean 유지, P0-2) → T21(담당자 해결 모드) → T23(resolve 직렬화/단일
-> integrator, 부칙 A-2.5) → T22(clean-room replay: 재생 tree == candidate tree,
-> P0-5·C-5). 실제 OM 미러로 cherry-pick 재적용 검증. 순서 근거 §2·§10.
+> 등록 완전성 불변식, P0-5). **M2 진행 중**: ✅ T20(CI 탐지 모드) → **다음**
+> T21(담당자 해결 모드 — 충돌 worktree 유지·해결·trailer 각인, A-2.2) →
+> T23(resolve 직렬화/단일 integrator CAS, A-2.5) → T22(clean-room replay: 재생
+> tree == candidate tree, P0-5·C-5). 실제 OM 미러로 cherry-pick 검증.

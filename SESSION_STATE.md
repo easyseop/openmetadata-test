@@ -126,7 +126,9 @@ T51·T52 병행 · T80·T81 마지막
 - 아웃바운드 HTTPS 프록시 있음(HTTPS_PROXY 설정됨, git clone 정상 동작 확인).
 - `add_repo`로 open-metadata 편입은 **불가**(교차 소유자 제약) → 직접 clone으로 대체(위 §7).
 
-## 9. 지금 진행 중인 코드 작업 (다음에 이어서 할 것)
+## 9. 하네스 초기 스캐폴딩 스펙 (역사적 참고 — 아래 T12/T13/T05는 모두 구현·완료됨)
+
+> 이 절은 최초 스캐폴딩 지침의 기록이다. **현재 상태·다음 태스크는 §10을 본다.**
 
 **하네스 프로젝트를 `harness/`에 스캐폴딩하고 T12·T13·T05 구현 중.** 계획한 파일:
 
@@ -170,24 +172,65 @@ harness/
 
 ## 10. 재개 절차 (다음 세션)
 
-**현재 위치(2026-07-22 기준)**: **M1·M1.5 완료** — T05(운영층)·T10·T11·T12·T13·
-T14·T15·**T30·T31** 전부 **커밋·푸시**. `pytest` **74 통과**, 결정성 2회 동일,
-실제 OM smoke/경로 검증 통과. 주요 커밋: 스캐폴드 `7ccc00e`, T10/T11/T05운영층
-`3cc0539`, T15/T14 `f38b124`, T30/T31 `e5729dd`. **다음 착수 = M2 재적용
-파이프라인 T20**(CI 탐지 모드 — 임시 worktree에서 patch-lock 순서대로 cherry-pick,
-충돌 시 ID·파일 리포트 후 worktree 폐기·트리 clean 유지, P0-2) → T21(담당자 해결
-모드) → T23(resolve 직렬화/단일 integrator CAS, 부칙 A-2.5) → T22(clean-room
-replay: 재생 tree == candidate tree, P0-5·C-5). 실제 OM 미러로 cherry-pick 검증.
+### 현재 위치 (2026-07-22, 최신)
 
-의존 패키지: `jsonschema`, `pathspec`(pip 설치됨; pyproject deps 반영). 경로
-문법은 pathspec factory=`gitignore` 고정. 하네스 모듈: layout·manifest·
-patchlock·gitprim·verdict·result_io·evidence(+ `schema/` JSON Schema 5종).
+**완료: M1 + M1.5 + M2 착수(T20).** 전부 **커밋·푸시** 완료, `pytest` **80 통과**,
+결정성 2회 동일, 실제 OM 미러 검증 통과.
 
-1. 이 파일(SESSION_STATE.md) + `openmetadata_build_plan.md` + SRS 부칙 A 읽기.
-2. `/home/user/om-mirror` 존재 확인(없으면 §7 명령으로 재획득).
-3. `harness/` 존재 확인 → `cd harness && python -m pytest` 로 57 통과 재확인
-   (`jsonschema`·`pathspec` 미설치면 `pip install jsonschema pathspec`).
-4. ✅ M1·M1.5 완료(T05·T10·T11·T12·T13·T14·T15·T30·T31). 다음: **M2 T20**
-   (재적용 CI 탐지)→T21→T23→T22.
-5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4.1 태스크 로그 갱신.
-6. 커밋마다 §1 트레일러 사용, 이 브랜치로 push.
+| 태스크 | 상태 | 모듈 |
+|---|---|---|
+| T05 path-ownership 운영층 | ✅ | `acgh/layout.py` + `policies/repository-layout.yaml` |
+| T12 git 프리미티브 | ✅ | `acgh/gitprim.py`(+parents/change_type/is_merge) |
+| T13 verdict 엔진 | ✅ | `acgh/verdict.py` |
+| T10 manifest 스키마·의미검증 | ✅ | `acgh/manifest.py` + `schema/manifest.schema.json` |
+| T11 patch-lock | ✅ | `acgh/patchlock.py` + `schema/patch-source-lock.schema.json` |
+| T15 result writer/CI adapter | ✅ | `acgh/result_io.py` + `schema/acgh-result.schema.json` |
+| T14 evidence 카드 | ✅ | `acgh/evidence.py` + `schema/change-evidence.schema.json` |
+| T30 커밋 단위 불변식 | ✅ | `acgh/invariants.py` (check_commit_invariants) |
+| T31 ID 단위 불변식 | ✅ | `acgh/invariants.py` (check_id_invariants) |
+| **T20 재적용 CI 탐지** | ✅ | `acgh/reapply.py` |
+
+**커밋 SHA**: 스캐폴드 `7ccc00e` → T10/T11/T05운영층 `3cc0539` → T15/T14
+`f38b124` → T30/T31 `e5729dd` → T20 `ee5a28e` (+ 사이사이 docs 커밋).
+
+**환경 재현**: `pip install jsonschema pathspec`(pyproject deps 반영됨). 경로
+문법 pathspec factory=`gitignore` 고정. 테스트: `cd harness && python -m pytest`
+→ 80 통과. 실제 OM 콘텐츠는 `tests/conftest.py`가 미러에서 blob 온디맨드로
+가져옴(미러 없으면 skip). `tests/test_reapply.py`는 실제 AuthLoginServlet.java를
+공통 조상으로 케이스 B(clean)/C(conflict)/redundant 구성.
+
+### 다음 태스크 (M2 잔여) — 정확한 스펙
+
+**T21 담당자 해결 모드** (`acgh/resolve.py`, 선행 T20). build_plan §T21 + 부칙 A-2.2/2.3:
+- T20과 달리 충돌 시 **abort 안 함** — 전용(영속) worktree에 충돌 상태 **유지**,
+  담당자가 파일 해결·`git add` 후 `cherry-pick --continue --no-edit`.
+- 부칙 A-2.2: 일반 cherry-pick은 `Source-Commit` trailer를 안 만든다 → 재적용
+  도구가 **모든 적용 커밋**(충돌 여부 무관)에 `git interpret-trailers`로
+  `Source-Commit`(반복 허용)·`Patch-Revision`·`Application-Record-ID`(+해결 시
+  `Resolution-Record-ID`) 각인. 방법: cherry-pick 후 `git log -1 --format=%B` →
+  interpret-trailers(stdin) → `git commit --amend -m <new>`.
+- 부칙 A-2.3: 무충돌 포팅=동일 revision / 충돌 해결=revision **증가**.
+- 완료 시 applied_commits(새 SHA) → `patchlock.build_application_lock`로 결속.
+- 세션 API 제안: `start_resolve(repo,target,plan,worktree)→Session(paused|done)`,
+  `resolve_continue(session,resolution_record_id)`, `abort_resolve(session)`,
+  `finish(session)→applied_commits`. 테스트: 실제 OM conflict 시나리오에서 테스트가
+  담당자 대신 해결 콘텐츠 write+add 후 continue → trailer 각인 검증.
+
+**T23 resolve 직렬화/단일 integrator** (선행 T30·T11, 부칙 A-2.5):
+- resolve는 lock 순서대로 한 번에 한 ID. 담당자는 제안만, lock 갱신은 단일
+  integrator가 `base_lock_digest` 확인(CAS: `git update-ref` old-OID 검증) 후 반영.
+  stale base는 자동 거부·재실행. (patch-lock digest = `patchlock.digest()` 재사용)
+
+**T22 clean-room replay** (선행 T21, P0-5·C-5):
+- 격리 환경에서 patch-lock 전체 재생 → 결과 tree 해시 == candidate HEAD tree 해시.
+  `git rev-parse <ref>^{tree}` 또는 `git write-tree` 비교. 빌드 비결정성 배제,
+  동일 입력 3회 동일 해시. **추적된 source tree 동일성만** 보장(부칙 A-3.8).
+
+### 재개 절차
+1. 이 파일 + `openmetadata_build_plan.md`(§T20~T22) + SRS 부칙 A 읽기.
+2. `/home/user/om-mirror` 존재 확인(없으면 §7 재획득), `pip install jsonschema pathspec`.
+3. `cd harness && python -m pytest` → 80 통과 재확인.
+4. 다음: **T21**(resolve.py) → T23 → T22 로 M2 완성. 이후 M3 T40/T62/T32/T33/T41.
+5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4.1 로그 + 이 표 갱신.
+6. 커밋마다 §1 트레일러 사용, 이 브랜치(`claude/markdown-file-feedback-26933w`)로 push.
+7. 게이트/재적용 테스트는 **반드시 실제 OM 미러**로(합성 더미 금지, §7).
