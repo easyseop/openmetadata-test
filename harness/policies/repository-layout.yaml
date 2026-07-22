@@ -1,0 +1,48 @@
+# T05 — path-ownership & glob grammar 정본 (SRS 부칙 A-3.1)
+# 모든 게이트(CG-01 "업스트림 원본 경로", MF-01, GZ 민감영역, T93)가 이 파일의
+# 동일한 path 문법·소유 분류를 사용한다. upstream SHA에 결속되며 protected.
+schema_version: 1
+
+# 이 소유 지도가 기준으로 삼는 업스트림 (UPSTREAM_A = 1.12.13-release)
+upstream_base_sha: e6c665019a583b7938f30fbb7bafb7e1f82c5dd7
+
+# 경로 문법 — 모든 게이트가 동일 해석을 쓰도록 고정
+path_grammar:
+  name: gitignore-pathspec       # 구현: python pathspec(GitWildMatch)
+  version: 1
+  root_relative: true
+  separator: "/"
+  case_sensitive: true
+  unicode_normalization: NFC
+  negation_allowed: false        # MVP: 부정 패턴 금지(결정성)
+  symlink_policy: reject
+  submodule_policy: reject
+  lfs_policy: reject
+
+# 실제 OpenMetadata 모듈 루트 (1.12.13/1.13.0에서 검증됨)
+upstream_owned_roots:
+  - "openmetadata-service/**"
+  - "openmetadata-spec/**"
+  - "openmetadata-ui/**"
+  - "openmetadata-ui-core-components/**"
+  - "openmetadata-clients/**"
+  - "openmetadata-sdk/**"
+  - "openmetadata-airflow-apis/**"
+  - "ingestion/**"
+  - "bootstrap/**"
+  - "conf/**"
+  - "common/**"
+  - "docker/**"
+
+# 행내 거버넌스 산출물 (upstream 아님)
+bank_governance_roots:
+  - ".bank/**"
+  - "docs/bank/**"
+  - "tests/bank/**"
+
+# 행내 확장 모듈 (원본 미수정, 별도 코드)
+platform_extension_roots:
+  - "bank-extensions/**"
+
+# 분류되지 않은 신규 top-level 경로 → fail-closed
+unknown_path_policy: analysis_error
