@@ -288,8 +288,11 @@ T93·T42 · T50 · T70 최소.
 | T13 verdict 엔진 | ✅ 완료 | `harness/acgh/verdict.py` | 9 테스트 통과(P0-3 mutation guard·P0-4 fail-closed·digest 제외) |
 | T10 manifest 스키마·의미검증 | ✅ 완료 | `acgh/manifest.py` + `schema/manifest.schema.json` | 10 테스트. `verification.command` 구조적 금지(P0-8), required⊆allowed·literal·소유일치·assurance 분리(부칙 A-3.2/3.3), set 내 ID 유일 |
 | T11 patch-lock | ✅ 완료 | `acgh/patchlock.py` + `schema/patch-source-lock.schema.json` | 10 테스트. source/application lock 분리(부칙 A-2.1), 고정 40-hex SHA, canonical digest, topological order(A-3.7), source object preflight(A-2.4) |
-| — 하네스 스캐폴드 | ✅ 완료 | `harness/pyproject.toml`·`fixtures/`·`.gitignore` | `pytest` 40 통과, 결정성 2회 동일, 실제 OM smoke 통과 |
+| T15 result writer·CI adapter | ✅ 완료 | `acgh/result_io.py` + `schema/acgh-result.schema.json` | 12 테스트. 원자적 write(temp→검증→digest self-check→fsync→replace), interpret 4대 analysis_error(누락·파손·digest·stale·exit불일치), attestation 무효화(부칙 A-1) |
+| T14 감사카드(evidence) | ✅ 완료 | `acgh/evidence.py` + `schema/change-evidence.schema.json` | 5 테스트. 게이트 집계·approver/LLM 분리 필드·LLM verdict 금지(§7)·headline=집계 강제(P0-3) |
+| — 하네스 스캐폴드 | ✅ 완료 | `harness/pyproject.toml`·`fixtures/`·`.gitignore` | `pytest` **57 통과**, 결정성 2회 동일, 실제 OM smoke 통과 |
 
-> **다음(M1 잔여)**: T15(result/CI adapter — 원자적 생성·canonical digest·
-> attestation 분리, 부칙 A-1) → T14(감사카드). 이후 M1.5 T30·T31(preflight
-> 불변식). 순서 근거는 §2·§10.
+> **M1 완료** ✅ (T05·T10·T11·T12·T13·T14·T15 — 결정적 판정 틀·소스 고정).
+> **다음(M1.5)**: T30(커밋 단위 불변식 — 업스트림 경로 커밋 정확히 1 ID·ID없는
+> 커밋 실패, P0-5) → T31(ID 단위 불변식 — series 정합·의존·retired 재사용 금지).
+> 이후 M2 재적용(T20/21/23/22). 순서 근거는 §2·§10, build_plan §4.3(preflight 우선).
