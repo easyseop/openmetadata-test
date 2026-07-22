@@ -29,6 +29,12 @@ class Commit:
     sha: str
     subject: str
     customization_ids: list[str]
+    parents: tuple[str, ...] = ()
+    change_type: str | None = None
+
+    @property
+    def is_merge(self) -> bool:
+        return len(self.parents) > 1
 
 
 def git(repo: str, *args: str, check: bool = True) -> str:
@@ -48,7 +54,11 @@ def commits(repo: str, base: str, head: str) -> list[Commit]:
     Uses NUL (-z) to separate commit records so commit boundaries are never
     ambiguous, and extracts the Customization-ID trailer(s) per commit.
     """
-    fmt = f"%H{_US}%s{_US}%(trailers:key=Customization-ID,valueonly,separator={_RS})"
+    fmt = (
+        f"%H{_US}%s{_US}%P{_US}"
+        f"%(trailers:key=Customization-ID,valueonly,separator={_RS}){_US}"
+        f"%(trailers:key=Change-Type,valueonly,separator={_RS})"
+    )
     out = git(
         repo, "log", "--reverse", "-z", f"--format={fmt}", f"{base}..{head}"
     )
@@ -58,9 +68,20 @@ def commits(repo: str, base: str, head: str) -> list[Commit]:
         parts = rec.split(_US)
         sha = parts[0]
         subject = parts[1] if len(parts) > 1 else ""
-        trailer_field = parts[2] if len(parts) > 2 else ""
-        ids = [t for t in trailer_field.split(_RS) if t.strip() != ""]
-        result.append(Commit(sha=sha, subject=subject, customization_ids=ids))
+        parents = tuple(p for p in (parts[2] if len(parts) > 2 else "").split() if p)
+        id_field = parts[3] if len(parts) > 3 else ""
+        ct_field = parts[4] if len(parts) > 4 else ""
+        ids = [t for t in id_field.split(_RS) if t.strip() != ""]
+        ct_vals = [t for t in ct_field.split(_RS) if t.strip() != ""]
+        result.append(
+            Commit(
+                sha=sha,
+                subject=subject,
+                customization_ids=ids,
+                parents=parents,
+                change_type=ct_vals[0] if ct_vals else None,
+            )
+        )
     return result
 
 

@@ -71,3 +71,25 @@ def test_object_exists(repo):
     base = _commit(repo, "README", "base\n", "base")
     assert G.object_exists(str(repo), base) is True
     assert G.object_exists(str(repo), "0" * 40) is False
+
+
+def test_change_type_trailer_and_non_merge(repo):
+    base = _commit(repo, "README", "base\n", "base")
+    _commit(repo, ".bank/p.yaml", "p\n", "policy\n\nChange-Type: governance")
+    c = G.commits(str(repo), base, "HEAD")[-1]
+    assert c.change_type == "governance"
+    assert c.is_merge is False
+    assert len(c.parents) == 1
+
+
+def test_merge_commit_has_two_parents(repo):
+    base = _commit(repo, "README", "base\n", "base")
+    _commit(repo, "main.txt", "m\n", "main work")
+    _run(str(repo), "checkout", "-q", "-b", "feat")
+    _commit(repo, "feat.txt", "f\n", "feat work")
+    _run(str(repo), "checkout", "-q", "-")
+    _commit(repo, "main2.txt", "m2\n", "more main")
+    _run(str(repo), "merge", "--no-ff", "-m", "merge feat", "feat")
+    merge = G.commits(str(repo), base, "HEAD")[-1]
+    assert merge.is_merge is True
+    assert len(merge.parents) == 2
