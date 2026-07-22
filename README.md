@@ -77,11 +77,22 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 | [openmetadata_governance_requirements.md](openmetadata_governance_requirements.md) | 요구사항 정의서(SRS) ※일부 정정 대상 | 개발 |
 | [openmetadata_review_response.md](openmetadata_review_response.md) | GPT 검토 재검토(P0~P2 판정·정정) | 개발·심의 |
 | [openmetadata_build_plan.md](openmetadata_build_plan.md) | **순차 개발 실행 계획(정정 반영)** | 개발 |
+| [openmetadata_dev_roadmap.md](openmetadata_dev_roadmap.md) | **개발 로드맵 & MVP 커버리지 맵**(진행 추적) | 개발·심의 |
 | [openmetadata_verifier_catalog.md](openmetadata_verifier_catalog.md) | 검증기 카탈로그(뭘 잡나·왜) | 개발 |
+| [openmetadata_second_review_response.md](openmetadata_second_review_response.md) | GPT 2차 검토 수용·반영 내역 | 개발 |
 | [openmetadata_review_packet.md](openmetadata_review_packet.md) | 대화 요약·검토 요청(GPT 전달용) | 검토 |
 
-> **개발 착수 기준**: `openmetadata_build_plan.md`(정정 반영)를 실제 개발의 순서로 삼는다.
-> SRS의 일부 요구사항은 GPT 검토(P0)로 정정 중이므로, 충돌 시 **review_response·build_plan을 우선**한다.
+> **개발 착수 기준**: 진행·커버리지는 `openmetadata_dev_roadmap.md`, 상세 스펙은
+> `openmetadata_build_plan.md`(+ SRS 부칙 A)를 따른다. 충돌 시 우선순위는
+> **SRS 부칙 A > review_response > build_plan > 본문**.
+
+## 테스트 정책 (필수)
+
+**모든 픽스처·통합·업그레이드 테스트는 실제 OpenMetadata 오픈소스로 진행한다.**
+합성 더미가 아니라 `open-metadata/OpenMetadata`의 고정 두 태그(UPSTREAM_A/B)를
+미러로 받아, 실제 파일 경로 위에 BANK-OM 패치를 얹어 케이스 A~E를 재현한다.
+업그레이드 테스트(M9)는 실제 OM Docker·DB migration·재색인으로 수행한다.
+(상세: `openmetadata_dev_roadmap.md` §1)
 
 ## 개발 순서 (마일스톤)
 
