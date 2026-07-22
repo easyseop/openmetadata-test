@@ -8,7 +8,7 @@ upstream_base_sha: e6c665019a583b7938f30fbb7bafb7e1f82c5dd7
 
 # 경로 문법 — 모든 게이트가 동일 해석을 쓰도록 고정
 path_grammar:
-  name: gitignore-pathspec       # 구현: python pathspec(GitWildMatch)
+  name: gitignore-pathspec       # 구현: python pathspec, factory="gitignore"
   version: 1
   root_relative: true
   separator: "/"

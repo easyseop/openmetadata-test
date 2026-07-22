@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bank.local/acgh/manifest.schema.json",
+  "title": "Customization Manifest (T10)",
+  "description": "Per-customization manifest. Declares implementation scope and watch/assurance POLICY only; actual per-release SHAs/order live in the patch-lock (부칙 A-3.4). No verification.command field (P0-8).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "customization_id", "kind", "implementation"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "customization_id": {
+      "type": "string",
+      "pattern": "^BANK-OM-[0-9]{3,}$"
+    },
+    "kind": {"enum": ["core-patch", "extension", "governance"]},
+    "title": {"type": "string"},
+    "implementation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowed_changed_paths"],
+      "properties": {
+        "allowed_changed_paths": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1
+        },
+        "required_changed_paths": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "upgrade_watch": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "paths": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "configuration_keys": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "dependencies": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "assurance": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "contracts are references into the contract catalog (T04/T60); direct_tests are non-contract-derived technical tests. effective tests = direct ∪ contract-derived (부칙 A-3.3).",
+      "properties": {
+        "contracts": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "direct_tests": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "series": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "POLICY only (부칙 A-3.4): whether this ID may be a multi-commit series and its declared dependencies. Real SHAs/order belong to the patch-lock.",
+      "properties": {
+        "allowed": {"type": "boolean"},
+        "depends_on": {
+          "type": "array",
+          "items": {"type": "string", "pattern": "^BANK-OM-[0-9]{3,}$"}
+        }
+      }
+    }
+  }
+}

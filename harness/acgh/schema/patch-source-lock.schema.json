@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bank.local/acgh/patch-source-lock.schema.json",
+  "title": "Patch Source Lock (T11)",
+  "description": "Immutable-during-run source of truth for reapply: fixed SHAs only, no 'latest branch' lookup (부칙 A-2.1). The patch-lock — not the manifest — owns per-release SHAs and series order (부칙 A-3.4).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source_release_sha", "patch_series"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "source_release_tag": {"type": "string", "minLength": 1},
+    "source_release_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "patch_series": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "revision", "source_commits"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^BANK-OM-[0-9]{3,}$"},
+          "revision": {"type": "integer", "minimum": 1},
+          "source_commits": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+          },
+          "depends_on": {
+            "type": "array",
+            "items": {"type": "string", "pattern": "^BANK-OM-[0-9]{3,}$"}
+          }
+        }
+      }
+    }
+  }
+}
