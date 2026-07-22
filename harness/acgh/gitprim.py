@@ -93,6 +93,16 @@ def changed_paths(repo: str, sha: str) -> list[str]:
     return [p for p in out.split("\x00") if p != ""]
 
 
+def net_changed_paths(repo: str, base: str, head: str) -> list[str]:
+    """Paths whose content differs between base and head trees (NET effect).
+
+    Distinct from per-commit changed_paths: a file added then removed across the
+    range does NOT appear here. Used for the lower-bound (required) drift check.
+    """
+    out = git(repo, "diff", "--name-only", "-z", base, head)
+    return [p for p in out.split("\x00") if p != ""]
+
+
 def object_exists(repo: str, sha: str) -> bool:
     """True if <sha>^{commit} exists and is valid (부칙 A-2.4 preflight)."""
     proc = subprocess.run(
