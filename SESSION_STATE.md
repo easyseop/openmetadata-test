@@ -174,7 +174,7 @@ harness/
 
 ### 현재 위치 (2026-07-22, 최신)
 
-**완료: M1 + M1.5 + M2 착수(T20).** 전부 **커밋·푸시** 완료, `pytest` **80 통과**,
+**완료: M1 + M1.5 + M2 전체.** 전부 **커밋·푸시** 완료, `pytest` **93 통과**,
 결정성 2회 동일, 실제 OM 미러 검증 통과.
 
 | 태스크 | 상태 | 모듈 |
@@ -188,10 +188,14 @@ harness/
 | T14 evidence 카드 | ✅ | `acgh/evidence.py` + `schema/change-evidence.schema.json` |
 | T30 커밋 단위 불변식 | ✅ | `acgh/invariants.py` (check_commit_invariants) |
 | T31 ID 단위 불변식 | ✅ | `acgh/invariants.py` (check_id_invariants) |
-| **T20 재적용 CI 탐지** | ✅ | `acgh/reapply.py` |
+| T20 재적용 CI 탐지 | ✅ | `acgh/reapply.py` |
+| T21 재적용 담당자 해결 | ✅ | `acgh/resolve.py` |
+| T22 clean-room replay | ✅ | `acgh/replay.py` |
+| T23 단일 integrator CAS | ✅ | `acgh/integrator.py` |
 
 **커밋 SHA**: 스캐폴드 `7ccc00e` → T10/T11/T05운영층 `3cc0539` → T15/T14
-`f38b124` → T30/T31 `e5729dd` → T20 `ee5a28e` (+ 사이사이 docs 커밋).
+`f38b124` → T30/T31 `e5729dd` → T20 `ee5a28e` → T21 `da96332` → T22 `47199cb`
+→ T23 `febb929` (+ 사이사이 docs 커밋).
 
 **환경 재현**: `pip install jsonschema pathspec`(pyproject deps 반영됨). 경로
 문법 pathspec factory=`gitignore` 고정. 테스트: `cd harness && python -m pytest`
@@ -199,38 +203,37 @@ harness/
 가져옴(미러 없으면 skip). `tests/test_reapply.py`는 실제 AuthLoginServlet.java를
 공통 조상으로 케이스 B(clean)/C(conflict)/redundant 구성.
 
-### 다음 태스크 (M2 잔여) — 정확한 스펙
+### 다음 태스크 (M3 — 범위·최종상태·민감 통제 → 케이스 A·B·C 커버) — 스펙
 
-**T21 담당자 해결 모드** (`acgh/resolve.py`, 선행 T20). build_plan §T21 + 부칙 A-2.2/2.3:
-- T20과 달리 충돌 시 **abort 안 함** — 전용(영속) worktree에 충돌 상태 **유지**,
-  담당자가 파일 해결·`git add` 후 `cherry-pick --continue --no-edit`.
-- 부칙 A-2.2: 일반 cherry-pick은 `Source-Commit` trailer를 안 만든다 → 재적용
-  도구가 **모든 적용 커밋**(충돌 여부 무관)에 `git interpret-trailers`로
-  `Source-Commit`(반복 허용)·`Patch-Revision`·`Application-Record-ID`(+해결 시
-  `Resolution-Record-ID`) 각인. 방법: cherry-pick 후 `git log -1 --format=%B` →
-  interpret-trailers(stdin) → `git commit --amend -m <new>`.
-- 부칙 A-2.3: 무충돌 포팅=동일 revision / 충돌 해결=revision **증가**.
-- 완료 시 applied_commits(새 SHA) → `patchlock.build_application_lock`로 결속.
-- 세션 API 제안: `start_resolve(repo,target,plan,worktree)→Session(paused|done)`,
-  `resolve_continue(session,resolution_record_id)`, `abort_resolve(session)`,
-  `finish(session)→applied_commits`. 테스트: 실제 OM conflict 시나리오에서 테스트가
-  담당자 대신 해결 콘텐츠 write+add 후 continue → trailer 각인 검증.
+build_plan §M3 + 부칙 A-3.7 참조. 순서: **T40 → T62 → T32 → T33 → T41**.
+전부 실제 OM 미러로 테스트. 재사용: `invariants`(불변식 패턴)·`layout`(경로
+소유)·`replay`(tree 비교)·`verdict`(집계).
 
-**T23 resolve 직렬화/단일 integrator** (선행 T30·T11, 부칙 A-2.5):
-- resolve는 lock 순서대로 한 번에 한 ID. 담당자는 제안만, lock 갱신은 단일
-  integrator가 `base_lock_digest` 확인(CAS: `git update-ref` old-OID 검증) 후 반영.
-  stale base는 자동 거부·재실행. (patch-lock digest = `patchlock.digest()` 재사용)
+**T40 drift 검사** (P0-6, 선행 T10·T12): candidate가 **구현 범위 밖**의 upstream
+파일을 바꿨는지 탐지. 각 커밋/전체 net 변경 경로를 manifest의
+`allowed_changed_paths`(상한, pathspec)와 대조 — allowed 밖 upstream 변경=block,
+`required_changed_paths` net 누락=block(CG-03 확정, A-3.7). touched paths(상한)와
+net changed paths(하한) 분리(A-3.7). `layout.classify` + manifest 로더 재사용.
 
-**T22 clean-room replay** (선행 T21, P0-5·C-5):
-- 격리 환경에서 patch-lock 전체 재생 → 결과 tree 해시 == candidate HEAD tree 해시.
-  `git rev-parse <ref>^{tree}` 또는 `git write-tree` 비교. 빌드 비결정성 배제,
-  동일 입력 3회 동일 해시. **추적된 source tree 동일성만** 보장(부칙 A-3.8).
+**T62 SHA 결속** (§10.1): 게이트 입력의 upstream/patch-source를 동적 조회 없이
+고정 SHA로 결속(이미 patchlock·layout이 SHA 고정). candidate 평가 시점의
+repository-qualified SHA 세트를 result inputs로 봉인(result_io와 연결).
+
+**T32 최종상태 불변식** (P0-5, 선행 T22·T31): active 패치 **순효과 0**(적용 후
+무변화)=실패/retirement, active ID revert=상태전환·ADR 필수, candidate HEAD ==
+replay tree(T22 `replay.replay_and_compare` 재사용), candidate 변경 시 기존
+테스트·승인 무효화(result_io.attestation_is_valid 연계).
+
+**T33 게이트 명칭·보장범위** (P0-5·P0-7): 산출물에서 "완전성=기능 보장" 표현
+제거, 보장/미보장 표를 게이트 출력에 포함(문서+GateResult reasons).
+
+**T41**: build_plan 참조(범위 보강). M3 완료 후 M4 T93·T42·T50 → **MVP1 완성**.
 
 ### 재개 절차
 1. 이 파일 + `openmetadata_build_plan.md`(§T20~T22) + SRS 부칙 A 읽기.
 2. `/home/user/om-mirror` 존재 확인(없으면 §7 재획득), `pip install jsonschema pathspec`.
-3. `cd harness && python -m pytest` → 80 통과 재확인.
-4. 다음: **T21**(resolve.py) → T23 → T22 로 M2 완성. 이후 M3 T40/T62/T32/T33/T41.
+3. `cd harness && python -m pytest` → 93 통과 재확인.
+4. 다음: **M3 T40**(drift) → T62 → T32 → T33 → T41. 이후 M4 T93/T42/T50 = MVP1.
 5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4.1 로그 + 이 표 갱신.
 6. 커밋마다 §1 트레일러 사용, 이 브랜치(`claude/markdown-file-feedback-26933w`)로 push.
 7. 게이트/재적용 테스트는 **반드시 실제 OM 미러**로(합성 더미 금지, §7).

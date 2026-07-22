@@ -296,9 +296,13 @@ T93·T42 · T50 · T70 최소.
 | T31 ID 단위 불변식 | ✅ 완료 | `acgh/invariants.py` | series 미승인·비연속(A-3.7)·의존 순환(DFS)·retired 재사용·미등록 ID 각각 검출 |
 
 | T20 재적용 CI 탐지 모드 | ✅ 완료 | `acgh/reapply.py` | 6 테스트(실제 OM auth 소스 기반). 임시 worktree cherry-pick, A-2.6 상태 분류(applied/content_conflict/redundant/missing/skip), 충돌=block·missing=analysis_error, worktree 폐기·트리 clean 유지(P0-2) |
+| T21 재적용 담당자 해결 모드 | ✅ 완료 | `acgh/resolve.py` | 3 테스트(실제 OM conflict). 충돌 worktree 유지·해결, 모든 적용 커밋에 Source-Commit/Patch-Revision/Application-Record/Resolution-Record trailer 각인(A-2.2), 무충돌=동일 revision·해결=revision 증가(A-2.3), application lock 결속 |
+| T22 clean-room replay | ✅ 완료 | `acgh/replay.py` | 4 테스트(실제 OM). 재생 tree==candidate tree=pass, 불일치=block+경로 리포트, 재생불가=analysis_error, 3회 동일 해시(content-addressed), 추적 tree만(A-3.8) |
+| T23 단일 integrator CAS | ✅ 완료 | `acgh/integrator.py` | 6 테스트. logical(digest)+physical(update-ref old-OID) 2중 CAS, 동일 base 동시 갱신 stale 거부, malformed 사전 차단(A-2.5) |
 
-> **M1 완료** ✅ (T05·T10·T11·T12·T13·T14·T15). **M1.5 완료** ✅ (T30·T31 —
-> 등록 완전성 불변식, P0-5). **M2 진행 중**: ✅ T20(CI 탐지 모드) → **다음**
-> T21(담당자 해결 모드 — 충돌 worktree 유지·해결·trailer 각인, A-2.2) →
-> T23(resolve 직렬화/단일 integrator CAS, A-2.5) → T22(clean-room replay: 재생
-> tree == candidate tree, P0-5·C-5). 실제 OM 미러로 cherry-pick 검증.
+> **M1 완료** ✅ (T05·T10·T11·T12·T13·T14·T15). **M1.5 완료** ✅ (T30·T31, P0-5).
+> **M2 완료** ✅ (T20·T21·T22·T23 — 재적용 2모드·replay·직렬화, P0-2·P0-5·C-5).
+> **다음(M3 범위·최종상태·민감 통제 → 케이스 A·B·C 커버)**: T40(drift — 구현
+> 범위 밖 core 변경 탐지, P0-6) · T62(SHA 결속, §10.1) · T32(최종상태 불변식 —
+> 순효과 0·revert·candidate==replay, P0-5) · T33(게이트 명칭·보장범위 문서) ·
+> T41. 이후 M4 T93·T42·T50 → **MVP1(Candidate-control) 완성**.
