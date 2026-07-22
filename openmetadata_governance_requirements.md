@@ -27,6 +27,11 @@
 > P0 9건 전부 SRS 본문에 반영 완료. P1 항목(patch-lock 상세·patch-kill·evidence
 > provider·break-glass 등)은 Build Plan(M5~M9)을 따른다.
 >
+> **2차 검토(GPT) 반영 — 부칙 A 추가:**
+> 6개 정정 영역의 2차 결함(결과 계약 CI 경계·lock/lineage/동시성·스키마 의미
+> 기반)과 신규 발견 D-1~D-9를 **부칙 A**로 반영. 본문과 충돌 시 부칙 우선.
+> T12·T13은 즉시 개발 가능, T10·T11은 부칙 A 반영 후 동결(2차 검토 E 결론).
+>
 > 정정 근거·상세: `openmetadata_review_response.md`
 > 정정 반영 개발 순서: `openmetadata_build_plan.md`
 > 검증기 전체 목록: `openmetadata_verifier_catalog.md`
@@ -71,7 +76,7 @@
 | 경로 패턴 (glob) | `**/auth/**`처럼 파일 위치를 지정하는 규칙 |
 | 자동 검사 (CI) | 코드가 바뀔 때마다 사람 없이 자동 검사를 돌리는 시스템 |
 | 안전 차단 (fail-closed) | 애매하거나 검사 실패 시 통과가 아니라 막는 쪽으로 처리 |
-| 판정 신호 (exit 0/1/2) | 검사가 끝나며 내는 신호 — 0 통과·1 차단·2 승인필요 |
+| 판정 신호 (verdict) | 검사 결과 4상태 — 통과·승인필요·차단·검증실패(차단 취급). 종료코드 0/2/1/3으로 변환(§1.4) |
 | 선언 파일 (YAML) | 사람이 읽기 쉬운 설정·명세 파일 형식 |
 
 ### 1.2 언어 무관 원칙 (핵심 설계 결정)
@@ -166,8 +171,8 @@
 change-intent.yaml ─┐
 customizations/*.yaml ├─▶ G-CG 완전성(방향 A/B/C) ─┐
 sensitive-zones.yaml ─┤     G-GZ 민감경로·의도      ├─▶ 감사카드(change-evidence.yaml)
-patch-order.txt ──────┤     G-GD 부채 상한          │   + 승인자 라우팅
-git (base..head) ─────┘     G-CB 정본·range-diff    │   + 종료코드 0/1/2
+patch-lock ───────────┤     G-GD 부채 상한          │   + 승인자 라우팅
+git (base..head) ─────┘     G-CB 정본(lock 대조)     │   + verdict 4상태(§1.4)
                             G-RA 재적용(cherry-pick) ┘
                             (G-RR rerere 검출 — 기본 비활성)
 ```
@@ -387,7 +392,7 @@ git (base..head) ─────┘     G-CB 정본·range-diff    │   + 종�
 - **충족**: **보완책 3(원천 억제) 집행**, P1
 - **목적**: diff가 코어 민감 경로(frozen/protected/watched)를 건드렸는지 판정
 - **입력→출력**: `git diff --name-only <base>..<head>` + `sensitive-zones.yaml`
-  → 접촉 zone 목록 + level, exit 0/1/2
+  → 접촉 zone 목록 + level, verdict(pass/approval/block — §1.4)
 - **구현 방법**:
   - 변경파일 목록 × zones 경로 패턴 glob 매칭(`pathspec`)
   - `frozen` 접촉 → 차단(1) / `protected` → 승인필요(2) / `watched` → 경고·기록(0)
@@ -397,7 +402,7 @@ git (base..head) ─────┘     G-CB 정본·range-diff    │   + 종�
 #### REQ-GZ-02 · 변경 의도 범위 판정
 - **충족**: **보완책 2**(범위 격리), P1·P3
 - **목적**: 실제 diff가 선언 의도(`allowed`/`forbidden`) 안에 머물렀는지 판정
-- **입력→출력**: diff + `change-intent.yaml` → 범위이탈 목록, exit 0/1/2
+- **입력→출력**: diff + `change-intent.yaml` → 범위이탈 목록, verdict(§1.4)
 - **구현 방법**:
   - `allowed_paths` 밖 파일 변경 → scope-creep(승인필요 2)
   - `forbidden_paths` 안 변경 → 차단(1)
@@ -661,7 +666,7 @@ git (base..head) ─────┘     G-CB 정본·range-diff    │   + 종�
 ### Phase 3 · 부채·정본·무결성
 - T09 → REQ-GD-01/02 (부채 상한·반복 충돌)
 - T10 → REQ-CB-01/02 (브랜치 규약·range-diff)
-- T11 → REQ-OR-02/03 (3상태 보존·자기보호)
+- T11 → REQ-OR-02/03 (4상태 결과 계약·자기보호)
 - **완료 기준**: 게이트가 스스로를 보호하고 CI에서 차단/승인이 구분된다
 
 ### Phase 4 · 선택
@@ -673,7 +678,7 @@ T00(셋팅) ─▶ 전부의 입력
 T01 ─▶ T05·T07 (명세 로딩 선행)
 T02 ─▶ T03 ─▶ T04 (코어 → 카드 → 러너)
 T05·T06·T07·T08 ─▶ T09 (완전성 → 부채)
-T04 ─▶ T11 (러너 → 3상태 보존)
+T04 ─▶ T11 (러너 → 4상태 결과 계약)
 ```
 
 ---
@@ -695,7 +700,7 @@ T04 ─▶ T11 (러너 → 3상태 보존)
 - V2. **픽스처**: 각 REQ 수용 기준마다 통과/실패 픽스처 쌍.
 - V3. **뮤테이션**: 기대값을 뒤집었을 때 테스트가 실제로 실패하는지(테스트가 장식이 아님) 확인.
 - V4. **자기 적용(dogfooding)**: 이 하네스 저장소 자신의 변경에도 게이트를 적용.
-- V5. **fail-safe**: 게이트 파일 부재·예외·타임아웃은 통과로 흡수하지 않고 승인필요 이상으로 닫음.
+- V5. **fail-safe**: 게이트 파일 부재·예외·타임아웃은 `analysis_error`(차단 취급)로 닫음 — 승인으로 우회 불가(§1.4).
 
 ---
 
@@ -705,4 +710,107 @@ T04 ─▶ T11 (러너 → 3상태 보존)
 - Q2. `thresholds.yaml`의 초기 상한값(패치 수·라인·연속충돌 K) — 조직 합의 필요.
 - Q3. glob 라이브러리 선택 — `pathspec`(gitignore 문법) vs `wcmatch`.
 - Q4. REQ-OR-02 결과 계약 형식 — 참조 하네스 ADR-002와 정합할지 독자 정의할지.
-- Q5. 재적용 소스 브랜치 자동 판별 규칙(CB-02) — 최신 리비전 탐지 로직 확정.
+- ~~Q5. 재적용 소스 브랜치 자동 판별~~ — **해소됨**: 동적 탐지 금지, 고정 SHA
+  patch-lock이 유일한 소스(REQ-CB-02 정정본·부칙 A-2).
+
+---
+
+## 부칙 A. 2차 검토 정정 (M1 동결 전 반영 필수)
+
+> GPT 2차 검토에서 확인된 2차 결함의 정정. **본문과 충돌 시 부칙이 우선한다.**
+> 아래 3개 묶음이 반영되기 전에는 T10(스키마)·T11(patch-lock)을 동결하지 않는다.
+> T12(git 프리미티브)·T13(verdict 엔진)은 즉시 개발 가능.
+
+### A-1. 결과 계약을 CI 경계까지 닫기 [REQ-OR-01/02 보강 + 신규 T15]
+
+1. **exit/result 불일치 = analysis_error.** 결과 파일 누락·파손·stale
+   (입력 SHA가 현재 candidate와 다름)·expected_exit 불일치 → 어느 한쪽을
+   신뢰하지 않고 synthetic `analysis_error`로 판정한다.
+2. **원자적 생성**: 임시 파일 작성 → 스키마 검증 → 입력 SHA·정책/harness
+   digest 자체 검증 → fsync + 원자적 rename으로 확정.
+3. **canonical digest**: `result_digest`는 YAML 전문 md5가 아니라
+   canonical JSON 직렬화(정렬·정규화)의 SHA-256. `generated_at`·duration·
+   runner_id 등 관측 메타데이터는 digest 대상 밖(`observational_metadata`).
+   → V1(결정론) 수용 기준도 이 canonical payload 기준으로 정정.
+4. **attestation 분리**: `acgh-result.yaml`은 불변 기계 판정.
+   사람 승인은 `approval-attestation.yaml`(승인자·대상 result digest·
+   candidate SHA·정책 버전·시각), 예외는 `break-glass-attestation.yaml`
+   (원 verdict 보존·범위·만료·사후검증)로 분리. candidate·정책 digest가
+   바뀌면 기존 attestation 자동 무효. release-lock이 유효 attestation ID를 결속.
+5. **다중 저장소 입력 결속**: `inputs`는 단일 base/head가 아니라
+   repository-qualified(upstream/core/platform/policy 각각의 SHA) +
+   `patch_source_lock_digest` + `verifier_catalog_digest`.
+6. `acgh-result.yaml`에 `expected_exit_code`·`run_id` 포함. CI wrapper는
+   실제 exit 캡처 후 반드시 결과 해석 단계를 실행(`set -e` 단락 금지).
+
+### A-2. patch-lock · lineage · 동시성 모델 확정 [REQ-RA/CB 보강]
+
+1. **lock 분리**: 실행 중 불변의 `patch_source_lock`(digest·source_release_sha·
+   ID별 source_commits)과 실행 결과인 `candidate_application_lock`
+   (parent_lock_digest·applied_commits·resolution_record_ids)을 분리.
+   실행 중 원본 lock을 덮어쓰지 않는다. 승격 후 application lock이 다음
+   업그레이드의 source lock이 된다.
+2. **lineage 자동 각인**: 일반 cherry-pick은 `Source-Commit` trailer를
+   만들지 않는다. 재적용 도구가 충돌 여부와 무관하게 **모든 적용 커밋**에
+   `Customization-ID`·`Source-Commit(s)`(반복 허용)·`Patch-Revision`·
+   `Application-Record-ID`(+해결 시 `Resolution-Record-ID`)를
+   `git interpret-trailers`로 각인. 정본 lineage(1:N/N:1)는 lock의 명시적
+   mapping이며 trailer와 불일치 시 block.
+3. **Patch-Revision 증가 조건**: 무충돌 포팅=동일 revision+새 application
+   record / 충돌 해결·재작성·split/squash=revision 증가.
+4. **source object 보존**: 모든 source commit은 immutable tag 또는
+   `refs/bank/patch-sources/*`에서 reachable 유지. 재적용 전
+   `git cat-file -e <sha>^{commit}` preflight, 누락=analysis_error,
+   "최신 브랜치" 자동 대체 금지.
+5. **해결 직렬화(MVP)**: resolve는 lock 순서대로 한 번에 한 ID.
+   담당자는 코드 제안만, lock 갱신은 단일 integrator가
+   `base_lock_digest` 확인(CAS, `git update-ref` old-OID 검증) 후 반영.
+   stale base는 자동 거부·재실행.
+6. **재적용 상태 분류**: non-zero를 전부 충돌로 취급하지 않는다 —
+   `applied / content_conflict / redundant_or_empty / missing_source_object /
+   invalid_source_commit / skipped_due_to_dependency / internal_error`.
+   `redundant_or_empty`는 자동 drop 금지, retirement 절차(T92)로 연결.
+   `missing_source_object`·`internal_error`=analysis_error.
+7. **논리 동일성 수용 기준 정정**: 해결본의 논리적 동일성은 자동 증명
+   불가. 수용 기준은 "구조 evidence(전후 delta·contract 변경 여부·경로
+   검증) + 필수 테스트 + 지정 승인으로 잔여 위험 수용"으로 기술.
+
+### A-3. 스키마 의미 기반 확정 [REQ-MF/CG/EV 보강 + 신규 T05]
+
+1. **신규 T05 — path-ownership·glob grammar 정본**: upstream SHA에 결속된
+   `repository-layout.yaml`(upstream_owned_roots / bank_governance_roots /
+   platform_extension_roots / `unknown_path_policy: analysis_error`,
+   rename은 양쪽 ownership 기록). CG-01의 "업스트림 원본 경로", MF-01,
+   GZ 민감영역, T93이 **같은 path 문법**(문법 이름·버전, repo-root 상대,
+   `/` 구분, 대소문자·Unicode 정규화, 부정 패턴 여부, symlink/submodule/LFS
+   정책)을 사용. M1 전 고정.
+2. **required ⊆ allowed 강제**: MVP에서 `required_changed_paths`는 정규화된
+   literal path만 허용, semantic validator가 각 literal이 allowed 패턴에
+   매칭되는지 검사(JSON Schema 단독으론 불가 — 스키마 검증 단계의 custom rule).
+3. **contract↔test 단일 정본**: contract catalog가 업무 불변식과
+   `required_tests`의 정본. manifest는 `assurance.contracts`(참조)와
+   `assurance.direct_tests`(contract 비파생 기술 테스트)만 선언.
+   effective tests = direct ∪ contract-derived. 중복 선언 불일치=block.
+   `contracts`는 `upgrade_watch` 밖 `assurance` 블록으로 이동.
+4. **series 목록 소유**: manifest는 정책(series 허용·dependency)만,
+   release별 실제 SHA·순서는 patch-lock 소유. 중복 저장 금지.
+5. **실행형 verifier sandbox**: `python_import_succeeds`·allowlist script·
+   컨테이너 실행형은 sandbox 필수 — network off·secret 미주입·read-only
+   root·non-root/capability drop·CPU/mem/PID/시간 제한·interpreter digest
+   고정·출력 제한. 가능하면 import 대신 정적 `python_module_present` 우선.
+6. **JSONPath 통제**: RFC 9535 준수 구현, eval·script expression 금지,
+   표현식 길이·깊이·결과 수 제한, 초과=analysis_error. 단순 경로 확인은
+   JSON Pointer 기반 `document_query_assert`를 기본값으로. verifier 타입에
+   `document_query_assert`·`file_hash_equals` 추가. verifier 입력 artifact는
+   blob SHA·파일 SHA-256·OCI digest 중 하나로 candidate에 결속.
+7. **CG 보강**: 순효과 검사는 (a) series 내재 효과 = `first^` tree vs
+   `last` tree 전체 비교, (b) 전체 스택 기여 = ID 제외 counterfactual
+   replay(재생 실패=inconclusive→리뷰, MVP는 high/critical 우선) 2단 분리.
+   touched paths(상한 검사)와 net changed paths(하한 검사) 분리.
+   비연속 series는 MVP에서 block. dependency는 순환만이 아니라
+   **실제 순서**(선행 series가 앞) + lock의 topological order 검증.
+   CG-03 verdict 확정: allowed 밖 core 변경=block, required net 누락=block,
+   `block 또는 approval` 같은 모호 표현 금지(정책 테이블로만 예외).
+8. **tree equality 범위 명시**: replay==tree는 **추적된 source tree**
+   동일성만 보장(빌드 산출물 bit 재현·untracked·이미지 layer는 별도 —
+   T91 digest 승격이 담당).

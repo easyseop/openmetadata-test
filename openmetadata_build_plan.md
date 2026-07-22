@@ -45,23 +45,53 @@
 
 ---
 
-## 2. 마일스톤 개요 (개발 순서)
+## 2. 마일스톤 개요 (개발 순서) — 2차 검토 반영 개정판
+
+> 2차 검토(B절)의 재배치를 반영: source 불변식 preflight를 재적용보다 앞으로,
+> T93을 T42보다 앞으로, T62·T70 최소 기능을 앞당김. 신규 태스크 T05·T15·T23.
 
 ```
-M0 사전 셋팅(정책·명세 저작)          ─ 코드 아님, 병행
-M1 기반(스키마·patch-lock·git·verdict) ─ 모든 게이트의 토대
-M2 재적용 파이프라인(2-모드 충돌·replay)
-M3 등록·재적용 완전성 게이트(불변식)
-M4 경로·민감·부채 게이트 + 영향분석(upgrade_watch)
-M5 증거 생성기(선언형 verifier·구조화 diff)
-M6 테스트 결속(contract-id·patch-kill·candidate 결속)
-M7 정책 자기보호·fast lane·break-glass
-M8 LLM Upgrade Impact Memo
-M9 업그레이드 검증·릴리스 승격(digest 결속)·반입
+M0    사전 셋팅: T01~T04 + [신규 T05] path-ownership·glob grammar 정본
+M1    기반: T10(스키마)·T12(git)·T13(verdict) + [신규 T15] result/CI adapter
+      + T14(감사카드) + T11(patch-lock — source/application 분리)
+      ※ T12·T13 즉시 착수 가능 / T10·T11은 부칙 A 반영 후 동결
+M1.5  source stack preflight: T30·T31 (재적용 전에 소스 불변식 검사)
+M2    재적용: T20 → T21(+[신규 T23] 단일 integrator/CAS 직렬화) → T22(source tree replay)
+M3    완전성·결속: T40(touched/net 분리) → T62(테스트-SHA 결속, 테스트 실행 전) → T32 → T33 → T41
+M4    감시·영향: T93(watch drift, 먼저) → T42(영향분석) + T50a/T50b(선언형 verifier — sandbox 포함)
+M5    증거 생성기: T51·T52 (공통 provider SDK 후 병렬 가능) + provider 자기보호(C-3)
+M6    테스트 결속: T60(contract 정본) → T61(patch-kill — high/critical 우선, 상태 4종)
+M7    정책: T70(base-policy 최소 기능은 M3 전 선행 가능) → T71 → T72
+M8    LLM: T80 → T81
+M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부망)
 ```
 
 각 태스크 기술 형식: **목적 / 충족(문제·게이트·P0·REQ) / 구현(입출력·자료구조·로직) /
-수용 기준 / 선행**.
+수용 기준 / 선행**. 신규 태스크(T05·T15·T23)와 변경된 의존성·범위는
+`2차 검토 결과 문서의 B-3 표`를 정본으로 따른다.
+
+### 신규 태스크 (2차 검토 반영)
+
+- **T05 · path-ownership·glob grammar 정본** (M0) — upstream SHA에 결속된
+  `repository-layout.yaml`(upstream/bank/extension roots, unknown=analysis_error)
+  + path 문법 고정(문법 버전·정규화·부정 패턴·symlink 정책). CG-01·MF-01·GZ·
+  T93이 같은 의미를 쓰게 하는 전제. → 부칙 A-3.1
+- **T15 · result writer/CI adapter** (M1) — 원자적 결과 생성, canonical
+  digest, exit/result 불일치=analysis_error, attestation 분리, 다중 저장소
+  입력 결속. → 부칙 A-1
+- **T23 · resolve 직렬화/단일 integrator** (M2) — resolve queue를 lock 순서로
+  직렬화, 담당자는 제안만, integrator가 base_lock_digest CAS 확인 후 반영.
+  → 부칙 A-2.5
+
+### MVP 2단계 (2차 검토 B-5 수용)
+
+- **Candidate-control MVP** — candidate를 기계적으로 통제:
+  T01~T05 · T10~T15 · T30·T31 · T20~T23 · T40·T41·T62·T32·T33 · T93·T42 ·
+  T50(활성 non-core 커스터마이징 있으면) · T70 최소 기능
+- **Production-upgrade MVP** — 운영 릴리스·반입까지 통제(위에 추가):
+  T60 · T61(high/critical) · T72 · T90 · T91 · T94 · T92(해당 시)
+- 제외 가능: T43 hard-block 임계치 · T51/52 전체 범용화(수동 evidence 절차
+  전제) · T71 완전판 · T80/81 · low/medium 상시 patch-kill
 
 ---
 
@@ -438,10 +468,19 @@ M9 업그레이드 검증·릴리스 승격(digest 결속)·반입
 
 ---
 
-## 4. 개발 착수 규칙
+## 4. 개발 착수 규칙 (2차 검토 반영)
 
-1. **M1을 먼저 완성**한다(스키마·patch-lock·git·verdict). 모든 게이트가 여기에 의존.
-2. **P0-a(T13·T20·T21·T50)**는 실제 버그·보안이므로 각 마일스톤에서 최우선.
-3. 각 태스크는 완료 시 **실패 픽스처 + 재현성(동일 입력 동일 판정) + 뮤테이션 테스트**로 증명.
-4. 게이트는 스스로에게도 적용한다(dogfooding, T70).
-5. "완전성" 관련 산출물·문서는 **등록·재적용과 기능 의미를 항상 분리**해 표기한다.
+1. **즉시 착수 가능**: T12(git 프리미티브)·T13(verdict 엔진).
+2. **T10·T11 동결 전 필수 3조건**(2차 검토 E 결론 = SRS 부칙 A):
+   ① 결과 계약을 CI 경계까지 닫기(A-1: 불일치=analysis_error·원자적 생성·
+   canonical digest·attestation 분리) ② patch-lock·lineage·동시성 모델
+   (A-2: source/application lock 분리·trailer 자동 각인·object 보존·직렬화·
+   상태 분류) ③ 스키마 의미 기반(A-3: T05 path-ownership·required⊆allowed·
+   contract 정본·verifier sandbox).
+3. **재적용 전에 소스 검증**: T30·T31은 T20보다 먼저(M1.5 preflight).
+4. 각 태스크는 완료 시 **실패 픽스처 + 재현성(canonical payload digest 기준,
+   부칙 A-1.3) + 뮤테이션 테스트**로 증명.
+5. 게이트는 스스로에게도 적용한다(dogfooding, T70 최소 기능을 조기 가동).
+6. "완전성" 산출물·문서는 **등록·재적용과 기능 의미를 항상 분리**해 표기.
+7. 첫 운영 릴리스는 **Production-upgrade MVP**(T90·T91·T94 포함)를 완료해야
+   한다 — candidate 통제만으로 "끝까지 통제했다"고 말하지 않는다.
