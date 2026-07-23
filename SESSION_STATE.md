@@ -35,7 +35,12 @@ LLM은 배포 판정 배제(보조 Memo만).
 | 파일 | 역할 | 정본 우선순위 |
 |---|---|---|
 | `README.md` | 전체 개요·문서 지도·테스트 정책 | — |
-| `openmetadata_strategy_briefing.md` | 왜 패치 스택인가 (경영진용, 정정 완료) | |
+> **경로 이동(2026-07-23)**: 아래 문서는 `docs/` 하위로 정리됨 — 01-보고용(strategy_briefing)·
+> 02-설계(upstream_customization_design·governance_requirements)·03-기술참조(verifier_catalog)·
+> 04-진행(build_plan·dev_roadmap)·05-검토이력(review_*·second_review_*·review_packet·
+> repository_documentation_review). 루트에는 README·EXECUTIVE_SUMMARY·SESSION_STATE만.
+
+| `docs/01-보고용/openmetadata_strategy_briefing.md` | 왜 패치 스택인가 (경영진용, 정정 완료) | |
 | `openmetadata_upstream_customization_design.md` | 상세 설계 (정정 완료) | |
 | `openmetadata_governance_requirements.md` | **SRS — P0 9건 반영 + 부칙 A(2차 검토)** | **본문 충돌 시 부칙 A 우선** |
 | `openmetadata_review_response.md` | GPT 1차 검토 판정(A~F) + 추가발견 6건 | |
@@ -267,7 +272,7 @@ replay tree(T22 `replay.replay_and_compare` 재사용), candidate 변경 시 기
 **T41**: build_plan 참조(범위 보강). M3 완료 후 M4 T93·T42·T50 → **MVP1 완성**.
 
 ### 재개 절차
-1. 이 파일 + `openmetadata_build_plan.md`(§T20~T22) + SRS 부칙 A 읽기.
+1. 이 파일 + `docs/04-진행/openmetadata_build_plan.md` + SRS 부칙 A(`docs/02-설계/openmetadata_governance_requirements.md`) 읽기.
 2. `/home/user/om-mirror` 존재 확인(없으면 §7 재획득), `pip install jsonschema pathspec`.
 3. `cd harness && python -m pytest` → 143 통과 재확인.
 4. ✅ MVP1 완성(M1~M4, 케이스 A·B·C·D). 다음 = **MVP2(운영·승격)**: 계층3 테스트
@@ -277,3 +282,30 @@ replay tree(T22 `replay.replay_and_compare` 재사용), candidate 변경 시 기
 5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4.1 로그 + 이 표 갱신.
 6. 커밋마다 §1 트레일러 사용, 이 브랜치(`claude/markdown-file-feedback-26933w`)로 push.
 7. 게이트/재적용 테스트는 **반드시 실제 OM 미러**로(합성 더미 금지, §7).
+
+### 문서 정리 백로그 (외부 검토 반영 — `harness/` 코드 무관, 143 테스트 유지)
+
+외부 검토(`.../openmetadata_repository_documentation_feedback.md`) 반영. 사용자
+지시: **네 트랙 전부 수행**. 순서 ①→④. **코드/테스트 변경 없음.**
+
+- ✅ **완료분**: build_plan 순환의존(T93↔T42·T62↔T32) 해소·T50 통일(`e04ed64`),
+  verifier_catalog "3→4계층", `harness/README.md` 신설, 카탈로그 §0.1 구현현황표,
+  T93/T42 라벨 정정(`21bfc15`), `EXECUTIVE_SUMMARY.md` 신설(`84734f8`).
+- ① **정본 단일화**: SRS(`openmetadata_governance_requirements.md`) 부칙 A를
+  **본문에 병합**해 "부칙 우선" 구조 제거. REQ별 상태(planned/implemented/verified)
+  부여. 문서 상단 Draft→버전/승인 상태 갱신. SRS 내부 자체 개발계획은 build_plan
+  참조로 대체. 1.1이 1.0보다 앞·용어절 중복 정리.
+- ② **구형 설계 정리**: `openmetadata_upstream_customization_design.md`(2894줄)의
+  `affected_paths`→allowed/required_changed_paths, `range-diff` 기계판정→
+  patch-lock+trailer+구조화JSON(사람리뷰용만 range-diff), 충돌 `abort`→2모드
+  (탐지/해결), `verification.command`→선언형 verifier, "최신 브랜치"→고정 SHA.
+  deprecated 표기 없이 남기지 말 것.
+- ③ **경영진/개발자 분리**: README를 목적·현재상태·보장/미보장·읽는순서·빠른시작
+  중심으로 축약(검증기 전체표는 카탈로그로 이동). 과장표현 정직화(검토 §9 금지표현).
+  테스트정책 문구: "미러 의존 통합/업그레이드=실제 OM, 순수 판정 단위=합성 픽스처 가능".
+- ④ **구조/위생**: 문서 `docs/`(architecture·spec·ci·runbooks·reference·ai·
+  reviews/archive) 분할, 검토문서 archive로 이동(+메타데이터), 용어집 신설.
+  **`SESSION_STATE.md`→`.claude/`로 이동 + 세션URL·로컬절대경로·브랜치지침 제거**
+  (공개 노출 이슈). 상태/테스트수는 단일 소스(STATUS.md/CI)로.
+- **정정된 사실(문서 갱신 시 반영)**: 정본 T42=upgrade_watch(케이스D),
+  T93=정책노후화. clean-room replay는 **소스 트리 재현성**만(빌드 바이트재현 아님, T91).
