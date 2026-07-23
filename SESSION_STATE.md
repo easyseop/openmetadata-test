@@ -35,24 +35,21 @@ LLM은 배포 판정 배제(보조 Memo만).
 | 파일 | 역할 | 정본 우선순위 |
 |---|---|---|
 | `README.md` | 전체 개요·문서 지도·테스트 정책 | — |
-> **경로 이동(2026-07-23)**: 아래 문서는 `docs/` 하위로 정리됨 — 01-보고용(strategy_briefing)·
-> 02-설계(upstream_customization_design·governance_requirements)·03-기술참조(verifier_catalog)·
-> 04-진행(build_plan·dev_roadmap)·05-검토이력(review_*·second_review_*·review_packet·
-> repository_documentation_review). 루트에는 README·EXECUTIVE_SUMMARY·SESSION_STATE만.
+> **경로 이동/정리(2026-07-23)**: 문서는 `docs/` 하위 4분류 — 01-보고용
+> (strategy_briefing)·02-설계(upstream_customization_design·governance_requirements)·
+> 03-기술참조(verifier_catalog)·04-진행(build_plan·dev_roadmap). **검토이력(05)은
+> 삭제됨.** 루트에는 README·EXECUTIVE_SUMMARY·SESSION_STATE만.
 
 | `docs/01-보고용/openmetadata_strategy_briefing.md` | 왜 패치 스택인가 (경영진용, 정정 완료) | |
 | `openmetadata_upstream_customization_design.md` | 상세 설계 (정정 완료) | |
 | `openmetadata_governance_requirements.md` | **SRS — P0 9건 반영 + 부칙 A(2차 검토)** | **본문 충돌 시 부칙 A 우선** |
-| `openmetadata_review_response.md` | GPT 1차 검토 판정(A~F) + 추가발견 6건 | |
-| `openmetadata_second_review_request.md` | GPT 2차 검토 요청문 | |
-| `openmetadata_governance_second_review_gpt.md` | **GPT 2차 검토 결과(업로드본)** — ⚠아직 repo에 없을 수 있음, 사용자 업로드 파일 | |
-| `openmetadata_second_review_response.md` | 2차 검토 전면 수용·반영 내역 | |
-| `openmetadata_build_plan.md` | **순차 개발 실행 계획(2차 반영 개정판)** — M0~M9, T01~T94 | 개발 스펙 정본 |
-| `openmetadata_dev_roadmap.md` | **개발 로드맵 & MVP 커버리지 맵** — 진행 추적 | 커버리지 정본 |
-| `openmetadata_verifier_catalog.md` | 검증기 22종(뭘 잡나·막는 사고·태스크) | |
-| `openmetadata_review_packet.md` | 대화 요약(GPT 1차 전달용) | |
+| `docs/04-진행/openmetadata_build_plan.md` | **순차 개발 실행 계획** — M0~M9, T01~T94 | 개발 스펙 정본 |
+| `docs/04-진행/openmetadata_dev_roadmap.md` | **개발 로드맵 & MVP 커버리지 맵** — 진행 추적 | 커버리지 정본 |
+| `docs/03-기술참조/openmetadata_verifier_catalog.md` | 검증기 22종(§0.1 구현현황) | |
 
-> **정본 우선순위(충돌 시)**: SRS 부칙 A > review_response > build_plan > SRS 본문.
+> **검토이력 삭제(2026-07-23)**: 과거 검토 대화 5종(1·2차 요청·응답·외부검토)은
+> **제거**(git 이력 보존). 수용된 정정 요약은 루트 `README.md` '설계 정정 이력' 참조.
+> **정본 우선순위(충돌 시)**: SRS 부칙 A > build_plan > SRS 본문.
 
 ## 4. 확정된 핵심 결정 (재론 불필요, 전부 합의됨)
 

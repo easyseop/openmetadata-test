@@ -82,12 +82,22 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 | `docs/03-기술참조/` | [verifier_catalog](docs/03-기술참조/openmetadata_verifier_catalog.md) | 검증기 카탈로그(§0.1 구현현황) | 개발 |
 | `docs/04-진행/` | [build_plan](docs/04-진행/openmetadata_build_plan.md) | **순차 개발 실행 계획** | 개발 |
 | `docs/04-진행/` | [dev_roadmap](docs/04-진행/openmetadata_dev_roadmap.md) | **로드맵 & MVP 커버리지 맵** | 개발·심의 |
-| `docs/05-검토이력/` | [review_response·second_review·review_packet·repository_documentation_review](docs/05-검토이력/) | 외부 검토 요청·응답 (**과거 이력, 정본 아님**) | 검토 |
 
 > **개발 착수 기준**: 진행·커버리지는 `docs/04-진행/openmetadata_dev_roadmap.md`,
 > 상세 스펙은 `docs/04-진행/openmetadata_build_plan.md`(+ SRS 부칙 A). 충돌 시
-> 우선순위는 **SRS 부칙 A > review_response > build_plan > 본문**.
-> `docs/05-검토이력/`는 과거 검토 기록이며 현행 기준이 아니다.
+> 우선순위는 **SRS 부칙 A > build_plan > 설계서 본문**. (과거 검토 대화 원문은
+> 제거했고 git 이력에 보존됨. 수용된 정정의 핵심은 아래 '설계 정정 이력' 참조.)
+
+## 설계 정정 이력 (검토 반영 요약)
+
+> 두 차례 아키텍처 검토(P0/2차 결함) + 문서 검토를 거쳐 정정했다. 원문 대화는
+> 제거했고, **수용된 정정의 핵심과 반영 위치**만 남긴다.
+
+| 검토 | 수용한 핵심 정정 | 반영 위치 |
+|---|---|---|
+| **1차** (설계 P0 9건) | ① 판정을 **심각도 순위로 집계**(차단이 승인으로 격하 금지)·**분석실패=차단** ② 충돌 **탐지/해결 2모드** ③ **선언형 verifier**(manifest 임의 shell 제거) ④ range-diff 기계판정 제거 → **patch-lock+trailer** ⑤ `affected_paths` → **allowed/required_changed_paths + upgrade_watch** ⑥ **"등록·재적용 완전성" ≠ 기능 완전성** ⑦ 정책 **self-approval 차단** | SRS 본문 · build_plan · 코드 |
+| **2차** (2차 결함) | **부칙 A** — ⓐ 결과계약을 CI 경계까지(불일치=analysis_error·원자적 기록·정규 해시) ⓑ **lock 분리·출처 자동각인·CAS** ⓒ 스키마 의미(path-ownership·required⊆allowed·verifier sandbox) | SRS 부칙 A · 코드 |
+| **문서** (외부) | build_plan **순환의존 해소**·검증기 4계층 표기·`harness/README`·`EXECUTIVE_SUMMARY`·`docs/` 분류·SRS 상태 메타데이터 | 각 문서 (적용 완료) |
 
 ## 테스트 정책
 
