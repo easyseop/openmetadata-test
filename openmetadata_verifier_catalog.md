@@ -31,12 +31,59 @@
 
 ---
 
+## 0.1 구현 현황 (2026-07-23 · MVP1 Candidate-control 달성)
+
+> 아래 표는 **설계**이고, 실제 코드는 `harness/acgh/` 에 있다. 현재까지 **143개
+> 테스트 통과**(전부 실제 OpenMetadata 1.12.13/1.13.0 미러 기반, 합성 더미 금지).
+> ✅=구현·테스트 완료, 🟡=핵심 구현(부분), ⬜=미착수.
+
+**기반(카탈로그 22개 밖, 하네스 골격)**: ✅ T05 경로소유 `layout.py` · ✅ T10
+manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과계약/CI
+어댑터 `result_io.py` · ✅ T12 git 프리미티브 `gitprim.py`.
+
+| # | 검증기 | 태스크 | 상태 | 모듈 |
+|---|---|---|---|---|
+| 1 | 재적용(탐지/해결) | T20·T21 | ✅ | `reapply.py`·`resolve.py` |
+| 2 | 커밋 불변식 | T30 | ✅ | `invariants.py` |
+| 3 | ID·series 불변식 | T31 | ✅ | `invariants.py` |
+| 4 | 최종상태 불변식 | T32 | ✅ | `finalstate.py` |
+| 5 | clean-room replay | T22 | ✅ | `replay.py` |
+| 6 | 구현범위 drift | T40 | ✅ | `drift.py` |
+| 7 | 민감·의도 게이트 | T41 | ✅ | `zones.py` |
+| 8 | 정책 노후화 drift | T93 | ✅ | `policy_drift.py` |
+| 9 | upgrade_watch(케이스 D) | T42 | ✅ | `upgrade_watch.py`·`impact.py` |
+| 10 | 부채 게이트 | T43 | ⬜ | — |
+| 11 | patch-lock 일치 | T11 | ✅ | `patchlock.py`·`integrator.py`(CAS) |
+| 12 | 선언형 verifier | T50 | ✅ | `verifier.py` |
+| 13 | 구조화 diff providers | T51·T52 | ⬜ | — |
+| 14 | 필수 테스트 존재 | CG | ⬜ | — |
+| 15 | contract 결속 | T60 | ⬜ | — |
+| 16 | patch-kill test | T61 | ⬜ | — |
+| 17 | SHA 결속 | T62 | 🟡 | `binding.py`(repo-qualified SHA; 테스트결과 결속은 미완) |
+| 18 | 차등 테스트 | T90 | ⬜ | — |
+| 19 | 정책 base-평가 | T70 | ⬜ | — |
+| 20 | digest 승격 | T91 | ⬜ | — |
+| 21 | verdict 엔진 | T13 | ✅ | `verdict.py` |
+| 22 | LLM Impact Memo | T80 | 🟡 | `impact.py`(케이스 D 조언 memo; 범용 T80은 미완) |
+
+**MVP1 도달 = 케이스 A·B·C·D를 candidate 단계에서 기계 통제.** 남은 MVP2
+(운영·승격)는 계층 3 테스트(15·16·18)와 계층 4(19·20) = T60/T61/T90/T70/T91.
+
+---
+
 ## 계층 1 — 결정적 구조 검증기 (등록·재적용 완전성)
 
 ### 1. 재적용 게이트 (T20 / T21)
 - **뭘 잡나**: 우리 패치를 새 버전 위에 다시 얹을 때 적용 성공 여부(물리 충돌 유무).
 - **막는 사고**: 수정 하나가 안 얹힌 채 조용히 진행 → 몇 주 뒤 "이 기능 왜 안 되죠?".
 - **못 잡는 것**: 얹히긴 했으나 로직이 틀린 경우(→ 테스트), 충돌 없는 의미 변경(→ ⑨·테스트).
+- **구현됨**(`reapply.py`·`resolve.py`): 임시 worktree에 patch-lock 순서대로
+  cherry-pick. 결과를 A-2.6 상태로 분류 — `applied`/`content_conflict`(충돌 파일
+  리포트)/`redundant_or_empty`(자동 drop 금지→retirement)/`missing_source_object`
+  (=analysis_error)/`skipped_due_to_dependency`. **탐지 모드(T20)** 는 충돌 시
+  worktree 폐기·트리 clean 유지, **해결 모드(T21)** 는 충돌을 유지해 담당자가 풀고
+  `--continue`, 그 뒤 모든 적용 커밋에 `Source-Commit`·`Patch-Revision`(해결 시 +1)·
+  `Application/Resolution-Record` trailer를 `interpret-trailers`로 각인.
 
 ### 2. 커밋 단위 불변식 (T30)
 - **뭘 잡나**: 이름표(ID) 없는 코어 커밋, 한 커밋에 여러 ID, merge·empty 커밋, core+governance 혼합.
@@ -52,6 +99,11 @@
 - **뭘 잡나**: 패치 순효과 0(뒤에서 revert·덮어씀으로 실제 변화 없음), active ID의 무단 revert.
 - **막는 사고**: **"이름표는 다 있는데 기능은 사라진"** 상태를 통과(GPT P0-5 핵심).
 - **못 잡는 것**: 순효과는 있으나 의미가 틀린 경우(→ 테스트).
+- **구현됨**(`finalstate.py`): **counterfactual replay**(A-3.7(b)) — 전체 스택을
+  재생한 tree와 **그 ID의 커밋만 뺀** 재생 tree를 비교. 같으면 그 ID는 기여 0
+  =`inert`→차단(retirement). 뺐더니 뒤 커밋이 깨져 재생 불가면 `inconclusive`
+  →analysis_error(리뷰). + candidate tree == replay tree(T22 재사용), candidate
+  변경 시 기존 승인 무효화(`result_io.attestation_is_valid`).
 
 ### 5. clean-room replay (T22)
 - **뭘 잡나**: candidate가 정말 "고정 공식버전 + patch-lock 패치들"로만 재현되는지(재생 결과 == candidate tree).
@@ -72,11 +124,24 @@
 - **뭘 잡나**: 민감/감시 glob이 새 버전에서도 실제 경로를 ≥1 매칭하는지(정책 노후화).
 - **막는 사고**: 업스트림 리팩터로 코드가 이사가면 정책이 **빈 총**이 되는데도 "통과"만 뜸.
 - **못 잡는 것**: 패턴은 매칭하나 분류가 부적절한 경우(사람 리뷰).
+- **구현됨**(`policy_drift.py`): 신버전 트리(`git ls-tree -r`) 대비 (a) 0-매칭
+  패턴=`stale_pattern`→approval(정책 갱신 요구), (b) 소유지도가 모르는 **신규
+  최상위 모듈**=analysis_error(fail-closed, 지도 확장 전엔 판단 불가). *실제로*
+  1.13.0이 추가한 `openmetadata-mcp`·`openmetadata-k8s-operator` 등을 미분류로
+  검출(1.12.13 기준 layout이 노후화됐음을 실증). ⑨(T42, "바뀌었나")와 구별 —
+  이건 "우리 정책이 아직 유효한가".
 
 ### 9. 업그레이드 영향분석 (upgrade_watch) (T42)
 - **뭘 잡나**: 우리가 **의존한다고 선언한** 파일·설정키·의존성이 업스트림에서 바뀜(케이스 D).
 - **막는 사고**: 우리가 편집 안 한 의존 대상(예: `UserContext`의 tenant 추가) 변경을 놓침.
 - **못 잡는 것**: 선언 안 한 깊은 전이 의존(→ 테스트), 그 변경이 실제 깨는지의 판단(→ 테스트).
+- **구현됨**(`upgrade_watch.py`·`impact.py`): manifest `upgrade_watch.paths` ∩
+  실제 업그레이드 net diff(`net_changed_paths(mirror, A, B)`) → 걸린 ID를
+  approval(차단 아님 — 무해할 수 있으니 리뷰 유발). *실제로* 1.12.13→1.13.0에서
+  4789개 변경 중 security 디렉터리·`conf/`가 바뀌어 해당 ID를 플래그함을 검증.
+  `impact.py`가 걸린 ID를 의존성·설정키·contract 맥락과 함께 리뷰 표면으로
+  정리하고, **판정 권한 없는** LLM Impact-Memo를 감사카드 `llm_suggestions`로만
+  붙임(§7 — memo에 verdict 필드 자체가 스키마상 금지).
 
 ### 10. 부채 게이트 (T43)
 - **뭘 잡나**: 코어 수정 개수·변경량·반복 충돌률·hotspot 겹침 등이 상한 초과.
@@ -93,9 +158,16 @@
 ## 계층 2 — 증거 생성기 (결정적, LLM 이전)
 
 ### 12. 선언형 verifier (T50)
-- **뭘 잡나**: config/deployment/extension이 실제 반영됐는지(Helm 값·이미지 내 패키지·import·설정키). 타입: `yaml_value_equals`·`helm_jsonpath_equals`·`file_exists_in_image`·`python_import_succeeds`·`api_schema_contains`·`package_version_equals`.
+- **뭘 잡나**: config/deployment/extension이 실제 반영됐는지(설정키·파일 해시·모듈 존재).
 - **막는 사고**: 코어가 아닌 설정·확장이 실수로 되돌려져도 완전성 게이트가 못 잡음(그건 커밋만 봄). / manifest에 임의 shell을 쓰면 **CI 권한 임의 코드 실행**(GPT P0-8).
 - **못 잡는 것**: 반영은 됐으나 값의 의미가 틀린 경우(→ 테스트).
+- **구현됨**(`verifier.py`): **비실행형** 타입만 — `document_query_assert`(RFC 6901
+  JSON Pointer, JSONPath·eval 금지)·`file_hash_equals`(A-3.6 아티팩트 결속)·
+  `python_module_present`(정적 파일 존재, import 아님). 실행형(`python_import_
+  succeeds`·스크립트·컨테이너)은 **거부→analysis_error**(sandbox 러너 필요, A-3.5).
+  단언 성립=pass, 거짓=block, 실행불가(파일 없음·포인터 미해결·`..` 경로 이탈)
+  =analysis_error(fail-closed). manifest 스키마가 이미 `verification.command`를
+  구조적으로 차단하므로 임의 실행 홀 자체가 없음.
 
 ### 13. 구조화 diff providers (T51 / T52)
 - **뭘 잡나**: API/JSON Schema, Helm·설정키, 의존성·SBOM, DB migration·schema, 검색 mapping의 **구조 변화 사실**.
