@@ -1,0 +1,18 @@
+# T41 — sensitive-zone policy (real OpenMetadata paths).
+# 변경파일 × zone glob → frozen=block / protected=approval / watched=경고(pass).
+# 경로 문법은 T05와 동일(gitignore-pathspec). upstream SHA에 결속.
+schema_version: 1
+upstream_base_sha: e6c665019a583b7938f30fbb7bafb7e1f82c5dd7
+
+zones:
+  # 손대면 무조건 차단 — 정책 테이블로만 예외 승격.
+  frozen:
+    - "openmetadata-service/src/main/java/org/openmetadata/service/security/**"
+  # 지정 승인 필요.
+  protected:
+    - "openmetadata-spec/src/main/resources/json/schema/auth/**"
+    - "conf/**"
+  # 경고만(통과하되 카드에 표기).
+  watched:
+    - "bootstrap/sql/**"
+    - "ingestion/src/metadata/ingestion/**"
