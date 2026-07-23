@@ -1,16 +1,26 @@
 # OpenMetadata 커스터마이징 거버넌스 하네스 — 요구사항 정의서 (SRS)
 
-> **문서 목적**
-> 개발 착수 전, 우리가 만들 "언어 무관 거버넌스 스파인"의 요구사항을 확정한다.
-> 각 요구사항이 어떤 **문제**를 풀고, 어떤 **보완책·게이트**를 충족하며,
-> **어떤 코드·어떤 방법**으로 구현되는지를 개발 가능한 수준으로 정의한다.
+> **문서 메타데이터**
+>
+> | 항목 | 값 |
+> |---|---|
+> | status | draft (부칙 A 본문 병합 진행 중) |
+> | version | v1.1 |
+> | audience | 개발 (요구사항 정본) |
+> | normative | true — **부칙 A가 정정 정본**. 병합 완료 전까지 충돌 시 부칙 A 우선 |
+> | requirement 상태 | REQ별 planned/implemented/verified 는 `docs/04-진행/openmetadata_dev_roadmap.md` §4.1 단일 소스 |
+> | last_reviewed | 2026-07-23 |
+>
+> **문서 목적**: 우리가 만들 "언어 무관 공통 판정 엔진(거버넌스 하네스)"의
+> 요구사항을 개발 가능한 수준으로 확정한다. 각 요구사항이 어떤 **문제**를 풀고,
+> 어떤 **게이트**를 충족하며, **어떤 코드·방법**으로 구현되는지를 정의한다.
+> ("언어 무관"은 전체 시스템이 아니라 **공통 판정 엔진**의 특성이다.)
 >
 > **선행 문서**
-> - 전략·근거: `openmetadata_strategy_briefing.md`
-> - 상세 설계: `openmetadata_upstream_customization_design.md`
-> - 참조 구현: `easyseop/ai-change-governance-harness` (개념·구조 참조, 코드 재사용은 선택)
->
-> **상태:** Draft v0.1 · GPT 검토 반영 진행 중
+> - 전략·근거: `docs/01-보고용/openmetadata_strategy_briefing.md`
+> - 상세 설계: `docs/02-설계/openmetadata_upstream_customization_design.md`
+> - 개발 계획·진행: `docs/04-진행/openmetadata_build_plan.md`·`openmetadata_dev_roadmap.md`
+> - 검토 이력(정본 아님): `docs/05-검토이력/`
 
 > ⚠ **정정 안내 (GPT 검토 반영)**
 >
