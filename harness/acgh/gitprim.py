@@ -103,6 +103,21 @@ def net_changed_paths(repo: str, base: str, head: str) -> list[str]:
     return [p for p in out.split("\x00") if p != ""]
 
 
+def list_tree(repo: str, ref: str, *, dirs_only: bool = False) -> list[str]:
+    """Top-level entries of ``ref``'s tree (NUL-safe). dirs_only -> trees only."""
+    args = ["ls-tree", "--name-only", "-z"]
+    if dirs_only:
+        args.append("-d")
+    out = git(repo, *args, ref)
+    return [p for p in out.split("\x00") if p != ""]
+
+
+def list_tree_recursive(repo: str, ref: str) -> list[str]:
+    """All file paths under ``ref``'s tree (NUL-safe)."""
+    out = git(repo, "ls-tree", "-r", "--name-only", "-z", ref)
+    return [p for p in out.split("\x00") if p != ""]
+
+
 def object_exists(repo: str, sha: str) -> bool:
     """True if <sha>^{commit} exists and is valid (부칙 A-2.4 preflight)."""
     proc = subprocess.run(
