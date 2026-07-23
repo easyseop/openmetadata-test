@@ -172,10 +172,10 @@ harness/
 
 ## 10. 재개 절차 (다음 세션)
 
-### 현재 위치 (2026-07-22, 최신)
+### 현재 위치 (2026-07-23, 최신)
 
-**완료: M1 + M1.5 + M2 전체.** 전부 **커밋·푸시** 완료, `pytest` **93 통과**,
-결정성 2회 동일, 실제 OM 미러 검증 통과.
+**완료: M1 + M1.5 + M2 + M3 전체.** 전부 **커밋·푸시** 완료, `pytest` **120 통과**,
+결정성 2회 동일, 실제 OM 미러 검증 통과. **케이스 A·B·C 커버**.
 
 | 태스크 | 상태 | 모듈 |
 |---|---|---|
@@ -190,12 +190,18 @@ harness/
 | T31 ID 단위 불변식 | ✅ | `acgh/invariants.py` (check_id_invariants) |
 | T20 재적용 CI 탐지 | ✅ | `acgh/reapply.py` |
 | T21 재적용 담당자 해결 | ✅ | `acgh/resolve.py` |
-| T22 clean-room replay | ✅ | `acgh/replay.py` |
+| T22 clean-room replay | ✅ | `acgh/replay.py`(`replay_tree`·`replay_and_compare`) |
 | T23 단일 integrator CAS | ✅ | `acgh/integrator.py` |
+| T40 drift(touched/net) | ✅ | `acgh/drift.py` |
+| T62 SHA 결속 | ✅ | `acgh/binding.py` |
+| T32 최종상태 불변식 | ✅ | `acgh/finalstate.py` |
+| T33 게이트 명칭·보장범위 | ✅ | `acgh/scope.py`(evidence 결합) |
+| T41 민감영역·의도 게이트 | ✅ | `acgh/zones.py` + `policies/sensitive-zones.yaml` |
 
-**커밋 SHA**: 스캐폴드 `7ccc00e` → T10/T11/T05운영층 `3cc0539` → T15/T14
-`f38b124` → T30/T31 `e5729dd` → T20 `ee5a28e` → T21 `da96332` → T22 `47199cb`
-→ T23 `febb929` (+ 사이사이 docs 커밋).
+**커밋 SHA**: 스캐폴드 `7ccc00e` → `3cc0539`(T10/11/05) → `f38b124`(T15/14) →
+`e5729dd`(T30/31) → `ee5a28e`(T20) → `da96332`(T21) → `47199cb`(T22) →
+`febb929`(T23) → `cd1c9b5`(T40) → `03b05ff`(T62) → `90d09fe`(T32) →
+`c5a0db5`(T33) → `cb52e76`(T41) (+ 사이사이 docs).
 
 **환경 재현**: `pip install jsonschema pathspec`(pyproject deps 반영됨). 경로
 문법 pathspec factory=`gitignore` 고정. 테스트: `cd harness && python -m pytest`
@@ -203,11 +209,32 @@ harness/
 가져옴(미러 없으면 skip). `tests/test_reapply.py`는 실제 AuthLoginServlet.java를
 공통 조상으로 케이스 B(clean)/C(conflict)/redundant 구성.
 
-### 다음 태스크 (M3 — 범위·최종상태·민감 통제 → 케이스 A·B·C 커버) — 스펙
+### 다음 태스크 (M4 — 감시·의존 영향·설정 검증 → 케이스 D 플래그, MVP1 완성) — 스펙
 
-build_plan §M3 + 부칙 A-3.7 참조. 순서: **T40 → T62 → T32 → T33 → T41**.
-전부 실제 OM 미러로 테스트. 재사용: `invariants`(불변식 패턴)·`layout`(경로
-소유)·`replay`(tree 비교)·`verdict`(집계).
+build_plan §M4 + 부칙 A-3.5/3.6 참조. 순서: **T93 → T42 → T50**. 전부 실제 OM
+미러로 테스트. 재사용: `layout`(경로 문법)·`gitprim.net_changed_paths`(업스트림
+변경)·`verdict`.
+
+**T93 upgrade_watch 감시** (케이스 D, 선행 T10·T62): manifest의 `upgrade_watch`
+(paths·configuration_keys·dependencies·contracts)가 가리키는 **업스트림 파일이
+A→B 업그레이드에서 변경됐는지** 플래그. `gitprim.net_changed_paths(mirror,
+UPSTREAM_A, UPSTREAM_B)` ∩ watch globs → 변경 시 approval(리뷰 유발). 텍스트
+충돌은 없지만 우리가 의존하는 심볼/설정이 바뀐 케이스 D를 잡는 핵심. glob 문법은
+T05 `layout.make_spec` 재사용.
+
+**T42 영향 분석** (케이스 D 보강, 선행 T93): watch에 걸린 변경의 영향 표면을
+정리 — 어떤 ID가 어떤 watch 항목 때문에 리뷰 대상인지 매핑. LLM Impact-Memo는
+보조(§7, verdict 권한 없음) — evidence 카드 `llm_suggestions`로만.
+
+**T50 선언형 verifier** (P0-8, 선행 T04·T14): manifest `assurance.direct_tests`/
+contract 파생 테스트를 **선언형**으로 실행 — `document_query_assert`(JSON
+Pointer)·`file_hash_equals`·`python_module_present`(정적) 타입. 임의 shell 금지
+(이미 manifest 스키마가 `verification.command` 구조적 차단). 실행형(import 등)은
+sandbox 필수(부칙 A-3.5). **M4 끝 = MVP1(Candidate-control) 완성.**
+
+> (M3 상세 스펙은 아래에 역사적 참고로 남김 — 전부 구현·완료됨.)
+
+### (완료·참고) M3 상세 스펙
 
 **T40 drift 검사** (P0-6, 선행 T10·T12): candidate가 **구현 범위 밖**의 upstream
 파일을 바꿨는지 탐지. 각 커밋/전체 net 변경 경로를 manifest의
@@ -232,8 +259,8 @@ replay tree(T22 `replay.replay_and_compare` 재사용), candidate 변경 시 기
 ### 재개 절차
 1. 이 파일 + `openmetadata_build_plan.md`(§T20~T22) + SRS 부칙 A 읽기.
 2. `/home/user/om-mirror` 존재 확인(없으면 §7 재획득), `pip install jsonschema pathspec`.
-3. `cd harness && python -m pytest` → 93 통과 재확인.
-4. 다음: **M3 T40**(drift) → T62 → T32 → T33 → T41. 이후 M4 T93/T42/T50 = MVP1.
+3. `cd harness && python -m pytest` → 120 통과 재확인.
+4. 다음: **M4 T93**(upgrade_watch, 케이스 D) → T42 → T50. M4 끝 = MVP1 완성.
 5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4.1 로그 + 이 표 갱신.
 6. 커밋마다 §1 트레일러 사용, 이 브랜치(`claude/markdown-file-feedback-26933w`)로 push.
 7. 게이트/재적용 테스트는 **반드시 실제 OM 미러**로(합성 더미 금지, §7).

@@ -299,10 +299,14 @@ T93·T42 · T50 · T70 최소.
 | T21 재적용 담당자 해결 모드 | ✅ 완료 | `acgh/resolve.py` | 3 테스트(실제 OM conflict). 충돌 worktree 유지·해결, 모든 적용 커밋에 Source-Commit/Patch-Revision/Application-Record/Resolution-Record trailer 각인(A-2.2), 무충돌=동일 revision·해결=revision 증가(A-2.3), application lock 결속 |
 | T22 clean-room replay | ✅ 완료 | `acgh/replay.py` | 4 테스트(실제 OM). 재생 tree==candidate tree=pass, 불일치=block+경로 리포트, 재생불가=analysis_error, 3회 동일 해시(content-addressed), 추적 tree만(A-3.8) |
 | T23 단일 integrator CAS | ✅ 완료 | `acgh/integrator.py` | 6 테스트. logical(digest)+physical(update-ref old-OID) 2중 CAS, 동일 base 동시 갱신 stale 거부, malformed 사전 차단(A-2.5) |
+| T40 drift(touched/net) | ✅ 완료 | `acgh/drift.py`(+`gitprim.net_changed_paths`) | 4 테스트(실제 OM). 상한(touched⊆allowed)·하한(required∈net), net-zero도 차단(P0-6·A-3.7) |
+| T62 SHA 결속 | ✅ 완료 | `acgh/binding.py` | 7 테스트. ref→고정 SHA pin(실제 미러), repository-qualified inputs 봉인, 비-SHA 거부(§10.1) |
+| T32 최종상태 불변식 | ✅ 완료 | `acgh/finalstate.py`(+`replay.replay_tree`) | 5 테스트. counterfactual 기여도(inert=block·inconclusive=analysis_error), candidate==replay, 승인 무효화(P0-5·A-3.7) |
+| T33 게이트 명칭·보장범위 | ✅ 완료 | `acgh/scope.py`(evidence 카드 결합) | 3 테스트. 보장/미보장 표를 게이트 출력에 결속(기능 보장 아님 명시, P0-5·P0-7) |
+| T41 민감영역·의도 게이트 | ✅ 완료 | `acgh/zones.py` + `policies/sensitive-zones.yaml` | 8 테스트(실제 OM zone). frozen=block/protected=approval/watched=pass, intent 부재=fail-closed(REQ-GZ-01/02) |
 
-> **M1 완료** ✅ (T05·T10·T11·T12·T13·T14·T15). **M1.5 완료** ✅ (T30·T31, P0-5).
-> **M2 완료** ✅ (T20·T21·T22·T23 — 재적용 2모드·replay·직렬화, P0-2·P0-5·C-5).
-> **다음(M3 범위·최종상태·민감 통제 → 케이스 A·B·C 커버)**: T40(drift — 구현
-> 범위 밖 core 변경 탐지, P0-6) · T62(SHA 결속, §10.1) · T32(최종상태 불변식 —
-> 순효과 0·revert·candidate==replay, P0-5) · T33(게이트 명칭·보장범위 문서) ·
-> T41. 이후 M4 T93·T42·T50 → **MVP1(Candidate-control) 완성**.
+> **M1·M1.5·M2 완료** ✅. **M3 완료** ✅ (T40·T62·T32·T33·T41 — 범위·최종상태·
+> 민감 통제, **케이스 A·B·C 커버**). **다음(M4 → MVP1 완성)**: T93(upgrade_watch
+> 감시 — 의존/설정/contract 경로의 업스트림 변경 플래그, **케이스 D**) · T42(영향
+> 분석) · T50(선언형 verifier — 임의실행 제거, P0-8). M4 끝 = **MVP1
+> (Candidate-control) 완성**.
