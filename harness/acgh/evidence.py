@@ -18,6 +18,7 @@ from pathlib import Path
 
 import jsonschema
 
+from acgh import scope
 from acgh import verdict
 
 _SCHEMA_PATH = Path(__file__).parent / "schema" / "change-evidence.schema.json"
@@ -66,6 +67,8 @@ def build_evidence_card(
         ],
         "approvals": list(approvals or []),
         "llm_suggestions": list(llm_suggestions or []),
+        # T33: the completeness boundary rides along with every verdict.
+        "assurance_scope": scope.scope_block(),
         "observational_metadata": dict(result.get("observational_metadata", {})),
     }
     validate_evidence_card(card)
