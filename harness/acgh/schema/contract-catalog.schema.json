@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bank.local/acgh/contract-catalog.schema.json",
+  "title": "Contract Catalog (T60 / T04)",
+  "description": "Single source of truth for business invariants (contracts) and the tests that prove them (REQ-CG / 부칙 A-3.3). A manifest references contract IDs; effective tests = direct_tests ∪ contract-derived required_tests.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "contracts"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "contracts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "required_tests"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^CONTRACT-[A-Z0-9-]+$"},
+          "title": {"type": "string", "minLength": 1},
+          "invariant": {"type": "string"},
+          "required_tests": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "customization_ids": {
+            "type": "array",
+            "items": {"type": "string", "pattern": "^BANK-OM-[0-9]{3,}$"}
+          }
+        }
+      }
+    }
+  }
+}
