@@ -176,9 +176,12 @@ harness/
 
 ### 현재 위치 (2026-07-23, 최신)
 
-**완료: M1 + M1.5 + M2 + M3 + M4 전체 = MVP1(Candidate-control) 달성.** 전부
-**커밋·푸시**, `pytest` **143 통과**, 결정성 2회 동일, 실제 OM 미러 검증.
-**케이스 A·B·C·D 커버.**
+**완료: M1~M4 = MVP1(Candidate-control) + MVP2 착수(T60·T61).** 전부
+**커밋·푸시**, `pytest` **154 통과**, 결정성 2회 동일, 실제 OM 미러 검증.
+**케이스 A·B·C·D 커버 + 계층3 생존입증(contract·patch-kill) 시작.**
+- **T60** contract 카탈로그+결속 `contracts.py`(+schema) · **T61** patch-kill
+  `patchkill.py`. 다음 계층3: T90(차등 테스트, 실제 OM Docker/DB) · T62 잔여
+  (테스트결과 결속). 이후 계층4 T70(정책 self-approval)·T91(digest 승격).
 
 > **T93/T42 라벨 정정(중요)**: build_plan 정본에서 **T42 = upgrade_watch(업스트림
 > 변경 ∩ 감시 → 케이스 D)** = `upgrade_watch.py`+`impact.py`, **T93 = 정책 노후화

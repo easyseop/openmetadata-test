@@ -57,8 +57,8 @@ manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과�
 | 12 | 선언형 verifier | T50 | ✅ | `verifier.py` |
 | 13 | 구조화 diff providers | T51·T52 | ⬜ | — |
 | 14 | 필수 테스트 존재 | CG | ⬜ | — |
-| 15 | contract 결속 | T60 | ⬜ | — |
-| 16 | patch-kill test | T61 | ⬜ | — |
+| 15 | contract 결속 | T60 | ✅ | `contracts.py` + `schema/contract-catalog.schema.json` |
+| 16 | patch-kill test | T61 | ✅ | `patchkill.py` |
 | 17 | SHA 결속 | T62 | 🟡 | `binding.py`(repo-qualified SHA; 테스트결과 결속은 미완) |
 | 18 | 차등 테스트 | T90 | ⬜ | — |
 | 19 | 정책 base-평가 | T70 | ⬜ | — |
