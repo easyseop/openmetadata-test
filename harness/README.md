@@ -115,12 +115,22 @@
 | 정책 노후화 drift | `acgh/policy_drift.py` | ✅ |
 | 선언형 verifier(비실행형) | `acgh/verifier.py` | ✅ |
 
-## 아직 지원하지 않는 기능 (MVP2 이후)
+## 아직 지원하지 않는 기능 (= 남은 개발 전부)
 
-- 실행형 verifier(import·스크립트·컨테이너) — **sandbox 러너 필요**(현재 거부→analysis_error).
-- contract↔test 결속·patch-kill·업그레이드 차등 테스트(T60/T61/T90).
-- 정책 self-approval 차단·digest 승격·내부망 반입(T70/T91/T94).
-- 부채 게이트·구조화 diff provider·범용 LLM Memo(T43/T51·52/T80).
+> 아래가 **남은 개발의 전부**다(테스트 포함). 태스크·상태 단일 정본은
+> `docs/03-기술참조/openmetadata_verifier_catalog.md` **§0.1 구현현황표**와
+> `docs/04-진행/openmetadata_build_plan.md`(M0~M9). 각 항목은 **자체 테스트 포함**,
+> A7/A9(차등)은 실제 OM Docker·DB migration 통합 테스트까지 개발한다.
+
+| 남은 것 | 영역 | 태스크 |
+|---|---|---|
+| 기능 동작 검증(contract↔test 결속·patch-kill·구/신 **차등 테스트**) | A7 | T60·T61·T90 |
+| 릴리스·반입(정책 self-approval 차단·**digest 승격·내부망 반입**) | A8 | T70·T91·T94 |
+| 실행형 verifier(import·스크립트·컨테이너 — **sandbox 러너**) | A4 보강 | T50b |
+| 구조화 diff provider(API/스키마/설정 변경 증거) | A5 보강 | T51·T52 |
+| **LLM 위키·Impact Memo**(케이스 D 자문, 판정권 없음) | A5 보조 | T80·T81 |
+| 부채 게이트(코어 수정 누적 상한)·폐기(retirement) 절차 | — | T43·T92 |
+| 긴급예외(break-glass)·경량경로(fast-lane) | A6 보강 | T71·T72 |
 
 ## 요구 환경
 
