@@ -176,12 +176,17 @@ harness/
 
 ### 현재 위치 (2026-07-23, 최신)
 
-**완료: M1~M4 = MVP1(Candidate-control) + MVP2 착수(T60·T61).** 전부
-**커밋·푸시**, `pytest` **154 통과**, 결정성 2회 동일, 실제 OM 미러 검증.
-**케이스 A·B·C·D 커버 + 계층3 생존입증(contract·patch-kill) 시작.**
-- **T60** contract 카탈로그+결속 `contracts.py`(+schema) · **T61** patch-kill
-  `patchkill.py`. 다음 계층3: T90(차등 테스트, 실제 OM Docker/DB) · T62 잔여
-  (테스트결과 결속). 이후 계층4 T70(정책 self-approval)·T91(digest 승격).
+**완료: M1~M4(MVP1) + MVP2 Docker-free 다수.** 전부 **커밋·푸시**, `pytest`
+**168 통과**, 결정성 2회 동일, 실제 OM 미러 검증.
+- **T60** contract 카탈로그+결속 `contracts.py` · **T61** patch-kill
+  `patchkill.py` · **T51/52** 구조화 diff `structdiff.py`(실제 table.json
+  dataContract 검출) · **T70** 정책 self-protection `policy_guard.py` · **T43**
+  부채 게이트 `debt.py`.
+- **Docker 데몬 없음(이 세션)** → **T90 런타임 차등(구·신 OM 스택 기동)은 이후
+  태스크로 보류**(compose·migration·CI 스크립트만 나중에 turnkey 준비).
+- **남은 Docker-free**: T62 잔여(테스트결과↔SHA 결속·flaky 구분) · T91(digest
+  승격 무결성) · T14(필수 테스트 존재) · T92(retirement) · T71/72(break-glass/
+  fast-lane) · T80(LLM 위키, 자문). 그 다음 T90(Docker 필요).
 
 > **T93/T42 라벨 정정(중요)**: build_plan 정본에서 **T42 = upgrade_watch(업스트림
 > 변경 ∩ 감시 → 케이스 D)** = `upgrade_watch.py`+`impact.py`, **T93 = 정책 노후화

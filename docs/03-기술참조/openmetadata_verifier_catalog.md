@@ -52,16 +52,16 @@ manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과�
 | 7 | 민감·의도 게이트 | T41 | ✅ | `zones.py` |
 | 8 | 정책 노후화 drift | T93 | ✅ | `policy_drift.py` |
 | 9 | upgrade_watch(케이스 D) | T42 | ✅ | `upgrade_watch.py`·`impact.py` |
-| 10 | 부채 게이트 | T43 | ⬜ | — |
+| 10 | 부채 게이트 | T43 | ✅ | `debt.py` |
 | 11 | patch-lock 일치 | T11 | ✅ | `patchlock.py`·`integrator.py`(CAS) |
 | 12 | 선언형 verifier | T50 | ✅ | `verifier.py` |
-| 13 | 구조화 diff providers | T51·T52 | ⬜ | — |
+| 13 | 구조화 diff providers | T51·T52 | ✅ | `structdiff.py` |
 | 14 | 필수 테스트 존재 | CG | ⬜ | — |
 | 15 | contract 결속 | T60 | ✅ | `contracts.py` + `schema/contract-catalog.schema.json` |
 | 16 | patch-kill test | T61 | ✅ | `patchkill.py` |
 | 17 | SHA 결속 | T62 | 🟡 | `binding.py`(repo-qualified SHA; 테스트결과 결속은 미완) |
 | 18 | 차등 테스트 | T90 | ⬜ | — |
-| 19 | 정책 base-평가 | T70 | ⬜ | — |
+| 19 | 정책 base-평가 | T70 | ✅ | `policy_guard.py` |
 | 20 | digest 승격 | T91 | ⬜ | — |
 | 21 | verdict 엔진 | T13 | ✅ | `verdict.py` |
 | 22 | LLM Impact Memo | T80 | 🟡 | `impact.py`(케이스 D 조언 memo; 범용 T80은 미완) |
