@@ -174,8 +174,15 @@ harness/
 
 ### 현재 위치 (2026-07-23, 최신)
 
-**완료: M1 + M1.5 + M2 + M3 전체.** 전부 **커밋·푸시** 완료, `pytest` **120 통과**,
-결정성 2회 동일, 실제 OM 미러 검증 통과. **케이스 A·B·C 커버**.
+**완료: M1 + M1.5 + M2 + M3 + M4 전체 = MVP1(Candidate-control) 달성.** 전부
+**커밋·푸시**, `pytest` **143 통과**, 결정성 2회 동일, 실제 OM 미러 검증.
+**케이스 A·B·C·D 커버.**
+
+> **T93/T42 라벨 정정(중요)**: build_plan 정본에서 **T42 = upgrade_watch(업스트림
+> 변경 ∩ 감시 → 케이스 D)** = `upgrade_watch.py`+`impact.py`, **T93 = 정책 노후화
+> drift(패턴이 신버전에 ≥1 매칭? 신규 미분류 모듈?)** = `policy_drift.py`. 초기
+> 커밋들이 이 둘을 뒤바꿔 라벨링했으나 커밋 `21bfc15`에서 정정(기능은 둘 다 구현
+> 완료). 검증기 카탈로그 §0.1에 전체 22개 구현현황표 있음.
 
 | 태스크 | 상태 | 모듈 |
 |---|---|---|
@@ -197,6 +204,9 @@ harness/
 | T32 최종상태 불변식 | ✅ | `acgh/finalstate.py` |
 | T33 게이트 명칭·보장범위 | ✅ | `acgh/scope.py`(evidence 결합) |
 | T41 민감영역·의도 게이트 | ✅ | `acgh/zones.py` + `policies/sensitive-zones.yaml` |
+| T42 upgrade_watch(케이스 D) | ✅ | `acgh/upgrade_watch.py` + `acgh/impact.py` |
+| T93 정책 노후화 drift | ✅ | `acgh/policy_drift.py` |
+| T50 선언형 verifier | ✅ | `acgh/verifier.py` |
 
 **커밋 SHA**: 스캐폴드 `7ccc00e` → `3cc0539`(T10/11/05) → `f38b124`(T15/14) →
 `e5729dd`(T30/31) → `ee5a28e`(T20) → `da96332`(T21) → `47199cb`(T22) →
@@ -259,8 +269,11 @@ replay tree(T22 `replay.replay_and_compare` 재사용), candidate 변경 시 기
 ### 재개 절차
 1. 이 파일 + `openmetadata_build_plan.md`(§T20~T22) + SRS 부칙 A 읽기.
 2. `/home/user/om-mirror` 존재 확인(없으면 §7 재획득), `pip install jsonschema pathspec`.
-3. `cd harness && python -m pytest` → 120 통과 재확인.
-4. 다음: **M4 T93**(upgrade_watch, 케이스 D) → T42 → T50. M4 끝 = MVP1 완성.
+3. `cd harness && python -m pytest` → 143 통과 재확인.
+4. ✅ MVP1 완성(M1~M4, 케이스 A·B·C·D). 다음 = **MVP2(운영·승격)**: 계층3 테스트
+   **T60**(contract↔test)·**T61**(patch-kill)·**T90**(업그레이드 차등 테스트) +
+   계층4 **T70**(정책 base-평가)·**T91**(digest 승격). + 잔여 게이트 T43(부채)·
+   T51/52(구조화 diff)·T80(범용 LLM Memo). 카탈로그 §0.1 구현현황표 참조.
 5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4.1 로그 + 이 표 갱신.
 6. 커밋마다 §1 트레일러 사용, 이 브랜치(`claude/markdown-file-feedback-26933w`)로 push.
 7. 게이트/재적용 테스트는 **반드시 실제 OM 미러**로(합성 더미 금지, §7).

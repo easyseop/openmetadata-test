@@ -305,8 +305,12 @@ T93·T42 · T50 · T70 최소.
 | T33 게이트 명칭·보장범위 | ✅ 완료 | `acgh/scope.py`(evidence 카드 결합) | 3 테스트. 보장/미보장 표를 게이트 출력에 결속(기능 보장 아님 명시, P0-5·P0-7) |
 | T41 민감영역·의도 게이트 | ✅ 완료 | `acgh/zones.py` + `policies/sensitive-zones.yaml` | 8 테스트(실제 OM zone). frozen=block/protected=approval/watched=pass, intent 부재=fail-closed(REQ-GZ-01/02) |
 
-> **M1·M1.5·M2 완료** ✅. **M3 완료** ✅ (T40·T62·T32·T33·T41 — 범위·최종상태·
-> 민감 통제, **케이스 A·B·C 커버**). **다음(M4 → MVP1 완성)**: T93(upgrade_watch
-> 감시 — 의존/설정/contract 경로의 업스트림 변경 플래그, **케이스 D**) · T42(영향
-> 분석) · T50(선언형 verifier — 임의실행 제거, P0-8). M4 끝 = **MVP1
-> (Candidate-control) 완성**.
+| T42 upgrade_watch(케이스 D) | ✅ 완료 | `acgh/upgrade_watch.py`+`impact.py` | 8 테스트(실제 A→B diff 4789변경). watch∩net→approval, 영향표면+판정없는 LLM memo(§7) |
+| T93 정책 노후화 drift | ✅ 완료 | `acgh/policy_drift.py` | 5 테스트. 0-매칭 패턴(빈 총)=approval, 신규 미분류 모듈(실제 openmetadata-mcp 등)=analysis_error |
+| T50 선언형 verifier | ✅ 완료 | `acgh/verifier.py` | 10 테스트. JSON Pointer·file_hash·module_present(비실행), 실행형 거부, `..` 경로이탈 차단(P0-8) |
+
+> **M1·M1.5·M2·M3·M4 완료** ✅ = **MVP1(Candidate-control) 달성** — 케이스
+> **A·B·C·D**를 candidate 단계에서 기계 통제, 임의 실행 제거. `pytest` 143 통과.
+> (T93/T42 라벨: 정본은 T42=upgrade_watch·T93=정책노후화. 초기 커밋 라벨 오류를
+> `21bfc15`에서 정정.) **다음 = MVP2(운영·승격)**: T60·T61·T90(계층3 테스트)·
+> T70·T91(계층4) + 잔여 T43·T51/52·T80. 검증기 카탈로그 §0.1 구현현황 참조.
