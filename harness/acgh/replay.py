@@ -55,6 +55,35 @@ class ReplayResult:
         return verdict.GateResult(name, self.verdict(), reasons)
 
 
+def replay_tree(repo: str, target_ref: str, source_commits, worktree_dir: str):
+    """Replay ``source_commits`` onto ``target_ref`` in a throwaway worktree and
+    return the resulting tree hash, or None if replay could not be produced
+    (missing source object or conflict). The worktree is always torn down."""
+    add = reapply._wt(repo, "worktree", "add", "--detach", worktree_dir, target_ref)
+    if add.returncode != 0:
+        raise reapply.ReapplyError(f"worktree add failed: {add.stderr.strip()}")
+    tree = None
+    try:
+        ok = True
+        for sha in source_commits:
+            if not gitprim.object_exists(repo, sha):
+                ok = False
+                break
+            r = reapply._wt(worktree_dir, "cherry-pick", sha)
+            if r.returncode != 0:
+                reapply._wt(worktree_dir, "cherry-pick", "--abort")
+                ok = False
+                break
+        if ok:
+            tree = reapply._wt(
+                worktree_dir, "rev-parse", "HEAD^{tree}"
+            ).stdout.strip()
+    finally:
+        reapply._wt(repo, "worktree", "remove", "--force", worktree_dir)
+        reapply._wt(repo, "worktree", "prune")
+    return tree
+
+
 def replay_and_compare(
     repo: str,
     target_ref: str,
@@ -68,42 +97,22 @@ def replay_and_compare(
         repo, "rev-parse", f"{candidate_ref}^{{tree}}"
     ).stdout.strip()
 
-    add = reapply._wt(repo, "worktree", "add", "--detach", worktree_dir, target_ref)
-    if add.returncode != 0:
-        raise reapply.ReapplyError(f"worktree add failed: {add.stderr.strip()}")
-
-    apply_ok = True
-    replay_tree = ""
-    try:
-        for sha in source_commits:
-            if not gitprim.object_exists(repo, sha):
-                apply_ok = False
-                break
-            r = reapply._wt(worktree_dir, "cherry-pick", sha)
-            if r.returncode != 0:
-                reapply._wt(worktree_dir, "cherry-pick", "--abort")
-                apply_ok = False
-                break
-        if apply_ok:
-            replay_tree = reapply._wt(
-                worktree_dir, "rev-parse", "HEAD^{tree}"
-            ).stdout.strip()
-    finally:
-        reapply._wt(repo, "worktree", "remove", "--force", worktree_dir)
-        reapply._wt(repo, "worktree", "prune")
+    tree = replay_tree(repo, target_ref, source_commits, worktree_dir)
+    apply_ok = tree is not None
+    replay_tree_hash = tree or ""
 
     differing: tuple[str, ...] = ()
-    if apply_ok and replay_tree != candidate_tree:
+    if apply_ok and replay_tree_hash != candidate_tree:
         out = reapply._wt(
             repo, "diff-tree", "--no-commit-id", "--name-only", "-r", "-z",
-            candidate_tree, replay_tree,
+            candidate_tree, replay_tree_hash,
         ).stdout
         differing = tuple(p for p in out.split("\x00") if p)
 
     return ReplayResult(
         target_ref=target_ref,
         candidate_ref=candidate_ref,
-        replay_tree=replay_tree,
+        replay_tree=replay_tree_hash,
         candidate_tree=candidate_tree,
         apply_ok=apply_ok,
         differing_paths=differing,
