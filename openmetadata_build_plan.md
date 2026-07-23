@@ -57,8 +57,8 @@ M1    기반: T10(스키마)·T12(git)·T13(verdict) + [신규 T15] result/CI ad
       ※ T12·T13 즉시 착수 가능 / T10·T11은 부칙 A 반영 후 동결
 M1.5  source stack preflight: T30·T31 (재적용 전에 소스 불변식 검사)
 M2    재적용: T20 → T21(+[신규 T23] 단일 integrator/CAS 직렬화) → T22(source tree replay)
-M3    완전성·결속: T40(touched/net 분리) → T62(테스트-SHA 결속, 테스트 실행 전) → T32 → T33 → T41
-M4    감시·영향: T93(watch drift, 먼저) → T42(영향분석) + T50a/T50b(선언형 verifier — sandbox 포함)
+M3    완전성·결속: T40(touched/net 분리) → T32(최종상태) → T62(테스트-SHA 결속) → T33 → T41
+M4    감시·영향: T93(watch drift, 먼저) → T42(영향분석) + T50(선언형 verifier; 실행형·sandbox는 후속)
 M5    증거 생성기: T51·T52 (공통 provider SDK 후 병렬 가능) + provider 자기보호(C-3)
 M6    테스트 결속: T60(contract 정본) → T61(patch-kill — high/critical 우선, 상태 4종)
 M7    정책: T70(base-policy 최소 기능은 M3 전 선행 가능) → T71 → T72
@@ -287,7 +287,7 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **구현**: `git diff --name-only OLD NEW` ∩ (`allowed`∪`upgrade_watch.paths`) + 설정키·의존성 diff 대조 →
   영향 ID·필수 테스트·contract 목록 산출(감사카드에).
 - **수용**: 편집 안 한 감시 파일 변경도 해당 ID를 플래그(tenant 케이스), 무관 파일은 제외.
-- **선행**: T10·T12·T14.
+- **선행**: T10·T12·T14·**T93**(유효한 감시 경로 확보 후 영향분석).
 
 ### T43. 부채 게이트 (Gate 4) — 단계적 임계치
 - **목적**: 코어 수정 과다 억제, 단계적 도입(§9).
@@ -434,7 +434,7 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **구현**: 민감 패턴·upgrade_watch glob이 신버전에서 ≥1 매칭하는지, 이전 매칭 경로 소멸,
   신규 최상위 모듈 미분류, 지나치게 넓은 `**` 검출.
 - **수용**: 리팩터로 0-매칭이 된 패턴을 검출.
-- **선행**: T03·T42.
+- **선행**: T03·T05. (T42는 **후행** — T93이 유효 감시경로를 먼저 확정하고 T42가 그 위에서 영향분석. 이전 'T42 선행' 표기는 순환 오류였으므로 제거.)
 
 ### T94. 내부망 반입·재검증
 - **목적**: 외부망=내부망 산출물 동일성(P4).
