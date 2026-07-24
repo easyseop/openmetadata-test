@@ -2,6 +2,10 @@
 
 OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 
+> **통합 전략:** 기본 운영은 vendor merge이며, 현재 구현된
+> `patchlock`·`reapply`·`resolve`·`replay`는 선택 patch-replay 모드다.
+> vendor ancestry·customization 생존 게이트는 ADR-001의 T24~T29로 추가 개발한다.
+
 > **요구사항 충족(영역 A1~A8)·검증기 22종의 왜/안 지키면/방법론·전체 개발 범위·
 > 설계 배경은 루트 [`../README.md`](../README.md) 가 정본이다.** 이 파일은 하네스
 > 실행에 필요한 최소 정보만 둔다.
@@ -11,13 +15,13 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 ```bash
 cd harness
 pip install jsonschema pathspec pyyaml pytest    # 또는 pip install -e ".[dev]"
-python -m pytest                                  # 현재 143개 통과
+python -m pytest                                  # 현재 테스트 함수 168개
 bash fixtures/fetch_upstream.sh                   # 실제 OM 미러(없으면 미러 테스트 자동 skip)
 ```
 
 Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
 
-## 구현 모듈 (전부 ✅ · 143 테스트, 실제 OM 미러 기반)
+## 구현 모듈 (전부 ✅ · 현재 168개 테스트 함수, 실제 OM 미러 기반)
 
 | 모듈 | 담당 | 루트 README 검증기# / 영역 |
 |---|---|---|

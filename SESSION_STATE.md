@@ -2,33 +2,31 @@
 
 > **목적**: 컨텍스트가 리셋돼도 이 문서 하나로 작업을 이어갈 수 있게 현재까지의
 > 모든 결정·산출물·다음 단계를 세세하게 기록한다. **작업 재개 시 이 문서를 먼저 읽는다.**
-> 최종 갱신: 개발 착수 직후(M0 fixtures 확보, T12·T13·T05 구현 진입).
+> 최종 갱신: 2026-07-24 vendor-merge 기본 전략 결정 반영.
 
 ---
 
 ## 0. 지금 어디인가 (한 줄)
 
-문서 설계(전략→상세설계→SRS→GPT 1·2차 검토 반영→Build Plan→로드맵)가 **전부 완료·정합**
-되었고, **실제 개발에 착수**한 상태. OpenMetadata OSS 미러 확보 완료, 이제 T12·T13·T05를 코딩한다.
+기존 patch-replay 중심 MVP1 모듈은 구현됐으나, 운영 전략을 **vendor merge 기본 /
+patch replay 선택 진단**으로 변경했다. 다음 개발은 T24~T29와 실제
+`kb_openmetadata` 커스터마이징 manifest·contract 등록이다.
 
 ## 1. 리포지토리·브랜치
 
 - 작업 리포: `easyseop/openmetadata-test` (docs + 앞으로의 harness 코드)
 - **작업 브랜치: `claude/markdown-file-feedback-26933w`** (여기에 계속 커밋·푸시)
-- 커밋 트레일러(필수):
-  ```
-  Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
-  Claude-Session: https://claude.ai/code/session_01B41zjcR6R3bFtSdzAPuxoQ
-  ```
+- 커밋 작성자·도구 출처는 실제 작업 주체에 맞게 기록한다. 과거 세션이나 다른
+  도구의 출처를 새 커밋에 복사하지 않는다.
 - 푸시: `git push -u origin claude/markdown-file-feedback-26933w`
 - PR은 사용자가 명시 요청 시에만 생성(아직 요청 없음).
 
 ## 2. 최종 목표 (변하지 않는 것)
 
-공식 OpenMetadata 버전업 시 행내 커스터마이징을 **누락 없이·재현 가능하게·검증 가능하게
-재적용**. 전략 = **패치 스택**(merge 아님, cherry-pick 재적용). 자동 검증은 "등록·재적용
-완전성"까지 결정적 보장, "기능 의미"는 테스트·업그레이드 검증·운영 관찰로 잔여 위험 관리.
-LLM은 배포 판정 배제(보조 Memo만).
+공식 OpenMetadata 버전업 시 행내 커스터마이징을 **누락 없이·추적 가능하게·검증
+가능하게 보존**한다. 기본 전략은 공식 target SHA를 vendor branch에 merge하는
+방식이다. cherry-pick/clean-room replay는 이식성 진단·복구·다중 버전 지원용
+선택 모드다. 자동 구조 검증과 실제 기능 테스트를 구분하며 LLM은 배포 판정에서 제외한다.
 
 ## 3. 산출 문서 지도 (모두 커밋됨, 이 브랜치)
 
@@ -46,19 +44,21 @@ LLM은 배포 판정 배제(보조 Memo만).
 | `docs/04-진행/openmetadata_build_plan.md` | **순차 개발 실행 계획** — M0~M9, T01~T94 | 개발 스펙 정본 |
 | `docs/04-진행/openmetadata_dev_roadmap.md` | **개발 로드맵 & MVP 커버리지 맵** — 진행 추적 | 커버리지 정본 |
 | `docs/03-기술참조/openmetadata_verifier_catalog.md` | 검증기 22종(§0.1 구현현황) | |
+| `docs/02-설계/ADR-001-vendor-merge-default.md` | **vendor merge 기본·replay 선택 결정** | **최우선 정본** |
 
 > **검토이력 삭제(2026-07-23)**: 과거 검토 대화 5종(1·2차 요청·응답·외부검토)은
 > **제거**(git 이력 보존). 수용된 정정 요약은 루트 `README.md` '설계 정정 이력' 참조.
-> **정본 우선순위(충돌 시)**: SRS 부칙 A > build_plan > SRS 본문.
+> **정본 우선순위(충돌 시)**: ADR-001 > SRS 부칙 A > build_plan > SRS 본문.
 
 ## 4. 확정된 핵심 결정 (재론 불필요, 전부 합의됨)
 
-- 패치 스택(merge 아님). 충돌은 "겹침"이 만들며 코어 수정에서만 발생 → 코어 최소화(4단계 관문).
-- 불변 ID `BANK-OM-xxx`, 1커밋=1ID, 1ID=순서형 series 허용.
-- 고정 SHA **patch-lock**(동적 "최신 브랜치" 금지). source lock/application lock **분리**.
+- **vendor merge 기본**. 공식 upstream ancestry를 유지하고 승인된 target SHA를 merge한다.
+- patch replay는 선택 진단·복구 모드다. 기존 T20~T23 구현은 유지하되 기본 합격 조건이 아니다.
+- 불변 ID `BANK-OM-xxx`는 커밋 재생 단위보다 **기능·계약 식별자**가 우선이다.
+- 공통 잠금은 upstream-lock·candidate-lock이며 patch-lock은 replay 모드에서만 필수다.
 - **verdict 4상태**: `pass<approval<block<analysis_error`(severity rank로 집계, exit는 0/2/1/3
   으로 **마지막 1회 변환**). analysis_error=차단(승인 우회 불가). exit `max()` 집계 금지(P0-3).
-- **등록·재적용 완전성 ≠ 기능 완전성**(문구 분리). ID 집합 일치는 등록 존재만 증명.
+- **등록·통합 생존 완전성 ≠ 기능 완전성**(문구 분리). ID 집합 일치는 등록 존재만 증명.
 - **선언형 verifier**만(manifest 임의 shell 금지, P0-8). 실행형(python_import·allowlist
   script·container)은 **sandbox 필수**.
 - 경로 필드 분리: `allowed_changed_paths`(상한)/`required_changed_paths`(하한)/`upgrade_watch`
@@ -89,17 +89,22 @@ LLM은 배포 판정 배제(보조 Memo만).
   `file_hash_equals` 추가. CG 순효과 2단(intrinsic tree diff + counterfactual replay),
   touched/net 경로 분리, 비연속 series=block(MVP).
 
-## 6. 개발 순서 (권장 핵심 경로)
+## 6. 개발 순서 (2026-07-24 개정)
 
 ```
-T01~T05  →  T10·T12·T13·T15·T14·T11  →  T30·T31(preflight)  →  T20·T21·T23·T22
-  →  T40·T62·T32·T33·T41  →  T93→T42+T50  →  T60·T61  →  T70·T72  →  T90→T91→T94
-T51·T52 병행 · T80·T81 마지막
+T24 integration_strategy/candidate-lock
+  → T25 vendor ancestry
+  → T26 customization survival
+  → T29 실제 kb_openmetadata manifest/contract
+  → T27 merge conflict evidence
+  → T60·T61 실제 기능 계약
+  → T90·T91·T94
+
+T28에서 기존 T20·T21·T22·T23을 선택 replay 모드로 라우팅
 ```
-- **즉시 착수 가능(의존 없음)**: T12(git 프리미티브)·T13(verdict 엔진).
-- **동결 대기**: T10(스키마)·T11(patch-lock)은 부칙 A 반영 후.
-- 신규 태스크: T05(path-ownership), T15(result/CI adapter), T23(resolve 직렬화).
-- MVP1(Candidate-control): T01~T05·T10~T15·T30·T31·T20~T23·T40·T41·T62·T32·T33·T93·T42·T50·T70최소.
+- 신규 태스크 상세는 ADR-001 §6과 Build Plan을 따른다.
+- 기존 replay-mode MVP1 완료 표시는 vendor-merge Candidate-control 완료를 뜻하지 않는다.
+- 실제 첫 검사 기준은 공식 `1.13.1-release` 대비 `kangdkdk/kb_openmetadata` 변경이다.
 - MVP2(Production-upgrade): +T60·T61·T72·T90·T91·T94·(T92).
 
 ## 7. OpenMetadata OSS 픽스처 (확보 완료 — 절대 잊지 말 것)
@@ -174,10 +179,12 @@ harness/
 
 ## 10. 재개 절차 (다음 세션)
 
-### 현재 위치 (2026-07-23, 최신)
+### 현재 위치 (2026-07-24, 최신)
 
-**완료: M1~M4(MVP1) + MVP2 Docker-free 다수.** 전부 **커밋·푸시**, `pytest`
-**168 통과**, 결정성 2회 동일, 실제 OM 미러 검증.
+**완료:** 기존 patch-replay M1~M4 + MVP2 Docker-free 다수.
+**전략 변경:** vendor-merge를 기본으로 확정했으며 T24~T29는 미구현이다.
+현재 소스에는 테스트 함수 168개가 있다. 이 로컬 환경에서는 pytest 의존성이
+없어 실행하지 못했으므로 과거 통과 기록과 현재 실행 검증을 구분한다.
 - **T60** contract 카탈로그+결속 `contracts.py` · **T61** patch-kill
   `patchkill.py` · **T51/52** 구조화 diff `structdiff.py`(실제 table.json
   dataContract 검출) · **T70** 정책 self-protection `policy_guard.py` · **T43**
@@ -229,7 +236,19 @@ harness/
 가져옴(미러 없으면 skip). `tests/test_reapply.py`는 실제 AuthLoginServlet.java를
 공통 조상으로 케이스 B(clean)/C(conflict)/redundant 구성.
 
-### 다음 태스크 (M4 — 감시·의존 영향·설정 검증 → 케이스 D 플래그, MVP1 완성) — 스펙
+### 다음 태스크 — vendor-merge 기본 경로와 실제 커스터마이징 연결
+
+1. T24: manifest/runner에 `integration_strategy`와 candidate lock 도입
+2. T25: vendor candidate의 upstream target ancestry 검증
+3. T26: ID별 required state·path·contract 생존 검증
+4. T29: 실제 변경 7종을 `BANK-OM-001~007`로 등록
+5. T27: merge conflict evidence
+6. T28: 기존 replay 모듈의 선택 모드 라우팅
+7. 이후 API·DB·검색·권한·UI contract 테스트와 T90 연결
+
+> 아래 M4 재개 지침은 기존 replay-mode 개발 이력으로 보존한다.
+
+### 기존 다음 태스크 기록 (M4 — 역사적 참고)
 
 build_plan §M4 + 부칙 A-3.5/3.6 참조. 순서: **T93 → T42 → T50**. 전부 실제 OM
 미러로 테스트. 재사용: `layout`(경로 문법)·`gitprim.net_changed_paths`(업스트림
@@ -279,16 +298,17 @@ replay tree(T22 `replay.replay_and_compare` 재사용), candidate 변경 시 기
 ### 재개 절차
 1. 이 파일 + `docs/04-진행/openmetadata_build_plan.md` + SRS 부칙 A(`docs/02-설계/openmetadata_governance_requirements.md`) 읽기.
 2. `/home/user/om-mirror` 존재 확인(없으면 §7 재획득), `pip install jsonschema pathspec`.
-3. `cd harness && python -m pytest` → 143 통과 재확인.
+3. 의존성 설치 후 `cd harness && python -m pytest` → 현재 168개 테스트 함수 실행.
 4. ✅ MVP1 완성(M1~M4, 케이스 A·B·C·D). 다음 = **MVP2(운영·승격)**: 계층3 테스트
    **T60**(contract↔test)·**T61**(patch-kill)·**T90**(업그레이드 차등 테스트) +
    계층4 **T70**(정책 base-평가)·**T91**(digest 승격). + 잔여 게이트 T43(부채)·
    T51/52(구조화 diff)·T80(범용 LLM Memo). 카탈로그 §0.1 구현현황표 참조.
 5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4.1 로그 + 이 표 갱신.
-6. 커밋마다 §1 트레일러 사용, 이 브랜치(`claude/markdown-file-feedback-26933w`)로 push.
+6. 실제 작업 주체에 맞는 커밋 메타데이터를 사용하고, 이 브랜치
+   (`claude/markdown-file-feedback-26933w`)로 push.
 7. 게이트/재적용 테스트는 **반드시 실제 OM 미러**로(합성 더미 금지, §7).
 
-### 문서 정리 백로그 (외부 검토 반영 — `harness/` 코드 무관, 143 테스트 유지)
+### 문서 정리 백로그 (외부 검토 반영 — `harness/` 코드 무관)
 
 외부 검토(`.../openmetadata_repository_documentation_feedback.md`) 반영. 사용자
 지시: **네 트랙 전부 수행**. 순서 ①→④. **코드/테스트 변경 없음.**

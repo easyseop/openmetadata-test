@@ -1,5 +1,9 @@
 # OpenMetadata 커스터마이징 거버넌스 — 개발 실행 계획 (Build Plan)
 
+> **2026-07-24 변경:** [`ADR-001`](../02-설계/ADR-001-vendor-merge-default.md)에
+> 따라 vendor merge가 기본 통합 전략이다. 아래 기존 T20~T23 replay 파이프라인은
+> 선택 모드로 유지한다. 기본 경로를 완성하는 T24~T29가 P0 선행 작업이다.
+
 > **이 문서의 위치**
 > 최종 목표부터 개별 개발 태스크까지를 **순차 개발 가능한 형태**로 기록한다.
 > GPT 검토(P0~P2)와 그 재검토 응답을 반영한 **정정 후 아키텍처** 기준이다.
@@ -11,19 +15,19 @@
 
 ## 0. 최종 목표
 
-> 공식 OpenMetadata 버전이 올라가도 **행내 커스터마이징을 누락 없이 · 재현 가능하게 ·
-> 검증 가능하게 재적용**하여, 버전 업그레이드 운영을 원활하게 만든다.
+> 공식 OpenMetadata 버전이 올라가도 **행내 커스터마이징을 누락 없이 · 추적 가능하게 ·
+> 검증 가능하게 보존**하여, vendor branch 업그레이드 운영을 원활하게 만든다.
 
 보장 범위를 정확히 나눈다 (P0-5·P0-7 반영):
 
 | 계층 | 자동으로 보장하는 것 | 보장하지 않는 것 (다른 계층이 담당) |
 |---|---|---|
-| 등록·재적용 완전성 게이트 | 모든 코어 수정이 **등록되고 고정 SHA 위에 순서대로 재현**됨 | 로직 생존·기능 의미 |
+| 등록·통합 생존 게이트 | 승인된 공식 SHA가 통합되고 등록된 수정이 candidate에 남음 | 로직 생존·기능 의미 |
 | 계약 테스트 / 업그레이드 테스트 | 명시된 업무 불변식의 **동작** | 테스트에 없는 새 의미 차원 |
 | 증거 생성기(구조화 diff) | API·설정·DB·의존성의 **구조 변화 사실** | 그 변화의 업무 영향 판단 |
 | 운영 관찰(canary) | 실제 부하·데이터에서의 거동 | — |
 
-**한 줄**: 자동 검증은 "등록·재적용"까지 결정적으로 보장하고, "기능 의미"는
+**한 줄**: 자동 검증은 "등록·업스트림 통합·candidate 생존"을 구조적으로 확인하고, "기능 의미"는
 테스트·업그레이드 검증·운영 관찰·LLM 보조로 **잔여 위험을 관리**한다.
 
 ---
@@ -31,17 +35,17 @@
 ## 1. 아키텍처 원칙 (정정 후)
 
 1. **코어 최소화** — 새 요구는 설정→배포→확장→코어 4단계 관문. 충돌은 코어에서만 난다.
-2. **불변 ID + 순서 있는 patch series** — 1커밋=1ID, 1ID=짧은 순서형 series 허용(P0-5).
-3. **고정 SHA 기반 patch-lock** — 재적용 소스는 "최신 브랜치"가 아니라 **고정 SHA**(§10.2).
-4. **clean-room replay 재현성** — 깨끗한 환경 재생 결과 == candidate tree(bit 재현).
+2. **불변 ID + customization registry** — 기능·계약의 안정된 식별자. replay 모드에서는 series 허용.
+3. **고정 SHA 기반 upstream/candidate lock** — 공식 target과 검증 candidate를 고정한다.
+4. **vendor ancestry·생존 검증 기본** — clean-room replay는 선택 진단·복구 모드다.
 5. **판정 스파인 / 증거 생성기 분리** — 판정은 언어 무관·결정적, 증거는 대상별 전문화(§8).
-6. **등록·재적용 완전성 ≠ 기능 완전성** — 게이트 명칭·문구에 분리 반영(P0-5).
+6. **등록·통합 생존 ≠ 기능 완전성** — 게이트 명칭·문구에 분리 반영(P0-5).
 7. **verdict severity rank** — pass<approval<block<analysis_error, 분석실패=차단(P0-3·4).
 8. **선언형 verifier** — manifest에 임의 command 금지(P0-8).
 9. **정책 자기보호** — policy PR은 base 정책으로 평가 + 2인 승인 + 플랫폼 통제(P0-9).
 10. **LLM 배포 판정 배제** — 읽기·설명·후보(Memo)만, pass 권한 없음(§7).
 11. **테스트가 생존을 증명** — contract-id ↔ 테스트 결속 + patch-kill test(§5·C-4).
-12. **range-diff는 리뷰용** — 기계 판정은 patch-lock+trailer+raw diff(P0-1).
+12. **range-diff는 리뷰용** — 기계 판정은 ancestry·lock·manifest·raw diff(P0-1).
 
 ---
 
@@ -56,7 +60,7 @@ M1    기반: T10(스키마)·T12(git)·T13(verdict) + [신규 T15] result/CI ad
       + T14(감사카드) + T11(patch-lock — source/application 분리)
       ※ T12·T13 즉시 착수 가능 / T10·T11은 부칙 A 반영 후 동결
 M1.5  source stack preflight: T30·T31 (재적용 전에 소스 불변식 검사)
-M2    재적용: T20 → T21(+[신규 T23] 단일 integrator/CAS 직렬화) → T22(source tree replay)
+M2    통합: T24→T25→T26(vendor merge 기본) + T20→T23(replay 선택 모드)
 M3    완전성·결속: T40(touched/net 분리) → T32(최종상태) → T62(테스트-SHA 결속) → T33 → T41
 M4    감시·영향: T93(watch drift, 먼저) → T42(영향분석) + T50(선언형 verifier; 실행형·sandbox는 후속)
 M5    증거 생성기: T51·T52 (공통 provider SDK 후 병렬 가능) + provider 자기보호(C-3)
@@ -82,6 +86,19 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **T23 · resolve 직렬화/단일 integrator** (M2) — resolve queue를 lock 순서로
   직렬화, 담당자는 제안만, integrator가 base_lock_digest CAS 확인 후 반영.
   → 부칙 A-2.5
+
+### vendor-merge 전환 태스크 (ADR-001)
+
+- **T24 · integration strategy + candidate lock** — 기본값 `vendor-merge`,
+  공식 base/target SHA와 candidate commit/tree/artifact digest를 고정.
+- **T25 · vendor ancestry gate** — candidate가 공식 target SHA를 포함하고
+  공통 조상을 유지하는지 결정적으로 검증.
+- **T26 · customization survival gate** — ID별 required state·path·contract가
+  merge candidate에 남아 있는지 검증.
+- **T27 · merge conflict evidence** — 충돌 파일·해결 결정·승인자를 구조화 기록.
+- **T28 · replay optional routing** — T20~T23을 선택 진단 모드로 라우팅.
+- **T29 · 실제 커스터마이징 등록** — `kb_openmetadata`의 InstanceCode,
+  QueryReport, Assertions, 컬럼 확장, IME, Sybase, Tibero를 manifest/contract화.
 
 ### MVP 2단계 (2차 검토 B-5 수용)
 

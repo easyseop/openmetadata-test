@@ -1,5 +1,10 @@
 # OpenMetadata 커스터마이징 거버넌스 하네스 — 요구사항 정의서 (SRS)
 
+> **2026-07-24 정본 보정:** [`ADR-001`](ADR-001-vendor-merge-default.md)이
+> 통합 전략의 최우선 정본이다. REQ-RA와 patch-lock 관련 요구는
+> `patch-replay` 선택 모드에만 필수다. 기본 `vendor-merge` 모드는
+> T24~T29의 ancestry·candidate-lock·customization 생존 게이트를 적용한다.
+
 > **문서 메타데이터**
 >
 > | 항목 | 값 |

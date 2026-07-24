@@ -1,7 +1,7 @@
 # OpenMetadata 커스터마이징 거버넌스
 
-공식 OpenMetadata 버전이 올라가도 **행내 커스터마이징을 누락 없이 · 재현 가능하게 ·
-검증 가능하게 재적용**하여, 버전 업그레이드 운영을 원활하게 만들기 위한 설계·개발 기준.
+공식 OpenMetadata 버전이 올라가도 **행내 커스터마이징을 누락 없이 · 추적 가능하게 ·
+검증 가능하게 보존**하여, 버전 업그레이드 운영을 원활하게 만들기 위한 설계·개발 기준.
 
 ---
 
@@ -10,8 +10,17 @@
 > 오픈소스 새 버전이 나올 때마다 우리 수정이 **빠지거나 · 왜 고쳤는지 잊히거나 ·
 > 위험한 곳을 건드려도 모른 채 넘어가는** 사고를, 사람 기억이 아니라 **자동 검사(CI)**로 막는다.
 
-전략: **패치 스택** — 커스터마이징을 이름표(`BANK-OM-xxx`) 붙인 독립 커밋으로 유지하고,
-새 공식 태그(고정 SHA) 위에 **cherry-pick으로 재적용**한다. merge가 아니다.
+기본 전략: **vendor merge** — 공식 OpenMetadata와 공통 조상을 유지하는 vendor branch에
+승인된 공식 태그(고정 SHA)를 merge하고, 이름표(`BANK-OM-xxx`)로 등록한
+커스터마이징이 최종 candidate에 남아 있는지 검증한다.
+
+기존 cherry-pick/clean-room replay는 **필수 운영 절차가 아니라 선택적 진단·복구
+모드**로 유지한다. 이 결정의 정본은
+[`ADR-001`](docs/02-설계/ADR-001-vendor-merge-default.md)이다.
+
+> 전환 상태: 현재 하네스의 replay 모듈은 구현돼 있지만 vendor-merge ancestry·
+> customization 생존 게이트(T24~T29)는 추가 개발이 필요하다. 따라서 기존
+> “MVP1 완료” 표시는 patch-replay 구조 검증에 한정한다.
 
 ## 무엇을 보장하고, 무엇은 보장하지 않는가 (중요)
 
@@ -20,7 +29,7 @@
 
 | 계층 | 자동 보장 | 보장하지 않음(다른 계층 담당) |
 |---|---|---|
-| 등록·재적용 완전성 게이트 | 코어 수정이 등록되고 고정 SHA 위에 순서대로 재현됨 | 로직 생존·기능 의미 |
+| 등록·통합 생존 게이트 | 승인된 공식 SHA가 통합되고 등록된 수정이 candidate에 남아 있음 | 로직 생존·기능 의미 |
 | 계약·업그레이드 테스트 | 명시된 업무 불변식의 동작 | 테스트에 없는 새 의미 차원(잔여 위험) |
 | 구조화 증거 생성기 | API·설정·DB·의존성의 구조 변화 사실 | 그 변화의 업무 영향 판단 |
 | 운영 관찰(canary) | 실제 부하·데이터 거동 | — |
@@ -29,8 +38,8 @@
 
 ```
 A 무관한 변경        → 경로 대조 (무관 판정)
-B 우리 파일·다른 줄   → cherry-pick 자동 + 경로 플래그
-C 같은 줄 충돌        → cherry-pick 충돌 → 사람 해결
+B 우리 파일·다른 줄   → vendor merge + 경로 플래그
+C 같은 줄 충돌        → merge conflict → 사람 해결·기록
 D 의존 대상 변경      → upgrade_watch + 구조화 diff + LLM Memo → 테스트 확정
 E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 테스트)
 ```
@@ -45,8 +54,8 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 | 영역ID | 영역 | 한 줄 | MVP | 담당 검증기(#) |
 |---|---|---|---|---|
 | **A1** | 수정 등록 | 바꾼 곳이 이름표 달고 빠짐없이 등록됐나 | 1 | 2·3 |
-| **A2** | 재적용 | 새 버전 위에 순서대로 다시 얹히나 | 1 | 1 |
-| **A3** | 재현성 | 고정 소스로만 똑같이 재현되나(몰래 낀 변경 차단) | 1 | 5·11 |
+| **A2** | 업스트림 통합 | 승인된 공식 SHA가 vendor candidate에 들어왔나 | 1 | T24·T25 |
+| **A3** | 생존·재현성 | 등록된 수정이 남고 candidate가 고정됐나 | 1 | T26·17·20 |
 | **A4** | 범위·민감 통제 | 정한 범위 밖·민감한 곳(인증 등) 건드렸나 | 1 | 6·7·12 |
 | **A5** | 업그레이드 영향 감지 | 의존 파일·설정이 바뀌었나·정책이 낡았나 | 1 | 8·9·13·22 |
 | **A6** | 판정·결과 무결성 | 판정 뒤집힘·결과 조작·혼동 방지 | 1 | 21 + 결과계약 |
@@ -57,42 +66,43 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 
 | 요구ID | 요구사항 (쉬운 말) | 영역 | 상태 |
 |---|---|---|---|
-| **R1** | 커스터마이징이 새 버전에 **빠짐없이** 올라갔는지 자동 확인 | A1·A2 | ✅ 완료 |
+| **R1** | 커스터마이징이 새 버전에 **빠짐없이** 올라갔는지 자동 확인 | A1·A2 | 🟡 replay 완료·merge 개발 필요 |
 | **R2** | 커스터마이징을 **왜/어디서** 했는지 이력 보존 | A1·A3 | ✅ 완료 |
 | **R3** | **범위 밖·위험 변경**이 검토 없이 통과 못하게 | A4 | ✅ 완료 |
-| **R4** | 업그레이드 후 **즉시·반복 가능하게 재적용** | A2 | ✅ 완료 |
-| **R5** | 후보가 **고정 소스로만 재현**됨 | A3 | ✅ 완료 |
+| **R4** | 승인된 공식 버전이 vendor candidate에 통합됐음을 확인 | A2 | ⬜ T24·T25 |
+| **R5** | 후보 SHA·tree·artifact가 고정되고 추적됨 | A3 | 🟡 SHA 결속 구현·candidate lock 필요 |
 | **R6** | **충돌 없이 의미만 바뀐** 변경 감지(케이스 D) | A5 | ✅ 완료(감지·리뷰) |
 | **R7** | '등록·재적용'과 '기능 정확성'을 **정직하게 구분** | A6 | ✅ 완료 |
 | **R8** | 실제 **업무 동작**(권한·API·검색) 검증 | A7 | ⬜ 계획(MVP2) |
 | **R9** | **릴리스 승격·내부망 반입** 통제 | A8 | ⬜ 계획(MVP2) |
 
-> **MVP별 커버**: **MVP1(현재) → R1~R7 충족** (릴리스 후보 단계에서 등록·재적용·
-> 범위·재현·영향감지·판정을 자동 통제). **MVP2(예정) → R8·R9 추가** (실제 기능
+> **MVP별 커버**: 기존 **patch-replay MVP1**은 구조 검증을 구현했다.
+> 기본 `vendor-merge` Candidate-control은 T24~T29 완료 후 달성한다.
+> **MVP2(예정) → R8·R9 추가** (실제 기능
 > 동작 + 검증본 그대로 릴리스·반입). 남은 개발 전부는 위 22종 표의 🟡/⬜ 항목.
 
 ## 전체 검증기 22종 — 왜 필요 · 안 지키면 · 어떻게 구현
 
 > 상태: **✅ 완료 · 🟡 부분 · ⬜ 계획.** 단일 정본은
 > [`docs/03-기술참조/openmetadata_verifier_catalog.md`](docs/03-기술참조/openmetadata_verifier_catalog.md) §0.1.
-> 계층 1·2·4는 등록·재적용·구조를 **결정적으로** 보장, 계층 3(테스트)이 기능 의미,
+> 계층 1·2·4는 등록·통합 생존·구조를 **결정적으로** 보장, 계층 3(테스트)이 기능 의미,
 > 보조(LLM)는 후보만 좁힌다(판정권 없음).
 
-### 계층 1 — 등록·재적용 완전성 (구조, 결정적)
+### 계층 1 — 등록·통합 생존 검증 (구조, 결정적)
 
 | # | 검증기 | 왜 필요 · 안 지키면 나올 문제 | 구현 방법론 (또는 계획) | 상태·태스크 |
 |---|---|---|---|---|
-| 1 | 재적용 게이트 | 수정이 새 버전에 다시 얹혀야 쓴다 · 안 얹히면 조용히 빠져 몇 주 뒤 "왜 안 되죠?" | 임시 worktree를 고정 SHA에 만들고 patch-lock 순서로 cherry-pick(**탐지/해결 2모드**), 결과를 상태별(적용/충돌/중복/누락) 분류 | ✅ T20·T21 |
+| 1 | 통합 게이트 | 승인된 공식 버전과 행내 수정이 candidate에 함께 존재해야 한다 | 기본은 vendor ancestry·target SHA·customization 생존 검사. cherry-pick 탐지/해결은 선택 replay 모드 | 🟡 replay 완료·T24~T29 필요 |
 | 2 | 커밋 불변식 | 뭘 바꿨는지 **세야** 누락 검증 가능 · 이름표 없으면 '수정 목록' 자체가 없음 | 커밋 **꼬리표만** 파싱, 업스트림 건드린 커밋=**이름표 정확히 1개**(0·다중·merge·빈·원본+정책 혼합=위반) | ✅ T30 |
 | 3 | ID·series 불변식 | 한 수정이 여러 커밋일 때 **절반만 반영**돼도 통과하면 안 됨 | 이름표 단위로 series 승인·**연속성**·의존 순환·폐기 재사용 검사 | ✅ T31 |
 | 4 | 최종상태 불변식 | "이름표는 다 있는데 기능은 사라진" 상태 차단 | **counterfactual**: 그 ID만 뺀 재생 tree와 전체 재생 tree 비교, 같으면 기여 0=차단 | ✅ T32 |
-| 5 | clean-room replay | 검증 안 받은 **몰래 낀 변경**·재현 불가 차단 | 격리 재생 결과 tree 해시 == 후보 tree 해시(내용주소라 결정적) | ✅ T22 |
+| 5 | clean-room replay | 패치의 독립 이식성·복구 가능성 진단 | 선택 replay 모드에서 격리 재생 결과 tree와 후보 비교 | ✅ 선택 모드 T22 |
 | 6 | 구현범위 drift | 명세가 실제와 어긋나면 뒤 검사·감시가 **전부 무력화** | 상한(변경 ⊆ 허용 glob) + 하한(필수 경로가 **실제 순변경**에 있나) | ✅ T40 |
 | 7 | 민감·의도 게이트 | 인증 등 위험 변경이 **검토 없이** 통과 | 파일×민감영역(**차단/승인/경고 3단**) + 선언(intent) 대조(선언 없음=fail-closed) | ✅ T41 |
 | 8 | 정책 노후화 drift | 리팩터로 코드 이사가면 정책이 **'빈 총'**인데 통과만 뜸 | 신버전 트리에서 패턴 **0매칭=빈 총**, 신규 미분류 모듈=analysis_error | ✅ T93 |
 | 9 | upgrade_watch | 우리가 안 바꿔도 **의존 대상이 바뀌면** 조용히 깨짐(케이스 D) | 실제 A→B 순변경 ∩ 감시 경로 → 걸리면 승인(리뷰) | ✅ T42 |
 | 10 | 부채 게이트 | 코어 수정이 쌓여 **업그레이드 불가 포크**로 붕괴 | 코어 수정 수·변경량·충돌률·hotspot을 soft/hard 임계값과 비교(soft=approval·hard=block) | ✅ T43 |
-| 11 | patch-lock 일치 | 소스가 흔들리면 **재현 불가**(같은 릴리스가 매번 달라짐) | 고정 40-hex SHA로 잠금(동적 '최신' 금지), 갱신은 단일 담당자 CAS | ✅ T11 |
+| 11 | candidate/patch lock | candidate는 SHA·tree·digest로 고정. replay를 사용할 때만 patch source도 고정 | candidate-lock(T24) + 선택 patch-lock(T11) | 🟡 patch-lock 완료·candidate-lock 필요 |
 
 ### 계층 2 — 증거 생성기 (결정적, LLM 이전)
 
@@ -137,6 +147,7 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 |---|---|---|---|
 | `docs/01-보고용/` | [strategy_briefing](docs/01-보고용/openmetadata_strategy_briefing.md) | 왜 이 전략인가 (merge vs 패치 스택) | 경영진·심의 |
 | `docs/02-설계/` | [upstream_customization_design](docs/02-설계/openmetadata_upstream_customization_design.md) | 상세 설계 (저장소·게이트·업그레이드 절차) | 설계·개발 |
+| `docs/02-설계/` | [ADR-001](docs/02-설계/ADR-001-vendor-merge-default.md) | **vendor merge 기본·replay 선택 결정 정본** | 전 대상 |
 | `docs/02-설계/` | [governance_requirements (SRS)](docs/02-설계/openmetadata_governance_requirements.md) | 요구사항 정의서 ※부칙 A 우선 | 개발 |
 | `docs/03-기술참조/` | [verifier_catalog](docs/03-기술참조/openmetadata_verifier_catalog.md) | 검증기 카탈로그(§0.1 구현현황) | 개발 |
 | `docs/04-진행/` | [build_plan](docs/04-진행/openmetadata_build_plan.md) | **순차 개발 실행 계획** | 개발 |
@@ -144,7 +155,7 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 
 > **개발 착수 기준**: 진행·커버리지는 `docs/04-진행/openmetadata_dev_roadmap.md`,
 > 상세 스펙은 `docs/04-진행/openmetadata_build_plan.md`(+ SRS 부칙 A). 충돌 시
-> 우선순위는 **SRS 부칙 A > build_plan > 설계서 본문**. (과거 검토 대화 원문은
+> 우선순위는 **ADR-001 > SRS 부칙 A > build_plan > 설계서 본문**. (과거 검토 대화 원문은
 > 제거했고 git 이력에 보존됨. 수용된 정정의 핵심은 아래 '설계 정정 이력' 참조.)
 
 ## 설계 정정 이력 (검토 반영 요약)
@@ -157,6 +168,7 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 | **1차** (설계 P0 9건) | ① 판정을 **심각도 순위로 집계**(차단이 승인으로 격하 금지)·**분석실패=차단** ② 충돌 **탐지/해결 2모드** ③ **선언형 verifier**(manifest 임의 shell 제거) ④ range-diff 기계판정 제거 → **patch-lock+trailer** ⑤ `affected_paths` → **allowed/required_changed_paths + upgrade_watch** ⑥ **"등록·재적용 완전성" ≠ 기능 완전성** ⑦ 정책 **self-approval 차단** | SRS 본문 · build_plan · 코드 |
 | **2차** (2차 결함) | **부칙 A** — ⓐ 결과계약을 CI 경계까지(불일치=analysis_error·원자적 기록·정규 해시) ⓑ **lock 분리·출처 자동각인·CAS** ⓒ 스키마 의미(path-ownership·required⊆allowed·verifier sandbox) | SRS 부칙 A · 코드 |
 | **문서** (외부) | build_plan **순환의존 해소**·검증기 4계층 표기·`harness/README`·`EXECUTIVE_SUMMARY`·`docs/` 분류·SRS 상태 메타데이터 | 각 문서 (적용 완료) |
+| **운영전략** (2026-07-24) | vendor branch에 공식 SHA를 **merge하는 방식을 기본**, cherry-pick/replay는 선택 진단·복구 모드로 변경. 기존 replay 중심 MVP 표시는 범위 한정 | ADR-001 · README · 인수인계 |
 
 ## 테스트 정책
 
@@ -173,8 +185,8 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 ```
 M0 사전 셋팅(정책·명세 저작)
 M1 기반(스키마·patch-lock·git·verdict)   ← 먼저 완성
-M2 재적용 파이프라인(2-모드 충돌·replay)
-M3 등록·재적용 완전성 게이트(불변식)
+M2 업스트림 통합(vendor merge 기본 + replay 선택 모드)
+M3 등록·통합 생존 게이트(불변식)
 M4 경로·민감·부채 게이트 + 영향분석(upgrade_watch)
 M5 증거 생성기(선언형 verifier·구조화 diff)
 M6 테스트 결속(contract·patch-kill·SHA)
@@ -186,11 +198,11 @@ M9 업그레이드 검증·릴리스 승격(digest 결속)·반입
 ## 핵심 원칙 (정정 후)
 
 1. 코어 수정 최소화 (설정→배포→확장→코어 4단계 관문). 충돌은 코어에서만 난다.
-2. 불변 ID + 순서 있는 patch series (1커밋=1ID).
-3. 고정 SHA 기반 patch-lock (동적 "최신 브랜치" 아님).
-4. clean-room replay 재현성 (재생 == candidate tree).
+2. 불변 ID 기반 customization registry(기능과 계약의 안정된 식별자).
+3. 고정 SHA 기반 upstream-lock·candidate-lock. patch-lock은 replay 모드 전용.
+4. vendor ancestry·customization 생존 검증을 기본으로 하고 replay는 선택 진단으로 사용.
 5. 판정 스파인(언어 무관·결정적) / 증거 생성기(대상별) 분리.
-6. **등록·재적용 완전성 ≠ 기능 완전성** (분리해 표기).
+6. **등록·통합 생존 완전성 ≠ 기능 완전성** (분리해 표기).
 7. verdict severity rank (분석 실패 = 차단).
 8. 선언형 verifier (manifest 임의 실행 금지).
 9. 정책 자기보호 (policy PR은 base 정책으로 평가).
@@ -205,7 +217,7 @@ M9 업그레이드 검증·릴리스 승격(digest 결속)·반입
 ```bash
 cd harness
 pip install jsonschema pathspec pyyaml pytest    # 또는 pip install -e ".[dev]"
-python -m pytest                                  # 현재 143개 통과
+python -m pytest                                  # 현재 168개 테스트 함수(의존성 설치 후 실행)
 ```
 
 **실제 OM 미러 연결**(게이트·재적용 테스트용, 없으면 해당 테스트 자동 skip):

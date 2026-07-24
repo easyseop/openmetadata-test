@@ -1,5 +1,9 @@
 # 개발 로드맵 & 커버리지 맵
 
+> **2026-07-24 변경:** [`ADR-001`](../02-설계/ADR-001-vendor-merge-default.md)이
+> 통합 전략의 정본이다. 현재 replay 기반 MVP1 구현은 선택 모드로 재분류되며,
+> vendor-merge 기본 경로는 T24~T29 완료 후 Candidate-control에 도달한다.
+
 > **이 문서의 용도**
 > "무엇을 · 어떤 순서로 만들고, 각 MVP를 완성하면 **어디까지 커버되는지**"를
 > 추적하는 진행 기준. 상세 구현 스펙은 `openmetadata_build_plan.md`(+ SRS 부칙 A),
@@ -12,7 +16,7 @@
 
 ## 0. 추천 착수 순서
 
-**결론: MVP1(Candidate-control)을 목표로, 의존성 순서로 쌓는다.** MVP 순서와
+**결론: vendor-merge Candidate-control을 목표로, 의존성 순서로 쌓는다.** MVP 순서와
 "추천"은 충돌하지 않는다 — MVP는 커버리지 이정표, 빌드는 의존성 순서이며,
 MVP1을 향해 의존성 순으로 진행하면 자동으로 정렬된다.
 
@@ -30,7 +34,9 @@ T10 · T12 · T13 · T15 · T14 · T11        (M1 기반)
    ↓
 T30 · T31                                 (M1.5 source preflight)
    ↓
-T20 · T21 · T22                           (M2 재적용)
+T24 · T25 · T26 · T29                     (M2 vendor merge 기본)
+   ├── T27                                (충돌 증거)
+   └── T28 → T20 · T21 · T22             (선택 replay)
    ↓
 T40 · T62 · T32 · T41                     (M3 완전성·결속)
    ↓
@@ -310,7 +316,8 @@ T93·T42 · T50 · T70 최소.
 | T50 선언형 verifier | ✅ 완료 | `acgh/verifier.py` | 10 테스트. JSON Pointer·file_hash·module_present(비실행), 실행형 거부, `..` 경로이탈 차단(P0-8) |
 
 > **M1·M1.5·M2·M3·M4 완료** ✅ = **MVP1(Candidate-control) 달성** — 케이스
-> **A·B·C·D**를 candidate 단계에서 기계 통제, 임의 실행 제거. `pytest` 143 통과.
+> **A·B·C·D**를 candidate 단계에서 기계 통제, 임의 실행 제거. 현재 테스트 함수는
+> 168개이며, 실행 통과 여부는 의존성을 갖춘 환경에서 별도로 확인한다.
 > (T93/T42 라벨: 정본은 T42=upgrade_watch·T93=정책노후화. 초기 커밋 라벨 오류를
 > `21bfc15`에서 정정.) **다음 = MVP2(운영·승격)**: T60·T61·T90(계층3 테스트)·
 > T70·T91(계층4) + 잔여 T43·T51/52·T80. 검증기 카탈로그 §0.1 구현현황 참조.

@@ -1,5 +1,9 @@
 # 검증기 카탈로그 — 무엇을 만들고, 왜, 무엇을 잡나
 
+> **2026-07-24 변경:** [`ADR-001`](../02-설계/ADR-001-vendor-merge-default.md)에
+> 따라 계층 1의 기본 경로는 vendor ancestry·customization 생존 검증이다.
+> 기존 재적용·patch-lock·clean-room replay 검증기는 선택 `patch-replay` 모드다.
+
 > **이 문서의 용도**
 > 거버넌스 하네스가 만들 **모든 검증기**를 한 곳에 정리한다. 검증기마다
 > "무엇을 잡나 / 없으면 어떤 사고가 나나 / 못 잡는 것 / 해당 개발 태스크"를 적었다.
@@ -33,8 +37,8 @@
 
 ## 0.1 구현 현황 (2026-07-23 · MVP1 Candidate-control 달성)
 
-> 아래 표는 **설계**이고, 실제 코드는 `harness/acgh/` 에 있다. 현재까지 **143개
-> 테스트 통과**(전부 실제 OpenMetadata 1.12.13/1.13.0 미러 기반, 합성 더미 금지).
+> 아래 표는 **설계**이고, 실제 코드는 `harness/acgh/` 에 있다. 현재 소스에는
+> **168개 테스트 함수**가 있다. 실행 통과 건수는 의존성 설치 환경에서 다시 기록한다.
 > ✅=구현·테스트 완료, 🟡=핵심 구현(부분), ⬜=미착수.
 
 **기반(카탈로그 22개 밖, 하네스 골격)**: ✅ T05 경로소유 `layout.py` · ✅ T10
@@ -43,17 +47,17 @@ manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과�
 
 | # | 검증기 | 태스크 | 상태 | 모듈 |
 |---|---|---|---|---|
-| 1 | 재적용(탐지/해결) | T20·T21 | ✅ | `reapply.py`·`resolve.py` |
+| 1 | 통합(vendor merge/replay) | T24~T29·T20·T21 | 🟡 replay 완료·merge 미구현 | `reapply.py`·`resolve.py` |
 | 2 | 커밋 불변식 | T30 | ✅ | `invariants.py` |
 | 3 | ID·series 불변식 | T31 | ✅ | `invariants.py` |
 | 4 | 최종상태 불변식 | T32 | ✅ | `finalstate.py` |
-| 5 | clean-room replay | T22 | ✅ | `replay.py` |
+| 5 | clean-room replay | T22 | ✅ 선택 모드 | `replay.py` |
 | 6 | 구현범위 drift | T40 | ✅ | `drift.py` |
 | 7 | 민감·의도 게이트 | T41 | ✅ | `zones.py` |
 | 8 | 정책 노후화 drift | T93 | ✅ | `policy_drift.py` |
 | 9 | upgrade_watch(케이스 D) | T42 | ✅ | `upgrade_watch.py`·`impact.py` |
 | 10 | 부채 게이트 | T43 | ✅ | `debt.py` |
-| 11 | patch-lock 일치 | T11 | ✅ | `patchlock.py`·`integrator.py`(CAS) |
+| 11 | candidate/patch lock | T24·T11 | 🟡 patch 완료·candidate 미구현 | `patchlock.py`·`integrator.py`(CAS) |
 | 12 | 선언형 verifier | T50 | ✅ | `verifier.py` |
 | 13 | 구조화 diff providers | T51·T52 | ✅ | `structdiff.py` |
 | 14 | 필수 테스트 존재 | CG | ⬜ | — |
@@ -66,7 +70,8 @@ manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과�
 | 21 | verdict 엔진 | T13 | ✅ | `verdict.py` |
 | 22 | LLM Impact Memo | T80 | 🟡 | `impact.py`(케이스 D 조언 memo; 범용 T80은 미완) |
 
-**MVP1 도달 = 케이스 A·B·C·D를 candidate 단계에서 기계 통제.** 남은 MVP2
+**기존 replay-mode MVP1 도달 = 케이스 A·B·C·D를 candidate 단계에서 기계 통제.**
+vendor-merge 기본 경로는 T24~T29가 남았다. 이후 MVP2
 (운영·승격)는 계층 3 테스트(15·16·18)와 계층 4(19·20) = T60/T61/T90/T70/T91.
 
 ---

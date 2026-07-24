@@ -1,5 +1,10 @@
 # OpenMetadata 업스트림 동기화 및 행내 커스터마이징 보존 설계서
 
+> **2026-07-24 운영전략 변경:** 이 문서의 patch-stack/cherry-pick 필수 전제는
+> [`ADR-001`](ADR-001-vendor-merge-default.md)에 의해 대체되었다.
+> 기본 운영은 vendor branch에 공식 target SHA를 merge하는 방식이며,
+> patch replay는 선택적 진단·복구 모드다. 충돌 시 ADR-001이 우선한다.
+
 > **문서 목적**  
 > 외부망에서 OpenMetadata를 개발·검증한 뒤 내부망으로 반입하여 배포하는 환경에서,  
 > 공식 OpenMetadata 버전이 변경될 때 행내 커스터마이징을 누락하지 않고 재현 가능하게 적용하기 위한  
