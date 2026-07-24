@@ -67,13 +67,14 @@ cherry-pick 재적용은 필수 운영 방식이 아니라 이식성 확인·복
 |---|---|
 | replay 방식의 패치 등록·재적용 검증 | 구현 완료(선택 모드) |
 | candidate SHA·tree·artifact 잠금 | 구현 완료(T24) |
-| vendor merge ancestry·customization 생존 검증 | 추가 개발(T25~T29) |
+| vendor merge ancestry·공식 target 포함 검증 | 구현 완료(T25) |
+| customization 생존·실제 등록 검증 | 추가 개발(T26~T29) |
 | 변경 범위·민감 경로 검증 | 구현 완료 |
 | 업스트림 영향 분석 | 구현 완료(후보 표시) |
 | 실제 DB·검색 업그레이드 검증 | 계획 |
 | 내부망 반입·릴리스 승격 | 계획 |
 
-(테스트 177개 중 142개 통과. 실제 OpenMetadata 미러 의존 35개는 skip.)
+(테스트 183개 중 148개 통과. 실제 OpenMetadata 미러 의존 35개는 skip.)
 
 ## 9. 주요 잔여 위험
 

@@ -2,7 +2,7 @@
 
 > **2026-07-24 변경:** [`ADR-001`](../02-설계/ADR-001-vendor-merge-default.md)이
 > 통합 전략의 정본이다. 현재 replay 기반 MVP1 구현은 선택 모드로 재분류되며,
-> T24 candidate-lock은 완료됐으며, vendor-merge 기본 경로는 T25~T29 완료 후
+> T24 candidate-lock과 T25 ancestry gate는 완료됐으며, 기본 경로는 T26~T29 완료 후
 > Candidate-control에 도달한다.
 
 > **이 문서의 용도**
@@ -290,6 +290,7 @@ T93·T42 · T50 · T70 최소.
 
 | 태스크 | 상태 | 산출물 | 검증 |
 |---|---|---|---|
+| T25 vendor ancestry gate | ✅ 완료 | `acgh/ancestry.py` + `gitprim.py` | 6 테스트. base/target 공통 조상, locked base·approved target의 candidate 포함 검증, topology 위반=block, 객체 누락·stale tree·모드 오라우팅=analysis_error |
 | T24 integration strategy·candidate-lock | ✅ 완료 | `acgh/candidate.py` + `schema/candidate-lock.schema.json` + `binding.py` | 9 테스트. 기본 `vendor-merge`, patch-replay lock 필수화, base/target/candidate commit·tree·artifact digest 고정, 결과 입력 결속·stale 무효화 |
 | T05 path-ownership·glob 정본 | ✅ 완료 | `policies/repository-layout.yaml` + **운영층** `acgh/layout.py` | 실제 OM 모듈 루트로 검증, `upstream_base_sha` 결속, 모든 게이트 공용 문법(부칙 A-3.1), pathspec factory=`gitignore` 고정 |
 | T12 git 프리미티브 | ✅ 완료 | `harness/acgh/gitprim.py` | 4 테스트 통과(ID-less 커밋 보존 P0-5 가드 포함) |
@@ -319,7 +320,7 @@ T93·T42 · T50 · T70 최소.
 
 > **M1·M1.5·M2·M3·M4 완료** ✅ = **MVP1(Candidate-control) 달성** — 케이스
 > **A·B·C·D**를 candidate 단계에서 기계 통제, 임의 실행 제거. 현재 테스트 함수는
-> 177개이며, 2026-07-24 기준 142개 통과·실제 OM 미러 의존 35개 skip이다.
+> 183개이며, 2026-07-24 기준 148개 통과·실제 OM 미러 의존 35개 skip이다.
 > (T93/T42 라벨: 정본은 T42=upgrade_watch·T93=정책노후화. 초기 커밋 라벨 오류를
 > `21bfc15`에서 정정.) **다음 = MVP2(운영·승격)**: T60·T61·T90(계층3 테스트)·
 > T70·T91(계층4) + 잔여 T43·T51/52·T80. 검증기 카탈로그 §0.1 구현현황 참조.

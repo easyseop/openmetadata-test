@@ -9,6 +9,7 @@ All functions take an explicit repo path so tests can point at temp repos.
 """
 from __future__ import annotations
 
+import re
 import subprocess
 from dataclasses import dataclass
 
@@ -22,6 +23,11 @@ _STABLE_CONFIG = [
     "-c", "i18n.logOutputEncoding=UTF-8",
     "-c", "log.showSignature=false",
 ]
+_FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
+
+
+class GitPrimitiveError(RuntimeError):
+    """A deterministic Git query could not produce a trustworthy answer."""
 
 
 @dataclass(frozen=True)
@@ -126,3 +132,45 @@ def object_exists(repo: str, sha: str) -> bool:
         capture_output=True,
     )
     return proc.returncode == 0
+
+
+def is_ancestor(repo: str, ancestor: str, descendant: str) -> bool:
+    """Return whether ``ancestor`` is reachable from ``descendant``.
+
+    Git uses exit 1 for the valid answer "not an ancestor". Any other failure
+    means the gate could not evaluate and must become analysis_error.
+    """
+    proc = subprocess.run(
+        [
+            "git", "-C", repo, *_STABLE_CONFIG,
+            "merge-base", "--is-ancestor", ancestor, descendant,
+        ],
+        text=True,
+        capture_output=True,
+    )
+    if proc.returncode == 0:
+        return True
+    if proc.returncode == 1:
+        return False
+    raise GitPrimitiveError(
+        f"merge-base --is-ancestor failed ({proc.returncode}): "
+        f"{proc.stderr.strip() or 'no stderr'}"
+    )
+
+
+def merge_base(repo: str, left: str, right: str) -> str | None:
+    """Return one common ancestor SHA, or ``None`` for unrelated histories."""
+    proc = subprocess.run(
+        ["git", "-C", repo, *_STABLE_CONFIG, "merge-base", left, right],
+        text=True,
+        capture_output=True,
+    )
+    if proc.returncode == 1 and not proc.stdout.strip():
+        return None
+    sha = proc.stdout.strip()
+    if proc.returncode != 0 or not _FULL_SHA.match(sha):
+        raise GitPrimitiveError(
+            f"merge-base failed ({proc.returncode}): "
+            f"{proc.stderr.strip() or sha or 'no output'}"
+        )
+    return sha

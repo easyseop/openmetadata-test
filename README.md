@@ -18,8 +18,8 @@
 모드**로 유지한다. 이 결정의 정본은
 [`ADR-001`](docs/02-설계/ADR-001-vendor-merge-default.md)이다.
 
-> 전환 상태: T24 candidate-lock은 구현됐고, vendor-merge ancestry·
-> customization 생존 게이트(T25~T29)는 추가 개발이 필요하다. 따라서 기존
+> 전환 상태: T24 candidate-lock과 T25 vendor ancestry gate는 구현됐고,
+> customization 생존·실제 등록 게이트(T26~T29)는 추가 개발이 필요하다. 따라서 기존
 > “MVP1 완료” 표시는 patch-replay 구조 검증에 한정한다.
 
 ## 무엇을 보장하고, 무엇은 보장하지 않는가 (중요)
@@ -69,7 +69,7 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 | **R1** | 커스터마이징이 새 버전에 **빠짐없이** 올라갔는지 자동 확인 | A1·A2 | 🟡 replay 완료·merge 개발 필요 |
 | **R2** | 커스터마이징을 **왜/어디서** 했는지 이력 보존 | A1·A3 | ✅ 완료 |
 | **R3** | **범위 밖·위험 변경**이 검토 없이 통과 못하게 | A4 | ✅ 완료 |
-| **R4** | 승인된 공식 버전이 vendor candidate에 통합됐음을 확인 | A2 | 🟡 T24 잠금 완료·T25 ancestry 필요 |
+| **R4** | 승인된 공식 버전이 vendor candidate에 통합됐음을 확인 | A2 | ✅ T24 lock·T25 ancestry |
 | **R5** | 후보 SHA·tree·artifact가 고정되고 추적됨 | A3 | ✅ T24 candidate-lock·결과 입력 결속 |
 | **R6** | **충돌 없이 의미만 바뀐** 변경 감지(케이스 D) | A5 | ✅ 완료(감지·리뷰) |
 | **R7** | '등록·재적용'과 '기능 정확성'을 **정직하게 구분** | A6 | ✅ 완료 |
@@ -77,7 +77,7 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 | **R9** | **릴리스 승격·내부망 반입** 통제 | A8 | ⬜ 계획(MVP2) |
 
 > **MVP별 커버**: 기존 **patch-replay MVP1**은 구조 검증을 구현했다.
-> 기본 `vendor-merge` Candidate-control은 T25~T29 완료 후 달성한다.
+> 기본 `vendor-merge` Candidate-control은 T26~T29 완료 후 달성한다.
 > **MVP2(예정) → R8·R9 추가** (실제 기능
 > 동작 + 검증본 그대로 릴리스·반입). 남은 개발 전부는 위 22종 표의 🟡/⬜ 항목.
 
@@ -92,7 +92,7 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 
 | # | 검증기 | 왜 필요 · 안 지키면 나올 문제 | 구현 방법론 (또는 계획) | 상태·태스크 |
 |---|---|---|---|---|
-| 1 | 통합 게이트 | 승인된 공식 버전과 행내 수정이 candidate에 함께 존재해야 한다 | 기본은 vendor ancestry·target SHA·customization 생존 검사. cherry-pick 탐지/해결은 선택 replay 모드 | 🟡 T24 잠금 완료·T25~T29 필요 |
+| 1 | 통합 게이트 | 승인된 공식 버전과 행내 수정이 candidate에 함께 존재해야 한다 | 기본은 vendor ancestry·target SHA·customization 생존 검사. cherry-pick 탐지/해결은 선택 replay 모드 | 🟡 T24·T25 완료, T26~T29 필요 |
 | 2 | 커밋 불변식 | 뭘 바꿨는지 **세야** 누락 검증 가능 · 이름표 없으면 '수정 목록' 자체가 없음 | 커밋 **꼬리표만** 파싱, 업스트림 건드린 커밋=**이름표 정확히 1개**(0·다중·merge·빈·원본+정책 혼합=위반) | ✅ T30 |
 | 3 | ID·series 불변식 | 한 수정이 여러 커밋일 때 **절반만 반영**돼도 통과하면 안 됨 | 이름표 단위로 series 승인·**연속성**·의존 순환·폐기 재사용 검사 | ✅ T31 |
 | 4 | 최종상태 불변식 | "이름표는 다 있는데 기능은 사라진" 상태 차단 | **counterfactual**: 그 ID만 뺀 재생 tree와 전체 재생 tree 비교, 같으면 기여 0=차단 | ✅ T32 |
@@ -217,7 +217,7 @@ M9 업그레이드 검증·릴리스 승격(digest 결속)·반입
 ```bash
 cd harness
 pip install jsonschema pathspec pyyaml pytest    # 또는 pip install -e ".[dev]"
-python -m pytest                                  # 현재 177개: 142 pass·35 mirror skip
+python -m pytest                                  # 현재 183개: 148 pass·35 mirror skip
 ```
 
 **실제 OM 미러 연결**(게이트·재적용 테스트용, 없으면 해당 테스트 자동 skip):

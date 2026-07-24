@@ -35,10 +35,10 @@
 
 ---
 
-## 0.1 구현 현황 (2026-07-24 · T24 candidate-lock 완료)
+## 0.1 구현 현황 (2026-07-24 · T25 vendor ancestry 완료)
 
 > 아래 표는 **설계**이고, 실제 코드는 `harness/acgh/` 에 있다. 현재 소스에는
-> **177개 테스트**가 있다. 2026-07-24 기준 142개 통과, 실제 OpenMetadata 미러
+> **183개 테스트**가 있다. 2026-07-24 기준 148개 통과, 실제 OpenMetadata 미러
 > 의존 35개는 skip이다.
 > ✅=구현·테스트 완료, 🟡=핵심 구현(부분), ⬜=미착수.
 
@@ -48,7 +48,7 @@ manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과�
 
 | # | 검증기 | 태스크 | 상태 | 모듈 |
 |---|---|---|---|---|
-| 1 | 통합(vendor merge/replay) | T24~T29·T20·T21 | 🟡 T24 잠금·replay 완료, T25~T29 필요 | `candidate.py`·`reapply.py`·`resolve.py` |
+| 1 | 통합(vendor merge/replay) | T24~T29·T20·T21 | 🟡 T24·T25·replay 완료, T26~T29 필요 | `candidate.py`·`ancestry.py`·`reapply.py`·`resolve.py` |
 | 2 | 커밋 불변식 | T30 | ✅ | `invariants.py` |
 | 3 | ID·series 불변식 | T31 | ✅ | `invariants.py` |
 | 4 | 최종상태 불변식 | T32 | ✅ | `finalstate.py` |
@@ -72,7 +72,7 @@ manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과�
 | 22 | LLM Impact Memo | T80 | 🟡 | `impact.py`(케이스 D 조언 memo; 범용 T80은 미완) |
 
 **기존 replay-mode MVP1 도달 = 케이스 A·B·C·D를 candidate 단계에서 기계 통제.**
-vendor-merge 기본 경로는 T25~T29가 남았다. 이후 MVP2
+vendor-merge 기본 경로는 T26~T29가 남았다. 이후 MVP2
 (운영·승격)는 계층 3 테스트(15·16·18)와 계층 4(19·20) = T60/T61/T90/T70/T91.
 
 ---
