@@ -2,14 +2,15 @@
 
 > **목적**: 컨텍스트가 리셋돼도 이 문서 하나로 작업을 이어갈 수 있게 현재까지의
 > 모든 결정·산출물·다음 단계를 세세하게 기록한다. **작업 재개 시 이 문서를 먼저 읽는다.**
-> 최종 갱신: 2026-07-24 vendor-merge 기본 전략 결정 반영.
+> 최종 갱신: 2026-07-24 T24 candidate-lock 구현·검증 반영.
 
 ---
 
 ## 0. 지금 어디인가 (한 줄)
 
-기존 patch-replay 중심 MVP1 모듈은 구현됐으나, 운영 전략을 **vendor merge 기본 /
-patch replay 선택 진단**으로 변경했다. 다음 개발은 T24~T29와 실제
+기존 patch-replay 중심 MVP1 모듈은 구현됐고, 운영 전략을 **vendor merge 기본 /
+patch replay 선택 진단**으로 변경했다. T24 candidate-lock까지 완료했으며 다음은
+T25~T29와 실제
 `kb_openmetadata` 커스터마이징 manifest·contract 등록이다.
 
 ## 1. 리포지토리·브랜치
@@ -92,8 +93,8 @@ patch replay 선택 진단**으로 변경했다. 다음 개발은 T24~T29와 실
 ## 6. 개발 순서 (2026-07-24 개정)
 
 ```
-T24 integration_strategy/candidate-lock
-  → T25 vendor ancestry
+T24 integration_strategy/candidate-lock ✅
+  → T25 vendor ancestry ← 다음
   → T26 customization survival
   → T29 실제 kb_openmetadata manifest/contract
   → T27 merge conflict evidence
@@ -182,9 +183,9 @@ harness/
 ### 현재 위치 (2026-07-24, 최신)
 
 **완료:** 기존 patch-replay M1~M4 + MVP2 Docker-free 다수.
-**전략 변경:** vendor-merge를 기본으로 확정했으며 T24~T29는 미구현이다.
-현재 소스에는 테스트 함수 168개가 있다. 이 로컬 환경에서는 pytest 의존성이
-없어 실행하지 못했으므로 과거 통과 기록과 현재 실행 검증을 구분한다.
+**전략 변경:** vendor-merge를 기본으로 확정했고 T24 candidate-lock을 구현했다.
+현재 테스트는 177개이며, 2026-07-24 임시 Python 3.12 환경에서 142개 통과,
+실제 OpenMetadata 미러가 필요한 35개는 skip됐다.
 - **T60** contract 카탈로그+결속 `contracts.py` · **T61** patch-kill
   `patchkill.py` · **T51/52** 구조화 diff `structdiff.py`(실제 table.json
   dataContract 검출) · **T70** 정책 self-protection `policy_guard.py` · **T43**
@@ -203,6 +204,7 @@ harness/
 
 | 태스크 | 상태 | 모듈 |
 |---|---|---|
+| T24 integration strategy·candidate-lock | ✅ | `acgh/candidate.py` + `schema/candidate-lock.schema.json` + `binding.py` |
 | T05 path-ownership 운영층 | ✅ | `acgh/layout.py` + `policies/repository-layout.yaml` |
 | T12 git 프리미티브 | ✅ | `acgh/gitprim.py`(+parents/change_type/is_merge) |
 | T13 verdict 엔진 | ✅ | `acgh/verdict.py` |
@@ -238,13 +240,12 @@ harness/
 
 ### 다음 태스크 — vendor-merge 기본 경로와 실제 커스터마이징 연결
 
-1. T24: manifest/runner에 `integration_strategy`와 candidate lock 도입
-2. T25: vendor candidate의 upstream target ancestry 검증
-3. T26: ID별 required state·path·contract 생존 검증
-4. T29: 실제 변경 7종을 `BANK-OM-001~007`로 등록
-5. T27: merge conflict evidence
-6. T28: 기존 replay 모듈의 선택 모드 라우팅
-7. 이후 API·DB·검색·권한·UI contract 테스트와 T90 연결
+1. T25: vendor candidate의 upstream target ancestry 검증
+2. T26: ID별 required state·path·contract 생존 검증
+3. T29: 실제 변경 7종을 `BANK-OM-001~007`로 등록
+4. T27: merge conflict evidence
+5. T28: 기존 replay 모듈의 선택 모드 라우팅
+6. 이후 API·DB·검색·권한·UI contract 테스트와 T90 연결
 
 > 아래 M4 재개 지침은 기존 replay-mode 개발 이력으로 보존한다.
 
@@ -298,7 +299,7 @@ replay tree(T22 `replay.replay_and_compare` 재사용), candidate 변경 시 기
 ### 재개 절차
 1. 이 파일 + `docs/04-진행/openmetadata_build_plan.md` + SRS 부칙 A(`docs/02-설계/openmetadata_governance_requirements.md`) 읽기.
 2. `/home/user/om-mirror` 존재 확인(없으면 §7 재획득), `pip install jsonschema pathspec`.
-3. 의존성 설치 후 `cd harness && python -m pytest` → 현재 168개 테스트 함수 실행.
+3. `cd harness && python -m pytest` → 현재 177개(142 pass·35 mirror skip) 재확인.
 4. ✅ MVP1 완성(M1~M4, 케이스 A·B·C·D). 다음 = **MVP2(운영·승격)**: 계층3 테스트
    **T60**(contract↔test)·**T61**(patch-kill)·**T90**(업그레이드 차등 테스트) +
    계층4 **T70**(정책 base-평가)·**T91**(digest 승격). + 잔여 게이트 T43(부채)·

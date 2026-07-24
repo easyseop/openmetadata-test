@@ -170,14 +170,14 @@
 
 | 태스크 | 내용 | 우선순위 |
 |---|---|---|
-| T24 | `integration_strategy`와 `candidate-lock` 스키마 | P0 |
+| T24 | `integration_strategy`와 `candidate-lock` 스키마 | ✅ 완료 |
 | T25 | vendor ancestry·upstream target 포함 검증 | P0 |
 | T26 | merge candidate의 customization 생존 게이트 | P0 |
 | T27 | merge conflict resolution evidence | P1 |
 | T28 | replay 모듈을 선택 진단 모드로 라우팅 | P1 |
 | T29 | 실제 `kb_openmetadata` 변경을 manifest/contract로 등록 | P0 |
 
-`T24~T29`가 구현되기 전까지 기존 MVP1 완료 표시는
+`T25~T29`가 구현되기 전까지 기존 MVP1 완료 표시는
 **patch-replay 모드의 구조 검증 구현 완료**를 뜻한다. `vendor-merge` 기본 경로의
 Candidate-control은 아직 완료가 아니다.
 

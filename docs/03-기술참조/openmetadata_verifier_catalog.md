@@ -35,10 +35,11 @@
 
 ---
 
-## 0.1 구현 현황 (2026-07-23 · MVP1 Candidate-control 달성)
+## 0.1 구현 현황 (2026-07-24 · T24 candidate-lock 완료)
 
 > 아래 표는 **설계**이고, 실제 코드는 `harness/acgh/` 에 있다. 현재 소스에는
-> **168개 테스트 함수**가 있다. 실행 통과 건수는 의존성 설치 환경에서 다시 기록한다.
+> **177개 테스트**가 있다. 2026-07-24 기준 142개 통과, 실제 OpenMetadata 미러
+> 의존 35개는 skip이다.
 > ✅=구현·테스트 완료, 🟡=핵심 구현(부분), ⬜=미착수.
 
 **기반(카탈로그 22개 밖, 하네스 골격)**: ✅ T05 경로소유 `layout.py` · ✅ T10
@@ -47,7 +48,7 @@ manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과�
 
 | # | 검증기 | 태스크 | 상태 | 모듈 |
 |---|---|---|---|---|
-| 1 | 통합(vendor merge/replay) | T24~T29·T20·T21 | 🟡 replay 완료·merge 미구현 | `reapply.py`·`resolve.py` |
+| 1 | 통합(vendor merge/replay) | T24~T29·T20·T21 | 🟡 T24 잠금·replay 완료, T25~T29 필요 | `candidate.py`·`reapply.py`·`resolve.py` |
 | 2 | 커밋 불변식 | T30 | ✅ | `invariants.py` |
 | 3 | ID·series 불변식 | T31 | ✅ | `invariants.py` |
 | 4 | 최종상태 불변식 | T32 | ✅ | `finalstate.py` |
@@ -57,7 +58,7 @@ manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과�
 | 8 | 정책 노후화 drift | T93 | ✅ | `policy_drift.py` |
 | 9 | upgrade_watch(케이스 D) | T42 | ✅ | `upgrade_watch.py`·`impact.py` |
 | 10 | 부채 게이트 | T43 | ✅ | `debt.py` |
-| 11 | candidate/patch lock | T24·T11 | 🟡 patch 완료·candidate 미구현 | `patchlock.py`·`integrator.py`(CAS) |
+| 11 | candidate/patch lock | T24·T11 | ✅ | `candidate.py`·`binding.py`·`patchlock.py`·`integrator.py` |
 | 12 | 선언형 verifier | T50 | ✅ | `verifier.py` |
 | 13 | 구조화 diff providers | T51·T52 | ✅ | `structdiff.py` |
 | 14 | 필수 테스트 존재 | CG | ⬜ | — |
@@ -71,7 +72,7 @@ manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과�
 | 22 | LLM Impact Memo | T80 | 🟡 | `impact.py`(케이스 D 조언 memo; 범용 T80은 미완) |
 
 **기존 replay-mode MVP1 도달 = 케이스 A·B·C·D를 candidate 단계에서 기계 통제.**
-vendor-merge 기본 경로는 T24~T29가 남았다. 이후 MVP2
+vendor-merge 기본 경로는 T25~T29가 남았다. 이후 MVP2
 (운영·승격)는 계층 3 테스트(15·16·18)와 계층 4(19·20) = T60/T61/T90/T70/T91.
 
 ---

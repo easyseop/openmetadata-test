@@ -1,4 +1,4 @@
-"""T62 — evaluation-time SHA binding (SRS §10.1, 부칙 A-1.5).
+"""T62/T24 — evaluation-time SHA and candidate-lock binding.
 
 Closes the time-gap between a gate evaluating a candidate and that candidate
 being promoted: bind every input to a resolved 40-hex commit SHA, never to a
@@ -9,6 +9,10 @@ and "what gets promoted" are provably the same object.
 Produces the repository-qualified ``inputs`` block that verdict.build_result
 embeds and result_io.interpret_result stale-checks against (부칙 A-1.5):
 ``{repositories: {name: {sha}}, patch_source_lock_digest, verifier_catalog_digest}``.
+
+``build_repository_inputs`` remains the patch-replay input builder.
+``build_candidate_inputs`` is the strategy-neutral T24 path: it derives all
+judgment inputs from one immutable candidate lock.
 """
 from __future__ import annotations
 
@@ -86,3 +90,44 @@ def assert_lock_binding(inputs: dict, source_lock) -> None:
         raise BindingError(
             f"inputs patch_source_lock_digest {got} != lock digest {want}"
         )
+
+
+def build_candidate_inputs(candidate_lock, *, verifier_catalog_digest: str) -> dict:
+    """Build result inputs from one immutable T24 candidate lock.
+
+    Callers do not pass candidate SHAs separately: deriving them from the lock
+    prevents a result from accidentally binding a different commit or artifact.
+    """
+    if not _DIGEST.match(verifier_catalog_digest or ""):
+        raise BindingError(
+            f"bad verifier_catalog_digest: {verifier_catalog_digest!r}"
+        )
+
+    upstream = candidate_lock.upstream
+    candidate = candidate_lock.candidate
+    result = {
+        "integration_strategy": candidate_lock.integration_strategy,
+        "repositories": {
+            "upstream_base": {
+                "repository": upstream.repository,
+                "sha": upstream.base_sha,
+            },
+            "upstream_target": {
+                "repository": upstream.repository,
+                "sha": upstream.target_sha,
+            },
+            "candidate": {
+                "repository": candidate.repository,
+                "sha": candidate.commit_sha,
+                "tree_sha": candidate.tree_sha,
+            },
+        },
+        "artifact_digest": candidate.artifact_digest,
+        "candidate_lock_digest": candidate_lock.digest(),
+        "verifier_catalog_digest": verifier_catalog_digest,
+    }
+    if candidate_lock.patch_source_lock_digest is not None:
+        result["patch_source_lock_digest"] = (
+            candidate_lock.patch_source_lock_digest
+        )
+    return result

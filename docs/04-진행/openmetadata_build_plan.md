@@ -2,7 +2,8 @@
 
 > **2026-07-24 변경:** [`ADR-001`](../02-설계/ADR-001-vendor-merge-default.md)에
 > 따라 vendor merge가 기본 통합 전략이다. 아래 기존 T20~T23 replay 파이프라인은
-> 선택 모드로 유지한다. 기본 경로를 완성하는 T24~T29가 P0 선행 작업이다.
+> 선택 모드로 유지한다. T24 candidate-lock은 완료됐고, 기본 경로를 완성하는
+> T25~T29가 후속 작업이다.
 
 > **이 문서의 위치**
 > 최종 목표부터 개별 개발 태스크까지를 **순차 개발 가능한 형태**로 기록한다.
@@ -89,8 +90,9 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 
 ### vendor-merge 전환 태스크 (ADR-001)
 
-- **T24 · integration strategy + candidate lock** — 기본값 `vendor-merge`,
-  공식 base/target SHA와 candidate commit/tree/artifact digest를 고정.
+- **T24 · integration strategy + candidate lock (✅ 완료)** — 기본값
+  `vendor-merge`, 공식 base/target SHA와 candidate commit/tree/artifact digest를
+  고정하고 결과 입력을 candidate-lock digest에 결속.
 - **T25 · vendor ancestry gate** — candidate가 공식 target SHA를 포함하고
   공통 조상을 유지하는지 결정적으로 검증.
 - **T26 · customization survival gate** — ID별 required state·path·contract가

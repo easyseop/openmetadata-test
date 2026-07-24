@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bank.local/acgh/candidate-lock.schema.json",
+  "title": "Candidate Lock (T24)",
+  "description": "Immutable identity of one upgrade candidate. The strategy belongs to the upgrade run, not to each customization manifest.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "integration_strategy", "upstream", "candidate"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "integration_strategy": {
+      "enum": ["vendor-merge", "patch-replay"],
+      "default": "vendor-merge"
+    },
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "base_sha", "target_sha"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "base_tag": {"type": "string", "minLength": 1},
+        "base_sha": {"$ref": "#/$defs/gitSha"},
+        "target_tag": {"type": "string", "minLength": 1},
+        "target_sha": {"$ref": "#/$defs/gitSha"}
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "commit_sha",
+        "tree_sha",
+        "artifact_digest"
+      ],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "commit_sha": {"$ref": "#/$defs/gitSha"},
+        "tree_sha": {"$ref": "#/$defs/gitSha"},
+        "artifact_digest": {"$ref": "#/$defs/sha256Digest"}
+      }
+    },
+    "patch_source_lock_digest": {"$ref": "#/$defs/sha256Digest"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "integration_strategy": {"const": "patch-replay"}
+        },
+        "required": ["integration_strategy"]
+      },
+      "then": {
+        "required": ["patch_source_lock_digest"]
+      }
+    }
+  ],
+  "$defs": {
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sha256Digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}
