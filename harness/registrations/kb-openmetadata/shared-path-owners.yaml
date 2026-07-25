@@ -1,0 +1,53 @@
+# T25-R hunk-level ownership template for the 44 paths matched by more than one
+# active customization manifest. Empty lists are deliberate blockers.
+#
+# For each path, inspect the upstream..snapshot hunks, split them into logical
+# commits, and list every BANK-OM ID that actually owns at least one committed
+# hunk. Values must be a subset of the candidates shown in the comment. The
+# vendor reconstruction gate verifies that every listed ID really touches the
+# path and that the final content equals the pinned source snapshot.
+
+bootstrap/sql/migrations/native/1.13.1/mysql/schemaChanges.sql: [] # BANK-OM-001, BANK-OM-002
+bootstrap/sql/migrations/native/1.13.1/postgres/schemaChanges.sql: [] # BANK-OM-001, BANK-OM-002
+openmetadata-service/src/main/java/org/openmetadata/service/Entity.java: [] # BANK-OM-001, BANK-OM-002
+openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java: [] # BANK-OM-001, BANK-OM-002
+openmetadata-service/src/main/java/org/openmetadata/service/search/SearchIndexFactory.java: [] # BANK-OM-001, BANK-OM-002
+openmetadata-spec/src/main/resources/elasticsearch/indexMapping.json: [] # BANK-OM-001, BANK-OM-002
+openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json: [] # BANK-OM-006, BANK-OM-007
+openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003
+openmetadata-ui/src/main/resources/ui/src/constants/constants.ts: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003
+openmetadata-ui/src/main/resources/ui/src/context/PermissionProvider/PermissionProvider.interface.ts: [] # BANK-OM-001, BANK-OM-002
+openmetadata-ui/src/main/resources/ui/src/enums/Explore.enum.ts: [] # BANK-OM-001, BANK-OM-002
+openmetadata-ui/src/main/resources/ui/src/enums/entity.enum.ts: [] # BANK-OM-001, BANK-OM-002
+openmetadata-ui/src/main/resources/ui/src/enums/search.enum.ts: [] # BANK-OM-001, BANK-OM-002
+openmetadata-ui/src/main/resources/ui/src/generated/api/services/createDatabaseService.ts: [] # BANK-OM-006, BANK-OM-007
+openmetadata-ui/src/main/resources/ui/src/generated/api/services/ingestionPipelines/createIngestionPipeline.ts: [] # BANK-OM-006, BANK-OM-007
+openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts: [] # BANK-OM-006, BANK-OM-007
+openmetadata-ui/src/main/resources/ui/src/generated/entity/services/databaseService.ts: [] # BANK-OM-006, BANK-OM-007
+openmetadata-ui/src/main/resources/ui/src/generated/entity/services/ingestionPipelines/ingestionPipeline.ts: [] # BANK-OM-006, BANK-OM-007
+openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/testSuitePipeline.ts: [] # BANK-OM-006, BANK-OM-007
+openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/workflow.ts: [] # BANK-OM-006, BANK-OM-007
+openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004
+openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004
+openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004
+openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004
+openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004
+openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004
+openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004
+openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004
+openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004
+openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004
+openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004
+openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004
+openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004
+openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004
+openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004
+openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004
+openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004
+openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004
+openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004
+openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx: [] # BANK-OM-006, BANK-OM-007
+openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx: [] # BANK-OM-006, BANK-OM-007
+openmetadata-ui/src/main/resources/ui/src/utils/RouterUtils.ts: [] # BANK-OM-001, BANK-OM-002, BANK-OM-003
+openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts: [] # BANK-OM-006, BANK-OM-007
+openmetadata-ui/src/main/resources/ui/src/utils/ServiceUtils.tsx: [] # BANK-OM-006, BANK-OM-007

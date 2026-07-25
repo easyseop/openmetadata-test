@@ -5,8 +5,9 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 > **통합 전략:** 기본 운영은 vendor merge이며, 현재 구현된
 > `patchlock`·`reapply`·`resolve`·`replay`는 선택 patch-replay 모드다.
 > T24~T29 candidate/ancestry/survival/conflict/routing과 실제 7개 등록부까지
-> 구현됐다. 단, 원본 `kb_openmetadata`가 ancestry 없는 root snapshot이므로 실제
-> vendor branch 재구성과 운영 contract test 실행 전에는 release pass가 아니다.
+> 구현됐고 T25-R은 ancestry 없는 snapshot의 안전한 재구성 계획과 candidate를
+> 검증한다. 단, 실제 vendor branch 재구성과 운영 contract test 실행 전에는
+> release pass가 아니다.
 
 > **요구사항 충족(영역 A1~A8)·검증기 22종의 왜/안 지키면/방법론·전체 개발 범위·
 > 설계 배경은 루트 [`../README.md`](../README.md) 가 정본이다.** 이 파일은 하네스
@@ -17,13 +18,13 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 ```bash
 cd harness
 pip install jsonschema pathspec pyyaml pytest    # 또는 pip install -e ".[dev]"
-python -m pytest                                  # 현재 257개: 222 pass·35 mirror skip
+python -m pytest                                  # 현재 269개: 234 pass·35 mirror skip
 bash fixtures/fetch_upstream.sh                   # 실제 OM 미러(없으면 미러 테스트 자동 skip)
 ```
 
 Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
 
-## 구현 모듈 (현재 257개 테스트: 222 pass·35 mirror skip)
+## 구현 모듈 (현재 269개 테스트: 234 pass·35 mirror skip)
 
 | 모듈 | 담당 | 루트 README 검증기# / 영역 |
 |---|---|---|
@@ -33,6 +34,7 @@ Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
 | `binding.py` | SHA 결속(repo-qualified inputs) | 17 / A6 |
 | `candidate.py` | 통합 전략·candidate-lock·결과 입력 결속 | 11 / A2·A3 |
 | `ancestry.py` | vendor 공통 이력·승인 target 포함 검증 | 1 / A2 |
+| `vendor_rebuild.py` | root snapshot 재구성 계획·공유 hunk 소유·candidate 검증 | 1 / A1·A2 |
 | `survival.py`·`registry.py` | active ID 생존·실제 7개 등록 그래프 | 1·14·15 / A1·A2 |
 | `conflicts.py`·`routing.py` | merge 해결 증거·vendor/replay 명시 라우팅 | 1 / A2 |
 | `gitprim.py` | git 프리미티브(trailer·-z·tree) | — |
@@ -59,6 +61,37 @@ Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
 
 입력(manifest·patch-source-lock·정책 YAML)·출력(acgh-result·change-evidence)·판정
 4상태 상세는 루트 README '개발자 빠른 시작' 참조.
+
+## T25-R vendor 재구성
+
+`--repo`에는 공식 target과 root snapshot의 두 고정 commit object가 모두 있어야
+한다. `plan`은 실제 tree diff가 등록한 113개 경로와 같은지 확인하고 결정적 JSON
+계획을 출력한다.
+
+```bash
+acgh-vendor-rebuild \
+  --repo /path/to/object-complete-repo \
+  --registration registrations/kb-openmetadata \
+  plan
+```
+
+현재 계획은 67개 단독 소유, 44개 공유 파일, 2개 제외 경로다. 공유 파일은
+`registrations/kb-openmetadata/shared-path-owners.yaml`의 빈 목록을 실제 hunk
+소유 ID로 채운 뒤 검증한다. 빈 목록은 의도적으로 `block`이다.
+
+```bash
+acgh-vendor-rebuild \
+  --repo /path/to/object-complete-repo \
+  --registration registrations/kb-openmetadata \
+  verify \
+  --candidate <full-candidate-sha> \
+  --shared-owners registrations/kb-openmetadata/shared-path-owners.yaml
+```
+
+검증기는 candidate가 공식 target에서 시작했는지, unrelated snapshot commit을
+merge하지 않았는지, commit마다 ID가 정확히 하나인지, 경로 소유가 맞는지,
+registered path의 최종 내용은 snapshot과 같은지, 제외 경로는 upstream 그대로인지
+확인한다.
 
 ## 디렉터리
 

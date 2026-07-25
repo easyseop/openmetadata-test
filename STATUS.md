@@ -24,15 +24,21 @@ The real `kangdkdk/kb_openmetadata` snapshot is registered as seven
 customizations (`BANK-OM-001` through `BANK-OM-007`) against the official
 OpenMetadata `1.13.1-release` commit.
 
+T25-R now supplies the missing snapshot-to-vendor reconstruction planner and
+candidate gate. The 113 pinned source paths deterministically classify as 67
+single-owner paths, 44 shared paths requiring explicit hunk ownership, and 2
+excluded non-product paths. A reconstructed candidate must descend from the
+official target, must not merge the unrelated snapshot commit, and must match
+the snapshot only on registered product paths.
+
 ## Verification
 
 ```text
-222 passed, 35 skipped in 13.44s
+234 passed, 35 skipped in 42.96s
 ```
 
 The 35 skips require the historical Linux fixture path
-`/home/user/om-mirror`; they are not failures. All 74 tests added in the
-2026-07-25 change pass.
+`/home/user/om-mirror`; they are not failures. All 12 T25-R tests pass.
 
 ## Important production blockers
 
@@ -42,6 +48,8 @@ This is not yet evidence that the bank distribution is deployable:
    `2c2347043235aa2a4ecba4729774c770fcee5d67` is a single root snapshot.
    It does not preserve the ancestry of official target
    `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9`, so T25 must reject it.
+   T25-R is implemented, but the real object-complete vendor branch and the
+   hunk ownership decisions for 44 shared files have not yet been produced.
 2. The seven owners are deliberately `UNASSIGNED`/`pending`.
 3. Two changed paths are not part of the seven product customizations and are
    explicit blockers: `.claude/settings.json` broadly auto-approves tools, and

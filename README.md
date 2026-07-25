@@ -18,9 +18,10 @@
 모드**로 유지한다. 이 결정의 정본은
 [`ADR-001`](docs/02-설계/ADR-001-vendor-merge-default.md)이다.
 
-> 현재 상태: T24~T29와 실제 7개 등록부, Docker-free 운영 게이트를 구현했다.
-> 다만 원본 `kb_openmetadata`는 upstream ancestry 없는 root snapshot이고 실제
-> contract/upgrade test가 없으므로, 현재 production release는 차단 상태다.
+> 현재 상태: T24~T29와 실제 7개 등록부, T25-R snapshot 재구성 검증기,
+> Docker-free 운영 게이트를 구현했다. 다만 원본 `kb_openmetadata`는 upstream
+> ancestry 없는 root snapshot이고 실제 vendor candidate와 contract/upgrade
+> test가 없으므로, 현재 production release는 차단 상태다.
 > 상세는 [`STATUS.md`](STATUS.md)와
 > [Claude 검토 인수인계](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)를 본다.
 
@@ -68,7 +69,7 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 
 | 요구ID | 요구사항 (쉬운 말) | 영역 | 상태 |
 |---|---|---|---|
-| **R1** | 커스터마이징이 새 버전에 **빠짐없이** 올라갔는지 자동 확인 | A1·A2 | ✅ 엔진·7개 등록 / ⚠ 실제 ancestry 재구성 필요 |
+| **R1** | 커스터마이징이 새 버전에 **빠짐없이** 올라갔는지 자동 확인 | A1·A2 | ✅ 엔진·7개 등록·T25-R / ⚠ 실제 vendor branch 필요 |
 | **R2** | 커스터마이징을 **왜/어디서** 했는지 이력 보존 | A1·A3 | ✅ 완료 |
 | **R3** | **범위 밖·위험 변경**이 검토 없이 통과 못하게 | A4 | ✅ 완료 |
 | **R4** | 승인된 공식 버전이 vendor candidate에 통합됐음을 확인 | A2 | ✅ T24 lock·T25 ancestry |
@@ -94,7 +95,7 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 
 | # | 검증기 | 왜 필요 · 안 지키면 나올 문제 | 구현 방법론 (또는 계획) | 상태·태스크 |
 |---|---|---|---|---|
-| 1 | 통합 게이트 | 승인된 공식 버전과 행내 수정이 candidate에 함께 존재해야 한다 | 기본은 vendor ancestry·target SHA·customization 생존 검사. cherry-pick 탐지/해결은 선택 replay 모드 | ✅ T24~T29 엔진·7개 등록 (현 snapshot은 T25 차단) |
+| 1 | 통합 게이트 | 승인된 공식 버전과 행내 수정이 candidate에 함께 존재해야 한다 | 기본은 vendor ancestry·T25-R snapshot 재구성·target SHA·customization 생존 검사. cherry-pick 탐지/해결은 선택 replay 모드 | ✅ T24~T29·T25-R 엔진 (실 branch 미생성) |
 | 2 | 커밋 불변식 | 뭘 바꿨는지 **세야** 누락 검증 가능 · 이름표 없으면 '수정 목록' 자체가 없음 | 커밋 **꼬리표만** 파싱, 업스트림 건드린 커밋=**이름표 정확히 1개**(0·다중·merge·빈·원본+정책 혼합=위반) | ✅ T30 |
 | 3 | ID·series 불변식 | 한 수정이 여러 커밋일 때 **절반만 반영**돼도 통과하면 안 됨 | 이름표 단위로 series 승인·**연속성**·의존 순환·폐기 재사용 검사 | ✅ T31 |
 | 4 | 최종상태 불변식 | "이름표는 다 있는데 기능은 사라진" 상태 차단 | **counterfactual**: 그 ID만 뺀 재생 tree와 전체 재생 tree 비교, 같으면 기여 0=차단 | ✅ T32 |
@@ -221,7 +222,7 @@ M9 업그레이드 검증·릴리스 승격(digest 결속)·반입
 ```bash
 cd harness
 pip install jsonschema pathspec pyyaml pytest    # 또는 pip install -e ".[dev]"
-python -m pytest                                  # 현재 257개: 222 pass·35 mirror skip
+python -m pytest                                  # 현재 269개: 234 pass·35 mirror skip
 ```
 
 **실제 OM 미러 연결**(게이트·재적용 테스트용, 없으면 해당 테스트 자동 skip):

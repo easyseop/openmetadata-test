@@ -7,6 +7,7 @@ Modules:
             changed paths, object existence (REQ-CG-01, 부칙 A-2).
 - candidate: T24. Integration strategy and immutable candidate identity.
 - ancestry:  T25. Vendor ancestry and approved-target containment gate.
+- vendor_rebuild: T25-R. Snapshot-to-vendor reconstruction plan and gate.
 """
 
 __version__ = "0.0.1"

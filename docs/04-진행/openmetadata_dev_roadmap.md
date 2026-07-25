@@ -2,9 +2,9 @@
 
 > **2026-07-25 변경:** [`ADR-001`](../02-설계/ADR-001-vendor-merge-default.md)이
 > 통합 전략의 정본이다. 현재 replay 기반 MVP1 구현은 선택 모드로 재분류되며,
-> T24~T29 기본 경로와 실제 7개 등록부, 잔여 Docker-free 운영 게이트까지 구현됐다.
-> 단 원본 root snapshot의 ancestry 재구성, 실제 contract/upgrade test와 승격·반입
-> 증거가 없으므로 Production-upgrade 달성으로 표기하지 않는다.
+> T24~T29·T25-R 기본 경로와 실제 7개 등록부, 잔여 Docker-free 운영 게이트까지
+> 구현됐다. 단 실제 vendor branch, 44개 shared hunk owner, contract/upgrade
+> test와 승격·반입 증거가 없으므로 Production-upgrade 달성으로 표기하지 않는다.
 
 > **이 문서의 용도**
 > "무엇을 · 어떤 순서로 만들고, 각 MVP를 완성하면 **어디까지 커버되는지**"를
@@ -291,6 +291,7 @@ T93·T42 · T50 · T70 최소.
 
 | 태스크 | 상태 | 산출물 | 검증 |
 |---|---|---|---|
+| T25-R snapshot→vendor 재구성 | ✅ 검증기·⚠ 실 branch 미생성 | `acgh/vendor_rebuild.py` + `shared-path-owners.yaml` | 12 테스트. 실제 등록부 113경로를 67 단독·44 공유·2 제외로 결정 분류. target ancestry·snapshot commit 비포함·ID/path/hunk owner·최종 content 동일성 검증 |
 | T26 customization survival | ✅ 구현 | `acgh/survival.py` | 7 테스트. required path 존재·target 대비 순효과·registry/manifest/contract/effective test 생존, stale 객체=analysis_error |
 | T27 merge conflict evidence | ✅ 구현 | `acgh/conflicts.py` + schema | 5 테스트. `ls-files -u -z` stage 1/2/3, 해결 blob/rationale/승인/candidate-lock 결속 |
 | T28 통합전략 라우팅 | ✅ 구현 | `acgh/routing.py` | 4 테스트. vendor/replay gate 분리, 필수 gate 미구성=analysis_error |
@@ -331,10 +332,11 @@ T93·T42 · T50 · T70 최소.
 | T92 retirement | ✅ 구현 | `acgh/retirement.py` + schema | 6 테스트. 공식대체·ADR·회귀·2인·active→retired |
 | T94 내부망 반입 | 🟡 검증기 구현 | `acgh/airgap.py` + schema | 6 테스트. 파일 hash·release-lock·signature verifier fail-closed. 실제 서명/내부망 미수행 |
 
-> **게이트 엔진 구현 현황:** 현재 테스트 함수는 257개이며, 2026-07-25 기준
-> 222개 통과·실제 OM 미러 의존 35개 skip이다. T26~T29와 Docker-free 운영
-> 경계까지 구현했지만, 실제 kb snapshot은 ancestry가 없으므로 현재 candidate는
-> T25에서 차단돼야 한다. 실제 7개 contract test와 T90 운영 증거가 생기기 전에는
+> **게이트 엔진 구현 현황:** 현재 테스트 함수는 269개이며, 2026-07-25 기준
+> 234개 통과·실제 OM 미러 의존 35개 skip이다. T25-R은 실제 등록부를
+> 67 단독·44 공유·2 제외 경로로 분류하지만, object-complete repo에서 공유 hunk
+> owner를 확정해 vendor candidate를 만들기 전까지 현재 snapshot은 T25에서
+> 차단돼야 한다. 실제 7개 contract test와 T90 운영 증거가 생기기 전에는
 > **MVP2 달성 또는 배포 가능**으로 표현하지 않는다.
 > (T93/T42 라벨: 정본은 T42=upgrade_watch·T93=정책노후화. 초기 커밋 라벨 오류를
 > `21bfc15`에서 정정.) **다음 = MVP2(운영·승격)**: T60·T61·T90(계층3 테스트)·

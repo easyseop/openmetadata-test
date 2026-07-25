@@ -373,6 +373,65 @@ cherry-pick 성공만으로 vendor release 전체가 완성됐다고 오인하�
 - 조직의 오프라인 signature verifier를 주입하지 않으면 unsigned pass가 아니라
   `analysis_error`다. 서명 실패는 `block`, verifier 고장은 `analysis_error`다.
 
+### 4.13 T25-R — ancestry 없는 snapshot의 vendor 재구성 검증
+
+파일:
+
+- `harness/acgh/vendor_rebuild.py`
+- `harness/tests/test_vendor_rebuild.py`
+- `harness/registrations/kb-openmetadata/shared-path-owners.yaml`
+- `harness/pyproject.toml`의 `acgh-vendor-rebuild` CLI
+
+개발 이유:
+
+기존 T25는 완성된 candidate가 공식 target을 ancestry에 포함하는지만 검사한다.
+하지만 현재 `kb_openmetadata`는 unrelated root snapshot이므로, snapshot commit을
+공식 branch에 억지로 merge하면 ancestry 검사만 형식적으로 만족시키는 잘못된
+candidate가 생길 수 있다. 또한 여러 기능이 함께 수정한 파일을 첫 번째로 일치한
+manifest에 통째로 귀속하면 기능별 커밋 이력이 거짓이 된다.
+
+개발 방식:
+
+- 공식 upstream SHA와 snapshot SHA의 실제 tree diff가 등록한 113개 inventory와
+  정확히 같은지 먼저 확인한다. 객체 누락이나 inventory drift는
+  `analysis_error`다.
+- 실제 등록부 기준 113개 경로를 결정적으로 **67개 단독 소유, 44개 공유,
+  2개 제외**로 분류한다. 계획 digest는
+  `sha256:ceaea84c3feb370e638d24322c9a2747b69dbfeef789eeeaba8e73b7aaf96699`다.
+- `.claude/settings.json`과
+  `docker/development/docker-compose.yml`은 reconstructed candidate에서 공식
+  upstream content 그대로여야 한다.
+- 공유 44개 파일은 `shared-path-owners.yaml`의 빈 목록을 실제 hunk owner로
+  채워야 한다. 빈 목록, 후보 밖 ID, 잘못된 자료형은 통과하지 않는다.
+- candidate가 공식 target의 descendant인지, unrelated snapshot commit을
+  ancestry에 포함하지 않는지 검사한다.
+- target..candidate의 모든 commit은 `Customization-ID`가 정확히 하나여야 하며,
+  해당 manifest와 명시한 path owner 범위 안에서만 변경해야 한다.
+- candidate의 registered path 최종 content는 snapshot과 같고, 제외 path는
+  upstream과 같은지 재검증한다. 중간에 금지 경로를 수정했다가 되돌리는 경우도
+  per-commit touched path 검사로 차단한다.
+
+CLI:
+
+```bash
+acgh-vendor-rebuild \
+  --repo /path/to/object-complete-repo \
+  --registration harness/registrations/kb-openmetadata \
+  plan
+
+acgh-vendor-rebuild \
+  --repo /path/to/object-complete-repo \
+  --registration harness/registrations/kb-openmetadata \
+  verify \
+  --candidate <full-candidate-sha> \
+  --shared-owners harness/registrations/kb-openmetadata/shared-path-owners.yaml
+```
+
+현재 완료 범위는 planner와 candidate verifier다. 이 governance 저장소에는 공식
+target과 snapshot의 전체 Git object가 함께 들어 있지 않아 실제 7개 기능 branch를
+이 세션에서 생성하거나 T25-R로 검증하지는 않았다. 그 상태를 코드 완료와 혼동하지
+않는다.
+
 ## 5. 테스트 결과
 
 전체 명령:
@@ -384,21 +443,22 @@ cherry-pick 성공만으로 vendor release 전체가 완성됐다고 오인하�
 결과:
 
 ```text
-222 passed, 35 skipped in 13.44s
+234 passed, 35 skipped in 42.96s
 ```
 
-변경 전은 148 passed, 35 skipped였다. 이번 변경으로 74개 passing test가
-추가됐다.
+초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 86개 passing test가
+추가됐고, 이번 T25-R 묶음은 12개다.
 
 35개 skip은 `/home/user/om-mirror`가 없는 현재 macOS 작업 환경에서 실제
-OpenMetadata 미러 기반 테스트가 자동 skip된 것이다. 이번에 추가한 74개 테스트
-중 skip은 없다.
+OpenMetadata 미러 기반 테스트가 자동 skip된 것이다. 이번에 추가한 T25-R
+12개 테스트 중 skip은 없다.
 
 ## 6. 완료와 운영 검증을 구분한 현재 상태
 
 | 영역 | 코드/스키마 | 단위 테스트 | 실제 운영 증거 |
 |---|---:|---:|---:|
-| T26~T29 vendor 등록·라우팅 | 완료 | 완료 | ancestry 재구성 필요 |
+| T25-R snapshot 재구성 | 완료 | 완료 | 44 shared hunk owner·실 branch 필요 |
+| T26~T29 vendor 등록·라우팅 | 완료 | 완료 | T25-R 실 candidate 필요 |
 | T62 test-result binding | 완료 | 완료 | 실제 7개 contract run 없음 |
 | T71/T72 운영 정책 | 완료 | 완료 | 조직 승인자·CI 연동 필요 |
 | T80/T81 LLM memo | 완료 | 완료 | 실제 release memo 평가 데이터 없음 |
@@ -412,17 +472,21 @@ OpenMetadata 미러 기반 테스트가 자동 skip된 것이다. 이번에 추�
 
 ## 7. 다음 실행 순서
 
-1. 공식 `1.13.1-release` SHA에서 vendor branch를 만든다.
-2. 현재 7개 기능을 논리 단위 commit/series로 재구성하고
+1. 공식 target과 snapshot object를 한 로컬 repo에 fetch하고 T25-R `plan`을
+   실행한다.
+2. `shared-path-owners.yaml`의 44개 파일을 실제 hunk 분석으로 채운다.
+3. 공식 `1.13.1-release` SHA에서 vendor branch를 만든다.
+4. 현재 7개 기능을 논리 단위 commit/series로 재구성하고
    `Customization-ID` trailer를 붙인다.
-3. T25 ancestry, T26 survival, T27 conflict evidence를 실제 candidate에 실행한다.
-4. 각 ID의 조직 owner와 두 사람 승인 라우팅을 확정한다.
-5. `contracts.yaml`의 7개 테스트를 실제 kb runtime suite에 구현한다.
-6. high 5개를 우선 patch-kill로 검증한다.
-7. T62 형식으로 candidate-bound test-run-set을 생성한다.
-8. 실제 OM 구/신 스택에서 T90 12단계 evidence를 생성한다.
-9. T91 release-lock으로 기존 artifact를 승격한다.
-10. 실제 오프라인 키로 T94 반입 manifest를 서명하고 내부망에서 검증한다.
+5. T25-R verify, T25 ancestry, T26 survival, T27 conflict evidence를 실제
+   candidate에 실행한다.
+6. 각 ID의 조직 owner와 두 사람 승인 라우팅을 확정한다.
+7. `contracts.yaml`의 7개 테스트를 실제 kb runtime suite에 구현한다.
+8. high 5개를 우선 patch-kill로 검증한다.
+9. T62 형식으로 candidate-bound test-run-set을 생성한다.
+10. 실제 OM 구/신 스택에서 T90 12단계 evidence를 생성한다.
+11. T91 release-lock으로 기존 artifact를 승격한다.
+12. 실제 오프라인 키로 T94 반입 manifest를 서명하고 내부망에서 검증한다.
 
 ## 8. Claude에게 요청하는 독립 검토
 
@@ -439,6 +503,8 @@ OpenMetadata 미러 기반 테스트가 자동 skip된 것이다. 이번에 추�
 8. retirement가 active ID 재사용이나 증거 없는 제거를 허용하는가.
 9. air-gap payload/signature 구조에 순환 해시나 경로 이탈 취약점이 있는가.
 10. T90의 12단계가 OpenMetadata 운영 실패 모드를 충분히 대표하는가.
+11. T25-R이 unrelated snapshot merge나 path-level 오귀속으로 T25를 형식적으로
+    우회할 수 있는 counterexample이 있는가.
 
 검토 결과는 `Blocking / Serious / Minor / Validated`로 나누고, 각 항목에 정확한
 파일·라인·재현 테스트를 제시해 달라. 문서의 완료 표시가 아니라 코드와
