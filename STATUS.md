@@ -4,6 +4,7 @@
 > Branch: `claude/markdown-file-feedback-26933w`
 > Last verified implementation commit: `efd7615`
 > Detailed review handoff: [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)
+> Nondeveloper entry point: [`docs/00-사용가이드/비개발자_사용_가이드.md`](docs/00-사용가이드/비개발자_사용_가이드.md)
 
 ## Handoff update policy
 
@@ -12,6 +13,8 @@ development task or coherent batch, and again before an agent/context
 handoff. Each update records the implementation commit, exact verification
 result, blockers, pushed state, and next executable step. The full checklist
 and document paths are fixed in [`CLAUDE.md`](CLAUDE.md).
+When user-visible status, inputs, terminology, or operating steps change, the
+nondeveloper guide is updated in the same coherent batch.
 
 ## Outcome
 
@@ -90,14 +93,16 @@ release blocker rather than being reclassified as a test pass.
 Source-candidate CI is defined in `.github/workflows/source-candidate.yml`.
 It pins both third-party actions by 40-hex SHA, pins product commit
 `38bccf9077...`, fetches the two historical upstream fixtures, runs the
-combined test suite, and runs T25/T26/T60-I/T30/T31. Its first remote run is
-The workflow's exact product fetch, test, and gate commands pass in a clean
+combined test suite, and runs T25/T26/T60-I/T30/T31. The workflow's exact
+product fetch, test, and gate commands pass in a clean
 local simulation (`280 passed, 4 live skips`; five source gates pass). Remote
 run `30160752510` also passed. GitHub emitted a Node 20 action deprecation
 annotation, so checkout/setup-python were upgraded to pinned Node 24 majors;
 Node 24 validation run
 [`30160846880`](https://github.com/easyseop/openmetadata-test/actions/runs/30160846880)
-then passed with zero annotations.
+then passed with zero annotations. Final evidence-sync run
+[`30160922136`](https://github.com/easyseop/openmetadata-test/actions/runs/30160922136)
+also passed with `280 passed, 4 skipped`.
 
 ## Important production blockers
 

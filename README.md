@@ -3,6 +3,10 @@
 공식 OpenMetadata 버전이 올라가도 **행내 커스터마이징을 누락 없이 · 추적 가능하게 ·
 검증 가능하게 보존**하여, 버전 업그레이드 운영을 원활하게 만들기 위한 설계·개발 기준.
 
+> **비개발자는 여기부터:** [비개발자용 OpenMetadata 업그레이드 안전 가이드](docs/00-사용가이드/비개발자_사용_가이드.md)
+>
+> 결과 읽는 법, 요청할 정보, 실제 사용 시나리오, LLM 위키의 역할을 쉬운 말로 설명한다.
+
 ---
 
 ## 무엇을 하려는가 (한 줄)
@@ -21,8 +25,10 @@
 > 현재 상태: T24~T29와 실제 7개 등록부, T25-R snapshot 재구성 검증기,
 > Docker-free 운영 게이트를 구현했다. 공식 `1.13.1-release`에서 시작한 실제
 > 7-ID vendor candidate도 `easyseop/OpenMetadata`에 만들었고 T25-R/T25/T26/
-> T30/T31이 통과했다. 다만 실제 contract/upgrade test와 release artifact가
-> 없으므로 현재 production release는 차단 상태다.
+> T60-I/T30/T31이 통과했다. 필수 계약 selector 7개는 모두 실제 구현됐고
+> 소스 기반 3개는 통과했지만, 실제 OpenMetadata가 필요한 4개는 아직 skip이다.
+> 실제 업그레이드 실행과 release artifact도 없으므로 현재 production release는
+> 차단 상태다.
 > 상세는 [`STATUS.md`](STATUS.md)와
 > [Claude 검토 인수인계](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)를 본다.
 
@@ -151,6 +157,7 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 
 | 폴더 | 문서 | 용도 | 대상 |
 |---|---|---|---|
+| `docs/00-사용가이드/` | [비개발자용 사용 가이드](docs/00-사용가이드/비개발자_사용_가이드.md) | 결과 읽는 법·업무 요청·운영 시나리오 | 업무 담당·오너·승인·운영 |
 | `docs/01-보고용/` | [strategy_briefing](docs/01-보고용/openmetadata_strategy_briefing.md) | 왜 이 전략인가 (merge vs 패치 스택) | 경영진·심의 |
 | `docs/02-설계/` | [upstream_customization_design](docs/02-설계/openmetadata_upstream_customization_design.md) | 상세 설계 (저장소·게이트·업그레이드 절차) | 설계·개발 |
 | `docs/02-설계/` | [ADR-001](docs/02-설계/ADR-001-vendor-merge-default.md) | **vendor merge 기본·replay 선택 결정 정본** | 전 대상 |

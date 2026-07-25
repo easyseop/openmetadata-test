@@ -3,7 +3,7 @@
 > 작성일: 2026-07-25
 > 대상 브랜치: `claude/markdown-file-feedback-26933w`
 > 변경 전 기준 커밋: `9d2a174` (`implement T25 vendor ancestry gate`)
-> 마지막 검증 구현 커밋: `81524aa`
+> 마지막 검증 구현 커밋: `efd7615`
 > 현재 커밋은 체크아웃 후 `git rev-parse HEAD`로 확인한다.
 
 ## 0. 지속 갱신 규칙
@@ -28,6 +28,7 @@
 | 경로 | 역할 | 갱신 조건 |
 |---|---|---|
 | `CLAUDE.md` | Claude 진입점, 읽기 순서, 검토·유지 규칙 | 규칙 또는 검토 범위 변경 |
+| `docs/00-사용가이드/비개발자_사용_가이드.md` | 쉬운 상태 해석·업무 입력·운영 시나리오 | 사용자 노출 상태·용어·절차 변경 |
 | `STATUS.md` | 가장 짧은 현재 상태와 blocker | 모든 완료 작업 묶음 |
 | `docs/04-진행/CLAUDE_REVIEW_HANDOFF.md` | 구현 방식·검증·한계·다음 단계 상세 | 모든 완료 작업 묶음 |
 | `SESSION_STATE.md` | 장기 결정과 과거 맥락 | 재개에 필요한 장기 맥락 변경 |
@@ -47,6 +48,21 @@
 
 비밀값, 접근 토큰, 개인 키, 임시 승인 정보는 기록하지 않는다. 완료 표시와 실제
 코드·테스트가 다르면 완료로 추정하지 않고 인수인계를 미완료 상태로 취급한다.
+
+### 0.4 비개발자 가이드 동기화 계약
+
+`docs/00-사용가이드/비개발자_사용_가이드.md`는 비개발자가 코드를 읽지 않고
+현재 상태와 해야 할 일을 판단하는 정본이다. 다음이 바뀌면 같은 개발 묶음에서
+반드시 함께 갱신한다.
+
+- 사용자에게 보이는 상태, 화면, 결과 문구
+- 업무 담당자가 제출해야 하는 정보
+- 승인, 긴급 변경, 테스트, 배포 순서
+- `pass`, `approval`, `block`, `analysis_error`, `skip`의 의미
+- 새 기능, 새 게이트, 새 운영 blocker
+
+가이드는 source-only CI 성공을 배포 가능으로 표현하면 안 된다. 구현된 계약,
+실제로 실행된 운영 증거, 남은 skip과 blocker를 항상 분리한다.
 
 ## 1. 최종 목적
 
@@ -664,6 +680,56 @@ annotation을 냈으므로 checkout v5와 setup-python v6의 공식 tag commit S
 다시 고정했다. Node 24 action pin을 사용한 두 번째 원격 run
 [`30160846880`](https://github.com/easyseop/openmetadata-test/actions/runs/30160846880)은
 25초에 success했고 annotation은 0개다.
+마지막 evidence 동기화 run
+[`30160922136`](https://github.com/easyseop/openmetadata-test/actions/runs/30160922136)도
+success였고 `280 passed, 4 skipped in 12.23s`를 다시 확인했다.
+
+### 4.18 비개발자 사용 가이드와 지속 인수인계 계약
+
+`docs/00-사용가이드/비개발자_사용_가이드.md`를 새로 추가했다. 개발 지식이 없는
+업무 담당자도 다음을 순서대로 이해할 수 있게 작성했다.
+
+- 시스템이 막는 세 가지 사고와 현재 배포 차단 결론
+- `pass/approval/block/analysis_error/skip/UNASSIGNED` 해석
+- 변경 요청 때 준비할 목적, 기능, 오너, 승인자, 업무 규칙, 테스트 입력
+- 공식 버전업, 은행 기능 변경, 초록 CI, 긴급 변경의 실제 시나리오
+- LLM 위키의 허용 용도와 배포 판정권이 없다는 경계
+- 실제 기능 게이트와 릴리스 게이트가 별도라는 점
+- 완성 시의 전체 운영 흐름과 쉬운 용어표
+
+`README.md`, `STATUS.md`, `SESSION_STATE.md`, `CLAUDE.md`, roadmap가 이
+가이드를 가리키도록 연결했다. 이후 작업자는 개발 묶음이 끝날 때 사용자에게
+보이는 상태·입력·절차가 바뀌었는지 확인하고, 바뀌었다면 코드·상태표·인수인계와
+같은 묶음에서 가이드도 갱신한다.
+
+이 문서 배치의 검증 명령과 결과:
+
+```bash
+git diff --check
+# pass
+
+./harness/.venv/bin/python -m pytest \
+  harness/tests/test_source_candidate_workflow.py \
+  harness/tests/test_vendor_rebuild.py -q
+# 16 passed
+
+OM_MIRROR_PATH=/private/tmp/om-ci-mirror-20260725 \
+OPENMETADATA_PRODUCT_REPO=/private/tmp/om-ci-validation-38bccf \
+  ./harness/.venv/bin/python -m pytest \
+  harness/tests tests/bank/contracts -ra
+# 280 passed, 4 skipped in 28.17s
+
+./harness/.venv/bin/python \
+  harness/registrations/kb-openmetadata/run_source_candidate_gates.py \
+  --repo /private/tmp/om-ci-validation-38bccf \
+  --harness harness \
+  --registration harness/registrations/kb-openmetadata \
+  --layout harness/policies/repository-layout.yaml
+# T25/T26/T60-I/T30/T31 pass
+```
+
+네 skip은 모두 `OPENMETADATA_BASE_URL`이 필요한 live contract이며 pass로
+계산하지 않았다.
 
 ## 5. 테스트 결과
 
@@ -730,6 +796,31 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 7. image/package/Helm digest, SBOM과 서명을 생성한다.
 8. T91 release-lock으로 기존 artifact를 승격한다.
 9. 실제 오프라인 키로 T94 반입 manifest를 서명하고 내부망에서 검증한다.
+
+### 다음 작업자가 처음 실행할 명령
+
+```bash
+git switch claude/markdown-file-feedback-26933w
+git pull --ff-only
+git status --short --branch
+git rev-parse HEAD
+sed -n '1,220p' docs/04-진행/CLAUDE_REVIEW_HANDOFF.md
+sed -n '1,220p' docs/00-사용가이드/비개발자_사용_가이드.md
+```
+
+그 다음에는 owner·승인 라우팅을 입력할 조직 결정을 먼저 확보하고, 실제
+OpenMetadata 테스트 스택에서 live contract 4개를 실행한다. 운영 URL이나
+비밀값이 아직 없으면 임의로 성공 처리하지 말고 `skip/blocker`를 유지한다.
+
+### Claude 이관 시 반드시 답할 다섯 질문
+
+| 질문 | 이 문서에서 확인할 곳 |
+|---|---|
+| 최종 목적은 무엇인가 | §1 |
+| 지금까지 무엇을 만들었는가 | §4.1~§4.18 |
+| 어떤 방식으로 만들었는가 | 각 구현 절의 파일·개발 방식 |
+| 무엇으로 검증했고 무엇이 미실행인가 | §5~§6 |
+| 다음에 무엇을 어떤 순서로 할 것인가 | §7과 첫 실행 명령 |
 
 ## 8. Claude에게 요청하는 독립 검토
 

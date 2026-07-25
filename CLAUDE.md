@@ -7,6 +7,8 @@ Review this branch as an independent safety and completeness audit.
 Treat the following files as one handoff set:
 
 - `CLAUDE.md` — review entry point and review rules.
+- `docs/00-사용가이드/비개발자_사용_가이드.md` — plain-language user
+  workflow, result meanings, and current deployment-readiness statement.
 - `STATUS.md` — short, current implementation snapshot.
 - `docs/04-진행/CLAUDE_REVIEW_HANDOFF.md` — detailed implementation,
   verification, blockers, and continuation guide.
@@ -26,6 +28,11 @@ switching agents or exhausting the working context, record:
 5. whether the worktree is clean and whether the commit was pushed; and
 6. the next executable step or command.
 
+If user-visible status, required business inputs, terminology, approval steps,
+error interpretation, or an operating scenario changed, update the
+nondeveloper guide in that same batch. The guide must never turn a successful
+source-only CI run into a deployment-ready claim.
+
 Never copy credentials, tokens, private keys, or transient approval data into
 the handoff. If documentation and code temporarily diverge, treat the handoff
 as incomplete rather than guessing that an old status is still current.
@@ -34,9 +41,10 @@ Read in this order:
 
 1. [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)
 2. [`STATUS.md`](STATUS.md)
-3. [`docs/02-설계/ADR-001-vendor-merge-default.md`](docs/02-설계/ADR-001-vendor-merge-default.md)
-4. [`docs/04-진행/openmetadata_build_plan.md`](docs/04-진행/openmetadata_build_plan.md)
-5. schemas and modules under `harness/acgh/`
+3. [`docs/00-사용가이드/비개발자_사용_가이드.md`](docs/00-사용가이드/비개발자_사용_가이드.md)
+4. [`docs/02-설계/ADR-001-vendor-merge-default.md`](docs/02-설계/ADR-001-vendor-merge-default.md)
+5. [`docs/04-진행/openmetadata_build_plan.md`](docs/04-진행/openmetadata_build_plan.md)
+6. schemas and modules under `harness/acgh/`
 
 Do not infer deployment readiness from unit-test success. In particular,
 confirm that the root-snapshot ancestry blocker, unassigned owners, two

@@ -108,6 +108,13 @@ product_verification:
       conclusion: success
       annotations: 0
       url: https://github.com/easyseop/openmetadata-test/actions/runs/30160846880
+    final_sync_remote_run:
+      id: 30160922136
+      head_sha: 080de60e71fe22eefef87c0de9cb9d6aa1e49a0c
+      conclusion: success
+      tests_passed: 280
+      tests_skipped_live: 4
+      url: https://github.com/easyseop/openmetadata-test/actions/runs/30160922136
   environment:
     node: 24.15.0
     yarn: 1.22.22

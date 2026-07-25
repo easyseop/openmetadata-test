@@ -2,12 +2,17 @@
 
 > **목적**: 컨텍스트가 리셋돼도 이 문서 하나로 작업을 이어갈 수 있게 현재까지의
 > 모든 결정·산출물·다음 단계를 세세하게 기록한다. **작업 재개 시 이 문서를 먼저 읽는다.**
-> 최종 갱신: 2026-07-25 실제 7-ID 재구축과 Tibero 후속 보강, T25-R/T25/T26/T30/T31 통과까지 반영.
+> 최종 갱신: 2026-07-25 실제 7-ID 재구축, Tibero 후속 보강,
+> T25-R/T25/T26/T60-I/T30/T31 통과와 비개발자용 사용 가이드까지 반영.
 > **현재 상태 정본은 [`STATUS.md`](STATUS.md), Claude 검토용 상세는
 > [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)다.**
-> 개발 태스크가 끝날 때마다 두 문서를 갱신하고, 작업 주체 변경 또는 컨텍스트
+> **비개발자 안내 정본은
+> [`docs/00-사용가이드/비개발자_사용_가이드.md`](docs/00-사용가이드/비개발자_사용_가이드.md)다.**
+> 개발 태스크가 끝날 때마다 상태표·인수인계서를 갱신하고, 작업 주체 변경 또는 컨텍스트
 > 소진 전에는 branch/commit, 정확한 테스트 결과, blocker, push 상태와 다음 실행
-> 단계를 남긴다. 전체 유지 계약은 [`CLAUDE.md`](CLAUDE.md)에 고정되어 있다.
+> 단계를 남긴다. 사용자에게 보이는 상태·용어·절차가 바뀌면 비개발자 가이드도
+> 같은 작업 묶음에서 갱신한다. 전체 유지 계약은 [`CLAUDE.md`](CLAUDE.md)에
+> 고정되어 있다.
 
 ---
 
@@ -17,9 +22,10 @@ vendor merge 기본 / patch replay 선택 전략의 게이트 엔진과 실제 7
 구현했다. `easyseop/OpenMetadata`에 공식 `1.13.1-release` 기반 7-ID vendor
 checkpoint `e1ffc5a1...`를 재구축한 뒤 Tibero 타입·테스트를 보강해 현재
 candidate `38bccf90...`를 만들었다. T25-R은 checkpoint에서, T25/T26/T30/T31은
-현재 candidate에서 통과했다.
-contract/upgrade test와 release artifact가 없으므로 첫 production release는
-아직 차단 상태다.
+현재 candidate에서 통과했다. T60-I도 7/7 selector 구현 존재를 확인했다.
+계약 테스트는 소스 기반 3개가 통과했고 실제 스택이 필요한 4개는 skip이다.
+실제 upgrade 실행과 release artifact가 없으므로 첫 production release는 아직
+차단 상태다.
 
 ## 1. 리포지토리·브랜치
 
@@ -46,6 +52,7 @@ contract/upgrade test와 release artifact가 없으므로 첫 production release
 | 파일 | 역할 | 정본 우선순위 |
 |---|---|---|
 | `README.md` | 전체 개요·문서 지도·테스트 정책 | — |
+| `docs/00-사용가이드/비개발자_사용_가이드.md` | 비개발자용 상태 해석·요청 정보·운영 시나리오 | 사용자 안내 정본 |
 > **경로 이동/정리(2026-07-23)**: 문서는 `docs/` 하위 4분류 — 01-보고용
 > (strategy_briefing)·02-설계(upstream_customization_design·governance_requirements)·
 > 03-기술참조(verifier_catalog)·04-진행(build_plan·dev_roadmap). **검토이력(05)은
