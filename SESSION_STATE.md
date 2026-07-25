@@ -2,7 +2,7 @@
 
 > **목적**: 컨텍스트가 리셋돼도 이 문서 하나로 작업을 이어갈 수 있게 현재까지의
 > 모든 결정·산출물·다음 단계를 세세하게 기록한다. **작업 재개 시 이 문서를 먼저 읽는다.**
-> 최종 갱신: 2026-07-25 T25-R snapshot 재구성 검증기까지 반영.
+> 최종 갱신: 2026-07-25 실제 7-ID vendor candidate와 T25-R/T25/T26/T30/T31 통과까지 반영.
 > **현재 상태 정본은 [`STATUS.md`](STATUS.md), Claude 검토용 상세는
 > [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)다.**
 > 개발 태스크가 끝날 때마다 두 문서를 갱신하고, 작업 주체 변경 또는 컨텍스트
@@ -13,16 +13,19 @@
 
 ## 0. 지금 어디인가 (한 줄)
 
-vendor merge 기본 / patch replay 선택 전략의 게이트 엔진, T25-R~T29, 실제 7개
-등록부와 T62/T71/T72/T80/T90/T91/T92/T94 판정 계약까지 구현했다. T25-R 실제
-source plan은 113경로=67 단독·44 공유·2 제외로 통과했고 shared owner도
-확정했다. 실제 vendor branch와 contract/upgrade test가 없으므로 첫 production
-release는 아직 차단 상태다.
+vendor merge 기본 / patch replay 선택 전략의 게이트 엔진과 실제 7개 등록부를
+구현했다. `easyseop/OpenMetadata`에 공식 `1.13.1-release` 기반 7-ID vendor
+candidate `e1ffc5a1...`를 만들었고 T25-R/T25/T26/T30/T31이 모두 통과했다.
+contract/upgrade test와 release artifact가 없으므로 첫 production release는
+아직 차단 상태다.
 
 ## 1. 리포지토리·브랜치
 
 - 작업 리포: `easyseop/openmetadata-test` (docs + 앞으로의 harness 코드)
 - **작업 브랜치: `claude/markdown-file-feedback-26933w`** (여기에 계속 커밋·푸시)
+- 제품 리포: `easyseop/OpenMetadata`
+- 제품 브랜치: `codex/bank-vendor-1.13.1-rebuild`
+- 제품 candidate: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
 - 커밋 작성자·도구 출처는 실제 작업 주체에 맞게 기록한다. 과거 세션이나 다른
   도구의 출처를 새 커밋에 복사하지 않는다.
 - 푸시: `git push -u origin claude/markdown-file-feedback-26933w`
@@ -101,13 +104,13 @@ release는 아직 차단 상태다.
 ```
 T24 integration_strategy/candidate-lock ✅
   → T25 vendor ancestry ✅
-  → T25-R source plan·44 shared hunk owner·검증기 ✅(실 candidate 미완)
+  → T25-R source plan·44 shared hunk owner·실 candidate 검증 ✅
   → T26 customization survival ✅
   → T29 실제 kb_openmetadata manifest/contract ✅(test 명세)
   → T27 merge conflict evidence ✅
   → T28 전략 라우팅 ✅
-  → 실제 vendor candidate의 논리 ID commit 생성 ← 다음
-  → owner 배정·T60/61 contract 실행
+  → 실제 vendor candidate의 논리 ID commit 생성 ✅
+  → owner 배정·T60/61 contract 실행 ← 다음
   → T90 실제 스택 실행 → T91 실제 승격 → T94 실제 반입
 
 T28에서 기존 T20·T21·T22·T23을 선택 replay 모드로 라우팅
@@ -193,7 +196,7 @@ harness/
 
 **완료:** 기존 patch-replay M1~M4, vendor-merge T24~T29·T25-R, 실제 7개 등록부,
 T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
-현재 테스트는 270개이며, 2026-07-25 Python 3.11 환경에서 235개 통과,
+현재 테스트는 271개이며, 2026-07-25 Python 3.11 환경에서 236개 통과,
 실제 OpenMetadata 미러가 필요한 35개는 skip됐다.
 - **T60** contract 카탈로그+결속 `contracts.py` · **T61** patch-kill
   `patchkill.py` · **T51/52** 구조화 diff `structdiff.py`(실제 table.json
@@ -201,9 +204,8 @@ T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
   부채 게이트 `debt.py`.
 - **Docker 데몬 없음(이 세션)** → T90의 12단계 결과계약은 구현했으나 실제
   구·신 OM 스택, DB 복원/migration, 검색/ingestion 차등과 rollback은 미실행.
-- **현재 차단 조건**: kb 원본은 upstream ancestry 없는 root snapshot,
-  논리 ID commit의 실 candidate 미완, 7개 owner 미배정, contract test는 ID
-  명세만 존재, 실제 T90/T91/T94 증거 없음.
+- **현재 차단 조건**: 7개 owner 미배정, contract test는 ID 명세만 존재,
+  제품 전체 build/test·실제 T90/T91/T94 증거 없음.
 
 > **T93/T42 라벨 정정(중요)**: build_plan 정본에서 **T42 = upgrade_watch(업스트림
 > 변경 ∩ 감시 → 케이스 D)** = `upgrade_watch.py`+`impact.py`, **T93 = 정책 노후화
@@ -213,7 +215,7 @@ T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
 
 | 태스크 | 상태 | 모듈 |
 |---|---|---|
-| T25-R snapshot 재구성 검증 | ✅ source/owner/엔진·⚠ 실 candidate | `acgh/vendor_rebuild.py` + `registrations/kb-openmetadata/shared-path-owners.yaml` |
+| T25-R snapshot 재구성 검증 | ✅ source/owner/엔진·실 candidate 통과 | `acgh/vendor_rebuild.py` + `registrations/kb-openmetadata/source-candidate-evidence.yaml` |
 | T25 vendor ancestry gate | ✅ | `acgh/ancestry.py` + `acgh/gitprim.py` |
 | T24 integration strategy·candidate-lock | ✅ | `acgh/candidate.py` + `schema/candidate-lock.schema.json` + `binding.py` |
 | T05 path-ownership 운영층 | ✅ | `acgh/layout.py` + `policies/repository-layout.yaml` |
@@ -322,7 +324,7 @@ replay tree(T22 `replay.replay_and_compare` 재사용), candidate 변경 시 기
 ### 재개 절차
 1. 이 파일 + `docs/04-진행/openmetadata_build_plan.md` + SRS 부칙 A(`docs/02-설계/openmetadata_governance_requirements.md`) 읽기.
 2. `/home/user/om-mirror` 존재 확인(없으면 §7 재획득), `pip install jsonschema pathspec`.
-3. `cd harness && python -m pytest` → 현재 270개(235 pass·35 mirror skip) 재확인.
+3. `cd harness && python -m pytest` → 현재 271개(236 pass·35 mirror skip) 재확인.
 4. `STATUS.md`의 production blocker와
    `docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`의 실제 실행 순서를 따른다.
 5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4.1 로그 + 이 표 갱신.

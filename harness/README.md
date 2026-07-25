@@ -6,8 +6,8 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 > `patchlock`·`reapply`·`resolve`·`replay`는 선택 patch-replay 모드다.
 > T24~T29 candidate/ancestry/survival/conflict/routing과 실제 7개 등록부까지
 > 구현됐고 T25-R은 ancestry 없는 snapshot의 안전한 재구성 계획과 candidate를
-> 검증한다. 단, 실제 vendor branch 재구성과 운영 contract test 실행 전에는
-> release pass가 아니다.
+> 검증한다. 실제 7-ID vendor branch까지 재구성·검증했지만 운영 contract test와
+> release artifact 생성 전에는 release pass가 아니다.
 
 > **요구사항 충족(영역 A1~A8)·검증기 22종의 왜/안 지키면/방법론·전체 개발 범위·
 > 설계 배경은 루트 [`../README.md`](../README.md) 가 정본이다.** 이 파일은 하네스
@@ -18,13 +18,13 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 ```bash
 cd harness
 pip install jsonschema pathspec pyyaml pytest    # 또는 pip install -e ".[dev]"
-python -m pytest                                  # 현재 270개: 235 pass·35 mirror skip
+python -m pytest                                  # 현재 271개: 236 pass·35 mirror skip
 bash fixtures/fetch_upstream.sh                   # 실제 OM 미러(없으면 미러 테스트 자동 skip)
 ```
 
 Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
 
-## 구현 모듈 (현재 270개 테스트: 235 pass·35 mirror skip)
+## 구현 모듈 (현재 271개 테스트: 236 pass·35 mirror skip)
 
 | 모듈 | 담당 | 루트 README 검증기# / 영역 |
 |---|---|---|
@@ -93,6 +93,15 @@ acgh-vendor-rebuild \
 merge하지 않았는지, commit마다 ID가 정확히 하나인지, 경로 소유가 맞는지,
 registered JSON의 최종 의미 값과 나머지 파일 내용은 snapshot과 같은지, 제외
 경로는 upstream 그대로인지 확인한다.
+
+실제 재구성 결과와 재현 도구:
+
+- `registrations/kb-openmetadata/source-candidate-evidence.yaml`
+- `registrations/kb-openmetadata/reconstruct_series.py`
+- `registrations/kb-openmetadata/run_source_candidate_gates.py`
+- product branch:
+  `easyseop/OpenMetadata:codex/bank-vendor-1.13.1-rebuild`
+- candidate: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
 
 ## 디렉터리
 

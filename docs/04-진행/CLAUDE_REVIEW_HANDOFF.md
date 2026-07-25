@@ -3,7 +3,7 @@
 > 작성일: 2026-07-25
 > 대상 브랜치: `claude/markdown-file-feedback-26933w`
 > 변경 전 기준 커밋: `9d2a174` (`implement T25 vendor ancestry gate`)
-> 마지막 검증 구현 커밋: `b5d9305`
+> 마지막 검증 구현 커밋: `b5d9305` (이번 handoff update는 pending commit)
 > 현재 커밋은 체크아웃 후 `git rev-parse HEAD`로 확인한다.
 
 ## 0. 지속 갱신 규칙
@@ -437,10 +437,71 @@ acgh-vendor-rebuild \
   --shared-owners harness/registrations/kb-openmetadata/shared-path-owners.yaml
 ```
 
-현재 완료 범위는 planner, 실제 source plan, 44개 shared owner map, candidate
-verifier다. 실제 7개 기능을 hunk 단위 논리 commit으로 나눈 vendor branch는 아직
-생성하지 않았다. root snapshot을 한 commit으로 복사하거나 shared file을 첫
-manifest에 몰아넣으면 검증 목적을 훼손하므로 완료로 표시하지 않는다.
+planner, 실제 source plan, 44개 shared owner map, candidate verifier까지 완료한
+뒤 아래 4.14의 실제 7-ID vendor branch도 생성·검증했다.
+
+### 4.14 실제 7-ID vendor candidate 재구성
+
+제품 저장소:
+
+- fork: `easyseop/OpenMetadata`
+- branch: `codex/bank-vendor-1.13.1-rebuild`
+- 공식 parent: `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9`
+- candidate: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
+- tree: `4ac7817d9e495edc14fcfae5af0382f839a098a3`
+
+재현·증거 파일:
+
+- `harness/registrations/kb-openmetadata/reconstruct_series.py`
+- `harness/registrations/kb-openmetadata/run_source_candidate_gates.py`
+- `harness/registrations/kb-openmetadata/source-candidate-evidence.yaml`
+
+개발 방식:
+
+1. GitHub의 공식 `open-metadata/OpenMetadata`를 `easyseop/OpenMetadata`로
+   fork했다.
+2. 공식 `1.13.1-release` SHA를 정확한 부모로
+   `codex/bank-vendor-1.13.1-rebuild` 브랜치를 만들었다.
+3. unrelated root snapshot commit은 merge하지 않고, 등록된 111개 product
+   path의 content만 source evidence로 사용했다.
+4. 단독 소유 path는 manifest owner commit에 복사하고, shared path는
+   `shared-path-owners.yaml` 순서대로 실제 source hunk를 단계적으로 적용했다.
+5. locale JSON 19개는 snapshot의 file-wide 들여쓰기 변경을 복제하지 않고
+   `BANK-OM-001`~`004`의 semantic key additions만 owner별로 넣었다.
+6. `.claude/settings.json`과 `docker/development/docker-compose.yml`은 후보에
+   넣지 않아 공식 upstream content를 유지했다.
+7. 모든 commit에 정확히 하나의 `Customization-ID` trailer를 넣었다.
+
+커밋:
+
+| ID | commit | touched paths | 내용 |
+|---|---|---:|---|
+| BANK-OM-001 | `a2566fac322c` | 48 | InstanceCode |
+| BANK-OM-002 | `4108411cd5bc` | 55 | QueryReport |
+| BANK-OM-003 | `39016640b5fc` | 25 | Data Assertions |
+| BANK-OM-004 | `c87877116280` | 33 | 은행 컬럼 확장 표시 |
+| BANK-OM-005 | `6e5b654f84ec` | 1 | 한글 IME |
+| BANK-OM-006 | `41b224adbd7e` | 18 | Sybase |
+| BANK-OM-007 | `e1ffc5a1eb27` | 8 | Tibero |
+
+실제 candidate 검증:
+
+```text
+T25-R vendor-reconstructed-candidate  pass
+  registered_paths=111
+  excluded_paths=2
+  plan_digest=sha256:ceaea84c3feb370e638d24322c9a2747b69dbfeef789eeeaba8e73b7aaf96699
+T25 vendor-ancestry                  pass
+T26 customization-survival           pass
+  7 active IDs, 10 required paths, 7 contracts, 7 effective test IDs
+T30 commit-invariants                pass
+T31 id-invariants                    pass
+```
+
+source candidate-lock digest는
+`sha256:fb05306222a64581d5aea6894fb8c99dd9fb4080ac2bb89f66f31ee1078243c4`다.
+그 lock의 artifact digest는 source Git tree identity를 결속한다. 아직 Java/UI
+binary, container image 또는 release package digest를 뜻하지 않는다.
 
 ## 5. 테스트 결과
 
@@ -453,22 +514,22 @@ manifest에 몰아넣으면 검증 목적을 훼손하므로 완료로 표시하
 결과:
 
 ```text
-235 passed, 35 skipped in 32.00s
+236 passed, 35 skipped in 25.87s
 ```
 
-초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 87개 passing test가
-추가됐고, 이번 T25-R 묶음은 13개다.
+초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 88개 passing test가
+추가됐고, T25-R과 실제 candidate evidence 묶음은 14개다.
 
 35개 skip은 `/home/user/om-mirror`가 없는 현재 macOS 작업 환경에서 실제
 OpenMetadata 미러 기반 테스트가 자동 skip된 것이다. 이번에 추가한 T25-R
-13개 테스트 중 skip은 없다.
+14개 테스트 중 skip은 없다.
 
 ## 6. 완료와 운영 검증을 구분한 현재 상태
 
 | 영역 | 코드/스키마 | 단위 테스트 | 실제 운영 증거 |
 |---|---:|---:|---:|
-| T25-R snapshot 재구성 | source plan·owner·엔진 완료 | 완료 | 논리 ID commit branch 필요 |
-| T26~T29 vendor 등록·라우팅 | 완료 | 완료 | T25-R 실 candidate 필요 |
+| T25-R snapshot 재구성 | source plan·owner·엔진·실 candidate 완료 | 완료 | 실제 candidate pass |
+| T26~T29 vendor 등록·라우팅 | 완료 | 완료 | T25/T26 실 candidate pass |
 | T62 test-result binding | 완료 | 완료 | 실제 7개 contract run 없음 |
 | T71/T72 운영 정책 | 완료 | 완료 | 조직 승인자·CI 연동 필요 |
 | T80/T81 LLM memo | 완료 | 완료 | 실제 release memo 평가 데이터 없음 |
@@ -482,18 +543,15 @@ OpenMetadata 미러 기반 테스트가 자동 skip된 것이다. 이번에 추�
 
 ## 7. 다음 실행 순서
 
-1. 공식 `1.13.1-release` SHA에서 vendor branch를 만든다.
-2. 현재 7개 기능을 owner map에 따라 논리 단위 commit/series로 재구성하고
-   `Customization-ID` trailer를 붙인다.
-3. T25-R verify, T25 ancestry, T26 survival, T27 conflict evidence를 실제
-   candidate에 실행한다.
-4. 각 ID의 조직 owner와 두 사람 승인 라우팅을 확정한다.
-5. `contracts.yaml`의 7개 테스트를 실제 kb runtime suite에 구현한다.
-6. high 5개를 우선 patch-kill로 검증한다.
-7. T62 형식으로 candidate-bound test-run-set을 생성한다.
-8. 실제 OM 구/신 스택에서 T90 12단계 evidence를 생성한다.
-9. T91 release-lock으로 기존 artifact를 승격한다.
-10. 실제 오프라인 키로 T94 반입 manifest를 서명하고 내부망에서 검증한다.
+1. 각 ID의 조직 owner와 두 사람 승인 라우팅을 확정한다.
+2. `contracts.yaml`의 7개 테스트를 실제 kb runtime suite에 구현한다.
+3. 제품 전체 Java/UI build와 source-level test를 실행해 candidate에 결속한다.
+4. high 5개를 우선 patch-kill로 검증한다.
+5. T62 형식으로 candidate-bound test-run-set을 생성한다.
+6. 실제 OM 구/신 스택에서 T90 12단계 evidence를 생성한다.
+7. image/package/Helm digest, SBOM과 서명을 생성한다.
+8. T91 release-lock으로 기존 artifact를 승격한다.
+9. 실제 오프라인 키로 T94 반입 manifest를 서명하고 내부망에서 검증한다.
 
 ## 8. Claude에게 요청하는 독립 검토
 
@@ -512,6 +570,8 @@ OpenMetadata 미러 기반 테스트가 자동 skip된 것이다. 이번에 추�
 10. T90의 12단계가 OpenMetadata 운영 실패 모드를 충분히 대표하는가.
 11. T25-R이 unrelated snapshot merge나 path-level 오귀속으로 T25를 형식적으로
     우회할 수 있는 counterexample이 있는가.
+12. 실제 7개 commit의 shared hunk 분리가 기능 경계와 맞으며, 특히 generated
+    connector 파일의 Sybase/Tibero 순서가 리뷰 가능한가.
 
 검토 결과는 `Blocking / Serious / Minor / Validated`로 나누고, 각 항목에 정확한
 파일·라인·재현 테스트를 제시해 달라. 문서의 완료 표시가 아니라 코드와

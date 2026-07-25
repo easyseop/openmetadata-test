@@ -96,12 +96,14 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **T25 · vendor ancestry gate (✅ 완료)** — candidate가 공식 target SHA와
   locked base를 ancestry에 포함하고, base/target이 공통 조상을 유지하는지
   결정적으로 검증. 객체 누락·stale lock·모드 오라우팅은 analysis_error.
-- **T25-R · root snapshot 재구성 검증 (✅ 구현·실 candidate 미생성)** —
+- **T25-R · root snapshot 재구성 검증 (✅ 실제 candidate 통과)** —
   upstream/snapshot 고정 tree의 diff inventory를 재확인하고, 모든 제품 경로를
   manifest에 결속한다. 공유 파일은 hunk owner를 명시해야 하며, unrelated
   snapshot commit merge, 무ID·다중ID commit, 제외 경로 변경, 최종 content
   불일치는 차단한다. 실제 고정 객체에서 113경로 plan과 44개 shared owner
-  분석까지 완료했으며 논리 ID commit branch 생성은 남아 있다.
+  분석을 완료했고, `easyseop/OpenMetadata`의
+  `codex/bank-vendor-1.13.1-rebuild`에서 7개 논리 ID commit을 생성했다.
+  candidate `e1ffc5a1...`은 T25-R/T25/T26/T30/T31을 통과했다.
 - **T26 · customization survival gate (✅ 구현·단위검증 완료)** — ID별 required state·path·contract가
   merge candidate에 남아 있는지 검증.
 - **T27 · merge conflict evidence (✅ 구현·단위검증 완료)** — 충돌 파일·해결 결정·승인자를 구조화 기록.

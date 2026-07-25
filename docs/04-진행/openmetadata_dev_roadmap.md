@@ -3,8 +3,9 @@
 > **2026-07-25 변경:** [`ADR-001`](../02-설계/ADR-001-vendor-merge-default.md)이
 > 통합 전략의 정본이다. 현재 replay 기반 MVP1 구현은 선택 모드로 재분류되며,
 > T24~T29·T25-R 기본 경로와 실제 7개 등록부, 잔여 Docker-free 운영 게이트까지
-> 구현됐다. 실제 113경로 source plan과 44개 shared owner 분석도 완료했지만,
-> vendor branch, contract/upgrade test와 승격·반입 증거가 없으므로
+> 구현됐다. 실제 113경로 source plan과 44개 shared owner 분석, 7-ID vendor
+> candidate 생성과 T25-R/T25/T26/T30/T31 검증까지 완료했다. contract/upgrade
+> test와 승격·반입 증거가 없으므로
 > Production-upgrade 달성으로 표기하지 않는다.
 
 > **이 문서의 용도**
@@ -292,7 +293,7 @@ T93·T42 · T50 · T70 최소.
 
 | 태스크 | 상태 | 산출물 | 검증 |
 |---|---|---|---|
-| T25-R snapshot→vendor 재구성 | ✅ source plan·owner·검증기 / ⚠ 실 branch 미생성 | `acgh/vendor_rebuild.py` + `shared-path-owners.yaml` | 13 테스트. 실제 pinned object로 113경로=67 단독·44 공유·2 제외 확인. target ancestry·snapshot commit 비포함·ID/path/hunk owner·JSON 의미/기타 content 동일성 검증 |
+| T25-R snapshot→vendor 재구성 | ✅ 실제 branch·candidate 통과 | `acgh/vendor_rebuild.py` + `shared-path-owners.yaml` + `source-candidate-evidence.yaml` | 13 단위 테스트 + 실제 candidate `e1ffc5a1...`. 113경로=67 단독·44 공유·2 제외, target ancestry·snapshot commit 비포함·7 ID/path owner·JSON 의미/기타 content 동일성 통과 |
 | T26 customization survival | ✅ 구현 | `acgh/survival.py` | 7 테스트. required path 존재·target 대비 순효과·registry/manifest/contract/effective test 생존, stale 객체=analysis_error |
 | T27 merge conflict evidence | ✅ 구현 | `acgh/conflicts.py` + schema | 5 테스트. `ls-files -u -z` stage 1/2/3, 해결 blob/rationale/승인/candidate-lock 결속 |
 | T28 통합전략 라우팅 | ✅ 구현 | `acgh/routing.py` | 4 테스트. vendor/replay gate 분리, 필수 gate 미구성=analysis_error |
@@ -333,8 +334,8 @@ T93·T42 · T50 · T70 최소.
 | T92 retirement | ✅ 구현 | `acgh/retirement.py` + schema | 6 테스트. 공식대체·ADR·회귀·2인·active→retired |
 | T94 내부망 반입 | 🟡 검증기 구현 | `acgh/airgap.py` + schema | 6 테스트. 파일 hash·release-lock·signature verifier fail-closed. 실제 서명/내부망 미수행 |
 
-> **게이트 엔진 구현 현황:** 현재 테스트 함수는 270개이며, 2026-07-25 기준
-> 235개 통과·실제 OM 미러 의존 35개 skip이다. T25-R 실제 source plan과
+> **게이트 엔진 구현 현황:** 현재 테스트 함수는 271개이며, 2026-07-25 기준
+> 236개 통과·실제 OM 미러 의존 35개 skip이다. T25-R 실제 source plan과
 > 44개 shared owner는 확정했지만 논리 ID commit의 vendor candidate를 만들기
 > 전까지 현재 snapshot은 T25에서 차단돼야 한다. 실제 7개 contract test와 T90
 > 운영 증거가 생기기 전에는

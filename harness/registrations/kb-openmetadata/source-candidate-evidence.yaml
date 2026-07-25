@@ -1,0 +1,76 @@
+schema_version: 1
+generated_at: "2026-07-25T21:55:00+09:00"
+repository: easyseop/OpenMetadata
+branch: codex/bank-vendor-1.13.1-rebuild
+upstream:
+  repository: open-metadata/OpenMetadata
+  tag: 1.13.1-release
+  sha: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
+source_snapshot:
+  repository: kangdkdk/kb_openmetadata
+  sha: 2c2347043235aa2a4ecba4729774c770fcee5d67
+candidate:
+  commit_sha: e1ffc5a1eb270c3225736544bb309a0c85af6d2c
+  tree_sha: 4ac7817d9e495edc14fcfae5af0382f839a098a3
+  source_tree_digest: sha256:b4ee95455daa5ca1b5ea5a2066d712de824e0c9db80b88bebfa57a1a8104a485
+  candidate_lock_digest: sha256:fb05306222a64581d5aea6894fb8c99dd9fb4080ac2bb89f66f31ee1078243c4
+  note: source_tree_digest binds the Git tree identity; no binary or image release artifact has been built yet
+reconstruction:
+  plan_digest: sha256:ceaea84c3feb370e638d24322c9a2747b69dbfeef789eeeaba8e73b7aaf96699
+  inventory_paths: 113
+  registered_paths: 111
+  excluded_paths:
+    - .claude/settings.json
+    - docker/development/docker-compose.yml
+  commits:
+    - customization_id: BANK-OM-001
+      sha: a2566fac322c877a645046264c8ae99df103f794
+      touched_paths: 48
+      title: add InstanceCode customization
+    - customization_id: BANK-OM-002
+      sha: 4108411cd5bc6baa8e7f23401628b153897ed356
+      touched_paths: 55
+      title: add QueryReport customization
+    - customization_id: BANK-OM-003
+      sha: 39016640b5fcf6303309351b5677105562dfd414
+      touched_paths: 25
+      title: add Data Assertions customization
+    - customization_id: BANK-OM-004
+      sha: c87877116280d02d8dd392ff212f65038f92856c
+      touched_paths: 33
+      title: add bank column view customization
+    - customization_id: BANK-OM-005
+      sha: 6e5b654f84ec6441e8affcef90c79f83c9a4d986
+      touched_paths: 1
+      title: fix Korean IME handling
+    - customization_id: BANK-OM-006
+      sha: 41b224adbd7e1906a96d99657693e439e3d8716b
+      touched_paths: 18
+      title: add Sybase customization
+    - customization_id: BANK-OM-007
+      sha: e1ffc5a1eb270c3225736544bb309a0c85af6d2c
+      touched_paths: 8
+      title: add Tibero customization
+gates:
+  t25_r_vendor_reconstructed_candidate:
+    verdict: pass
+    candidate: e1ffc5a1eb270c3225736544bb309a0c85af6d2c
+    registered_paths: 111
+    excluded_paths: 2
+  t25_vendor_ancestry:
+    verdict: pass
+    approved_target: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
+  t26_customization_survival:
+    verdict: pass
+    active_ids: 7
+    required_paths: 10
+    contracts: 7
+    effective_test_ids: 7
+  t30_commit_invariants:
+    verdict: pass
+  t31_id_invariants:
+    verdict: pass
+limitations:
+  - The seven contract test IDs are registered but their product runtime implementations have not been executed.
+  - The source candidate is not a release artifact; image/package build, SBOM, signing, and promotion gates remain.
+  - Product-wide Java and UI build/test suites have not yet been run for this sparse reconstruction checkout.

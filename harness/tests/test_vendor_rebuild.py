@@ -365,3 +365,37 @@ def test_json_content_comparison_is_semantic(tmp_path):
     )
     assert VR._path_equal(str(repo), compact, formatted, "config.json")
     assert not VR._path_equal(str(repo), compact, changed, "config.json")
+
+
+def test_real_source_candidate_evidence_closes_the_registered_series():
+    evidence = yaml.safe_load(
+        (_REGISTRATION / "source-candidate-evidence.yaml").read_text(
+            encoding="utf-8"
+        )
+    )
+    registry, manifests, inventory = VR.load_registration_bundle(_REGISTRATION)
+    plan = VR.build_reconstruction_plan(registry, manifests, inventory)
+
+    assert evidence["upstream"]["sha"] == plan.upstream_sha
+    assert evidence["source_snapshot"]["sha"] == plan.snapshot_sha
+    assert evidence["reconstruction"]["plan_digest"] == plan.digest()
+    assert evidence["reconstruction"]["inventory_paths"] == len(
+        plan.inventory_paths
+    )
+    assert evidence["reconstruction"]["registered_paths"] == (
+        len(plan.inventory_paths) - len(plan.excluded_paths)
+    )
+    assert set(evidence["reconstruction"]["excluded_paths"]) == set(
+        plan.excluded_paths
+    )
+    commits = evidence["reconstruction"]["commits"]
+    assert [item["customization_id"] for item in commits] == list(
+        plan.active_ids
+    )
+    assert len({item["sha"] for item in commits}) == len(plan.active_ids)
+    assert all(item["touched_paths"] > 0 for item in commits)
+    assert evidence["candidate"]["commit_sha"] == commits[-1]["sha"]
+    assert all(
+        gate["verdict"] == V.PASS
+        for gate in evidence["gates"].values()
+    )
