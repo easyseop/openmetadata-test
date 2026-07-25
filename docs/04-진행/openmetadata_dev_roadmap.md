@@ -336,8 +336,8 @@ T93·T42 · T50 · T70 최소.
 | T92 retirement | ✅ 구현 | `acgh/retirement.py` + schema | 6 테스트. 공식대체·ADR·회귀·2인·active→retired |
 | T94 내부망 반입 | 🟡 검증기 구현 | `acgh/airgap.py` + schema | 6 테스트. 파일 hash·release-lock·signature verifier fail-closed. 실제 서명/내부망 미수행 |
 
-> **게이트 엔진 구현 현황:** 현재 통합 테스트는 282개이며, 2026-07-25 기준
-> 243개 통과·실제 OM 미러 의존 35개와 live runtime 계약 4개 skip이다.
+> **게이트 엔진 구현 현황:** 현재 통합 테스트는 284개이며, 고정 mirror를
+> 연결한 CI-equivalent 실행에서 280개 통과·live runtime 계약 4개 skip이다.
 > 7-ID vendor candidate와 T60-I 7/7 구현 존재까지 완료했지만 contract 전체의
 > candidate-bound T62 결과와 T90 운영 증거가 생기기 전에는
 > **MVP2 달성 또는 배포 가능**으로 표현하지 않는다.

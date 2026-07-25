@@ -53,12 +53,13 @@ member and a Tibero schema-mapping unit test under the same consecutive
 ## Verification
 
 ```text
-243 passed, 39 skipped in 18.17s
+280 passed, 4 skipped in 35.12s
 ```
 
-Of the 39 skips, 35 require the historical Linux fixture path
-`/home/user/om-mirror`, and four require a live OpenMetadata URL. They are not
-counted as passes. All 14 T25-R tests pass.
+This CI-equivalent local run used the two fixed historical mirror refs, so the
+previous 35 mirror skips all executed and passed. The remaining four skips
+require a live OpenMetadata URL and are not counted as passes. All 14 T25-R
+tests pass.
 
 Actual source-candidate gates:
 
@@ -85,6 +86,15 @@ The focused UI run used Yarn 1.22.22 and Node 24.15.0 with
 `--ignore-engines` because this environment has no Node 22 runtime. The
 candidate's own Tibero test passed, but the broad typecheck failure remains a
 release blocker rather than being reclassified as a test pass.
+
+Source-candidate CI is defined in `.github/workflows/source-candidate.yml`.
+It pins both third-party actions by 40-hex SHA, pins product commit
+`38bccf9077...`, fetches the two historical upstream fixtures, runs the
+combined test suite, and runs T25/T26/T60-I/T30/T31. Its first remote run is
+The workflow's exact product fetch, test, and gate commands pass in a clean
+local simulation (`280 passed, 4 live skips`; five source gates pass). Its
+first remote run remains pending until this batch is pushed and must not be
+treated as successful remote evidence beforehand.
 
 ## Important production blockers
 

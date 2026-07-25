@@ -1,10 +1,11 @@
 """Shared fixtures. Real OpenMetadata content comes from the fixed mirror."""
+import os
 import subprocess
 from pathlib import Path
 
 import pytest
 
-_MIRROR = Path("/home/user/om-mirror")
+_MIRROR = Path(os.environ.get("OM_MIRROR_PATH", "/home/user/om-mirror"))
 _AUTH_PATH = (
     "openmetadata-service/src/main/java/org/openmetadata/service/"
     "security/AuthLoginServlet.java"
@@ -14,7 +15,7 @@ _AUTH_PATH = (
 @pytest.fixture(scope="session")
 def om_mirror():
     if not (_MIRROR / "HEAD").exists() and not (_MIRROR / ".git").exists():
-        pytest.skip("OM mirror not present at /home/user/om-mirror")
+        pytest.skip(f"OM mirror not present at {_MIRROR}")
     probe = subprocess.run(
         ["git", "-C", str(_MIRROR), "rev-parse", "UPSTREAM_A^{commit}"],
         capture_output=True, text=True,

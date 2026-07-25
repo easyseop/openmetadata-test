@@ -19,13 +19,13 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 pip install jsonschema pathspec pyyaml pytest
 OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata \
   python -m pytest harness/tests tests/bank/contracts
-# 현재 282개: 243 pass·39 skip(35 mirror + 4 live runtime)
+# 고정 mirror 연결 시 284개: 280 pass·4 live runtime skip
 bash harness/fixtures/fetch_upstream.sh            # 실제 OM 미러(없으면 미러 테스트 자동 skip)
 ```
 
 Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
 
-## 구현 모듈 (현재 282개 테스트: 243 pass·39 skip)
+## 구현 모듈 (현재 284개 테스트: 280 pass·4 live runtime skip)
 
 | 모듈 | 담당 | 루트 README 검증기# / 영역 |
 |---|---|---|

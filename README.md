@@ -225,8 +225,12 @@ M9 업그레이드 검증·릴리스 승격(digest 결속)·반입
 pip install jsonschema pathspec pyyaml pytest
 OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata \
   python -m pytest harness/tests tests/bank/contracts
-# 현재 282개: 243 pass·39 skip(35 mirror + 4 live runtime)
+# 고정 mirror 연결 시 284개: 280 pass·4 live runtime skip
 ```
+
+동일한 source 범위는
+`.github/workflows/source-candidate.yml`이 고정 product SHA와 고정 action SHA로
+자동 재현한다. live OpenMetadata가 필요한 4개 계약은 T62 운영 job 대상이다.
 
 **실제 OM 미러 연결**(게이트·재적용 테스트용, 없으면 해당 테스트 자동 skip):
 

@@ -428,6 +428,19 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
         for gate in gates.values()
     )
     product = evidence["product_verification"]
+    assert product["source_candidate_ci"]["action_refs_pinned"] is True
+    assert product["source_candidate_ci"]["candidate_sha_locked"] is True
+    assert (
+        product["source_candidate_ci"]["local_simulation"]["tests_passed"]
+        == 280
+    )
+    assert (
+        product["source_candidate_ci"]["local_simulation"][
+            "tests_skipped_live"
+        ]
+        == 4
+    )
+    assert product["source_candidate_ci"]["remote_run"] == "pending"
     assert product["prettier"]["verdict"] == V.PASS
     assert product["tibero_jest"]["verdict"] == V.PASS
     assert product["tibero_jest"]["tests"] > 0

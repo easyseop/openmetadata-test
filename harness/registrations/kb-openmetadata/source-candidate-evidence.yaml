@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: "2026-07-25T22:48:03+09:00"
+generated_at: "2026-07-25T22:57:06+09:00"
 governance_evidence_commit: d890980d47f1b9a7268dc251f61cfbf838a710b0
 repository: easyseop/OpenMetadata
 branch: codex/bank-vendor-1.13.1-rebuild
@@ -86,6 +86,17 @@ gates:
     verdict: pass
     candidate: 38bccf90779a8afe4a4f0e9313e11706f6d940d4
 product_verification:
+  source_candidate_ci:
+    workflow: .github/workflows/source-candidate.yml
+    definition_tests: 2
+    action_refs_pinned: true
+    candidate_sha_locked: true
+    local_simulation:
+      verdict: pass
+      tests_passed: 280
+      tests_skipped_live: 4
+      source_gates_passed: 5
+    remote_run: pending
   environment:
     node: 24.15.0
     yarn: 1.22.22
@@ -129,3 +140,4 @@ limitations:
   - The source candidate is not a release artifact; image/package build, SBOM, signing, and promotion gates remain.
   - The focused Tibero Jest suite passes, but the product-wide UI typecheck still fails with 399 pre-existing or unrelated diagnostics; Java and full UI suites remain unverified.
   - The focused UI run used Node 24 with --ignore-engines because the available environment did not include the package-supported Node 22 runtime.
+  - The source-candidate CI commands pass in a clean local simulation; its first remote GitHub Actions run is not evidence until the workflow reports success.

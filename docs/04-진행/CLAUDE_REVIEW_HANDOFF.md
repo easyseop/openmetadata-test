@@ -629,6 +629,35 @@ skip은 pass로 승격하지 않는다. 실제 스택에서 필요한 추가 환
 `BANK_CONTRACT_QUERY_ID`, `BANK_FAILED_ASSERTION_FQN`,
 `BANK_COLUMN_TABLE_FQN`, `BANK_COLUMN_NAME`이다.
 
+### 4.17 source-candidate GitHub Actions
+
+`.github/workflows/source-candidate.yml`을 추가했다. 수동 문서 명령과 CI가
+달라지는 것을 막기 위해 아래를 자동화한다.
+
+1. governance 저장소 checkout과 Python 3.11 설치
+2. `harness[dev]` 잠금 범위 설치
+3. 고정 SHA의 1.12.13/1.13.0 mirror fixture fetch
+4. product branch를 blobless·depth 16·sparse 방식으로 checkout
+5. checkout HEAD가 `38bccf90779...`와 정확히 같은지 확인
+6. harness + 7 contract selector 실행
+7. T25/T26/T60-I/T30/T31 source-candidate runner 실행
+
+외부 action은 tag가 아니라 40-hex commit으로 고정했고 workflow permissions는
+`contents: read`뿐이다. `harness/tests/test_source_candidate_workflow.py`가 action
+pin, product evidence lock, read-only permission, 필수 명령 존재를 검증한다.
+live runtime 4개는 이 source job에서 skip되며 T62 운영 job으로 남긴다.
+
+이 workflow의 정의와 로컬 테스트는 완료했지만 첫 원격 GitHub Actions 결과는
+push 뒤 확인 전까지 `pending`이다. workflow의 exact product fetch·mirror
+fetch·test·gate 명령을 빈 임시 환경에서 실행한 결과는 다음과 같다.
+
+```text
+product HEAD        38bccf90779a... (locked SHA match)
+upstream mirror     UPSTREAM_A/UPSTREAM_B SHA match
+tests               280 passed, 4 live-runtime skipped in 35.12s
+source gates        T25/T26/T60-I/T30/T31 all pass
+```
+
 ## 5. 테스트 결과
 
 전체 명령:
@@ -641,15 +670,15 @@ OPENMETADATA_PRODUCT_REPO=/private/tmp/om-product-rebuild \
 결과:
 
 ```text
-243 passed, 39 skipped in 18.17s
+280 passed, 4 skipped in 35.12s
 ```
 
-초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 95개 passing test가
+초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 97개 passing test가
 추가됐고, T25-R과 실제 candidate evidence 묶음은 14개다.
 
-39개 skip 중 35개는 `/home/user/om-mirror`가 없는 현재 macOS 작업 환경의
-미러 기반 테스트, 4개는 `OPENMETADATA_BASE_URL`이 없는 live contract다.
-이번에 추가한 T25-R 14개와 T60-I 단위 테스트 중 skip은 없다.
+고정 mirror를 연결해 기존 mirror 의존 35개도 모두 실행·통과했다. 남은 4개는
+`OPENMETADATA_BASE_URL`이 없는 live contract다. T25-R 14개와 T60-I 단위
+테스트 중 skip은 없다.
 
 제품 집중 테스트:
 
