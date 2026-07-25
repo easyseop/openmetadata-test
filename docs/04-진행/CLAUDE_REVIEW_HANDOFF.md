@@ -3,7 +3,7 @@
 > 작성일: 2026-07-25
 > 대상 브랜치: `claude/markdown-file-feedback-26933w`
 > 변경 전 기준 커밋: `9d2a174` (`implement T25 vendor ancestry gate`)
-> 마지막 검증 구현 커밋: `efe319a`
+> 마지막 검증 구현 커밋: `a797e92`
 > 현재 커밋은 체크아웃 후 `git rev-parse HEAD`로 확인한다.
 
 ## 0. 지속 갱신 규칙
