@@ -528,6 +528,7 @@ schema를 반환한다는 집중 단위 테스트도 없었다. 이 상태는
 현재 source candidate:
 
 - commit: `38bccf90779a8afe4a4f0e9313e11706f6d940d4`
+- governance evidence commit: `f329ad1c3460b9f882eae024638593e0568e8879`
 - tree: `3bfaf8b982c967af764cfbfdfe318b54f4ae9f28`
 - source tree digest:
   `sha256:d7efa79efcc700bf05aa8d54070c551954ae2b4a29aac40fb9df5c94a71bd907`

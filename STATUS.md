@@ -2,7 +2,7 @@
 
 > Updated: 2026-07-25
 > Branch: `claude/markdown-file-feedback-26933w`
-> Last verified implementation commit: `6dba2fe`
+> Last verified implementation commit: `f329ad1`
 > Detailed review handoff: [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)
 
 ## Handoff update policy
