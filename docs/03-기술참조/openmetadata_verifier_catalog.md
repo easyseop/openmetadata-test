@@ -38,8 +38,8 @@
 ## 0.1 구현 현황 (2026-07-25 · 게이트 엔진 및 실제 7개 등록)
 
 > 아래 표는 **설계**이고, 실제 코드는 `harness/acgh/` 에 있다. 현재 소스에는
-> **257개 테스트**가 있다. 2026-07-25 기준 222개 통과, 실제 OpenMetadata 미러
-> 의존 35개는 skip이다.
+> **298개 테스트**가 있다. 2026-07-25 기준 고정 mirror/product 연결 시 293개
+> 통과, API 4개·browser IME 1개는 운영 환경 부재로 skip이다.
 > ✅=구현·테스트 완료, 🟡=핵심 구현(부분), ⬜=미착수.
 
 **기반(카탈로그 22개 밖, 하네스 골격)**: ✅ T05 경로소유 `layout.py` · ✅ T10
@@ -64,7 +64,7 @@ manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과�
 | 14 | 필수 테스트 존재 | CG | ✅ | `testruns.py` |
 | 15 | contract 결속 | T60 | ✅ | `contracts.py` + `schema/contract-catalog.schema.json` |
 | 16 | patch-kill test | T61 | ✅ | `patchkill.py` |
-| 17 | SHA 결속 | T62 | ✅ | `binding.py`·`testruns.py` |
+| 17 | SHA 결속 | T62 | ✅ 실행기·workflow 구현, 운영 run 대기 | `binding.py`·`testruns.py`·`pytest_runs.py` |
 | 18 | 차등 테스트 | T90 | 🟡 결과계약 완료·실제 스택 미실행 | `upgrade_run.py` |
 | 19 | 정책 base-평가 | T70 | ✅ | `policy_guard.py` |
 | 20 | digest 승격 | T91 | ✅ 엔진·실제 승격 미실행 | `release.py`·`airgap.py` |
@@ -72,9 +72,10 @@ manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과�
 | 22 | LLM Impact Memo | T80 | ✅ advisory schema·품질지표 | `impact.py`·`impact_memo.py` |
 
 게이트 엔진과 실제 7개 등록은 완료됐다. 그러나 원본
-`kangdkdk/kb_openmetadata`는 upstream ancestry 없는 root snapshot이며, contract
-test와 실제 T90/T91/T94 운영 증거가 없다. 따라서 현재 release 판정은 통과가
-아니라 **차단**이 정답이다.
+`kangdkdk/kb_openmetadata`는 upstream ancestry 없는 root snapshot이다. 실제
+vendor candidate는 별도 재구축했지만 API 4개·browser IME 1개의 T62 전체 pass와
+실제 T90/T91/T94 운영 증거가 없다. 따라서 현재 release 판정은 통과가 아니라
+**차단**이 정답이다.
 
 ---
 
@@ -201,9 +202,11 @@ test와 실제 T90/T91/T94 운영 증거가 없다. 따라서 현재 release 판
 - **못 잡는 것**: 테스트가 없는 새 의미 차원.
 
 ### 17. 테스트-candidate SHA 결속 (T62)
-- **뭘 잡나**: 테스트 결과가 정확한 candidate SHA·이미지 digest에 묶였는지. 재시도 결과 구분(first/retry/flaky/fail).
+- **뭘 잡나**: 테스트 결과가 정확한 candidate SHA·이미지 digest·governance
+  commit·suite digest에 묶였는지. selector별 JUnit/실제 exit 대조와 재시도
+  결과(first/retry/flaky/fail)도 보존한다.
 - **막는 사고**: 테스트 통과 후 candidate에 커밋이 추가돼도 **옛 결과를 유효로** 착각 / flaky retry-pass를 성공으로 뭉갬.
-- **못 잡는 것**: 테스트 자체의 커버리지 부족.
+- **못 잡는 것**: 테스트 자체의 커버리지 부족, 실제 runtime을 실행하지 않은 상태.
 
 ### 18. 업그레이드 차등 테스트 (T90)
 - **뭘 잡나**: 구·신 버전에 같은 데이터·요청을 넣어 인증·권한·API 응답·엔티티 관계·검색·ingestion 결과가 달라졌는지.

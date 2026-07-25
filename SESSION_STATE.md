@@ -3,7 +3,8 @@
 > **목적**: 컨텍스트가 리셋돼도 이 문서 하나로 작업을 이어갈 수 있게 현재까지의
 > 모든 결정·산출물·다음 단계를 세세하게 기록한다. **작업 재개 시 이 문서를 먼저 읽는다.**
 > 최종 갱신: 2026-07-25 실제 7-ID 재구축, Tibero 후속 보강,
-> T25-R/T25/T26/T60-I/T30/T31 통과와 비개발자용 사용 가이드까지 반영.
+> T25-R/T25/T26/T60-I/T30/T31 통과, 비개발자용 사용 가이드,
+> T62 runtime 계약 실행기와 실제 브라우저 IME 계약까지 반영.
 > **현재 상태 정본은 [`STATUS.md`](STATUS.md), Claude 검토용 상세는
 > [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)다.**
 > **비개발자 안내 정본은
@@ -206,8 +207,9 @@ harness/
 
 **완료:** 기존 patch-replay M1~M4, vendor-merge T24~T29·T25-R, 실제 7개 등록부,
 T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
-현재 통합 테스트는 284개이며, 고정 upstream mirror와 sparse product checkout을
-연결한 CI-equivalent 환경에서 280개 통과, live runtime 계약 4개만 skip됐다.
+현재 통합 테스트는 298개이며, 고정 upstream mirror와 sparse product checkout을
+연결한 CI-equivalent 환경에서 293개 통과, API 4개와 실제 브라우저 IME 1개만
+skip됐다.
 - **T60** contract 카탈로그+결속 `contracts.py` · **T61** patch-kill
   `patchkill.py` · **T51/52** 구조화 diff `structdiff.py`(실제 table.json
   dataContract 검출) · **T70** 정책 self-protection `policy_guard.py` · **T43**
@@ -218,15 +220,23 @@ T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
   변경 2경로 Prettier pass. Node 24·6GB heap의 전체 UI typecheck는 399개
   diagnostic으로 fail했지만 두 변경 경로의 매칭 오류는 0개다.
 - **T60-I/contract 구현**: catalog의 7 selector 모두 실제 파일·함수로 resolve.
-  로컬 가능한 Sybase·Tibero·IME 3개 pass, OpenMetadata live URL이 필요한
-  InstanceCode·QueryReport·failed assertion·bank column 4개는 skip.
+  Sybase·Tibero 2개 required contract와 별도 IME source guard는 pass.
+  OpenMetadata live URL이 필요한 InstanceCode·QueryReport·failed assertion·
+  bank column 4개, 실제 SchemaEditor 화면이 필요한 browser IME 1개는 skip.
+- **T62 runtime job**: `.github/workflows/runtime-contracts.yml`,
+  `acgh/pytest_runs.py`, `run_runtime_contracts.py`,
+  `interpret_runtime_result.py`를 구현했다. 각 selector를 shell 없이 별도
+  pytest/JUnit으로 실행하고 candidate SHA·배포 digest·governance commit·suite
+  digest에 결속하며, 원자적 결과와 실제 exit 불일치를 `analysis_error`로
+  바꾼다. 로컬 무환경 시뮬레이션은 `2 pass·5 skip → block`; 실제 운영 run은
+  아직 없다.
 - **source-candidate CI**: `.github/workflows/source-candidate.yml` 추가. action과
   product commit을 SHA로 고정하고 mirror·통합 테스트·T25/T26/T60-I/T30/T31을
-  자동 실행한다. exact command의 clean local simulation은 280 pass·4 skip 및
+  자동 실행한다. 현재 exact command의 clean local simulation은 293 pass·5 skip 및
   source gate 5개 pass. 최초 remote run `30160752510`은 success. Node 20
   deprecation 때문에 checkout v5/setup-python v6 SHA로 올렸고 Node 24
   재검증 run `30160846880`도 annotation 없이 success.
-- **현재 차단 조건**: 7개 owner 미배정, live contract 4개와 browser IME의
+- **현재 차단 조건**: 7개 owner 미배정, live API contract 4개와 browser IME의
   candidate-bound T62 결과 없음, 제품 전체 Java build와 full UI
   suite/typecheck green, 실제 T90/T91/T94 증거 없음.
 
@@ -266,7 +276,7 @@ T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
 | T27 merge conflict evidence | ✅ | `acgh/conflicts.py` |
 | T28 전략 라우팅 | ✅ | `acgh/routing.py` |
 | T29 실제 7개 등록 | ✅ 등록·⚠ 운영증거 | `acgh/registry.py` + `registrations/kb-openmetadata/` |
-| T62 test-run 결속 | ✅ | `acgh/testruns.py` |
+| T62 test-run 결속·실행 경계 | ✅ 구현·⚠ 운영미실행 | `acgh/testruns.py` + `acgh/pytest_runs.py` + `runtime-contracts.yml` |
 | T71/T72 fast lane·break-glass | ✅ | `acgh/fastlane.py` + `acgh/breakglass.py` |
 | T80/T81 LLM Memo·지표 | ✅ | `acgh/impact_memo.py` |
 | T90 업그레이드 결과계약 | 🟡 실제 실행 필요 | `acgh/upgrade_run.py` |
@@ -349,7 +359,7 @@ replay tree(T22 `replay.replay_and_compare` 재사용), candidate 변경 시 기
 2. `/home/user/om-mirror` 존재 확인(없으면 §7 재획득), `pip install jsonschema pathspec`.
 3. `OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata python -m pytest
    harness/tests tests/bank/contracts` → mirror 연결 기준 현재
-   284개(280 pass·4 live skip) 재확인.
+   298개(293 pass·5 operational skip) 재확인.
 4. `STATUS.md`의 production blocker와
    `docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`의 실제 실행 순서를 따른다.
 5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4.1 로그 + 이 표 갱신.

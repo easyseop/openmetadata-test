@@ -6,6 +6,8 @@
 > 마지막 검증 구현 커밋: `efd7615`
 > 비개발자 가이드·인수인계 구현 커밋:
 > `0f0904b47c08c1febf95d17e2c7364adf01e3b98`
+> T62 runtime 계약 게이트 구현 커밋:
+> `b29d0ceea3b8b95423242847b0c172415f420411`
 > 현재 커밋은 체크아웃 후 `git rev-parse HEAD`로 확인한다.
 
 ## 0. 지속 갱신 규칙
@@ -232,7 +234,7 @@ cherry-pick 성공만으로 vendor release 전체가 완성됐다고 오인하�
 
 required test ID 7개는 이제 `tests/bank/contracts/`의 실제 Python selector에
 연결된다. T60-I는 경로 이탈·symlink·파일 누락·AST symbol 누락을 차단한다.
-다만 구현 존재는 실행 성공과 다르며, live runtime 4개와 browser IME 결과는
+다만 구현 존재는 실행 성공과 다르며, live API 4개와 browser IME 결과는
 T62 candidate-bound pass가 생길 때까지 운영 증거가 아니다.
 
 ### 4.5 T62 — 필수 테스트 실행과 candidate 결속
@@ -634,18 +636,22 @@ Node 22 환경에서 focused Jest 재현과 전체 typecheck baseline 분류를 
 - Sybase/Tibero: JSON Schema validation·payload round-trip·databaseService ref,
   generated API/entity/serviceConnection enum, UI selector test, icon 일관성
 
-현재 환경 실행:
+현재 source 환경 실행:
 
 ```text
-7 collected
+8 collected
 3 passed: Korean IME source guard, Sybase, Tibero
-4 skipped: OPENMETADATA_BASE_URL이 필요한 live 계약
+5 skipped: OPENMETADATA_BASE_URL이 필요한 live 계약 4,
+           BANK_IME_EDITOR_URL이 필요한 browser IME 계약 1
 ```
 
-skip은 pass로 승격하지 않는다. 실제 스택에서 필요한 추가 환경 변수는
+Korean IME의 required selector는 이제 실제 browser test이며 source guard는
+보조 테스트일 뿐이다. skip은 pass로 승격하지 않는다. 실제 스택에서 필요한
+추가 환경 변수는
 `OPENMETADATA_BASE_URL`, 선택 auth token,
 `BANK_CONTRACT_QUERY_ID`, `BANK_FAILED_ASSERTION_FQN`,
-`BANK_COLUMN_TABLE_FQN`, `BANK_COLUMN_NAME`이다.
+`BANK_COLUMN_TABLE_FQN`, `BANK_COLUMN_NAME`, `BANK_IME_EDITOR_URL`, 선택
+`BANK_BROWSER_STORAGE_STATE_B64`다.
 
 ### 4.17 source-candidate GitHub Actions
 
@@ -663,7 +669,8 @@ skip은 pass로 승격하지 않는다. 실제 스택에서 필요한 추가 환
 외부 action은 tag가 아니라 40-hex commit으로 고정했고 workflow permissions는
 `contents: read`뿐이다. `harness/tests/test_source_candidate_workflow.py`가 action
 pin, product evidence lock, read-only permission, 필수 명령 존재를 검증한다.
-live runtime 4개는 이 source job에서 skip되며 T62 운영 job으로 남긴다.
+API runtime 4개와 browser IME 1개는 이 source job에서 skip되며 T62 운영
+job으로 남긴다.
 
 workflow의 exact product fetch·mirror fetch·test·gate 명령을 빈 임시
 환경에서 실행한 결과는 다음과 같다.
@@ -738,27 +745,95 @@ OPENMETADATA_PRODUCT_REPO=/private/tmp/om-ci-validation-38bccf \
 24초에 success했다. 로그에서 `280 passed, 4 skipped in 12.83s`,
 `implemented_required_tests=7`, T25/T26/T60-I/T30/T31의 `pass`를 확인했다.
 
+### 4.19 T62 실제 runtime 계약 실행기와 browser IME 분리
+
+기존 `test_hangul_composition_roundtrip`는 이름과 달리
+`SchemaEditor.tsx`의 문자열 조각만 확인했다. 이 상태에서는 실제 브라우저를
+열지 않고도 CONTRACT-KOREAN-IME가 통과한 것처럼 기록될 수 있었다.
+
+구현 커밋:
+
+- `b29d0ceea3b8b95423242847b0c172415f420411`
+
+구현 파일:
+
+- `.github/workflows/runtime-contracts.yml`
+- `harness/acgh/pytest_runs.py`
+- `harness/acgh/testruns.py`
+- `harness/registrations/kb-openmetadata/run_runtime_contracts.py`
+- `harness/registrations/kb-openmetadata/interpret_runtime_result.py`
+- `tests/bank/contracts/test_korean_ime.py`
+- `harness/tests/test_pytest_runs.py`
+- `harness/tests/test_runtime_contract_workflow.py`
+
+개발 방식:
+
+1. 한글 IME source wiring 검사를
+   `test_hangul_composition_source_guard`로 분리했다.
+2. contract catalog가 가리키는 `test_hangul_composition_roundtrip`는
+   Playwright Chromium으로 실제 렌더된 CodeMirror를 찾는다.
+3. `compositionstart/update/end` 동안 `ㅎ→하→한`, `한ㄱ→한그→한글` 상태를
+   실제 컴포넌트에 넣고 React controlled state 왕복 뒤 값이 정확히 `한글`인지
+   검사한다.
+4. catalog selector마다 shell 없이 새 pytest process를 만들고 JUnit XML의
+   tests/failures/errors/skipped와 실제 pytest exit를 대조한다.
+5. 실패·오류 재시도 이력을 버리지 않으며 high/critical fail→pass는 기존 T62
+   규칙대로 approval이 된다.
+6. candidate commit/tree, 배포 artifact digest, governance commit, catalog·
+   manifest·selector 파일의 suite digest를 한 test-run-set에 결속한다.
+7. candidate-lock, test-run-set, acgh-result를 schema 확인 후 원자적으로
+   기록한다.
+8. CI 경계에서 실제 process exit와 machine result를 다시 해석한다. 결과 파일
+   누락·파손·stale·exit 불일치는 `analysis_error`다.
+
+수동 workflow는 `openmetadata-runtime` GitHub environment 승인을 요구한다.
+입력은 배포 artifact `sha256` digest, API base URL, 편집 가능한 SchemaEditor
+URL이다. auth token과 browser storage state는 environment secret, Query ID와
+테스트 FQN/테이블/컬럼은 environment variable로 받는다. 입력 문자열은 shell
+script에 직접 보간하지 않고 environment를 통해 전달한다.
+
+로컬 fail-closed 통합 시뮬레이션:
+
+```text
+candidate_sha       38bccf90779a8afe4a4f0e9313e11706f6d940d4
+harness_version     b29d0ceea3b8b95423242847b0c172415f420411
+suite_version       sha256:9d3c61d9b0865365ec00de2292a06d9b5bdb84281ba8a1dad1ea3efc7879185e
+test_run_set_digest sha256:f693973112bf28818f8ac72c5f7a0b6d554f1eef36090dafa1b533706d3aa8d7
+outcomes            2 pass, 5 skipped
+verdict              block
+actual exit 1        result와 consistent
+위조 actual exit 0   analysis_error
+```
+
+이 시뮬레이션은 runner 동작만 검사하기 위해 source tree identity digest를
+artifact 입력으로 사용했다. 실제 배포 artifact나 운영 T62 증거가 아니다.
+실제 runtime workflow는 아직 실행하지 않았다. 또한 현재 workflow는 비밀이 없는
+YAML을 GitHub job summary에 남기지만 별도 장기 증거 저장소에는 업로드하지 않는다.
+장기 보존 연결은 남은 운영 작업이다.
+
 ## 5. 테스트 결과
 
 전체 명령:
 
 ```bash
-OPENMETADATA_PRODUCT_REPO=/private/tmp/om-product-rebuild \
+OM_MIRROR_PATH=/private/tmp/om-ci-mirror-20260725 \
+OPENMETADATA_PRODUCT_REPO=/private/tmp/om-ci-validation-38bccf \
   ./harness/.venv/bin/python -m pytest harness/tests tests/bank/contracts -ra
 ```
 
 결과:
 
 ```text
-280 passed, 4 skipped in 35.12s
+293 passed, 5 skipped in 29.97s
 ```
 
-초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 97개 passing test가
+초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 145개 passing test가
 추가됐고, T25-R과 실제 candidate evidence 묶음은 14개다.
 
-고정 mirror를 연결해 기존 mirror 의존 35개도 모두 실행·통과했다. 남은 4개는
-`OPENMETADATA_BASE_URL`이 없는 live contract다. T25-R 14개와 T60-I 단위
-테스트 중 skip은 없다.
+고정 mirror를 연결해 기존 mirror 의존 35개도 모두 실행·통과했다. 남은 5개는
+`OPENMETADATA_BASE_URL`이 없는 API contract 4개와
+`BANK_IME_EDITOR_URL`이 없는 browser contract 1개다. T25-R 14개와 T60-I,
+pytest/JUnit adapter 단위 테스트 중 skip은 없다.
 
 제품 집중 테스트:
 
@@ -779,7 +854,7 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 | T25-R snapshot 재구성 | source plan·owner·엔진·실 candidate 완료 | 완료 | 실제 candidate pass |
 | T26~T29 vendor 등록·라우팅 | 완료 | 완료 | T25/T26 실 candidate pass |
 | T60-I 구현 존재 | 완료 | 완료 | 7/7 selector resolve pass |
-| T62 test-result binding | 완료 | 완료 | 3 pass·4 live skip, 전체 candidate-bound pass 없음 |
+| T62 test-result binding·runner | 완료 | 완료 | local fail-closed `2 required pass·5 skip→block`, 실제 runtime run 없음 |
 | T71/T72 운영 정책 | 완료 | 완료 | 조직 승인자·CI 연동 필요 |
 | T80/T81 LLM memo | 완료 | 완료 | 실제 release memo 평가 데이터 없음 |
 | T90 upgrade-run contract | 완료 | 완료 | Docker/DB/search/ingestion 실행 없음 |
@@ -793,12 +868,13 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 ## 7. 다음 실행 순서
 
 1. 각 ID의 조직 owner와 두 사람 승인 라우팅을 확정한다.
-2. 실제 OpenMetadata 스택에서 live contract 4개와 browser IME를 실행하고
-   7개 전체를 T62 candidate-bound result로 만든다.
+2. `openmetadata-runtime` environment의 secret/variable을 설정하고
+   `Runtime contracts` workflow에서 API 4개와 browser IME를 실행해 7개 전체
+   T62 candidate-bound pass를 만든다.
 3. Node 22 환경에서 399개 UI typecheck diagnostic을 기준선 분류·수정하고,
    제품 전체 Java/UI build와 source-level test를 candidate에 결속한다.
 4. high 5개를 우선 patch-kill로 검증한다.
-5. T62 형식으로 candidate-bound test-run-set을 생성한다.
+5. runtime workflow의 YAML 결과를 조직의 장기 증거 저장소에 보존한다.
 6. 실제 OM 구/신 스택에서 T90 12단계 evidence를 생성한다.
 7. image/package/Helm digest, SBOM과 서명을 생성한다.
 8. T91 release-lock으로 기존 artifact를 승격한다.
@@ -824,7 +900,7 @@ OpenMetadata 테스트 스택에서 live contract 4개를 실행한다. 운영 U
 | 질문 | 이 문서에서 확인할 곳 |
 |---|---|
 | 최종 목적은 무엇인가 | §1 |
-| 지금까지 무엇을 만들었는가 | §4.1~§4.18 |
+| 지금까지 무엇을 만들었는가 | §4.1~§4.19 |
 | 어떤 방식으로 만들었는가 | 각 구현 절의 파일·개발 방식 |
 | 무엇으로 검증했고 무엇이 미실행인가 | §5~§6 |
 | 다음에 무엇을 어떤 순서로 할 것인가 | §7과 첫 실행 명령 |
@@ -848,6 +924,8 @@ OpenMetadata 테스트 스택에서 live contract 4개를 실행한다. 운영 U
     우회할 수 있는 counterexample이 있는가.
 12. 실제 7개 commit의 shared hunk 분리가 기능 경계와 맞으며, 특히 generated
     connector 파일의 Sybase/Tibero 순서가 리뷰 가능한가.
+13. runtime workflow가 pytest crash, JUnit/exit 불일치, skip, stale artifact,
+    악의적 workflow input을 어떤 경로에서도 pass로 약화하지 않는가.
 
 검토 결과는 `Blocking / Serious / Minor / Validated`로 나누고, 각 항목에 정확한
 파일·라인·재현 테스트를 제시해 달라. 문서의 완료 표시가 아니라 코드와

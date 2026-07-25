@@ -115,8 +115,9 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
   QueryReport, Assertions, 컬럼 확장, IME, Sybase, Tibero를 manifest/contract화.
   원본이 ancestry 없는 단일 root snapshot이므로 vendor branch 재구성 전 T25는
   의도대로 차단한다. T60-I는 required selector 7개의 실제 Python 파일·함수
-  존재를 AST로 검증한다. 7개 구현은 추가됐고 로컬 가능한 3개는 pass했지만,
-  owner 배정과 live runtime 4개·browser IME의 T62 실행 증거는 남아 있다. 전체
+  존재를 AST로 검증한다. 7개 구현은 추가됐고 Sybase/Tibero required contract와
+  별도 IME source guard는 pass했지만, owner 배정과 live API 4개·browser IME의
+  T62 실행 증거는 남아 있다. 전체
   113개 diff 중 111개는 7개 manifest에 귀속했고, `.claude/settings.json`의
   자동승인 확대와 Docker Compose의 ingestion `1.9.6` 고정은 별도 blocking
   finding으로 등록했다.
@@ -386,13 +387,17 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **선행**: T60·T20.
 
 ### T62. 테스트-candidate SHA 결속
-- **상태(2026-07-25)**: ✅ 결과계약·flaky 판정 구현/단위검증 완료.
-  7개 selector 구현은 완료했고 source-capable 3개는 pass, live runtime 4개는
-  환경 부재로 skip했다. candidate-bound 전체 pass 결과는 아직 없음.
+- **상태(2026-07-25)**: ✅ 결과계약·flaky 판정·실행기·수동 runtime workflow
+  구현/단위검증 완료. 7개 selector 구현은 완료했고 Sybase/Tibero 두 required
+  contract와 별도 IME source guard는 pass다. live API 4개와 실제 browser IME
+  1개는 환경 부재로 skip했다. candidate-bound 전체 pass 결과는 아직 없음.
 - **목적**: 시간차 결함 방지(§10.1).
 - **충족**: P0(§10.1) / REQ-OR 신규.
 - **구현**: 테스트 결과를 candidate SHA·이미지 digest·harness/suite 버전에 결속.
-  candidate 변경 시 결과 자동 무효화. 재시도 결과 구분(first/retry/flaky/fail), critical retry-pass=승인.
+  catalog selector를 shell 없이 별도 pytest process로 실행하고 JUnit XML과 실제
+  exit를 대조한다. 결과 set과 machine result는 원자적으로 기록하며, 누락·파손·
+  exit 불일치는 analysis_error다. candidate 변경 시 결과 자동 무효화. 재시도
+  결과 구분(first/retry/flaky/fail), critical/high retry-pass=승인.
 - **수용**: candidate에 커밋 추가 시 기존 결과 무효, retry-pass가 성공으로 뭉개지지 않음.
 - **선행**: T32.
 

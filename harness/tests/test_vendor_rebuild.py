@@ -432,13 +432,13 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
     assert product["source_candidate_ci"]["candidate_sha_locked"] is True
     assert (
         product["source_candidate_ci"]["local_simulation"]["tests_passed"]
-        == 280
+        == 293
     )
     assert (
         product["source_candidate_ci"]["local_simulation"][
-            "tests_skipped_live"
+            "tests_skipped_operational"
         ]
-        == 4
+        == 5
     )
     assert (
         product["source_candidate_ci"]["prior_remote_run"]["conclusion"]
@@ -452,8 +452,17 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
     assert product["tibero_jest"]["verdict"] == V.PASS
     assert product["tibero_jest"]["tests"] > 0
     assert product["bank_contract_suite"]["implemented"] == 7
-    assert product["bank_contract_suite"]["passed"] == 3
-    assert product["bank_contract_suite"]["skipped_live"] == 4
+    assert product["bank_contract_suite"]["source_suite_passed"] == 3
+    assert product["bank_contract_suite"]["required_contracts_passed"] == 2
+    assert product["bank_contract_suite"]["skipped_operational"] == 5
+    runtime = product["runtime_contract_gate"]
+    assert runtime["junit_exit_reconciled"] is True
+    assert runtime["local_no_runtime_simulation"]["verdict"] == V.BLOCK
+    assert (
+        runtime["local_no_runtime_simulation"]["false_exit_verdict"]
+        == V.ANALYSIS_ERROR
+    )
+    assert runtime["operational_run_executed"] is False
     assert product["ui_typecheck"]["verdict"] == "fail"
     assert product["ui_typecheck"]["error_lines"] > 0
     assert product["ui_typecheck"]["changed_path_error_lines"] == 0

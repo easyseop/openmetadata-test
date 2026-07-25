@@ -6,8 +6,8 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 > `patchlock`·`reapply`·`resolve`·`replay`는 선택 patch-replay 모드다.
 > T24~T29 candidate/ancestry/survival/conflict/routing과 실제 7개 등록부까지
 > 구현됐고 T25-R은 ancestry 없는 snapshot의 안전한 재구성 계획과 candidate를
-> 검증한다. 실제 7-ID vendor branch까지 재구성·검증했지만 운영 contract test와
-> release artifact 생성 전에는 release pass가 아니다.
+> 검증한다. 실제 7-ID vendor branch와 T62 runtime 실행 경계까지 구현했지만
+> 운영 contract 전체 pass와 release artifact 생성 전에는 release pass가 아니다.
 
 > **요구사항 충족(영역 A1~A8)·검증기 22종의 왜/안 지키면/방법론·전체 개발 범위·
 > 설계 배경은 루트 [`../README.md`](../README.md) 가 정본이다.** 이 파일은 하네스
@@ -19,13 +19,13 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 pip install jsonschema pathspec pyyaml pytest
 OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata \
   python -m pytest harness/tests tests/bank/contracts
-# 고정 mirror 연결 시 284개: 280 pass·4 live runtime skip
+# 고정 mirror 연결 시 298개: 293 pass·5 operational skip
 bash harness/fixtures/fetch_upstream.sh            # 실제 OM 미러(없으면 미러 테스트 자동 skip)
 ```
 
 Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
 
-## 구현 모듈 (현재 284개 테스트: 280 pass·4 live runtime skip)
+## 구현 모듈 (현재 298개 테스트: 293 pass·5 operational skip)
 
 | 모듈 | 담당 | 루트 README 검증기# / 영역 |
 |---|---|---|
@@ -53,7 +53,7 @@ Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
 | `upgrade_watch.py`·`impact.py` | upgrade_watch(케이스 D)·영향분석 | 9·22 / A5 |
 | `policy_drift.py` | 정책 노후화 drift | 8 / A5 |
 | `verifier.py` | 선언형 verifier(비실행형) | 12 / A4 |
-| `testruns.py` | 필수 테스트 결과↔candidate/artifact/version 결속 | 14·17 / A6 |
+| `testruns.py`·`pytest_runs.py` | 필수 테스트 실행·JUnit/재시도·candidate/artifact/version 결속 | 14·17 / A6 |
 | `fastlane.py`·`breakglass.py` | 변경 유형별 경량 경로·긴급 예외 검증 | 19 / A7 |
 | `impact_memo.py` | 근거 기반 LLM Memo·품질지표(판정권 없음) | 22 / A5 |
 | `upgrade_run.py` | migration·차등·rollback 12단계 결과 계약 | 18 / A6 |
@@ -105,6 +105,34 @@ registered JSON의 최종 의미 값과 나머지 파일 내용은 snapshot과 �
   `easyseop/OpenMetadata:codex/bank-vendor-1.13.1-rebuild`
 - reconstruction checkpoint: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
 - current candidate: `38bccf90779a8afe4a4f0e9313e11706f6d940d4`
+
+## T62 실제 환경 계약 실행
+
+GitHub Actions의 `Runtime contracts`를 수동 실행하거나 아래 runner를 사용한다.
+Playwright가 필요한 실제 브라우저 계약은 `harness[runtime]` 의존성과 Chromium을
+설치해야 한다.
+
+```bash
+python -m pip install -e "harness[dev,runtime]"
+python -m playwright install chromium
+python harness/registrations/kb-openmetadata/run_runtime_contracts.py \
+  --repo /path/to/locked/OpenMetadata \
+  --harness harness \
+  --registration harness/registrations/kb-openmetadata \
+  --artifact-digest sha256:<deployed-artifact-digest> \
+  --output-dir /safe/evidence/path
+```
+
+필수 환경은 `OPENMETADATA_BASE_URL`, 선택 auth token,
+`BANK_CONTRACT_QUERY_ID`, `BANK_FAILED_ASSERTION_FQN`,
+`BANK_COLUMN_TABLE_FQN`, `BANK_COLUMN_NAME`, `BANK_IME_EDITOR_URL`이다.
+로그인된 브라우저 상태가 필요하면 JSON storage state를 base64로 인코딩해
+`BANK_BROWSER_STORAGE_STATE_B64`로 주입한다. 비밀값은 파일·인수인계서에
+기록하지 않는다. 하나라도 skip이면 runner는 `block`으로 종료한다.
+
+출력은 `candidate-lock.yaml`, `test-run-set.yaml`, `acgh-result.yaml`이다.
+`interpret_runtime_result.py`가 실제 process exit와 result를 다시 대조하고,
+누락·파손·stale·불일치를 `analysis_error`로 처리한다.
 
 ## 디렉터리
 

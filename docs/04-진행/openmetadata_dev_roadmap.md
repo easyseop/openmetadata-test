@@ -302,7 +302,7 @@ T93·T42 · T50 · T70 최소.
 | T26 customization survival | ✅ 구현 | `acgh/survival.py` | 7 테스트. required path 존재·target 대비 순효과·registry/manifest/contract/effective test 생존, stale 객체=analysis_error |
 | T27 merge conflict evidence | ✅ 구현 | `acgh/conflicts.py` + schema | 5 테스트. `ls-files -u -z` stage 1/2/3, 해결 blob/rationale/승인/candidate-lock 결속 |
 | T28 통합전략 라우팅 | ✅ 구현 | `acgh/routing.py` | 4 테스트. vendor/replay gate 분리, 필수 gate 미구성=analysis_error |
-| T29 실제 7개 등록 | ✅ 등록·⚠ 운영미완 | `registrations/kb-openmetadata/` + `acgh/registry.py` + `tests/bank/contracts/` | 5 registry 테스트 + T60-I. 실제 113경로 전수목록, 111경로→7ID·7contract, 2개 비제품 변경 명시 차단. 7 selector 구현 존재 pass, source-capable 3 pass·live 4 skip. ancestry=false·owner pending·T62 전체 pass 미완 |
+| T29 실제 7개 등록 | ✅ 등록·⚠ 운영미완 | `registrations/kb-openmetadata/` + `acgh/registry.py` + `tests/bank/contracts/` | 5 registry 테스트 + T60-I. 실제 113경로 전수목록, 111경로→7ID·7contract, 2개 비제품 변경 명시 차단. 7 selector 구현 존재 pass, Sybase/Tibero required pass·IME source guard pass·API 4/browser 1 skip. ancestry=false·owner pending·T62 전체 pass 미완 |
 | T25 vendor ancestry gate | ✅ 완료 | `acgh/ancestry.py` + `gitprim.py` | 6 테스트. base/target 공통 조상, locked base·approved target의 candidate 포함 검증, topology 위반=block, 객체 누락·stale tree·모드 오라우팅=analysis_error |
 | T24 integration strategy·candidate-lock | ✅ 완료 | `acgh/candidate.py` + `schema/candidate-lock.schema.json` + `binding.py` | 9 테스트. 기본 `vendor-merge`, patch-replay lock 필수화, base/target/candidate commit·tree·artifact digest 고정, 결과 입력 결속·stale 무효화 |
 | T05 path-ownership·glob 정본 | ✅ 완료 | `policies/repository-layout.yaml` + **운영층** `acgh/layout.py` | 실제 OM 모듈 루트로 검증, `upstream_base_sha` 결속, 모든 게이트 공용 문법(부칙 A-3.1), pathspec factory=`gitignore` 고정 |
@@ -330,7 +330,7 @@ T93·T42 · T50 · T70 최소.
 | T42 upgrade_watch(케이스 D) | ✅ 완료 | `acgh/upgrade_watch.py`+`impact.py` | 8 테스트(실제 A→B diff 4789변경). watch∩net→approval, 영향표면+판정없는 LLM memo(§7) |
 | T93 정책 노후화 drift | ✅ 완료 | `acgh/policy_drift.py` | 5 테스트. 0-매칭 패턴(빈 총)=approval, 신규 미분류 모듈(실제 openmetadata-mcp 등)=analysis_error |
 | T50 선언형 verifier | ✅ 완료 | `acgh/verifier.py` | 10 테스트. JSON Pointer·file_hash·module_present(비실행), 실행형 거부, `..` 경로이탈 차단(P0-8) |
-| T62 test-result 결속 잔여 | ✅ 구현 | `acgh/testruns.py` + schema | 8 테스트. SHA/artifact/harness/suite 결속, required 누락 차단, high/critical retry-pass=approval |
+| T62 test-result 결속·runtime 실행 | ✅ 구현·⚠ 운영미실행 | `acgh/testruns.py` + `acgh/pytest_runs.py` + schema + `runtime-contracts.yml` | selector별 격리 pytest/JUnit, atomic run-set/result, SHA/artifact/governance/suite 결속, 실제 exit 대조. 로컬 무환경 시뮬레이션 `2 pass·5 skip→block`, exit 위조→analysis_error |
 | T71 fast lane | ✅ 구현 | `acgh/fastlane.py` | 5 테스트. 유형별 최소 gate, mixed=합집합, core=전체 전략 route |
 | T72 break-glass | ✅ 구현 | `acgh/breakglass.py` + schema | 8 테스트. 2인·만료·scope·사후검증·통계·timezone, 무결성 gate 비면제, verdict 불변 |
 | T80/T81 Impact Memo | ✅ 구현 | `acgh/impact_memo.py` + schema | 7 테스트. 사실/추론/미확인·근거·snapshot, verdict/command 금지, 품질지표 |
@@ -339,8 +339,8 @@ T93·T42 · T50 · T70 최소.
 | T92 retirement | ✅ 구현 | `acgh/retirement.py` + schema | 6 테스트. 공식대체·ADR·회귀·2인·active→retired |
 | T94 내부망 반입 | 🟡 검증기 구현 | `acgh/airgap.py` + schema | 6 테스트. 파일 hash·release-lock·signature verifier fail-closed. 실제 서명/내부망 미수행 |
 
-> **게이트 엔진 구현 현황:** 현재 통합 테스트는 284개이며, 고정 mirror를
-> 연결한 CI-equivalent 실행에서 280개 통과·live runtime 계약 4개 skip이다.
+> **게이트 엔진 구현 현황:** 현재 통합 테스트는 298개이며, 고정 mirror를
+> 연결한 CI-equivalent 실행에서 293개 통과·API 4개와 browser IME 1개 skip이다.
 > 7-ID vendor candidate와 T60-I 7/7 구현 존재까지 완료했지만 contract 전체의
 > candidate-bound T62 결과와 T90 운영 증거가 생기기 전에는
 > **MVP2 달성 또는 배포 가능**으로 표현하지 않는다.
