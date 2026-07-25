@@ -53,7 +53,7 @@ member and a Tibero schema-mapping unit test under the same consecutive
 ## Verification
 
 ```text
-236 passed, 35 skipped in 25.87s
+236 passed, 35 skipped in 15.05s
 ```
 
 The 35 skips require the historical Linux fixture path
@@ -68,6 +68,20 @@ T26   customization-survival          pass (candidate 38bccf90...; 7 IDs, 10 req
 T30   commit-invariants               pass (candidate 38bccf90...)
 T31   id-invariants                   pass (candidate 38bccf90...)
 ```
+
+Focused product verification:
+
+```text
+Prettier (2 changed paths)             pass
+DatabaseServiceUtils.test.tsx          pass (13/13; Tibero case pass)
+UI tsc --noEmit                        fail (399 diagnostics; changed paths 0)
+UI core Vite build                     exit 0 (2 declaration diagnostics on unchanged upstream paths)
+```
+
+The focused UI run used Yarn 1.22.22 and Node 24.15.0 with
+`--ignore-engines` because this environment has no Node 22 runtime. The
+candidate's own Tibero test passed, but the broad typecheck failure remains a
+release blocker rather than being reclassified as a test pass.
 
 ## Important production blockers
 
@@ -86,9 +100,10 @@ This is not yet evidence that the bank distribution is deployable:
 5. The candidate lock currently binds the source Git tree identity. A complete
    Java/UI build, image/package digest, SBOM, signing, and promotion evidence
    still need to be produced.
-6. The focused Tibero Jest test is committed but was not executed because the
-   sparse product checkout has neither the UI package manifest nor installed
-   UI dependencies.
+6. The focused Tibero Jest suite passes 13/13, but the product-wide UI
+   typecheck reports 399 diagnostics. Neither changed Tibero path appears in
+   those diagnostics; the broad baseline still must be repaired or
+   independently baselined on the supported Node 22 toolchain.
 
 Until those items are closed, the honest release state is **blocked**, not
 pass.

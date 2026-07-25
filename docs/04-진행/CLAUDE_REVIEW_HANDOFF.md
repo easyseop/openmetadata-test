@@ -546,10 +546,37 @@ T31 id-invariants            pass
 
 T25-R은 snapshot과 정확히 같은 재구축 결과만 판정하므로 새 보강 commit이 아닌
 checkpoint `e1ffc5a1...`에 계속 결속한다. UI source tree는 `git diff --check`와
-schema/type/reference 정적 검사를 통과했다. 다만 sparse 제품 checkout에 UI
-`package.json`과 `node_modules`가 없어 추가한 Jest 테스트 자체는 아직 실행하지
-못했다. Claude는 전체 제품 checkout에서 이 테스트와 UI typecheck/build를 먼저
-실행해야 한다.
+schema/type/reference 정적 검사를 통과했다.
+
+실제 UI 집중 검증을 위해 sparse checkout에 UI, UI core, JSON schema, ANTLR
+grammar만 materialize했다. 잠금 파일 기준 의존성을 설치하고 공식
+`parse-schema`, ANTLR 4.9.2 생성, UI core build를 수행한 뒤 Jest를 실행했다.
+
+```text
+Prettier, changed 2 paths                    pass
+DatabaseServiceUtils.test.tsx                pass
+  test suites                               1/1
+  tests                                     13/13
+  Tibero schema mapping                     pass
+UI tsc --noEmit, 6 GB heap                   fail
+  total diagnostics                         399
+  diagnostics matching changed 2 paths       0
+UI core Vite build                           exit 0
+  declaration diagnostics                    2
+  candidate changes under UI core            0 paths
+```
+
+첫 typecheck는 기본 2GB heap에서 OOM이었고, 프로젝트 build와 같은 6GB로
+재실행해 실제 diagnostic을 얻었다. UI core의 두 TS2741은 candidate가 건드리지
+않은 upstream 경로에서 발생했다. 전체 UI typecheck의 399개 오류도 변경 두
+경로와 직접 매칭되지 않았지만, 이 사실은 broad baseline이 green이라는 뜻이
+아니다. release blocker로 유지한다.
+
+환경에는 Node 22가 없어 Node 24.15.0·Yarn 1.22.22로 실행했고, 한 dependency의
+engine 상한 때문에 설치에 `--ignore-engines`를 사용했다. Claude는 지원되는
+Node 22 환경에서 focused Jest 재현과 전체 typecheck baseline 분류를 해야 한다.
+임시 ANTLR 4.9.2 JAR SHA-256은
+`bb117b1476691dc2915a318efd36f8957c0ad93447fb1dac01107eb15fe137cd`다.
 
 ## 5. 테스트 결과
 
@@ -562,7 +589,7 @@ schema/type/reference 정적 검사를 통과했다. 다만 sparse 제품 checko
 결과:
 
 ```text
-236 passed, 35 skipped in 25.87s
+236 passed, 35 skipped in 15.05s
 ```
 
 초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 88개 passing test가
@@ -571,6 +598,18 @@ schema/type/reference 정적 검사를 통과했다. 다만 sparse 제품 checko
 35개 skip은 `/home/user/om-mirror`가 없는 현재 macOS 작업 환경에서 실제
 OpenMetadata 미러 기반 테스트가 자동 skip된 것이다. 이번에 추가한 T25-R
 14개 테스트 중 skip은 없다.
+
+제품 집중 테스트:
+
+```bash
+corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
+```
+
+결과:
+
+```text
+1 suite passed, 13 tests passed
+```
 
 ## 6. 완료와 운영 검증을 구분한 현재 상태
 
@@ -593,7 +632,8 @@ OpenMetadata 미러 기반 테스트가 자동 skip된 것이다. 이번에 추�
 
 1. 각 ID의 조직 owner와 두 사람 승인 라우팅을 확정한다.
 2. `contracts.yaml`의 7개 테스트를 실제 kb runtime suite에 구현한다.
-3. 제품 전체 Java/UI build와 source-level test를 실행해 candidate에 결속한다.
+3. Node 22 환경에서 399개 UI typecheck diagnostic을 기준선 분류·수정하고,
+   제품 전체 Java/UI build와 source-level test를 candidate에 결속한다.
 4. high 5개를 우선 patch-kill로 검증한다.
 5. T62 형식으로 candidate-bound test-run-set을 생성한다.
 6. 실제 OM 구/신 스택에서 T90 12단계 evidence를 생성한다.

@@ -207,8 +207,12 @@ T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
   부채 게이트 `debt.py`.
 - **Docker 데몬 없음(이 세션)** → T90의 12단계 결과계약은 구현했으나 실제
   구·신 OM 스택, DB 복원/migration, 검색/ingestion 차등과 rollback은 미실행.
+- **제품 집중 검증**: Tibero `DatabaseServiceUtils.test.tsx` 13/13 pass,
+  변경 2경로 Prettier pass. Node 24·6GB heap의 전체 UI typecheck는 399개
+  diagnostic으로 fail했지만 두 변경 경로의 매칭 오류는 0개다.
 - **현재 차단 조건**: 7개 owner 미배정, contract test는 ID 명세만 존재,
-  제품 전체 build/test·실제 T90/T91/T94 증거 없음.
+  제품 전체 Java build와 full UI suite/typecheck green, 실제 T90/T91/T94
+  증거 없음.
 
 > **T93/T42 라벨 정정(중요)**: build_plan 정본에서 **T42 = upgrade_watch(업스트림
 > 변경 ∩ 감시 → 케이스 D)** = `upgrade_watch.py`+`impact.py`, **T93 = 정책 노후화

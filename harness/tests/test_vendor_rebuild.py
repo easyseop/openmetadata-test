@@ -417,3 +417,10 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
         gate["verdict"] == V.PASS
         for gate in gates.values()
     )
+    product = evidence["product_verification"]
+    assert product["prettier"]["verdict"] == V.PASS
+    assert product["tibero_jest"]["verdict"] == V.PASS
+    assert product["tibero_jest"]["tests"] > 0
+    assert product["ui_typecheck"]["verdict"] == "fail"
+    assert product["ui_typecheck"]["error_lines"] > 0
+    assert product["ui_typecheck"]["changed_path_error_lines"] == 0

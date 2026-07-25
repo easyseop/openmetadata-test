@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: "2026-07-25T22:16:57+09:00"
+generated_at: "2026-07-25T22:33:40+09:00"
 governance_evidence_commit: f329ad1c3460b9f882eae024638593e0568e8879
 repository: easyseop/OpenMetadata
 branch: codex/bank-vendor-1.13.1-rebuild
@@ -82,8 +82,33 @@ gates:
   t31_id_invariants:
     verdict: pass
     candidate: 38bccf90779a8afe4a4f0e9313e11706f6d940d4
+product_verification:
+  environment:
+    node: 24.15.0
+    yarn: 1.22.22
+    note: one dependency declares support only through Node 22, so installation used --ignore-engines
+  prettier:
+    verdict: pass
+    checked_paths: 2
+  tibero_jest:
+    verdict: pass
+    suite: openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx
+    tests: 13
+    tibero_test: should return correct schema and UI schema for Tibero
+  ui_typecheck:
+    verdict: fail
+    command: NODE_OPTIONS=--max-old-space-size=6144 yarn tsc:check
+    error_lines: 399
+    changed_path_error_lines: 0
+  ui_core_build:
+    command_exit: 0
+    declaration_diagnostics: 2
+    candidate_changed_paths: 0
+  antlr_tool:
+    version: 4.9.2
+    sha256: bb117b1476691dc2915a318efd36f8957c0ad93447fb1dac01107eb15fe137cd
 limitations:
   - The seven contract test IDs are registered but their product runtime implementations have not been executed.
   - The source candidate is not a release artifact; image/package build, SBOM, signing, and promotion gates remain.
-  - Product-wide Java and UI build/test suites have not yet been run for this sparse reconstruction checkout.
-  - The targeted Tibero Jest test was added but not executed because the sparse product checkout has neither the UI package manifest nor installed UI dependencies.
+  - The focused Tibero Jest suite passes, but the product-wide UI typecheck still fails with 399 pre-existing or unrelated diagnostics; Java and full UI suites remain unverified.
+  - The focused UI run used Node 24 with --ignore-engines because the available environment did not include the package-supported Node 22 runtime.
