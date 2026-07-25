@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: "2026-07-25T23:02:45+09:00"
+generated_at: "2026-07-25T23:15:00+09:00"
 governance_evidence_commit: 0f0904b47c08c1febf95d17e2c7364adf01e3b98
 repository: easyseop/OpenMetadata
 branch: codex/bank-vendor-1.13.1-rebuild
@@ -115,6 +115,14 @@ product_verification:
       tests_passed: 280
       tests_skipped_live: 4
       url: https://github.com/easyseop/openmetadata-test/actions/runs/30160922136
+    guide_handoff_remote_run:
+      id: 30161253922
+      head_sha: 42e50b5d07bc6fe388b1d2eca03ec2dc3be8e367
+      conclusion: success
+      tests_passed: 280
+      tests_skipped_live: 4
+      source_gates_passed: 5
+      url: https://github.com/easyseop/openmetadata-test/actions/runs/30161253922
   environment:
     node: 24.15.0
     yarn: 1.22.22

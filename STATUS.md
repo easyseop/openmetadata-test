@@ -103,7 +103,10 @@ Node 24 validation run
 [`30160846880`](https://github.com/easyseop/openmetadata-test/actions/runs/30160846880)
 then passed with zero annotations. Final evidence-sync run
 [`30160922136`](https://github.com/easyseop/openmetadata-test/actions/runs/30160922136)
-also passed with `280 passed, 4 skipped`.
+also passed with `280 passed, 4 skipped`. The nondeveloper guide and handoff
+batch then passed remotely in
+[`30161253922`](https://github.com/easyseop/openmetadata-test/actions/runs/30161253922)
+with `280 passed, 4 skipped in 12.83s` and all five source gates passing.
 
 ## Important production blockers
 

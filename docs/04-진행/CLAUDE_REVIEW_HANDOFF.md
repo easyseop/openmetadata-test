@@ -733,6 +733,11 @@ OPENMETADATA_PRODUCT_REPO=/private/tmp/om-ci-validation-38bccf \
 네 skip은 모두 `OPENMETADATA_BASE_URL`이 필요한 live contract이며 pass로
 계산하지 않았다.
 
+이 가이드·인수인계 배치의 원격 run
+[`30161253922`](https://github.com/easyseop/openmetadata-test/actions/runs/30161253922)도
+24초에 success했다. 로그에서 `280 passed, 4 skipped in 12.83s`,
+`implemented_required_tests=7`, T25/T26/T60-I/T30/T31의 `pass`를 확인했다.
+
 ## 5. 테스트 결과
 
 전체 명령:
