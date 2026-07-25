@@ -158,3 +158,11 @@ def test_duplicate_or_gapped_attempts_rejected():
     gap["runs"][1]["attempt"] = 3
     with pytest.raises(T.TestRunError, match="contiguous"):
         T.parse_test_run_set(gap)
+
+
+def test_run_set_writer_is_atomic_and_round_trips(tmp_path):
+    run_set = T.parse_test_run_set(_data(("fail", "pass")))
+    output = tmp_path / "test-run-set.yaml"
+    assert T.write_test_run_set(run_set, output) == str(output)
+    assert T.load_test_run_set(output) == run_set
+    assert not [path for path in tmp_path.iterdir() if ".tmp." in path.name]

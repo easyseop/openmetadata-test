@@ -15,6 +15,7 @@ Trust boundary:
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -124,6 +125,27 @@ def load_test_run_set(path) -> TestRunSet:
     return parse_test_run_set(
         yaml.safe_load(Path(path).read_text(encoding="utf-8"))
     )
+
+
+def write_test_run_set(run_set: TestRunSet, path) -> str:
+    """Schema-validate and atomically persist the canonical T62 run set."""
+    data = run_set.canonical()
+    # Reparse before writing so producer bugs cannot emit invalid evidence.
+    parse_test_run_set(data)
+    output = Path(path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    temporary = output.with_name(f".{output.name}.tmp.{os.getpid()}")
+    blob = yaml.safe_dump(data, sort_keys=True, allow_unicode=True)
+    descriptor = os.open(
+        str(temporary), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o644
+    )
+    try:
+        os.write(descriptor, blob.encode("utf-8"))
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+    os.replace(str(temporary), str(output))
+    return str(output)
 
 
 def _required_tests(manifests, catalog, criticality_by_id):

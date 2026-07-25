@@ -10,6 +10,7 @@ acgh-vendor-rebuild = "acgh.vendor_rebuild:main"
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0"]
+runtime = ["playwright>=1.40,<2"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
