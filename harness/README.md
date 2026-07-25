@@ -101,7 +101,8 @@ registered JSON의 최종 의미 값과 나머지 파일 내용은 snapshot과 �
 - `registrations/kb-openmetadata/run_source_candidate_gates.py`
 - product branch:
   `easyseop/OpenMetadata:codex/bank-vendor-1.13.1-rebuild`
-- candidate: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
+- reconstruction checkpoint: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
+- current candidate: `38bccf90779a8afe4a4f0e9313e11706f6d940d4`
 
 ## 디렉터리
 

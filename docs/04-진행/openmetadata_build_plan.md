@@ -103,7 +103,10 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
   불일치는 차단한다. 실제 고정 객체에서 113경로 plan과 44개 shared owner
   분석을 완료했고, `easyseop/OpenMetadata`의
   `codex/bank-vendor-1.13.1-rebuild`에서 7개 논리 ID commit을 생성했다.
-  candidate `e1ffc5a1...`은 T25-R/T25/T26/T30/T31을 통과했다.
+  reconstruction checkpoint `e1ffc5a1...`은 T25-R을 통과했다. 정적 검토에서
+  발견한 Tibero 공통 connection `ConfigType`·단위 테스트 누락을 연속
+  `BANK-OM-007` commit으로 보강한 현재 candidate `38bccf90...`은
+  T25/T26/T30/T31을 통과했다.
 - **T26 · customization survival gate (✅ 구현·단위검증 완료)** — ID별 required state·path·contract가
   merge candidate에 남아 있는지 검증.
 - **T27 · merge conflict evidence (✅ 구현·단위검증 완료)** — 충돌 파일·해결 결정·승인자를 구조화 기록.

@@ -394,8 +394,26 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
     )
     assert len({item["sha"] for item in commits}) == len(plan.active_ids)
     assert all(item["touched_paths"] > 0 for item in commits)
-    assert evidence["candidate"]["commit_sha"] == commits[-1]["sha"]
+    assert evidence["reconstruction"]["checkpoint_sha"] == commits[-1]["sha"]
+    follow_ups = evidence["reconstruction"]["follow_up_commits"]
+    assert follow_ups
+    assert evidence["candidate"]["commit_sha"] == follow_ups[-1]["sha"]
+    assert all(
+        item["customization_id"] in plan.active_ids
+        and item["touched_paths"] > 0
+        for item in follow_ups
+    )
+    gates = evidence["gates"]
+    assert (
+        gates["t25_r_vendor_reconstructed_candidate"]["candidate"]
+        == evidence["reconstruction"]["checkpoint_sha"]
+    )
+    assert all(
+        gate["candidate"] == evidence["candidate"]["commit_sha"]
+        for name, gate in gates.items()
+        if name != "t25_r_vendor_reconstructed_candidate"
+    )
     assert all(
         gate["verdict"] == V.PASS
-        for gate in evidence["gates"].values()
+        for gate in gates.values()
     )

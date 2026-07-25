@@ -447,7 +447,7 @@ planner, 실제 source plan, 44개 shared owner map, candidate verifier까지 �
 - fork: `easyseop/OpenMetadata`
 - branch: `codex/bank-vendor-1.13.1-rebuild`
 - 공식 parent: `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9`
-- candidate: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
+- reconstruction checkpoint: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
 - tree: `4ac7817d9e495edc14fcfae5af0382f839a098a3`
 
 재현·증거 파일:
@@ -498,10 +498,57 @@ T30 commit-invariants                pass
 T31 id-invariants                    pass
 ```
 
-source candidate-lock digest는
+reconstruction checkpoint의 source candidate-lock digest는
 `sha256:fb05306222a64581d5aea6894fb8c99dd9fb4080ac2bb89f66f31ee1078243c4`다.
 그 lock의 artifact digest는 source Git tree identity를 결속한다. 아직 Java/UI
 binary, container image 또는 release package digest를 뜻하지 않는다.
+
+### 4.15 BANK-OM-007 Tibero 후속 보강
+
+7-ID snapshot 재구축은 `e1ffc5a1...`에서 고정했다. 이후 제품 정적 검토에서
+Tibero가 아래 위치에는 이미 존재함을 확인했다.
+
+- database service JSON schema와 generated `DatabaseServiceType`
+- create service/API model과 `DatabaseServiceUtils.tsx` selector
+- connector JSON schema와 service icon
+
+하지만 공통 generated service connection의 `ConfigType`에는 `Tibero`가
+빠져 있었고, `getDatabaseConfig(DatabaseServiceType.Tibero)`가 Tibero JSON
+schema를 반환한다는 집중 단위 테스트도 없었다. 이 상태는
+`CONTRACT-TIBERO-CONNECTOR`의 create UI/API/serviceConnection union 일관성
+요건을 충분히 고정하지 못한다.
+
+연속 ID series를 허용한 `BANK-OM-007`의 후속 커밋으로 다음을 보강했다.
+
+| commit | ID | 변경 경로 | 구현 |
+|---|---|---|---|
+| `38bccf90779a` | BANK-OM-007 | `openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts` | `ConfigType.Tibero = "Tibero"` 추가 |
+| `38bccf90779a` | BANK-OM-007 | `openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx` | Tibero JSON schema·공통 UI schema 반환 단위 테스트 추가 |
+
+현재 source candidate:
+
+- commit: `38bccf90779a8afe4a4f0e9313e11706f6d940d4`
+- tree: `3bfaf8b982c967af764cfbfdfe318b54f4ae9f28`
+- source tree digest:
+  `sha256:d7efa79efcc700bf05aa8d54070c551954ae2b4a29aac40fb9df5c94a71bd907`
+- candidate-lock digest:
+  `sha256:9f2e3760b7b1ab44fa24fe8872c74b4003dcf29dbdc7282e403f2595b7ebeacd`
+
+후속 candidate 검증:
+
+```text
+T25 vendor-ancestry          pass
+T26 customization-survival   pass
+T30 commit-invariants        pass
+T31 id-invariants            pass
+```
+
+T25-R은 snapshot과 정확히 같은 재구축 결과만 판정하므로 새 보강 commit이 아닌
+checkpoint `e1ffc5a1...`에 계속 결속한다. UI source tree는 `git diff --check`와
+schema/type/reference 정적 검사를 통과했다. 다만 sparse 제품 checkout에 UI
+`package.json`과 `node_modules`가 없어 추가한 Jest 테스트 자체는 아직 실행하지
+못했다. Claude는 전체 제품 checkout에서 이 테스트와 UI typecheck/build를 먼저
+실행해야 한다.
 
 ## 5. 테스트 결과
 

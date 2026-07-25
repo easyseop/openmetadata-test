@@ -2,7 +2,7 @@
 
 > Updated: 2026-07-25
 > Branch: `claude/markdown-file-feedback-26933w`
-> Last verified implementation commit: `81524aa`
+> Last verified implementation commit: `6dba2fe`
 > Detailed review handoff: [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)
 
 ## Handoff update policy
@@ -32,15 +32,23 @@ The actual vendor branch is now built and pushed:
 
 - repository: `easyseop/OpenMetadata`
 - branch: `codex/bank-vendor-1.13.1-rebuild`
-- candidate: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
+- reconstruction checkpoint: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
+- current candidate: `38bccf90779a8afe4a4f0e9313e11706f6d940d4`
 - official parent: `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9`
-- seven contiguous logical commits: `BANK-OM-001` through `BANK-OM-007`
+- seven reconstruction commits plus one consecutive `BANK-OM-007` follow-up
 
-T25-R, T25 ancestry, T26 survival, T30 commit invariants, and T31 ID
-invariants all pass on that candidate. The unrelated snapshot commit is not in
-the candidate ancestry, the 111 registered paths match the snapshot
+T25-R passes on the exact reconstruction checkpoint. T25 ancestry, T26
+survival, T30 commit invariants, and T31 ID invariants pass on the current
+candidate. The unrelated snapshot commit is not in the candidate ancestry,
+the checkpoint's 111 registered paths match the snapshot
 (JSON semantically, other files byte-for-byte), and the two excluded files
 remain at official upstream content.
+
+Static product review then found that Tibero was present in the database
+service schema and selector but absent from the generated common connection
+`ConfigType`, with no focused utility test. Commit `38bccf9077` adds that enum
+member and a Tibero schema-mapping unit test under the same consecutive
+`BANK-OM-007` series.
 
 ## Verification
 
@@ -54,11 +62,11 @@ The 35 skips require the historical Linux fixture path
 Actual source-candidate gates:
 
 ```text
-T25-R vendor-reconstructed-candidate  pass
-T25   vendor-ancestry                 pass
-T26   customization-survival          pass (7 IDs, 10 required paths)
-T30   commit-invariants               pass
-T31   id-invariants                   pass
+T25-R vendor-reconstructed-candidate  pass (checkpoint e1ffc5a1...)
+T25   vendor-ancestry                 pass (candidate 38bccf90...)
+T26   customization-survival          pass (candidate 38bccf90...; 7 IDs, 10 required paths)
+T30   commit-invariants               pass (candidate 38bccf90...)
+T31   id-invariants                   pass (candidate 38bccf90...)
 ```
 
 ## Important production blockers
@@ -78,6 +86,9 @@ This is not yet evidence that the bank distribution is deployable:
 5. The candidate lock currently binds the source Git tree identity. A complete
    Java/UI build, image/package digest, SBOM, signing, and promotion evidence
    still need to be produced.
+6. The focused Tibero Jest test is committed but was not executed because the
+   sparse product checkout has neither the UI package manifest nor installed
+   UI dependencies.
 
 Until those items are closed, the honest release state is **blocked**, not
 pass.

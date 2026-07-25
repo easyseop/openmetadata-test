@@ -4,7 +4,8 @@
 > 통합 전략의 정본이다. 현재 replay 기반 MVP1 구현은 선택 모드로 재분류되며,
 > T24~T29·T25-R 기본 경로와 실제 7개 등록부, 잔여 Docker-free 운영 게이트까지
 > 구현됐다. 실제 113경로 source plan과 44개 shared owner 분석, 7-ID vendor
-> candidate 생성과 T25-R/T25/T26/T30/T31 검증까지 완료했다. contract/upgrade
+> checkpoint 재구축과 Tibero 후속 보강 candidate 생성,
+> T25-R/T25/T26/T30/T31 검증까지 완료했다. contract/upgrade
 > test와 승격·반입 증거가 없으므로
 > Production-upgrade 달성으로 표기하지 않는다.
 
@@ -293,7 +294,7 @@ T93·T42 · T50 · T70 최소.
 
 | 태스크 | 상태 | 산출물 | 검증 |
 |---|---|---|---|
-| T25-R snapshot→vendor 재구성 | ✅ 실제 branch·candidate 통과 | `acgh/vendor_rebuild.py` + `shared-path-owners.yaml` + `source-candidate-evidence.yaml` | 13 단위 테스트 + 실제 candidate `e1ffc5a1...`. 113경로=67 단독·44 공유·2 제외, target ancestry·snapshot commit 비포함·7 ID/path owner·JSON 의미/기타 content 동일성 통과 |
+| T25-R snapshot→vendor 재구성 | ✅ 실제 branch·checkpoint 통과 | `acgh/vendor_rebuild.py` + `shared-path-owners.yaml` + `source-candidate-evidence.yaml` | 13 단위 테스트 + 실제 checkpoint `e1ffc5a1...`. 113경로=67 단독·44 공유·2 제외, target ancestry·snapshot commit 비포함·7 ID/path owner·JSON 의미/기타 content 동일성 통과. Tibero 타입·단위 테스트 후속 보강 candidate는 `38bccf90...`이며 T25/T26/T30/T31 통과 |
 | T26 customization survival | ✅ 구현 | `acgh/survival.py` | 7 테스트. required path 존재·target 대비 순효과·registry/manifest/contract/effective test 생존, stale 객체=analysis_error |
 | T27 merge conflict evidence | ✅ 구현 | `acgh/conflicts.py` + schema | 5 테스트. `ls-files -u -z` stage 1/2/3, 해결 blob/rationale/승인/candidate-lock 결속 |
 | T28 통합전략 라우팅 | ✅ 구현 | `acgh/routing.py` | 4 테스트. vendor/replay gate 분리, 필수 gate 미구성=analysis_error |

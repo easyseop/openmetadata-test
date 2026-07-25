@@ -2,7 +2,7 @@
 
 > **목적**: 컨텍스트가 리셋돼도 이 문서 하나로 작업을 이어갈 수 있게 현재까지의
 > 모든 결정·산출물·다음 단계를 세세하게 기록한다. **작업 재개 시 이 문서를 먼저 읽는다.**
-> 최종 갱신: 2026-07-25 실제 7-ID vendor candidate와 T25-R/T25/T26/T30/T31 통과까지 반영.
+> 최종 갱신: 2026-07-25 실제 7-ID 재구축과 Tibero 후속 보강, T25-R/T25/T26/T30/T31 통과까지 반영.
 > **현재 상태 정본은 [`STATUS.md`](STATUS.md), Claude 검토용 상세는
 > [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)다.**
 > 개발 태스크가 끝날 때마다 두 문서를 갱신하고, 작업 주체 변경 또는 컨텍스트
@@ -15,7 +15,9 @@
 
 vendor merge 기본 / patch replay 선택 전략의 게이트 엔진과 실제 7개 등록부를
 구현했다. `easyseop/OpenMetadata`에 공식 `1.13.1-release` 기반 7-ID vendor
-candidate `e1ffc5a1...`를 만들었고 T25-R/T25/T26/T30/T31이 모두 통과했다.
+checkpoint `e1ffc5a1...`를 재구축한 뒤 Tibero 타입·테스트를 보강해 현재
+candidate `38bccf90...`를 만들었다. T25-R은 checkpoint에서, T25/T26/T30/T31은
+현재 candidate에서 통과했다.
 contract/upgrade test와 release artifact가 없으므로 첫 production release는
 아직 차단 상태다.
 
@@ -25,7 +27,8 @@ contract/upgrade test와 release artifact가 없으므로 첫 production release
 - **작업 브랜치: `claude/markdown-file-feedback-26933w`** (여기에 계속 커밋·푸시)
 - 제품 리포: `easyseop/OpenMetadata`
 - 제품 브랜치: `codex/bank-vendor-1.13.1-rebuild`
-- 제품 candidate: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
+- 제품 재구축 checkpoint: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
+- 제품 candidate: `38bccf90779a8afe4a4f0e9313e11706f6d940d4`
 - 커밋 작성자·도구 출처는 실제 작업 주체에 맞게 기록한다. 과거 세션이나 다른
   도구의 출처를 새 커밋에 복사하지 않는다.
 - 푸시: `git push -u origin claude/markdown-file-feedback-26933w`
