@@ -3,6 +3,7 @@
 > Updated: 2026-07-25
 > Branch: `claude/markdown-file-feedback-26933w`
 > Last verified implementation commit: `efd7615`
+> Nondeveloper guide and handoff implementation commit: `0f0904b`
 > Detailed review handoff: [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)
 > Nondeveloper entry point: [`docs/00-사용가이드/비개발자_사용_가이드.md`](docs/00-사용가이드/비개발자_사용_가이드.md)
 

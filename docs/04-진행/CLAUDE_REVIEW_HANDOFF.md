@@ -4,6 +4,8 @@
 > 대상 브랜치: `claude/markdown-file-feedback-26933w`
 > 변경 전 기준 커밋: `9d2a174` (`implement T25 vendor ancestry gate`)
 > 마지막 검증 구현 커밋: `efd7615`
+> 비개발자 가이드·인수인계 구현 커밋:
+> `0f0904b47c08c1febf95d17e2c7364adf01e3b98`
 > 현재 커밋은 체크아웃 후 `git rev-parse HEAD`로 확인한다.
 
 ## 0. 지속 갱신 규칙
