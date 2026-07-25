@@ -8,6 +8,7 @@
 > `0f0904b47c08c1febf95d17e2c7364adf01e3b98`
 > T62 runtime 계약 게이트 구현 커밋:
 > `b29d0ceea3b8b95423242847b0c172415f420411`
+> T62 운영 문서·가이드 동기화 커밋: `a291f31`
 > 현재 커밋은 체크아웃 후 `git rev-parse HEAD`로 확인한다.
 
 ## 0. 지속 갱신 규칙
@@ -810,6 +811,19 @@ artifact 입력으로 사용했다. 실제 배포 artifact나 운영 T62 증거�
 실제 runtime workflow는 아직 실행하지 않았다. 또한 현재 workflow는 비밀이 없는
 YAML을 GitHub job summary에 남기지만 별도 장기 증거 저장소에는 업로드하지 않는다.
 장기 보존 연결은 남은 운영 작업이다.
+
+구현 `b29d0ce`와 문서 `a291f31`은 원격 브랜치에 push됐다. push 뒤
+`source-candidate` run 조회를 시도했지만 이 세션의 외부 GitHub API 승인 도구가
+사용 한도에 도달해 새 run의 결론은 확인하지 못했다. 따라서 원격 성공을 추정해
+기록하지 않는다. 다음 작업자는 먼저 아래 명령으로 `a291f31` 이후 run을 확인한다.
+
+```bash
+gh run list \
+  --repo easyseop/openmetadata-test \
+  --branch claude/markdown-file-feedback-26933w \
+  --workflow source-candidate.yml \
+  --limit 5
+```
 
 ## 5. 테스트 결과
 

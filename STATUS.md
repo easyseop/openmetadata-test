@@ -4,6 +4,7 @@
 > Branch: `claude/markdown-file-feedback-26933w`
 > Last verified implementation commit: `b29d0ce`
 > Nondeveloper guide and handoff implementation commit: `0f0904b`
+> Runtime operations documentation commit: `a291f31`
 > Detailed review handoff: [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)
 > Nondeveloper entry point: [`docs/00-사용가이드/비개발자_사용_가이드.md`](docs/00-사용가이드/비개발자_사용_가이드.md)
 
@@ -117,6 +118,10 @@ also passed with `280 passed, 4 skipped`. The nondeveloper guide and handoff
 batch then passed remotely in
 [`30161253922`](https://github.com/easyseop/openmetadata-test/actions/runs/30161253922)
 with `280 passed, 4 skipped in 12.83s` and all five source gates passing.
+Runtime implementation `b29d0ce` and documentation `a291f31` are pushed. Their
+new remote run could not be queried in this session because external GitHub API
+approval hit the tool usage limit; no remote success is claimed. The exact
+local verification is `293 passed, 5 skipped` with all five source gates pass.
 
 ## Important production blockers
 
