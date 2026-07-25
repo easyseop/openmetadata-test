@@ -100,7 +100,8 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
   upstream/snapshot 고정 tree의 diff inventory를 재확인하고, 모든 제품 경로를
   manifest에 결속한다. 공유 파일은 hunk owner를 명시해야 하며, unrelated
   snapshot commit merge, 무ID·다중ID commit, 제외 경로 변경, 최종 content
-  불일치는 차단한다.
+  불일치는 차단한다. 실제 고정 객체에서 113경로 plan과 44개 shared owner
+  분석까지 완료했으며 논리 ID commit branch 생성은 남아 있다.
 - **T26 · customization survival gate (✅ 구현·단위검증 완료)** — ID별 required state·path·contract가
   merge candidate에 남아 있는지 검증.
 - **T27 · merge conflict evidence (✅ 구현·단위검증 완료)** — 충돌 파일·해결 결정·승인자를 구조화 기록.

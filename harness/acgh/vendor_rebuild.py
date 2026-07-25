@@ -14,8 +14,8 @@ tree is enough:
   unrelated snapshot commit;
 * every candidate commit has exactly one ``Customization-ID`` and may touch
   only paths assigned to that ID; and
-* the final registered path content equals the snapshot while excluded path
-  content equals upstream.
+* final JSON values equal the snapshot (formatting ignored), all other
+  registered path bytes equal the snapshot, and excluded paths equal upstream.
 
 The shared-path owner map is intentionally explicit.  Choosing the first
 matching manifest would silently attribute QueryReport lines to InstanceCode
@@ -235,7 +235,57 @@ def inspect_source_inventory(
     )
 
 
+def _tree_blob(repo: str, ref: str, path: str) -> bytes | None:
+    listing = subprocess.run(
+        [
+            "git",
+            "-C",
+            repo,
+            *gitprim._STABLE_CONFIG,
+            "ls-tree",
+            "-z",
+            ref,
+            "--",
+            path,
+        ],
+        capture_output=True,
+    )
+    if listing.returncode != 0:
+        raise gitprim.GitPrimitiveError(
+            f"git ls-tree failed for {ref}:{path}: "
+            f"{listing.stderr.decode(errors='replace').strip() or listing.returncode}"
+        )
+    if not listing.stdout:
+        return None
+    blob = subprocess.run(
+        ["git", "-C", repo, "cat-file", "blob", f"{ref}:{path}"],
+        capture_output=True,
+    )
+    if blob.returncode != 0:
+        raise gitprim.GitPrimitiveError(
+            f"git cat-file failed for {ref}:{path}: "
+            f"{blob.stderr.decode(errors='replace').strip() or blob.returncode}"
+        )
+    return blob.stdout
+
+
 def _path_equal(repo: str, left: str, right: str, path: str) -> bool:
+    if left == right:
+        return True
+    if path.endswith(".json"):
+        left_blob = _tree_blob(repo, left, path)
+        right_blob = _tree_blob(repo, right, path)
+        if left_blob is None or right_blob is None:
+            return left_blob == right_blob
+        try:
+            left_value = json.loads(left_blob.decode("utf-8"))
+            right_value = json.loads(right_blob.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise gitprim.GitPrimitiveError(
+                f"JSON semantic comparison failed for {path!r}: {exc}"
+            ) from exc
+        return left_value == right_value
+
     proc = subprocess.run(
         [
             "git",

@@ -18,13 +18,13 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 ```bash
 cd harness
 pip install jsonschema pathspec pyyaml pytest    # 또는 pip install -e ".[dev]"
-python -m pytest                                  # 현재 269개: 234 pass·35 mirror skip
+python -m pytest                                  # 현재 270개: 235 pass·35 mirror skip
 bash fixtures/fetch_upstream.sh                   # 실제 OM 미러(없으면 미러 테스트 자동 skip)
 ```
 
 Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
 
-## 구현 모듈 (현재 269개 테스트: 234 pass·35 mirror skip)
+## 구현 모듈 (현재 270개 테스트: 235 pass·35 mirror skip)
 
 | 모듈 | 담당 | 루트 README 검증기# / 영역 |
 |---|---|---|
@@ -75,9 +75,10 @@ acgh-vendor-rebuild \
   plan
 ```
 
-현재 계획은 67개 단독 소유, 44개 공유 파일, 2개 제외 경로다. 공유 파일은
-`registrations/kb-openmetadata/shared-path-owners.yaml`의 빈 목록을 실제 hunk
-소유 ID로 채운 뒤 검증한다. 빈 목록은 의도적으로 `block`이다.
+실제 고정 Git 객체에서 source plan이 통과했으며 결과는 67개 단독 소유, 44개
+공유 파일, 2개 제외 경로다. 공유 파일의 실제 symbol·JSON key·route·SQL block을
+검사해 `registrations/kb-openmetadata/shared-path-owners.yaml`에 owner를
+기록했다.
 
 ```bash
 acgh-vendor-rebuild \
@@ -90,8 +91,8 @@ acgh-vendor-rebuild \
 
 검증기는 candidate가 공식 target에서 시작했는지, unrelated snapshot commit을
 merge하지 않았는지, commit마다 ID가 정확히 하나인지, 경로 소유가 맞는지,
-registered path의 최종 내용은 snapshot과 같은지, 제외 경로는 upstream 그대로인지
-확인한다.
+registered JSON의 최종 의미 값과 나머지 파일 내용은 snapshot과 같은지, 제외
+경로는 upstream 그대로인지 확인한다.
 
 ## 디렉터리
 

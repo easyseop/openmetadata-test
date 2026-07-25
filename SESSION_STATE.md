@@ -14,9 +14,10 @@
 ## 0. 지금 어디인가 (한 줄)
 
 vendor merge 기본 / patch replay 선택 전략의 게이트 엔진, T25-R~T29, 실제 7개
-등록부와 T62/T71/T72/T80/T90/T91/T92/T94 판정 계약까지 구현했다. T25-R은
-113경로를 67 단독·44 공유·2 제외로 분류하지만 실제 vendor branch와 공유 hunk
-owner, contract/upgrade test가 없으므로 첫 production release는 아직 차단 상태다.
+등록부와 T62/T71/T72/T80/T90/T91/T92/T94 판정 계약까지 구현했다. T25-R 실제
+source plan은 113경로=67 단독·44 공유·2 제외로 통과했고 shared owner도
+확정했다. 실제 vendor branch와 contract/upgrade test가 없으므로 첫 production
+release는 아직 차단 상태다.
 
 ## 1. 리포지토리·브랜치
 
@@ -100,12 +101,12 @@ owner, contract/upgrade test가 없으므로 첫 production release는 아직 �
 ```
 T24 integration_strategy/candidate-lock ✅
   → T25 vendor ancestry ✅
-  → T25-R snapshot 재구성 검증 ✅(실 candidate·44 shared hunk owner 미완)
+  → T25-R source plan·44 shared hunk owner·검증기 ✅(실 candidate 미완)
   → T26 customization survival ✅
   → T29 실제 kb_openmetadata manifest/contract ✅(test 명세)
   → T27 merge conflict evidence ✅
   → T28 전략 라우팅 ✅
-  → 44 shared hunk owner 확정·실제 vendor candidate 생성 ← 다음
+  → 실제 vendor candidate의 논리 ID commit 생성 ← 다음
   → owner 배정·T60/61 contract 실행
   → T90 실제 스택 실행 → T91 실제 승격 → T94 실제 반입
 
@@ -192,7 +193,7 @@ harness/
 
 **완료:** 기존 patch-replay M1~M4, vendor-merge T24~T29·T25-R, 실제 7개 등록부,
 T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
-현재 테스트는 269개이며, 2026-07-25 Python 3.11 환경에서 234개 통과,
+현재 테스트는 270개이며, 2026-07-25 Python 3.11 환경에서 235개 통과,
 실제 OpenMetadata 미러가 필요한 35개는 skip됐다.
 - **T60** contract 카탈로그+결속 `contracts.py` · **T61** patch-kill
   `patchkill.py` · **T51/52** 구조화 diff `structdiff.py`(실제 table.json
@@ -201,8 +202,8 @@ T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
 - **Docker 데몬 없음(이 세션)** → T90의 12단계 결과계약은 구현했으나 실제
   구·신 OM 스택, DB 복원/migration, 검색/ingestion 차등과 rollback은 미실행.
 - **현재 차단 조건**: kb 원본은 upstream ancestry 없는 root snapshot,
-  44 shared file의 hunk owner와 실 candidate 미완, 7개 owner 미배정,
-  contract test는 ID 명세만 존재, 실제 T90/T91/T94 증거 없음.
+  논리 ID commit의 실 candidate 미완, 7개 owner 미배정, contract test는 ID
+  명세만 존재, 실제 T90/T91/T94 증거 없음.
 
 > **T93/T42 라벨 정정(중요)**: build_plan 정본에서 **T42 = upgrade_watch(업스트림
 > 변경 ∩ 감시 → 케이스 D)** = `upgrade_watch.py`+`impact.py`, **T93 = 정책 노후화
@@ -212,7 +213,7 @@ T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
 
 | 태스크 | 상태 | 모듈 |
 |---|---|---|
-| T25-R snapshot 재구성 검증 | ✅ 엔진·⚠ 실 candidate | `acgh/vendor_rebuild.py` + `registrations/kb-openmetadata/shared-path-owners.yaml` |
+| T25-R snapshot 재구성 검증 | ✅ source/owner/엔진·⚠ 실 candidate | `acgh/vendor_rebuild.py` + `registrations/kb-openmetadata/shared-path-owners.yaml` |
 | T25 vendor ancestry gate | ✅ | `acgh/ancestry.py` + `acgh/gitprim.py` |
 | T24 integration strategy·candidate-lock | ✅ | `acgh/candidate.py` + `schema/candidate-lock.schema.json` + `binding.py` |
 | T05 path-ownership 운영층 | ✅ | `acgh/layout.py` + `policies/repository-layout.yaml` |
@@ -261,15 +262,13 @@ T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
 
 ### 다음 태스크 — 첫 실제 production-upgrade 증거
 
-1. 공식 target과 snapshot object가 모두 있는 repo에서 `acgh-vendor-rebuild
-   plan`을 실행하고 44개 공유 파일의 hunk owner를 확정한다.
-2. 공식 `1.13.1-release`에서 vendor branch를 만들고 7개 기능을 ID series로
+1. 공식 `1.13.1-release`에서 vendor branch를 만들고 7개 기능을 ID series로
    재구성한 뒤 T25-R과 T25 ancestry를 통과시킨다.
-3. 7개 owner/승인 라우팅을 배정한다.
-4. API·DB·검색·권한·UI/IME·Sybase·Tibero contract test를 실제로 구현하고
+2. 7개 owner/승인 라우팅을 배정한다.
+3. API·DB·검색·권한·UI/IME·Sybase·Tibero contract test를 실제로 구현하고
    T61 patch-kill과 T62 candidate-bound result를 만든다.
-5. Docker/운영 유사 데이터로 T90 12단계를 실행한다.
-6. T91 실제 artifact 승격과 T94 실제 오프라인 서명·내부망 재검증을 수행한다.
+4. Docker/운영 유사 데이터로 T90 12단계를 실행한다.
+5. T91 실제 artifact 승격과 T94 실제 오프라인 서명·내부망 재검증을 수행한다.
 
 > 아래 M4 재개 지침은 기존 replay-mode 개발 이력으로 보존한다.
 
@@ -323,7 +322,7 @@ replay tree(T22 `replay.replay_and_compare` 재사용), candidate 변경 시 기
 ### 재개 절차
 1. 이 파일 + `docs/04-진행/openmetadata_build_plan.md` + SRS 부칙 A(`docs/02-설계/openmetadata_governance_requirements.md`) 읽기.
 2. `/home/user/om-mirror` 존재 확인(없으면 §7 재획득), `pip install jsonschema pathspec`.
-3. `cd harness && python -m pytest` → 현재 269개(234 pass·35 mirror skip) 재확인.
+3. `cd harness && python -m pytest` → 현재 270개(235 pass·35 mirror skip) 재확인.
 4. `STATUS.md`의 production blocker와
    `docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`의 실제 실행 순서를 따른다.
 5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4.1 로그 + 이 표 갱신.

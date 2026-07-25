@@ -337,4 +337,31 @@ def test_real_shared_owner_template_tracks_every_ambiguous_path():
         (_REGISTRATION / "shared-path-owners.yaml").read_text(encoding="utf-8")
     )
     assert set(template) == {path for path, _ in plan.shared_candidates}
-    assert all(owners == [] for owners in template.values())
+    candidates = dict(plan.shared_candidates)
+    assert all(template[path] for path in template)
+    assert all(
+        set(owners).issubset(candidates[path])
+        for path, owners in template.items()
+    )
+
+
+def test_json_content_comparison_is_semantic(tmp_path):
+    repo = tmp_path / "json-repo"
+    repo.mkdir()
+    _run(repo, "init", "-q", "-b", "main")
+    _run(repo, "config", "user.email", "test@example.com")
+    _run(repo, "config", "user.name", "test")
+    _run(repo, "config", "commit.gpgsign", "false")
+    compact = _commit(repo, {"config.json": '{"a":1,"b":[2,3]}\n'}, "compact")
+    formatted = _commit(
+        repo,
+        {"config.json": '{\n  "a": 1,\n  "b": [2, 3]\n}\n'},
+        "format only",
+    )
+    changed = _commit(
+        repo,
+        {"config.json": '{\n  "a": 9,\n  "b": [2, 3]\n}\n'},
+        "semantic change",
+    )
+    assert VR._path_equal(str(repo), compact, formatted, "config.json")
+    assert not VR._path_equal(str(repo), compact, changed, "config.json")

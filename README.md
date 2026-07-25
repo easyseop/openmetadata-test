@@ -222,7 +222,7 @@ M9 업그레이드 검증·릴리스 승격(digest 결속)·반입
 ```bash
 cd harness
 pip install jsonschema pathspec pyyaml pytest    # 또는 pip install -e ".[dev]"
-python -m pytest                                  # 현재 269개: 234 pass·35 mirror skip
+python -m pytest                                  # 현재 270개: 235 pass·35 mirror skip
 ```
 
 **실제 OM 미러 연결**(게이트·재적용 테스트용, 없으면 해당 테스트 자동 skip):

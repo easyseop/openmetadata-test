@@ -398,18 +398,28 @@ manifest에 통째로 귀속하면 기능별 커밋 이력이 거짓이 된다.
 - 실제 등록부 기준 113개 경로를 결정적으로 **67개 단독 소유, 44개 공유,
   2개 제외**로 분류한다. 계획 digest는
   `sha256:ceaea84c3feb370e638d24322c9a2747b69dbfeef789eeeaba8e73b7aaf96699`다.
+- 공개 원격에서 두 commit/tree를 blob 최소화로 가져와 실제 `plan`을 실행했고,
+  `source_path_count=113`과 위 digest로 `pass`를 확인했다.
 - `.claude/settings.json`과
   `docker/development/docker-compose.yml`은 reconstructed candidate에서 공식
   upstream content 그대로여야 한다.
-- 공유 44개 파일은 `shared-path-owners.yaml`의 빈 목록을 실제 hunk owner로
-  채워야 한다. 빈 목록, 후보 밖 ID, 잘못된 자료형은 통과하지 않는다.
+- 공유 44개 파일의 실제 추가 symbol·JSON key·route·SQL block을 검사해
+  `shared-path-owners.yaml`을 채웠다. broad manifest와 달리 실제 snapshot
+  변경이 Sybase뿐인 generated file은 `BANK-OM-006`만 owner로 기록했다.
+- shared path touch 수는 `BANK-OM-001=32`, `002=32`, `003=21`, `004=19`,
+  `006=12`, `007=5`이며 빈 owner 목록은 0개다. `BANK-OM-005`는 IME 단독
+  파일만 변경하므로 shared 목록에 없다.
+- 19개 비영어 locale JSON은 기능 key 추가와 file-wide 들여쓰기 변경이 함께
+  있었다. 포맷 노이즈를 기능 commit에 강제로 복제하지 않도록 JSON은 파싱한
+  의미 값으로 비교하고, Java/TS/SQL 등 나머지 파일은 byte content를 비교한다.
+- 빈 owner 목록, 후보 밖 ID, 잘못된 자료형은 통과하지 않는다.
 - candidate가 공식 target의 descendant인지, unrelated snapshot commit을
   ancestry에 포함하지 않는지 검사한다.
 - target..candidate의 모든 commit은 `Customization-ID`가 정확히 하나여야 하며,
   해당 manifest와 명시한 path owner 범위 안에서만 변경해야 한다.
-- candidate의 registered path 최종 content는 snapshot과 같고, 제외 path는
-  upstream과 같은지 재검증한다. 중간에 금지 경로를 수정했다가 되돌리는 경우도
-  per-commit touched path 검사로 차단한다.
+- candidate의 registered JSON 의미와 나머지 path content는 snapshot과 같고,
+  제외 path는 upstream과 같은지 재검증한다. 중간에 금지 경로를 수정했다가
+  되돌리는 경우도 per-commit touched path 검사로 차단한다.
 
 CLI:
 
@@ -427,10 +437,10 @@ acgh-vendor-rebuild \
   --shared-owners harness/registrations/kb-openmetadata/shared-path-owners.yaml
 ```
 
-현재 완료 범위는 planner와 candidate verifier다. 이 governance 저장소에는 공식
-target과 snapshot의 전체 Git object가 함께 들어 있지 않아 실제 7개 기능 branch를
-이 세션에서 생성하거나 T25-R로 검증하지는 않았다. 그 상태를 코드 완료와 혼동하지
-않는다.
+현재 완료 범위는 planner, 실제 source plan, 44개 shared owner map, candidate
+verifier다. 실제 7개 기능을 hunk 단위 논리 commit으로 나눈 vendor branch는 아직
+생성하지 않았다. root snapshot을 한 commit으로 복사하거나 shared file을 첫
+manifest에 몰아넣으면 검증 목적을 훼손하므로 완료로 표시하지 않는다.
 
 ## 5. 테스트 결과
 
@@ -443,21 +453,21 @@ target과 snapshot의 전체 Git object가 함께 들어 있지 않아 실제 7�
 결과:
 
 ```text
-234 passed, 35 skipped in 42.96s
+235 passed, 35 skipped in 32.00s
 ```
 
-초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 86개 passing test가
-추가됐고, 이번 T25-R 묶음은 12개다.
+초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 87개 passing test가
+추가됐고, 이번 T25-R 묶음은 13개다.
 
 35개 skip은 `/home/user/om-mirror`가 없는 현재 macOS 작업 환경에서 실제
 OpenMetadata 미러 기반 테스트가 자동 skip된 것이다. 이번에 추가한 T25-R
-12개 테스트 중 skip은 없다.
+13개 테스트 중 skip은 없다.
 
 ## 6. 완료와 운영 검증을 구분한 현재 상태
 
 | 영역 | 코드/스키마 | 단위 테스트 | 실제 운영 증거 |
 |---|---:|---:|---:|
-| T25-R snapshot 재구성 | 완료 | 완료 | 44 shared hunk owner·실 branch 필요 |
+| T25-R snapshot 재구성 | source plan·owner·엔진 완료 | 완료 | 논리 ID commit branch 필요 |
 | T26~T29 vendor 등록·라우팅 | 완료 | 완료 | T25-R 실 candidate 필요 |
 | T62 test-result binding | 완료 | 완료 | 실제 7개 contract run 없음 |
 | T71/T72 운영 정책 | 완료 | 완료 | 조직 승인자·CI 연동 필요 |
@@ -472,21 +482,18 @@ OpenMetadata 미러 기반 테스트가 자동 skip된 것이다. 이번에 추�
 
 ## 7. 다음 실행 순서
 
-1. 공식 target과 snapshot object를 한 로컬 repo에 fetch하고 T25-R `plan`을
-   실행한다.
-2. `shared-path-owners.yaml`의 44개 파일을 실제 hunk 분석으로 채운다.
-3. 공식 `1.13.1-release` SHA에서 vendor branch를 만든다.
-4. 현재 7개 기능을 논리 단위 commit/series로 재구성하고
+1. 공식 `1.13.1-release` SHA에서 vendor branch를 만든다.
+2. 현재 7개 기능을 owner map에 따라 논리 단위 commit/series로 재구성하고
    `Customization-ID` trailer를 붙인다.
-5. T25-R verify, T25 ancestry, T26 survival, T27 conflict evidence를 실제
+3. T25-R verify, T25 ancestry, T26 survival, T27 conflict evidence를 실제
    candidate에 실행한다.
-6. 각 ID의 조직 owner와 두 사람 승인 라우팅을 확정한다.
-7. `contracts.yaml`의 7개 테스트를 실제 kb runtime suite에 구현한다.
-8. high 5개를 우선 patch-kill로 검증한다.
-9. T62 형식으로 candidate-bound test-run-set을 생성한다.
-10. 실제 OM 구/신 스택에서 T90 12단계 evidence를 생성한다.
-11. T91 release-lock으로 기존 artifact를 승격한다.
-12. 실제 오프라인 키로 T94 반입 manifest를 서명하고 내부망에서 검증한다.
+4. 각 ID의 조직 owner와 두 사람 승인 라우팅을 확정한다.
+5. `contracts.yaml`의 7개 테스트를 실제 kb runtime suite에 구현한다.
+6. high 5개를 우선 patch-kill로 검증한다.
+7. T62 형식으로 candidate-bound test-run-set을 생성한다.
+8. 실제 OM 구/신 스택에서 T90 12단계 evidence를 생성한다.
+9. T91 release-lock으로 기존 artifact를 승격한다.
+10. 실제 오프라인 키로 T94 반입 manifest를 서명하고 내부망에서 검증한다.
 
 ## 8. Claude에게 요청하는 독립 검토
 
