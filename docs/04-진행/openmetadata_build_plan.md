@@ -96,12 +96,17 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **T25 · vendor ancestry gate (✅ 완료)** — candidate가 공식 target SHA와
   locked base를 ancestry에 포함하고, base/target이 공통 조상을 유지하는지
   결정적으로 검증. 객체 누락·stale lock·모드 오라우팅은 analysis_error.
-- **T26 · customization survival gate** — ID별 required state·path·contract가
+- **T26 · customization survival gate (✅ 구현·단위검증 완료)** — ID별 required state·path·contract가
   merge candidate에 남아 있는지 검증.
-- **T27 · merge conflict evidence** — 충돌 파일·해결 결정·승인자를 구조화 기록.
-- **T28 · replay optional routing** — T20~T23을 선택 진단 모드로 라우팅.
-- **T29 · 실제 커스터마이징 등록** — `kb_openmetadata`의 InstanceCode,
+- **T27 · merge conflict evidence (✅ 구현·단위검증 완료)** — 충돌 파일·해결 결정·승인자를 구조화 기록.
+- **T28 · replay optional routing (✅ 구현·단위검증 완료)** — T20~T23을 선택 진단 모드로 라우팅.
+- **T29 · 실제 커스터마이징 등록 (✅ 등록 완료·운영 증거 미완)** — `kb_openmetadata`의 InstanceCode,
   QueryReport, Assertions, 컬럼 확장, IME, Sybase, Tibero를 manifest/contract화.
+  원본이 ancestry 없는 단일 root snapshot이므로 vendor branch 재구성 전 T25는
+  의도대로 차단하며, owner 배정과 실제 contract test 구현은 남아 있다. 전체
+  113개 diff 중 111개는 7개 manifest에 귀속했고, `.claude/settings.json`의
+  자동승인 확대와 Docker Compose의 ingestion `1.9.6` 고정은 별도 blocking
+  finding으로 등록했다.
 
 ### MVP 2단계 (2차 검토 B-5 수용)
 
@@ -366,6 +371,8 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **선행**: T60·T20.
 
 ### T62. 테스트-candidate SHA 결속
+- **상태(2026-07-25)**: ✅ 결과계약·flaky 판정 구현/단위검증 완료.
+  실제 7개 contract suite 실행 결과는 아직 없음.
 - **목적**: 시간차 결함 방지(§10.1).
 - **충족**: P0(§10.1) / REQ-OR 신규.
 - **구현**: 테스트 결과를 candidate SHA·이미지 digest·harness/suite 버전에 결속.
@@ -386,6 +393,8 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **선행**: T41.
 
 ### T71. 변경 유형별 fast lane
+- **상태(2026-07-25)**: ✅ config/deployment/extension/core/governance 명시
+  라우팅과 혼합 변경 합집합 규칙 구현/단위검증 완료.
 - **목적**: 우회 방지 위해 경량 경로 제공(§9).
 - **충족**: 운영 부담 / 신규 REQ.
 - **구현**: config/deployment=명세·렌더·선언형 verifier·smoke / extension=포함·SDK계약·import·통합 /
@@ -394,6 +403,8 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **선행**: T50·T41.
 
 ### T72. break-glass 절차
+- **상태(2026-07-25)**: ✅ 2인 승인·digest/SHA/policy 결속·만료·허용 gate·통계와
+  무결성 gate 비면제 규칙 구현/단위검증 완료. 조직 실제 승인 체계 연동은 남음.
 - **목적**: 긴급 예외의 공식 경로(§9).
 - **충족**: 운영 리스크 / 신규 REQ.
 - **구현**: 긴급 티켓·2인 승인·대상/만료·허용 게이트 명시·산출물 저장·사후 정상 재수행·통계.
@@ -405,6 +416,8 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 ## M8. LLM Upgrade Impact Memo (보조)
 
 ### T80. 릴리스별 Impact Memo 생성기
+- **상태(2026-07-25)**: ✅ strict schema·근거 결속·판정/명령 필드 금지·금지 문구와
+  T81 품질지표 구현/단위검증 완료. 실제 릴리스 품질 데이터는 아직 없음.
 - **목적**: 지속형 위키 이전, 릴리스별 Memo로 안전 시작(§7).
 - **충족**: §7 / P0-7.
 - **구현**: 읽기 전용(shell·git write·PR·네트워크 없음). 입력=diff·릴리스노트·명세·증거 provider 출력.
@@ -425,6 +438,8 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 ## M9. 업그레이드 검증 · 릴리스 승격 · 반입
 
 ### T90. 업그레이드 테스트 오케스트레이션
+- **상태(2026-07-25)**: 🟡 12단계 executor-neutral 결과계약과 candidate 결속은
+  구현/단위검증 완료. Docker·DB·검색·ingestion 실제 실행은 미수행.
 - **목적**: 빌드 성공 ≠ 업그레이드 성공을 실측(§6 보강2).
 - **충족**: P2·P5 / REQ(업그레이드 계층).
 - **구현**: 운영 DB 복원→migration→건수 대사→reindex→ingestion→rollback 훈련.
@@ -433,6 +448,8 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **선행**: T62.
 
 ### T91. 릴리스 승격 — 동일 digest
+- **상태(2026-07-25)**: ✅ release-lock·동일 digest·재빌드 금지 판정 구현/단위검증
+  완료. 실제 artifact registry 승격은 미수행.
 - **목적**: 검증된 것과 배포되는 것의 동일성(§10.1).
 - **충족**: P4 / REQ(반입).
 - **구현**: candidate를 재빌드·복사하지 않고 **검증된 동일 commit SHA·artifact digest 승격**.
@@ -441,6 +458,8 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **선행**: T90·T22.
 
 ### T92. retirement 흐름
+- **상태(2026-07-25)**: ✅ 공식 대체·ADR·contract/removal 증거·2인 승인과
+  registry/manifest active→retired 전환 구현/단위검증 완료.
 - **목적**: 업스트림이 패치를 흡수한 경우 처리(§10.3).
 - **충족**: 패치 부채 / REQ.
 - **구현**: 공식 대체 확인→요구 충족 테스트→제거 상태 회귀→manifest `retired`→대체 commit·ADR 기록→active set 제외.
@@ -457,6 +476,9 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **선행**: T03·T05. (T42는 **후행** — T93이 유효 감시경로를 먼저 확정하고 T42가 그 위에서 영향분석. 이전 'T42 선행' 표기는 순환 오류였으므로 제거.)
 
 ### T94. 내부망 반입·재검증
+- **상태(2026-07-25)**: 🟡 inventory 해시·release-lock 결속·안전 경로·필수
+  오프라인 서명 verifier 계약은 구현/단위검증 완료. 실제 bundle/키/내부망
+  재검증은 미수행.
 - **목적**: 외부망=내부망 산출물 동일성(P4).
 - **충족**: P4 / REQ(반입).
 - **구현**: git bundle·이미지 digest·helm·설정 해시·SHA256SUMS·서명 + 내부망 재검증 스크립트.

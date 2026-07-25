@@ -18,9 +18,11 @@
 모드**로 유지한다. 이 결정의 정본은
 [`ADR-001`](docs/02-설계/ADR-001-vendor-merge-default.md)이다.
 
-> 전환 상태: T24 candidate-lock과 T25 vendor ancestry gate는 구현됐고,
-> customization 생존·실제 등록 게이트(T26~T29)는 추가 개발이 필요하다. 따라서 기존
-> “MVP1 완료” 표시는 patch-replay 구조 검증에 한정한다.
+> 현재 상태: T24~T29와 실제 7개 등록부, Docker-free 운영 게이트를 구현했다.
+> 다만 원본 `kb_openmetadata`는 upstream ancestry 없는 root snapshot이고 실제
+> contract/upgrade test가 없으므로, 현재 production release는 차단 상태다.
+> 상세는 [`STATUS.md`](STATUS.md)와
+> [Claude 검토 인수인계](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)를 본다.
 
 ## 무엇을 보장하고, 무엇은 보장하지 않는가 (중요)
 
@@ -66,20 +68,20 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 
 | 요구ID | 요구사항 (쉬운 말) | 영역 | 상태 |
 |---|---|---|---|
-| **R1** | 커스터마이징이 새 버전에 **빠짐없이** 올라갔는지 자동 확인 | A1·A2 | 🟡 replay 완료·merge 개발 필요 |
+| **R1** | 커스터마이징이 새 버전에 **빠짐없이** 올라갔는지 자동 확인 | A1·A2 | ✅ 엔진·7개 등록 / ⚠ 실제 ancestry 재구성 필요 |
 | **R2** | 커스터마이징을 **왜/어디서** 했는지 이력 보존 | A1·A3 | ✅ 완료 |
 | **R3** | **범위 밖·위험 변경**이 검토 없이 통과 못하게 | A4 | ✅ 완료 |
 | **R4** | 승인된 공식 버전이 vendor candidate에 통합됐음을 확인 | A2 | ✅ T24 lock·T25 ancestry |
 | **R5** | 후보 SHA·tree·artifact가 고정되고 추적됨 | A3 | ✅ T24 candidate-lock·결과 입력 결속 |
 | **R6** | **충돌 없이 의미만 바뀐** 변경 감지(케이스 D) | A5 | ✅ 완료(감지·리뷰) |
 | **R7** | '등록·재적용'과 '기능 정확성'을 **정직하게 구분** | A6 | ✅ 완료 |
-| **R8** | 실제 **업무 동작**(권한·API·검색) 검증 | A7 | ⬜ 계획(MVP2) |
-| **R9** | **릴리스 승격·내부망 반입** 통제 | A8 | ⬜ 계획(MVP2) |
+| **R8** | 실제 **업무 동작**(권한·API·검색) 검증 | A7 | 🟡 결과계약 구현 / 실제 contract·T90 실행 필요 |
+| **R9** | **릴리스 승격·내부망 반입** 통제 | A8 | 🟡 검증기 구현 / 실제 승격·서명·반입 필요 |
 
-> **MVP별 커버**: 기존 **patch-replay MVP1**은 구조 검증을 구현했다.
-> 기본 `vendor-merge` Candidate-control은 T26~T29 완료 후 달성한다.
-> **MVP2(예정) → R8·R9 추가** (실제 기능
-> 동작 + 검증본 그대로 릴리스·반입). 남은 개발 전부는 위 22종 표의 🟡/⬜ 항목.
+> **MVP별 커버**: 게이트 엔진은 vendor/replay와 운영 경계까지 구현됐다.
+> Production-upgrade 달성 조건은 실제 vendor ancestry, owner, 7개 contract test,
+> T90 실행, T91 승격, T94 서명 반입 증거다. 단위 테스트 성공을 배포 가능으로
+> 해석하지 않는다.
 
 ## 전체 검증기 22종 — 왜 필요 · 안 지키면 · 어떻게 구현
 
@@ -92,7 +94,7 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 
 | # | 검증기 | 왜 필요 · 안 지키면 나올 문제 | 구현 방법론 (또는 계획) | 상태·태스크 |
 |---|---|---|---|---|
-| 1 | 통합 게이트 | 승인된 공식 버전과 행내 수정이 candidate에 함께 존재해야 한다 | 기본은 vendor ancestry·target SHA·customization 생존 검사. cherry-pick 탐지/해결은 선택 replay 모드 | 🟡 T24·T25 완료, T26~T29 필요 |
+| 1 | 통합 게이트 | 승인된 공식 버전과 행내 수정이 candidate에 함께 존재해야 한다 | 기본은 vendor ancestry·target SHA·customization 생존 검사. cherry-pick 탐지/해결은 선택 replay 모드 | ✅ T24~T29 엔진·7개 등록 (현 snapshot은 T25 차단) |
 | 2 | 커밋 불변식 | 뭘 바꿨는지 **세야** 누락 검증 가능 · 이름표 없으면 '수정 목록' 자체가 없음 | 커밋 **꼬리표만** 파싱, 업스트림 건드린 커밋=**이름표 정확히 1개**(0·다중·merge·빈·원본+정책 혼합=위반) | ✅ T30 |
 | 3 | ID·series 불변식 | 한 수정이 여러 커밋일 때 **절반만 반영**돼도 통과하면 안 됨 | 이름표 단위로 series 승인·**연속성**·의존 순환·폐기 재사용 검사 | ✅ T31 |
 | 4 | 최종상태 불변식 | "이름표는 다 있는데 기능은 사라진" 상태 차단 | **counterfactual**: 그 ID만 뺀 재생 tree와 전체 재생 tree 비교, 같으면 기여 0=차단 | ✅ T32 |
@@ -115,33 +117,35 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 
 | # | 검증기 | 왜 필요 · 안 지키면 나올 문제 | 구현 방법론 (또는 계획) | 상태·태스크 |
 |---|---|---|---|---|
-| 14 | 필수 테스트 존재 | 없는 테스트를 '필수'로 걸고 검증했다 **착각** | *(계획)* 명세의 테스트 ID가 카탈로그에 실재하는지 확인 | ⬜ |
+| 14 | 필수 테스트 존재 | 없는 테스트를 '필수'로 걸고 검증했다 **착각** | active ID의 effective test와 candidate-bound 실행 결과가 존재하는지 확인, 누락·skip=block | ✅ `testruns.py` |
 | 15 | contract 결속 | 릴리스마다 **어떤 업무 규칙**이 지켜지는지 모른 채 넘어감 | contract 카탈로그(업무 불변식↔required_tests) + manifest 참조 결속, effective=direct∪파생, 중복선언·미존재=block | ✅ T60 |
 | 16 | patch-kill | 패치를 빼도 통과하는 **껍데기 테스트**를 모름 | 패치 없는 worktree에서 테스트 실행 → 실패=PROVEN(입증)·통과=SHELL(block)·실행불가=analysis_error | ✅ T61 |
-| 17 | 테스트-SHA 결속 | 후보 바뀌었는데 **옛 결과를 유효로** 착각 / flaky 뭉갬 | repo-qualified **SHA 봉인**(구현) + 테스트결과 결속(미완) | 🟡 T62 |
-| 18 | 차등 테스트 | 건수 대사만으론 **관계·의미 손상** 놓침 | *(계획)* 구·신 버전에 같은 입력 → 인증·권한·API·관계·검색 차등 | ⬜ T90 |
+| 17 | 테스트-SHA 결속 | 후보 바뀌었는데 **옛 결과를 유효로** 착각 / flaky 뭉갬 | candidate SHA·artifact·harness/suite 결속, high/critical retry-pass=approval | ✅ T62 |
+| 18 | 차등 테스트 | 건수 대사만으론 **관계·의미 손상** 놓침 | 구·신 12단계 결과계약·증거 digest·candidate 결속 | 🟡 T90 계약 구현·실행 미완 |
 
 ### 계층 4 — 무결성·정책·집계
 
 | # | 검증기 | 왜 필요 · 안 지키면 나올 문제 | 구현 방법론 (또는 계획) | 상태·태스크 |
 |---|---|---|---|---|
 | 19 | 정책 base-평가 | 승인 요건을 **스스로 없애는 자기 완화 우회** | 정책 파일 변경 candidate는 **base(변경 전) 정책으로 평가** 강제(신 정책으로 판정 시 block) | ✅ T70 |
-| 20 | digest 승격 | **검증본과 다른 산출물**이 배포/반입됨 | *(계획)* 검증 commit SHA·artifact digest == 배포물 digest | ⬜ T91 |
+| 20 | digest 승격 | **검증본과 다른 산출물**이 배포/반입됨 | release-lock으로 commit·image·Helm·test digest 동일성, 내부망 hash/signature 재검증 | 🟡 T91/T94 엔진·실행 미완 |
 | 21 | verdict 엔진 | max 집계로 **차단이 승인으로 격하** / 고장을 통과로 우회 | **심각도 순위** 집계(exit code로 안 함), 분석실패·빈 입력=차단(fail-closed) | ✅ T13 |
 
 ### 보조 — LLM (판정 아님)
 
 | # | 검증기 | 무엇을 하나 · 한계 | 구현 방법론 (또는 계획) | 상태·태스크 |
 |---|---|---|---|---|
-| 22 | LLM Impact Memo | 애매한 의미 변경을 **후보로 좁혀줌** · pass 부여 불가·100% recall 아님 | 케이스 D 영향 표면을 **자문 memo**로(감사카드 분리 필드, verdict 필드 금지); 범용 위키(T80)는 계획 | 🟡 T80 |
+| 22 | LLM Impact Memo | 애매한 의미 변경을 **후보로 좁혀줌** · pass 부여 불가·100% recall 아님 | 사실/추론/미확인·근거·snapshot을 strict schema로, verdict/command/action 금지, 품질지표 | ✅ T80/T81 |
 
 ---
 
 ## 문서 지도
 
-문서는 성격별로 `docs/` 하위에 정리돼 있다. 진입 문서 3종만 루트에 둔다:
+문서는 성격별로 `docs/` 하위에 정리돼 있다. 현재 상태와 독립 검토 진입점도
+루트에 둔다:
 [`README.md`](README.md)(개발 진입)·[`EXECUTIVE_SUMMARY.md`](EXECUTIVE_SUMMARY.md)
-(경영진 5분 요약)·`SESSION_STATE.md`(작업 인수인계).
+(경영진 5분 요약)·[`STATUS.md`](STATUS.md)(현재 상태)·
+[`CLAUDE.md`](CLAUDE.md)(독립 검토)·`SESSION_STATE.md`(역사적 인수인계).
 
 | 폴더 | 문서 | 용도 | 대상 |
 |---|---|---|---|
@@ -217,7 +221,7 @@ M9 업그레이드 검증·릴리스 승격(digest 결속)·반입
 ```bash
 cd harness
 pip install jsonschema pathspec pyyaml pytest    # 또는 pip install -e ".[dev]"
-python -m pytest                                  # 현재 183개: 148 pass·35 mirror skip
+python -m pytest                                  # 현재 257개: 222 pass·35 mirror skip
 ```
 
 **실제 OM 미러 연결**(게이트·재적용 테스트용, 없으면 해당 테스트 자동 skip):

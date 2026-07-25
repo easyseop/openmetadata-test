@@ -1,0 +1,50 @@
+schema_version: 1
+customization_id: BANK-OM-002
+status: active
+kind: core-patch
+title: QueryReport
+implementation:
+  allowed_changed_paths:
+    - openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/QueryReportRepository.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/**
+    - openmetadata-service/src/main/java/org/openmetadata/service/search/SearchIndexFactory.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/search/indexes/QueryReportIndex.java
+    - openmetadata-spec/src/main/resources/elasticsearch/**/query_report_index_mapping.json
+    - openmetadata-spec/src/main/resources/elasticsearch/**/query_index_mapping.json
+    - openmetadata-spec/src/main/resources/elasticsearch/indexMapping.json
+    - openmetadata-spec/src/main/resources/json/schema/api/data/createQueryReport.json
+    - openmetadata-spec/src/main/resources/json/schema/entity/data/queryReport.json
+    - openmetadata-ui/src/main/resources/ui/src/components/QueryReport/**
+    - openmetadata-ui/src/main/resources/ui/src/pages/QueryReportDetailsPage/**
+    - openmetadata-ui/src/main/resources/ui/src/pages/QueryReportYearDetailsPage/**
+    - openmetadata-ui/src/main/resources/ui/src/rest/queryReportAPI.ts
+    - openmetadata-ui/src/main/resources/ui/src/rest/queryAPI.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/**/queryReport.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/api/data/createQueryReport.ts
+    - openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+    - openmetadata-ui/src/main/resources/ui/src/context/PermissionProvider/PermissionProvider.interface.ts
+    - openmetadata-ui/src/main/resources/ui/src/constants/constants.ts
+    - openmetadata-ui/src/main/resources/ui/src/enums/Explore.enum.ts
+    - openmetadata-ui/src/main/resources/ui/src/enums/entity.enum.ts
+    - openmetadata-ui/src/main/resources/ui/src/enums/search.enum.ts
+    - openmetadata-ui/src/main/resources/ui/src/utils/QueryReportUtils.ts
+    - openmetadata-ui/src/main/resources/ui/src/utils/RouterUtils.ts
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/*.json
+    - bootstrap/sql/migrations/native/1.13.1/*/schemaChanges.sql
+  required_changed_paths:
+    - openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/QueryReportResource.java
+    - openmetadata-spec/src/main/resources/json/schema/entity/data/queryReport.json
+upgrade_watch:
+  paths:
+    - openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/search/SearchIndexFactory.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/QueryRepository.java
+assurance:
+  contracts: [CONTRACT-QUERY-REPORT]
+  direct_tests: []
+series:
+  allowed: true
+  depends_on: []

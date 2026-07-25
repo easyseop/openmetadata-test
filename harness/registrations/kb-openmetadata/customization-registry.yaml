@@ -1,0 +1,83 @@
+schema_version: 1
+source:
+  repository: kangdkdk/kb_openmetadata
+  snapshot_sha: 2c2347043235aa2a4ecba4729774c770fcee5d67
+  upstream_repository: open-metadata/OpenMetadata
+  upstream_tag: 1.13.1-release
+  upstream_sha: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
+  changed_path_count: 113
+  ancestry_preserved: false
+  diff_inventory: source-diff-paths.txt
+  unregistered_findings:
+    - path: .claude/settings.json
+      classification: governance
+      severity: critical
+      reason: Adds automatic approval hooks and broad Bash/Edit/Write/Web/MCP permissions; this is not one of the seven product customizations.
+      disposition: block
+    - path: docker/development/docker-compose.yml
+      classification: deployment
+      severity: high
+      reason: Replaces the local ingestion source build with openmetadata/ingestion:1.9.6; compatibility and intent are unverified.
+      disposition: block
+  limitations:
+    - The source repository is a single root snapshot commit and does not preserve upstream ancestry.
+    - This inventory can drive T29 registration, but it cannot pass T25 until rebuilt as a vendor branch from the pinned upstream target.
+    - Contract test identifiers are specifications; the real kb_openmetadata runtime suite must implement and execute them.
+    - Two non-product paths are intentionally left outside the seven manifests and block adoption until separately removed or approved and registered.
+entries:
+  - customization_id: BANK-OM-001
+    title: InstanceCode
+    owner: UNASSIGNED
+    owner_status: pending
+    status: active
+    criticality: high
+    manifest: manifests/BANK-OM-001.yaml
+    contracts: [CONTRACT-INSTANCE-CODE]
+  - customization_id: BANK-OM-002
+    title: QueryReport
+    owner: UNASSIGNED
+    owner_status: pending
+    status: active
+    criticality: high
+    manifest: manifests/BANK-OM-002.yaml
+    contracts: [CONTRACT-QUERY-REPORT]
+  - customization_id: BANK-OM-003
+    title: Data Assertions
+    owner: UNASSIGNED
+    owner_status: pending
+    status: active
+    criticality: high
+    manifest: manifests/BANK-OM-003.yaml
+    contracts: [CONTRACT-DATA-ASSERTIONS]
+  - customization_id: BANK-OM-004
+    title: 은행 컬럼 확장 표시
+    owner: UNASSIGNED
+    owner_status: pending
+    status: active
+    criticality: medium
+    manifest: manifests/BANK-OM-004.yaml
+    contracts: [CONTRACT-BANK-COLUMN-VIEW]
+  - customization_id: BANK-OM-005
+    title: 한글 IME 보정
+    owner: UNASSIGNED
+    owner_status: pending
+    status: active
+    criticality: medium
+    manifest: manifests/BANK-OM-005.yaml
+    contracts: [CONTRACT-KOREAN-IME]
+  - customization_id: BANK-OM-006
+    title: Sybase
+    owner: UNASSIGNED
+    owner_status: pending
+    status: active
+    criticality: high
+    manifest: manifests/BANK-OM-006.yaml
+    contracts: [CONTRACT-SYBASE-CONNECTOR]
+  - customization_id: BANK-OM-007
+    title: Tibero
+    owner: UNASSIGNED
+    owner_status: pending
+    status: active
+    criticality: high
+    manifest: manifests/BANK-OM-007.yaml
+    contracts: [CONTRACT-TIBERO-CONNECTOR]

@@ -1,0 +1,28 @@
+schema_version: 1
+customization_id: BANK-OM-003
+status: active
+kind: core-patch
+title: Data Assertions
+implementation:
+  allowed_changed_paths:
+    - openmetadata-ui/src/main/resources/ui/src/components/MyData/MyDataFailedAssertions/**
+    - openmetadata-ui/src/main/resources/ui/src/pages/DataAssertionsPage/**
+    - openmetadata-ui/src/main/resources/ui/src/pages/MyDataPage/MyDataPage.component.tsx
+    - openmetadata-ui/src/main/resources/ui/src/rest/dataAssertionsAPI.ts
+    - openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+    - openmetadata-ui/src/main/resources/ui/src/constants/constants.ts
+    - openmetadata-ui/src/main/resources/ui/src/utils/RouterUtils.ts
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/*.json
+  required_changed_paths:
+    - openmetadata-ui/src/main/resources/ui/src/pages/DataAssertionsPage/DataAssertionsPage.tsx
+    - openmetadata-ui/src/main/resources/ui/src/rest/dataAssertionsAPI.ts
+upgrade_watch:
+  paths:
+    - openmetadata-spec/src/main/resources/json/schema/tests/testCase.json
+    - openmetadata-ui/src/main/resources/ui/src/generated/tests/testCase.ts
+assurance:
+  contracts: [CONTRACT-DATA-ASSERTIONS]
+  direct_tests: []
+series:
+  allowed: true
+  depends_on: []

@@ -1,0 +1,34 @@
+schema_version: 1
+customization_id: BANK-OM-007
+status: active
+kind: core-patch
+title: Tibero
+implementation:
+  allowed_changed_paths:
+    - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/tiberoConnection.json
+    - openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json
+    - openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-tibero.svg
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/tiberoConnection.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/databaseService.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/api/services/createDatabaseService.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/api/services/ingestionPipelines/createIngestionPipeline.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/ingestionPipelines/ingestionPipeline.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/testSuitePipeline.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/workflow.ts
+    - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx
+    - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx
+    - openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts
+    - openmetadata-ui/src/main/resources/ui/src/utils/ServiceUtils.tsx
+  required_changed_paths:
+    - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/tiberoConnection.json
+upgrade_watch:
+  paths:
+    - openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json
+    - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/serviceConnection.json
+assurance:
+  contracts: [CONTRACT-TIBERO-CONNECTOR]
+  direct_tests: []
+series:
+  allowed: true
+  depends_on: []

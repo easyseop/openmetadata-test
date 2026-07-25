@@ -2,16 +2,18 @@
 
 > **목적**: 컨텍스트가 리셋돼도 이 문서 하나로 작업을 이어갈 수 있게 현재까지의
 > 모든 결정·산출물·다음 단계를 세세하게 기록한다. **작업 재개 시 이 문서를 먼저 읽는다.**
-> 최종 갱신: 2026-07-24 T25 vendor ancestry 구현·검증 반영.
+> 최종 갱신: 2026-07-25 T26~T29 및 Docker-free 운영 게이트 구현 반영.
+> **현재 상태 정본은 [`STATUS.md`](STATUS.md), Claude 검토용 상세는
+> [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)다.**
 
 ---
 
 ## 0. 지금 어디인가 (한 줄)
 
-기존 patch-replay 중심 MVP1 모듈은 구현됐고, 운영 전략을 **vendor merge 기본 /
-patch replay 선택 진단**으로 변경했다. T24 candidate-lock과 T25 ancestry까지
-완료했으며 다음은 T26~T29와 실제
-`kb_openmetadata` 커스터마이징 manifest·contract 등록이다.
+vendor merge 기본 / patch replay 선택 전략의 게이트 엔진, T26~T29, 실제 7개
+등록부와 T62/T71/T72/T80/T90/T91/T92/T94 판정 계약까지 구현했다. 다만 원본
+`kb_openmetadata`가 ancestry 없는 단일 root snapshot이고 실제 contract/upgrade
+test가 없으므로 첫 production release는 아직 차단 상태다.
 
 ## 1. 리포지토리·브랜치
 
@@ -90,16 +92,17 @@ patch replay 선택 진단**으로 변경했다. T24 candidate-lock과 T25 ances
   `file_hash_equals` 추가. CG 순효과 2단(intrinsic tree diff + counterfactual replay),
   touched/net 경로 분리, 비연속 series=block(MVP).
 
-## 6. 개발 순서 (2026-07-24 개정)
+## 6. 개발 순서 (2026-07-25 개정)
 
 ```
 T24 integration_strategy/candidate-lock ✅
   → T25 vendor ancestry ✅
-  → T26 customization survival ← 다음
-  → T29 실제 kb_openmetadata manifest/contract
-  → T27 merge conflict evidence
-  → T60·T61 실제 기능 계약
-  → T90·T91·T94
+  → T26 customization survival ✅
+  → T29 실제 kb_openmetadata manifest/contract ✅(test 명세)
+  → T27 merge conflict evidence ✅
+  → T28 전략 라우팅 ✅
+  → 실제 vendor ancestry 재구성·owner 배정·T60/61 contract 실행 ← 다음
+  → T90 실제 스택 실행 → T91 실제 승격 → T94 실제 반입
 
 T28에서 기존 T20·T21·T22·T23을 선택 replay 모드로 라우팅
 ```
@@ -180,21 +183,20 @@ harness/
 
 ## 10. 재개 절차 (다음 세션)
 
-### 현재 위치 (2026-07-24, 최신)
+### 현재 위치 (2026-07-25, 최신)
 
-**완료:** 기존 patch-replay M1~M4 + MVP2 Docker-free 다수.
-**전략 변경:** vendor-merge를 기본으로 확정했고 T24 lock·T25 ancestry를 구현했다.
-현재 테스트는 183개이며, 2026-07-24 임시 Python 3.12 환경에서 148개 통과,
+**완료:** 기존 patch-replay M1~M4, vendor-merge T24~T29, 실제 7개 등록부,
+T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
+현재 테스트는 257개이며, 2026-07-25 Python 3.11.4 환경에서 222개 통과,
 실제 OpenMetadata 미러가 필요한 35개는 skip됐다.
 - **T60** contract 카탈로그+결속 `contracts.py` · **T61** patch-kill
   `patchkill.py` · **T51/52** 구조화 diff `structdiff.py`(실제 table.json
   dataContract 검출) · **T70** 정책 self-protection `policy_guard.py` · **T43**
   부채 게이트 `debt.py`.
-- **Docker 데몬 없음(이 세션)** → **T90 런타임 차등(구·신 OM 스택 기동)은 이후
-  태스크로 보류**(compose·migration·CI 스크립트만 나중에 turnkey 준비).
-- **남은 Docker-free**: T62 잔여(테스트결과↔SHA 결속·flaky 구분) · T91(digest
-  승격 무결성) · T14(필수 테스트 존재) · T92(retirement) · T71/72(break-glass/
-  fast-lane) · T80(LLM 위키, 자문). 그 다음 T90(Docker 필요).
+- **Docker 데몬 없음(이 세션)** → T90의 12단계 결과계약은 구현했으나 실제
+  구·신 OM 스택, DB 복원/migration, 검색/ingestion 차등과 rollback은 미실행.
+- **현재 차단 조건**: kb 원본은 upstream ancestry 없는 root snapshot,
+  7개 owner 미배정, contract test는 ID 명세만 존재, 실제 T90/T91/T94 증거 없음.
 
 > **T93/T42 라벨 정정(중요)**: build_plan 정본에서 **T42 = upgrade_watch(업스트림
 > 변경 ∩ 감시 → 케이스 D)** = `upgrade_watch.py`+`impact.py`, **T93 = 정책 노후화
@@ -227,6 +229,17 @@ harness/
 | T42 upgrade_watch(케이스 D) | ✅ | `acgh/upgrade_watch.py` + `acgh/impact.py` |
 | T93 정책 노후화 drift | ✅ | `acgh/policy_drift.py` |
 | T50 선언형 verifier | ✅ | `acgh/verifier.py` |
+| T26 customization survival | ✅ | `acgh/survival.py` |
+| T27 merge conflict evidence | ✅ | `acgh/conflicts.py` |
+| T28 전략 라우팅 | ✅ | `acgh/routing.py` |
+| T29 실제 7개 등록 | ✅ 등록·⚠ 운영증거 | `acgh/registry.py` + `registrations/kb-openmetadata/` |
+| T62 test-run 결속 | ✅ | `acgh/testruns.py` |
+| T71/T72 fast lane·break-glass | ✅ | `acgh/fastlane.py` + `acgh/breakglass.py` |
+| T80/T81 LLM Memo·지표 | ✅ | `acgh/impact_memo.py` |
+| T90 업그레이드 결과계약 | 🟡 실제 실행 필요 | `acgh/upgrade_run.py` |
+| T91 동일 digest 승격 | ✅ 엔진·⚠ 실제 승격 | `acgh/release.py` |
+| T92 retirement | ✅ | `acgh/retirement.py` |
+| T94 내부망 재검증 | 🟡 실제 서명/반입 필요 | `acgh/airgap.py` |
 
 **커밋 SHA**: 스캐폴드 `7ccc00e` → `3cc0539`(T10/11/05) → `f38b124`(T15/14) →
 `e5729dd`(T30/31) → `ee5a28e`(T20) → `da96332`(T21) → `47199cb`(T22) →
@@ -239,13 +252,15 @@ harness/
 가져옴(미러 없으면 skip). `tests/test_reapply.py`는 실제 AuthLoginServlet.java를
 공통 조상으로 케이스 B(clean)/C(conflict)/redundant 구성.
 
-### 다음 태스크 — vendor-merge 기본 경로와 실제 커스터마이징 연결
+### 다음 태스크 — 첫 실제 production-upgrade 증거
 
-1. T26: ID별 required state·path·contract 생존 검증
-2. T29: 실제 변경 7종을 `BANK-OM-001~007`로 등록
-3. T27: merge conflict evidence
-4. T28: 기존 replay 모듈의 선택 모드 라우팅
-5. 이후 API·DB·검색·권한·UI contract 테스트와 T90 연결
+1. 공식 `1.13.1-release`에서 vendor branch를 만들고 7개 기능을 ID series로
+   재구성해 T25 ancestry를 통과시킨다.
+2. 7개 owner/승인 라우팅을 배정한다.
+3. API·DB·검색·권한·UI/IME·Sybase·Tibero contract test를 실제로 구현하고
+   T61 patch-kill과 T62 candidate-bound result를 만든다.
+4. Docker/운영 유사 데이터로 T90 12단계를 실행한다.
+5. T91 실제 artifact 승격과 T94 실제 오프라인 서명·내부망 재검증을 수행한다.
 
 > 아래 M4 재개 지침은 기존 replay-mode 개발 이력으로 보존한다.
 
@@ -299,11 +314,9 @@ replay tree(T22 `replay.replay_and_compare` 재사용), candidate 변경 시 기
 ### 재개 절차
 1. 이 파일 + `docs/04-진행/openmetadata_build_plan.md` + SRS 부칙 A(`docs/02-설계/openmetadata_governance_requirements.md`) 읽기.
 2. `/home/user/om-mirror` 존재 확인(없으면 §7 재획득), `pip install jsonschema pathspec`.
-3. `cd harness && python -m pytest` → 현재 183개(148 pass·35 mirror skip) 재확인.
-4. ✅ MVP1 완성(M1~M4, 케이스 A·B·C·D). 다음 = **MVP2(운영·승격)**: 계층3 테스트
-   **T60**(contract↔test)·**T61**(patch-kill)·**T90**(업그레이드 차등 테스트) +
-   계층4 **T70**(정책 base-평가)·**T91**(digest 승격). + 잔여 게이트 T43(부채)·
-   T51/52(구조화 diff)·T80(범용 LLM Memo). 카탈로그 §0.1 구현현황표 참조.
+3. `cd harness && python -m pytest` → 현재 257개(222 pass·35 mirror skip) 재확인.
+4. `STATUS.md`의 production blocker와
+   `docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`의 실제 실행 순서를 따른다.
 5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4.1 로그 + 이 표 갱신.
 6. 실제 작업 주체에 맞는 커밋 메타데이터를 사용하고, 이 브랜치
    (`claude/markdown-file-feedback-26933w`)로 push.

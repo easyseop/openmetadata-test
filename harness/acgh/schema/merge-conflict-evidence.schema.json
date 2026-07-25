@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bank.local/acgh/merge-conflict-evidence.schema.json",
+  "title": "Vendor merge conflict resolution evidence (T27)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "candidate_lock_digest",
+    "candidate_sha",
+    "upstream_target_sha",
+    "merge_base_sha",
+    "captured_conflict_count",
+    "conflicts"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "candidate_lock_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "candidate_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "upstream_target_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "merge_base_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "captured_conflict_count": {"type": "integer", "minimum": 0},
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "base_blob_sha",
+          "ours_blob_sha",
+          "theirs_blob_sha",
+          "resolution",
+          "resolution_blob_sha",
+          "rationale",
+          "resolved_by",
+          "approval_ids"
+        ],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "base_blob_sha": {
+            "type": ["string", "null"],
+            "pattern": "^[0-9a-f]{40}$"
+          },
+          "ours_blob_sha": {
+            "type": ["string", "null"],
+            "pattern": "^[0-9a-f]{40}$"
+          },
+          "theirs_blob_sha": {
+            "type": ["string", "null"],
+            "pattern": "^[0-9a-f]{40}$"
+          },
+          "resolution": {
+            "enum": ["ours", "theirs", "manual", "deleted"]
+          },
+          "resolution_blob_sha": {
+            "type": ["string", "null"],
+            "pattern": "^[0-9a-f]{40}$"
+          },
+          "rationale": {"type": "string", "minLength": 1},
+          "resolved_by": {"type": "string", "minLength": 1},
+          "approval_ids": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1},
+            "uniqueItems": true
+          }
+        }
+      }
+    }
+  }
+}

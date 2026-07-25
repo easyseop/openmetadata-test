@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bank.local/acgh/upgrade-test-run.schema.json",
+  "title": "Candidate-bound upgrade test orchestration result (T90)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "candidate",
+    "test_run_set_digest",
+    "old_version",
+    "new_version",
+    "environment_digest",
+    "stages"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit_sha", "artifact_digest"],
+      "properties": {
+        "commit_sha": {"$ref": "#/$defs/gitSha"},
+        "artifact_digest": {"$ref": "#/$defs/sha256Digest"}
+      }
+    },
+    "test_run_set_digest": {"$ref": "#/$defs/sha256Digest"},
+    "old_version": {"type": "string", "minLength": 1},
+    "new_version": {"type": "string", "minLength": 1},
+    "environment_digest": {"$ref": "#/$defs/sha256Digest"},
+    "stages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "outcome", "evidence_digest"],
+        "properties": {
+          "name": {"$ref": "#/$defs/stageName"},
+          "outcome": {"enum": ["pass", "fail", "error", "skipped"]},
+          "evidence_digest": {"$ref": "#/$defs/sha256Digest"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "stageName": {
+      "enum": [
+        "restore-production-snapshot",
+        "migration",
+        "row-reconciliation",
+        "reindex",
+        "ingestion",
+        "differential-authentication",
+        "differential-authorization",
+        "differential-api",
+        "differential-relations",
+        "differential-search",
+        "differential-ingestion",
+        "rollback-drill"
+      ]
+    },
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sha256Digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}

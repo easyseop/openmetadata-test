@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bank.local/acgh/customization-registry.schema.json",
+  "title": "Vendor customization registry (T26/T29)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source", "entries"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "snapshot_sha",
+        "upstream_repository",
+        "upstream_tag",
+        "upstream_sha",
+        "changed_path_count",
+        "ancestry_preserved",
+        "limitations",
+        "diff_inventory",
+        "unregistered_findings"
+      ],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "snapshot_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "upstream_repository": {"type": "string", "minLength": 1},
+        "upstream_tag": {"type": "string", "minLength": 1},
+        "upstream_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "changed_path_count": {"type": "integer", "minimum": 0},
+        "ancestry_preserved": {"type": "boolean"},
+        "diff_inventory": {"type": "string", "minLength": 1},
+        "unregistered_findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "classification",
+              "severity",
+              "reason",
+              "disposition"
+            ],
+            "properties": {
+              "path": {"type": "string", "minLength": 1},
+              "classification": {
+                "enum": ["config", "deployment", "extension", "core-patch", "governance"]
+              },
+              "severity": {"enum": ["low", "medium", "high", "critical"]},
+              "reason": {"type": "string", "minLength": 1},
+              "disposition": {"enum": ["review", "remove", "register", "block"]}
+            }
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "customization_id",
+          "title",
+          "owner",
+          "owner_status",
+          "status",
+          "criticality",
+          "manifest",
+          "contracts"
+        ],
+        "properties": {
+          "customization_id": {
+            "type": "string",
+            "pattern": "^BANK-OM-[0-9]{3,}$"
+          },
+          "title": {"type": "string", "minLength": 1},
+          "owner": {"type": "string", "minLength": 1},
+          "owner_status": {"enum": ["assigned", "pending"]},
+          "status": {"enum": ["active", "retired"]},
+          "criticality": {"enum": ["low", "medium", "high", "critical"]},
+          "manifest": {"type": "string", "minLength": 1},
+          "contracts": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^CONTRACT-[A-Z0-9-]+$"
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    }
+  }
+}

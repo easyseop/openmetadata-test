@@ -1,0 +1,37 @@
+schema_version: 1
+customization_id: BANK-OM-006
+status: active
+kind: core-patch
+title: Sybase
+implementation:
+  allowed_changed_paths:
+    - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/sybaseConnection.json
+    - openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json
+    - openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-sybase.svg
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/sybaseConnection.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/databaseService.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/api/automations/createWorkflow.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/automations/testServiceConnection.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/automations/workflow.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/api/services/createDatabaseService.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/api/services/ingestionPipelines/createIngestionPipeline.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/ingestionPipelines/ingestionPipeline.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/testSuitePipeline.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/workflow.ts
+    - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx
+    - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx
+    - openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts
+    - openmetadata-ui/src/main/resources/ui/src/utils/ServiceUtils.tsx
+  required_changed_paths:
+    - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/sybaseConnection.json
+upgrade_watch:
+  paths:
+    - openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json
+    - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/serviceConnection.json
+assurance:
+  contracts: [CONTRACT-SYBASE-CONNECTOR]
+  direct_tests: []
+series:
+  allowed: true
+  depends_on: []

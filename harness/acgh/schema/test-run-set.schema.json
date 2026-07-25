@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bank.local/acgh/test-run-set.schema.json",
+  "title": "Candidate-bound test run set (T62)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "candidate",
+    "harness_version",
+    "suite_version",
+    "runs"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit_sha", "artifact_digest"],
+      "properties": {
+        "commit_sha": {"$ref": "#/$defs/gitSha"},
+        "artifact_digest": {"$ref": "#/$defs/sha256Digest"}
+      }
+    },
+    "harness_version": {"type": "string", "minLength": 1},
+    "suite_version": {"type": "string", "minLength": 1},
+    "runs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["test_id", "attempt", "outcome"],
+        "properties": {
+          "test_id": {"type": "string", "minLength": 1},
+          "attempt": {"type": "integer", "minimum": 1},
+          "outcome": {"enum": ["pass", "fail", "error", "skipped"]}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sha256Digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bank.local/acgh/retirement-record.schema.json",
+  "title": "Customization retirement record (T92)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "customization_id",
+    "from_status",
+    "to_status",
+    "upstream_replacement",
+    "adr_path",
+    "removal_candidate_sha",
+    "removal_result_digest",
+    "contract_test_run_set_digest",
+    "checks",
+    "approved_by"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "customization_id": {
+      "type": "string",
+      "pattern": "^BANK-OM-[0-9]{3,}$"
+    },
+    "from_status": {"const": "active"},
+    "to_status": {"const": "retired"},
+    "upstream_replacement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit_sha", "reference"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "commit_sha": {"$ref": "#/$defs/gitSha"},
+        "reference": {"type": "string", "minLength": 1}
+      }
+    },
+    "adr_path": {"type": "string", "minLength": 1},
+    "removal_candidate_sha": {"$ref": "#/$defs/gitSha"},
+    "removal_result_digest": {"$ref": "#/$defs/sha256Digest"},
+    "contract_test_run_set_digest": {"$ref": "#/$defs/sha256Digest"},
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "official_replacement_verified",
+        "required_contract_tests_passed",
+        "removal_regression_passed",
+        "active_effect_absent"
+      ],
+      "properties": {
+        "official_replacement_verified": {"const": true},
+        "required_contract_tests_passed": {"const": true},
+        "removal_regression_passed": {"const": true},
+        "active_effect_absent": {"const": true}
+      }
+    },
+    "approved_by": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    }
+  },
+  "$defs": {
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sha256Digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}

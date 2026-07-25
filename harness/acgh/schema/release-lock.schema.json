@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bank.local/acgh/release-lock.schema.json",
+  "title": "Immutable promoted release lock (T91)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "candidate",
+    "components",
+    "source_result_digest",
+    "source_machine_verdict",
+    "test_run_set_digest",
+    "images",
+    "helm_digest",
+    "approval_ids",
+    "promotion"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "commit_sha",
+        "tree_sha",
+        "artifact_digest",
+        "candidate_lock_digest"
+      ],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "commit_sha": {"$ref": "#/$defs/gitSha"},
+        "tree_sha": {"$ref": "#/$defs/gitSha"},
+        "artifact_digest": {"$ref": "#/$defs/sha256Digest"},
+        "candidate_lock_digest": {"$ref": "#/$defs/sha256Digest"}
+      }
+    },
+    "components": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "core_sha",
+        "platform_sha",
+        "policy_digest",
+        "harness_version",
+        "suite_version",
+        "verifier_catalog_digest"
+      ],
+      "properties": {
+        "core_sha": {"$ref": "#/$defs/gitSha"},
+        "platform_sha": {"$ref": "#/$defs/gitSha"},
+        "policy_digest": {"$ref": "#/$defs/sha256Digest"},
+        "harness_version": {"type": "string", "minLength": 1},
+        "suite_version": {"type": "string", "minLength": 1},
+        "verifier_catalog_digest": {"$ref": "#/$defs/sha256Digest"}
+      }
+    },
+    "source_result_digest": {"$ref": "#/$defs/sha256Digest"},
+    "source_machine_verdict": {"enum": ["pass", "approval"]},
+    "test_run_set_digest": {"$ref": "#/$defs/sha256Digest"},
+    "images": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {"minLength": 1},
+      "additionalProperties": {"$ref": "#/$defs/sha256Digest"}
+    },
+    "helm_digest": {"$ref": "#/$defs/sha256Digest"},
+    "approval_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "promotion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "source_environment", "target_environment"],
+      "properties": {
+        "method": {"const": "promote-existing"},
+        "source_environment": {"type": "string", "minLength": 1},
+        "target_environment": {"type": "string", "minLength": 1}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "source_machine_verdict": {"const": "approval"}
+        },
+        "required": ["source_machine_verdict"]
+      },
+      "then": {
+        "properties": {
+          "approval_ids": {"minItems": 1}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sha256Digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}

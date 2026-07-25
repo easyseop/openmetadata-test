@@ -12,6 +12,7 @@
       "type": "string",
       "pattern": "^BANK-OM-[0-9]{3,}$"
     },
+    "status": {"enum": ["active", "retired"]},
     "kind": {"enum": ["core-patch", "extension", "governance"]},
     "title": {"type": "string"},
     "implementation": {

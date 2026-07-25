@@ -1,0 +1,46 @@
+schema_version: 1
+customization_id: BANK-OM-001
+status: active
+kind: core-patch
+title: InstanceCode
+implementation:
+  allowed_changed_paths:
+    - openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/InstanceCodeRepository.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/resources/instancecode/**
+    - openmetadata-service/src/main/java/org/openmetadata/service/search/SearchIndexFactory.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/search/indexes/InstanceCodeIndex.java
+    - openmetadata-spec/src/main/resources/elasticsearch/**/instance_code_index_mapping.json
+    - openmetadata-spec/src/main/resources/elasticsearch/indexMapping.json
+    - openmetadata-spec/src/main/resources/json/schema/api/data/createInstanceCode.json
+    - openmetadata-spec/src/main/resources/json/schema/entity/data/instanceCode.json
+    - openmetadata-ui/src/main/resources/ui/src/components/InstanceCode/**
+    - openmetadata-ui/src/main/resources/ui/src/pages/InstanceCodeDetailsPage/**
+    - openmetadata-ui/src/main/resources/ui/src/pages/InstanceCodeGroupDetailsPage/**
+    - openmetadata-ui/src/main/resources/ui/src/rest/instanceCodeAPI.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/**/instanceCode.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/api/data/createInstanceCode.ts
+    - openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+    - openmetadata-ui/src/main/resources/ui/src/context/PermissionProvider/PermissionProvider.interface.ts
+    - openmetadata-ui/src/main/resources/ui/src/constants/constants.ts
+    - openmetadata-ui/src/main/resources/ui/src/enums/Explore.enum.ts
+    - openmetadata-ui/src/main/resources/ui/src/enums/entity.enum.ts
+    - openmetadata-ui/src/main/resources/ui/src/enums/search.enum.ts
+    - openmetadata-ui/src/main/resources/ui/src/utils/RouterUtils.ts
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/*.json
+    - bootstrap/sql/migrations/native/1.13.1/*/schemaChanges.sql
+  required_changed_paths:
+    - openmetadata-service/src/main/java/org/openmetadata/service/resources/instancecode/InstanceCodeResource.java
+    - openmetadata-spec/src/main/resources/json/schema/entity/data/instanceCode.json
+upgrade_watch:
+  paths:
+    - openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/search/SearchIndexFactory.java
+assurance:
+  contracts: [CONTRACT-INSTANCE-CODE]
+  direct_tests: []
+series:
+  allowed: true
+  depends_on: []

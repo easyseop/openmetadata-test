@@ -35,10 +35,10 @@
 
 ---
 
-## 0.1 구현 현황 (2026-07-24 · T25 vendor ancestry 완료)
+## 0.1 구현 현황 (2026-07-25 · 게이트 엔진 및 실제 7개 등록)
 
 > 아래 표는 **설계**이고, 실제 코드는 `harness/acgh/` 에 있다. 현재 소스에는
-> **183개 테스트**가 있다. 2026-07-24 기준 148개 통과, 실제 OpenMetadata 미러
+> **257개 테스트**가 있다. 2026-07-25 기준 222개 통과, 실제 OpenMetadata 미러
 > 의존 35개는 skip이다.
 > ✅=구현·테스트 완료, 🟡=핵심 구현(부분), ⬜=미착수.
 
@@ -48,7 +48,7 @@ manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과�
 
 | # | 검증기 | 태스크 | 상태 | 모듈 |
 |---|---|---|---|---|
-| 1 | 통합(vendor merge/replay) | T24~T29·T20·T21 | 🟡 T24·T25·replay 완료, T26~T29 필요 | `candidate.py`·`ancestry.py`·`reapply.py`·`resolve.py` |
+| 1 | 통합(vendor merge/replay) | T24~T29·T20·T21 | ✅ 엔진·실제 등록 (현 snapshot ancestry blocker 명시) | `candidate.py`·`ancestry.py`·`survival.py`·`conflicts.py`·`routing.py`·`registry.py` |
 | 2 | 커밋 불변식 | T30 | ✅ | `invariants.py` |
 | 3 | ID·series 불변식 | T31 | ✅ | `invariants.py` |
 | 4 | 최종상태 불변식 | T32 | ✅ | `finalstate.py` |
@@ -61,19 +61,20 @@ manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과�
 | 11 | candidate/patch lock | T24·T11 | ✅ | `candidate.py`·`binding.py`·`patchlock.py`·`integrator.py` |
 | 12 | 선언형 verifier | T50 | ✅ | `verifier.py` |
 | 13 | 구조화 diff providers | T51·T52 | ✅ | `structdiff.py` |
-| 14 | 필수 테스트 존재 | CG | ⬜ | — |
+| 14 | 필수 테스트 존재 | CG | ✅ | `testruns.py` |
 | 15 | contract 결속 | T60 | ✅ | `contracts.py` + `schema/contract-catalog.schema.json` |
 | 16 | patch-kill test | T61 | ✅ | `patchkill.py` |
-| 17 | SHA 결속 | T62 | 🟡 | `binding.py`(repo-qualified SHA; 테스트결과 결속은 미완) |
-| 18 | 차등 테스트 | T90 | ⬜ | — |
+| 17 | SHA 결속 | T62 | ✅ | `binding.py`·`testruns.py` |
+| 18 | 차등 테스트 | T90 | 🟡 결과계약 완료·실제 스택 미실행 | `upgrade_run.py` |
 | 19 | 정책 base-평가 | T70 | ✅ | `policy_guard.py` |
-| 20 | digest 승격 | T91 | ⬜ | — |
+| 20 | digest 승격 | T91 | ✅ 엔진·실제 승격 미실행 | `release.py`·`airgap.py` |
 | 21 | verdict 엔진 | T13 | ✅ | `verdict.py` |
-| 22 | LLM Impact Memo | T80 | 🟡 | `impact.py`(케이스 D 조언 memo; 범용 T80은 미완) |
+| 22 | LLM Impact Memo | T80 | ✅ advisory schema·품질지표 | `impact.py`·`impact_memo.py` |
 
-**기존 replay-mode MVP1 도달 = 케이스 A·B·C·D를 candidate 단계에서 기계 통제.**
-vendor-merge 기본 경로는 T26~T29가 남았다. 이후 MVP2
-(운영·승격)는 계층 3 테스트(15·16·18)와 계층 4(19·20) = T60/T61/T90/T70/T91.
+게이트 엔진과 실제 7개 등록은 완료됐다. 그러나 원본
+`kangdkdk/kb_openmetadata`는 upstream ancestry 없는 root snapshot이며, contract
+test와 실제 T90/T91/T94 운영 증거가 없다. 따라서 현재 release 판정은 통과가
+아니라 **차단**이 정답이다.
 
 ---
 

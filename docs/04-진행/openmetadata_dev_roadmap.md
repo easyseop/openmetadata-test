@@ -1,9 +1,10 @@
 # 개발 로드맵 & 커버리지 맵
 
-> **2026-07-24 변경:** [`ADR-001`](../02-설계/ADR-001-vendor-merge-default.md)이
+> **2026-07-25 변경:** [`ADR-001`](../02-설계/ADR-001-vendor-merge-default.md)이
 > 통합 전략의 정본이다. 현재 replay 기반 MVP1 구현은 선택 모드로 재분류되며,
-> T24 candidate-lock과 T25 ancestry gate는 완료됐으며, 기본 경로는 T26~T29 완료 후
-> Candidate-control에 도달한다.
+> T24~T29 기본 경로와 실제 7개 등록부, 잔여 Docker-free 운영 게이트까지 구현됐다.
+> 단 원본 root snapshot의 ancestry 재구성, 실제 contract/upgrade test와 승격·반입
+> 증거가 없으므로 Production-upgrade 달성으로 표기하지 않는다.
 
 > **이 문서의 용도**
 > "무엇을 · 어떤 순서로 만들고, 각 MVP를 완성하면 **어디까지 커버되는지**"를
@@ -290,6 +291,10 @@ T93·T42 · T50 · T70 최소.
 
 | 태스크 | 상태 | 산출물 | 검증 |
 |---|---|---|---|
+| T26 customization survival | ✅ 구현 | `acgh/survival.py` | 7 테스트. required path 존재·target 대비 순효과·registry/manifest/contract/effective test 생존, stale 객체=analysis_error |
+| T27 merge conflict evidence | ✅ 구현 | `acgh/conflicts.py` + schema | 5 테스트. `ls-files -u -z` stage 1/2/3, 해결 blob/rationale/승인/candidate-lock 결속 |
+| T28 통합전략 라우팅 | ✅ 구현 | `acgh/routing.py` | 4 테스트. vendor/replay gate 분리, 필수 gate 미구성=analysis_error |
+| T29 실제 7개 등록 | ✅ 등록·⚠ 운영미완 | `registrations/kb-openmetadata/` + `acgh/registry.py` | 5 테스트. 실제 113경로 전수목록, 111경로→7ID·7contract, 2개 비제품 변경 명시 차단. ancestry=false·owner pending·실제 test 미구현 |
 | T25 vendor ancestry gate | ✅ 완료 | `acgh/ancestry.py` + `gitprim.py` | 6 테스트. base/target 공통 조상, locked base·approved target의 candidate 포함 검증, topology 위반=block, 객체 누락·stale tree·모드 오라우팅=analysis_error |
 | T24 integration strategy·candidate-lock | ✅ 완료 | `acgh/candidate.py` + `schema/candidate-lock.schema.json` + `binding.py` | 9 테스트. 기본 `vendor-merge`, patch-replay lock 필수화, base/target/candidate commit·tree·artifact digest 고정, 결과 입력 결속·stale 무효화 |
 | T05 path-ownership·glob 정본 | ✅ 완료 | `policies/repository-layout.yaml` + **운영층** `acgh/layout.py` | 실제 OM 모듈 루트로 검증, `upstream_base_sha` 결속, 모든 게이트 공용 문법(부칙 A-3.1), pathspec factory=`gitignore` 고정 |
@@ -317,10 +322,20 @@ T93·T42 · T50 · T70 최소.
 | T42 upgrade_watch(케이스 D) | ✅ 완료 | `acgh/upgrade_watch.py`+`impact.py` | 8 테스트(실제 A→B diff 4789변경). watch∩net→approval, 영향표면+판정없는 LLM memo(§7) |
 | T93 정책 노후화 drift | ✅ 완료 | `acgh/policy_drift.py` | 5 테스트. 0-매칭 패턴(빈 총)=approval, 신규 미분류 모듈(실제 openmetadata-mcp 등)=analysis_error |
 | T50 선언형 verifier | ✅ 완료 | `acgh/verifier.py` | 10 테스트. JSON Pointer·file_hash·module_present(비실행), 실행형 거부, `..` 경로이탈 차단(P0-8) |
+| T62 test-result 결속 잔여 | ✅ 구현 | `acgh/testruns.py` + schema | 8 테스트. SHA/artifact/harness/suite 결속, required 누락 차단, high/critical retry-pass=approval |
+| T71 fast lane | ✅ 구현 | `acgh/fastlane.py` | 5 테스트. 유형별 최소 gate, mixed=합집합, core=전체 전략 route |
+| T72 break-glass | ✅ 구현 | `acgh/breakglass.py` + schema | 8 테스트. 2인·만료·scope·사후검증·통계·timezone, 무결성 gate 비면제, verdict 불변 |
+| T80/T81 Impact Memo | ✅ 구현 | `acgh/impact_memo.py` + schema | 7 테스트. 사실/추론/미확인·근거·snapshot, verdict/command 금지, 품질지표 |
+| T90 upgrade orchestration | 🟡 계약 구현 | `acgh/upgrade_run.py` + schema | 5 테스트. 12단계 누락/skip 차단·candidate/test 결속. 실제 스택 실행은 미수행 |
+| T91 동일 digest 승격 | ✅ 엔진 구현 | `acgh/release.py` + schema | 8 테스트. policy/catalog/core/platform/harness 포함 release-lock, stale 무효화, 재빌드·digest 불일치 차단 |
+| T92 retirement | ✅ 구현 | `acgh/retirement.py` + schema | 6 테스트. 공식대체·ADR·회귀·2인·active→retired |
+| T94 내부망 반입 | 🟡 검증기 구현 | `acgh/airgap.py` + schema | 6 테스트. 파일 hash·release-lock·signature verifier fail-closed. 실제 서명/내부망 미수행 |
 
-> **M1·M1.5·M2·M3·M4 완료** ✅ = **MVP1(Candidate-control) 달성** — 케이스
-> **A·B·C·D**를 candidate 단계에서 기계 통제, 임의 실행 제거. 현재 테스트 함수는
-> 183개이며, 2026-07-24 기준 148개 통과·실제 OM 미러 의존 35개 skip이다.
+> **게이트 엔진 구현 현황:** 현재 테스트 함수는 257개이며, 2026-07-25 기준
+> 222개 통과·실제 OM 미러 의존 35개 skip이다. T26~T29와 Docker-free 운영
+> 경계까지 구현했지만, 실제 kb snapshot은 ancestry가 없으므로 현재 candidate는
+> T25에서 차단돼야 한다. 실제 7개 contract test와 T90 운영 증거가 생기기 전에는
+> **MVP2 달성 또는 배포 가능**으로 표현하지 않는다.
 > (T93/T42 라벨: 정본은 T42=upgrade_watch·T93=정책노후화. 초기 커밋 라벨 오류를
 > `21bfc15`에서 정정.) **다음 = MVP2(운영·승격)**: T60·T61·T90(계층3 테스트)·
 > T70·T91(계층4) + 잔여 T43·T51/52·T80. 검증기 카탈로그 §0.1 구현현황 참조.

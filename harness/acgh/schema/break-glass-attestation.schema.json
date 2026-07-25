@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bank.local/acgh/break-glass-attestation.schema.json",
+  "title": "Break-glass attestation (T72)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "attestation_id",
+    "ticket",
+    "requested_by",
+    "approvers",
+    "target_result_digest",
+    "candidate_sha",
+    "policy_digest",
+    "allowed_gates",
+    "requested_at",
+    "expires_at",
+    "post_validation_due_at",
+    "reason",
+    "status"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "attestation_id": {"type": "string", "minLength": 1},
+    "ticket": {"type": "string", "minLength": 1},
+    "requested_by": {"type": "string", "minLength": 1},
+    "approvers": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "target_result_digest": {"$ref": "#/$defs/sha256Digest"},
+    "candidate_sha": {"$ref": "#/$defs/gitSha"},
+    "policy_digest": {"$ref": "#/$defs/sha256Digest"},
+    "allowed_gates": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "requested_at": {"type": "string", "minLength": 1},
+    "expires_at": {"type": "string", "minLength": 1},
+    "post_validation_due_at": {"type": "string", "minLength": 1},
+    "reason": {"type": "string", "minLength": 1},
+    "status": {"enum": ["active", "closed"]},
+    "closed_at": {"type": "string", "minLength": 1},
+    "normal_rerun_result_digest": {"$ref": "#/$defs/sha256Digest"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"status": {"const": "closed"}},
+        "required": ["status"]
+      },
+      "then": {
+        "required": ["closed_at", "normal_rerun_result_digest"]
+      }
+    }
+  ],
+  "$defs": {
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sha256Digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}
