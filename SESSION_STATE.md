@@ -5,6 +5,9 @@
 > 최종 갱신: 2026-07-25 T26~T29 및 Docker-free 운영 게이트 구현 반영.
 > **현재 상태 정본은 [`STATUS.md`](STATUS.md), Claude 검토용 상세는
 > [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)다.**
+> 개발 태스크가 끝날 때마다 두 문서를 갱신하고, 작업 주체 변경 또는 컨텍스트
+> 소진 전에는 branch/commit, 정확한 테스트 결과, blocker, push 상태와 다음 실행
+> 단계를 남긴다. 전체 유지 계약은 [`CLAUDE.md`](CLAUDE.md)에 고정되어 있다.
 
 ---
 

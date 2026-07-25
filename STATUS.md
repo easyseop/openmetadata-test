@@ -2,7 +2,16 @@
 
 > Updated: 2026-07-25
 > Branch: `claude/markdown-file-feedback-26933w`
+> Last verified implementation commit: `efe319a`
 > Detailed review handoff: [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)
+
+## Handoff update policy
+
+This snapshot and the detailed handoff must be updated after every completed
+development task or coherent batch, and again before an agent/context
+handoff. Each update records the implementation commit, exact verification
+result, blockers, pushed state, and next executable step. The full checklist
+and document paths are fixed in [`CLAUDE.md`](CLAUDE.md).
 
 ## Outcome
 

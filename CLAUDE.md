@@ -2,6 +2,34 @@
 
 Review this branch as an independent safety and completeness audit.
 
+## Handoff maintenance contract
+
+Treat the following files as one handoff set:
+
+- `CLAUDE.md` — review entry point and review rules.
+- `STATUS.md` — short, current implementation snapshot.
+- `docs/04-진행/CLAUDE_REVIEW_HANDOFF.md` — detailed implementation,
+  verification, blockers, and continuation guide.
+- `SESSION_STATE.md` — longer-lived decisions and historical continuity.
+- `docs/04-진행/openmetadata_dev_roadmap.md` and
+  `docs/04-진행/openmetadata_build_plan.md` — task status and specification.
+
+After every completed development task or coherent batch, update the affected
+handoff files in the same commit as the implementation when practical. Before
+switching agents or exhausting the working context, record:
+
+1. the branch and the implementation commit being handed over;
+2. the exact files and behavior changed, including task IDs;
+3. the exact verification command, pass/fail/skip counts, and skip reasons;
+4. current blockers, assumptions, and the distinction between implemented
+   contracts and executed operational evidence;
+5. whether the worktree is clean and whether the commit was pushed; and
+6. the next executable step or command.
+
+Never copy credentials, tokens, private keys, or transient approval data into
+the handoff. If documentation and code temporarily diverge, treat the handoff
+as incomplete rather than guessing that an old status is still current.
+
 Read in this order:
 
 1. [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)
