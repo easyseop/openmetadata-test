@@ -444,10 +444,10 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
         product["source_candidate_ci"]["prior_remote_run"]["conclusion"]
         == "success"
     )
-    assert (
-        product["source_candidate_ci"]["remote_run"]
-        == "pending_action_upgrade_validation"
-    )
+    remote = product["source_candidate_ci"]["remote_run"]
+    assert remote["conclusion"] == "success"
+    assert remote["annotations"] == 0
+    assert remote["head_sha"] == "7063b0b23e1816c1480e88d6d6c29d5cc539ae1f"
     assert product["prettier"]["verdict"] == V.PASS
     assert product["tibero_jest"]["verdict"] == V.PASS
     assert product["tibero_jest"]["tests"] > 0

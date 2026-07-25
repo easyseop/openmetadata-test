@@ -217,7 +217,8 @@ T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
   product commit을 SHA로 고정하고 mirror·통합 테스트·T25/T26/T60-I/T30/T31을
   자동 실행한다. exact command의 clean local simulation은 280 pass·4 skip 및
   source gate 5개 pass. 최초 remote run `30160752510`은 success. Node 20
-  deprecation 때문에 checkout v5/setup-python v6 SHA로 올렸고 재검증 pending.
+  deprecation 때문에 checkout v5/setup-python v6 SHA로 올렸고 Node 24
+  재검증 run `30160846880`도 annotation 없이 success.
 - **현재 차단 조건**: 7개 owner 미배정, live contract 4개와 browser IME의
   candidate-bound T62 결과 없음, 제품 전체 Java build와 full UI
   suite/typecheck green, 실제 T90/T91/T94 증거 없음.

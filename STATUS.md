@@ -95,7 +95,9 @@ The workflow's exact product fetch, test, and gate commands pass in a clean
 local simulation (`280 passed, 4 live skips`; five source gates pass). Remote
 run `30160752510` also passed. GitHub emitted a Node 20 action deprecation
 annotation, so checkout/setup-python were upgraded to pinned Node 24 majors;
-that pin upgrade is pending a second remote validation.
+Node 24 validation run
+[`30160846880`](https://github.com/easyseop/openmetadata-test/actions/runs/30160846880)
+then passed with zero annotations.
 
 ## Important production blockers
 

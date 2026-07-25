@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: "2026-07-25T22:57:06+09:00"
+generated_at: "2026-07-25T23:02:45+09:00"
 governance_evidence_commit: 9f1f19dff4fd6480ae91aa954f3e3d684275bb8d
 repository: easyseop/OpenMetadata
 branch: codex/bank-vendor-1.13.1-rebuild
@@ -102,7 +102,12 @@ product_verification:
       conclusion: success
       url: https://github.com/easyseop/openmetadata-test/actions/runs/30160752510
       note: succeeded with a Node 20 action deprecation annotation
-    remote_run: pending_action_upgrade_validation
+    remote_run:
+      id: 30160846880
+      head_sha: 7063b0b23e1816c1480e88d6d6c29d5cc539ae1f
+      conclusion: success
+      annotations: 0
+      url: https://github.com/easyseop/openmetadata-test/actions/runs/30160846880
   environment:
     node: 24.15.0
     yarn: 1.22.22
@@ -146,4 +151,4 @@ limitations:
   - The source candidate is not a release artifact; image/package build, SBOM, signing, and promotion gates remain.
   - The focused Tibero Jest suite passes, but the product-wide UI typecheck still fails with 399 pre-existing or unrelated diagnostics; Java and full UI suites remain unverified.
   - The focused UI run used Node 24 with --ignore-engines because the available environment did not include the package-supported Node 22 runtime.
-  - The first remote source-candidate run passed; checkout/setup-python pins were then upgraded to Node 24 majors, so the upgraded workflow remains pending remote validation.
+  - The Node 24 action-pin workflow passed remotely; four live runtime contracts remain skipped because no deployed OpenMetadata URL is attached to the source-only job.

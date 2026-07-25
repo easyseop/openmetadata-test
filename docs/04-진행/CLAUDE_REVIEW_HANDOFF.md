@@ -661,7 +661,9 @@ source gates        T25/T26/T60-I/T30/T31 all pass
 [`30160752510`](https://github.com/easyseop/openmetadata-test/actions/runs/30160752510)도
 success였다. GitHub가 checkout v4/setup-python v5의 Node 20 deprecation
 annotation을 냈으므로 checkout v5와 setup-python v6의 공식 tag commit SHA로
-다시 고정했다. 이 action pin upgrade는 두 번째 원격 run 성공 전까지 pending이다.
+다시 고정했다. Node 24 action pin을 사용한 두 번째 원격 run
+[`30160846880`](https://github.com/easyseop/openmetadata-test/actions/runs/30160846880)은
+25초에 success했고 annotation은 0개다.
 
 ## 5. 테스트 결과
 
