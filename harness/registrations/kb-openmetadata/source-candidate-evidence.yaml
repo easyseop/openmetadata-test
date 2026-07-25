@@ -1,5 +1,6 @@
 schema_version: 1
 generated_at: "2026-07-25T21:55:00+09:00"
+governance_evidence_commit: 81524aa79f13af96e842fd9bd9fe3d20f5ef6cbe
 repository: easyseop/OpenMetadata
 branch: codex/bank-vendor-1.13.1-rebuild
 upstream:
