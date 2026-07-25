@@ -114,7 +114,9 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **T29 · 실제 커스터마이징 등록 (✅ 등록 완료·운영 증거 미완)** — `kb_openmetadata`의 InstanceCode,
   QueryReport, Assertions, 컬럼 확장, IME, Sybase, Tibero를 manifest/contract화.
   원본이 ancestry 없는 단일 root snapshot이므로 vendor branch 재구성 전 T25는
-  의도대로 차단하며, owner 배정과 실제 contract test 구현은 남아 있다. 전체
+  의도대로 차단한다. T60-I는 required selector 7개의 실제 Python 파일·함수
+  존재를 AST로 검증한다. 7개 구현은 추가됐고 로컬 가능한 3개는 pass했지만,
+  owner 배정과 live runtime 4개·browser IME의 T62 실행 증거는 남아 있다. 전체
   113개 diff 중 111개는 7개 manifest에 귀속했고, `.claude/settings.json`의
   자동승인 확대와 Docker Compose의 ingestion `1.9.6` 고정은 별도 blocking
   finding으로 등록했다.
@@ -368,9 +370,11 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 ### T60. contract-id ↔ 테스트 결속
 - **목적**: 업무 불변식과 테스트를 연결(§6 보강1).
 - **충족**: P0-7·C-4 / 신규 REQ.
-- **구현**: `contracts/*.yaml`의 불변식 ↔ required 테스트 매핑. 릴리스마다 "어떤 불변식이
-  어떤 테스트로 입증됐는지" 검증(이름 존재만 아님).
-- **수용**: contract에 연결 테스트 없으면 실패, 감사카드에 불변식-테스트 매핑 표시.
+- **구현**: `contracts/*.yaml`의 불변식 ↔ required 테스트 매핑. T60-I가
+  pytest selector의 안전한 root-relative path, 실제 regular file, AST 함수/메서드
+  존재를 fail-closed로 검증한다. 런타임 결과는 T62가 별도로 판정한다.
+- **수용**: contract에 연결 테스트가 없거나 selector 파일·함수가 없으면 실패,
+  감사카드에 불변식-테스트 매핑 표시.
 - **선행**: T04·T14.
 
 ### T61. patch-kill test
@@ -383,7 +387,8 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 
 ### T62. 테스트-candidate SHA 결속
 - **상태(2026-07-25)**: ✅ 결과계약·flaky 판정 구현/단위검증 완료.
-  실제 7개 contract suite 실행 결과는 아직 없음.
+  7개 selector 구현은 완료했고 source-capable 3개는 pass, live runtime 4개는
+  환경 부재로 skip했다. candidate-bound 전체 pass 결과는 아직 없음.
 - **목적**: 시간차 결함 방지(§10.1).
 - **충족**: P0(§10.1) / REQ-OR 신규.
 - **구현**: 테스트 결과를 candidate SHA·이미지 digest·harness/suite 버전에 결속.

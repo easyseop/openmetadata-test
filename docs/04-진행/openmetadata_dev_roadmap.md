@@ -163,7 +163,8 @@ path 문법)를 반영한 뒤 동결. T12·T13은 즉시 진행 가능.
 
 ### M6 — 테스트 결속
 - **T60 contract 결속** — contract catalog가 업무 불변식↔테스트 단일 정본. *왜*:
-  "어떤 업무 규칙이 지켜지는지"를 이름 확인이 아니라 결속으로 보장.
+  "어떤 업무 규칙이 지켜지는지"를 이름 확인이 아니라 결속으로 보장. T60-I는
+  selector의 파일·AST 함수 구현 존재까지 검사하고 실제 실행 결과는 T62에 맡긴다.
 - **T61 patch-kill** — high/critical 우선·상태 4종(killed/survived/inconclusive/
   infra_error). *왜*: 테스트가 커스터마이징 생존을 실제로 입증하는지 검증(껍데기
   테스트 방지).
@@ -298,7 +299,7 @@ T93·T42 · T50 · T70 최소.
 | T26 customization survival | ✅ 구현 | `acgh/survival.py` | 7 테스트. required path 존재·target 대비 순효과·registry/manifest/contract/effective test 생존, stale 객체=analysis_error |
 | T27 merge conflict evidence | ✅ 구현 | `acgh/conflicts.py` + schema | 5 테스트. `ls-files -u -z` stage 1/2/3, 해결 blob/rationale/승인/candidate-lock 결속 |
 | T28 통합전략 라우팅 | ✅ 구현 | `acgh/routing.py` | 4 테스트. vendor/replay gate 분리, 필수 gate 미구성=analysis_error |
-| T29 실제 7개 등록 | ✅ 등록·⚠ 운영미완 | `registrations/kb-openmetadata/` + `acgh/registry.py` | 5 테스트. 실제 113경로 전수목록, 111경로→7ID·7contract, 2개 비제품 변경 명시 차단. ancestry=false·owner pending·실제 test 미구현 |
+| T29 실제 7개 등록 | ✅ 등록·⚠ 운영미완 | `registrations/kb-openmetadata/` + `acgh/registry.py` + `tests/bank/contracts/` | 5 registry 테스트 + T60-I. 실제 113경로 전수목록, 111경로→7ID·7contract, 2개 비제품 변경 명시 차단. 7 selector 구현 존재 pass, source-capable 3 pass·live 4 skip. ancestry=false·owner pending·T62 전체 pass 미완 |
 | T25 vendor ancestry gate | ✅ 완료 | `acgh/ancestry.py` + `gitprim.py` | 6 테스트. base/target 공통 조상, locked base·approved target의 candidate 포함 검증, topology 위반=block, 객체 누락·stale tree·모드 오라우팅=analysis_error |
 | T24 integration strategy·candidate-lock | ✅ 완료 | `acgh/candidate.py` + `schema/candidate-lock.schema.json` + `binding.py` | 9 테스트. 기본 `vendor-merge`, patch-replay lock 필수화, base/target/candidate commit·tree·artifact digest 고정, 결과 입력 결속·stale 무효화 |
 | T05 path-ownership·glob 정본 | ✅ 완료 | `policies/repository-layout.yaml` + **운영층** `acgh/layout.py` | 실제 OM 모듈 루트로 검증, `upstream_base_sha` 결속, 모든 게이트 공용 문법(부칙 A-3.1), pathspec factory=`gitignore` 고정 |
@@ -335,11 +336,10 @@ T93·T42 · T50 · T70 최소.
 | T92 retirement | ✅ 구현 | `acgh/retirement.py` + schema | 6 테스트. 공식대체·ADR·회귀·2인·active→retired |
 | T94 내부망 반입 | 🟡 검증기 구현 | `acgh/airgap.py` + schema | 6 테스트. 파일 hash·release-lock·signature verifier fail-closed. 실제 서명/내부망 미수행 |
 
-> **게이트 엔진 구현 현황:** 현재 테스트 함수는 271개이며, 2026-07-25 기준
-> 236개 통과·실제 OM 미러 의존 35개 skip이다. T25-R 실제 source plan과
-> 44개 shared owner는 확정했지만 논리 ID commit의 vendor candidate를 만들기
-> 전까지 현재 snapshot은 T25에서 차단돼야 한다. 실제 7개 contract test와 T90
-> 운영 증거가 생기기 전에는
+> **게이트 엔진 구현 현황:** 현재 통합 테스트는 282개이며, 2026-07-25 기준
+> 243개 통과·실제 OM 미러 의존 35개와 live runtime 계약 4개 skip이다.
+> 7-ID vendor candidate와 T60-I 7/7 구현 존재까지 완료했지만 contract 전체의
+> candidate-bound T62 결과와 T90 운영 증거가 생기기 전에는
 > **MVP2 달성 또는 배포 가능**으로 표현하지 않는다.
 > (T93/T42 라벨: 정본은 T42=upgrade_watch·T93=정책노후화. 초기 커밋 라벨 오류를
 > `21bfc15`에서 정정.) **다음 = MVP2(운영·승격)**: T60·T61·T90(계층3 테스트)·

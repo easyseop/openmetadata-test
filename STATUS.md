@@ -53,11 +53,12 @@ member and a Tibero schema-mapping unit test under the same consecutive
 ## Verification
 
 ```text
-236 passed, 35 skipped in 15.05s
+243 passed, 39 skipped in 18.17s
 ```
 
-The 35 skips require the historical Linux fixture path
-`/home/user/om-mirror`; they are not failures. All 14 T25-R tests pass.
+Of the 39 skips, 35 require the historical Linux fixture path
+`/home/user/om-mirror`, and four require a live OpenMetadata URL. They are not
+counted as passes. All 14 T25-R tests pass.
 
 Actual source-candidate gates:
 
@@ -65,6 +66,7 @@ Actual source-candidate gates:
 T25-R vendor-reconstructed-candidate  pass (checkpoint e1ffc5a1...)
 T25   vendor-ancestry                 pass (candidate 38bccf90...)
 T26   customization-survival          pass (candidate 38bccf90...; 7 IDs, 10 required paths)
+T60-I required-test-implementations   pass (7/7 selectors resolve)
 T30   commit-invariants               pass (candidate 38bccf90...)
 T31   id-invariants                   pass (candidate 38bccf90...)
 ```
@@ -74,6 +76,7 @@ Focused product verification:
 ```text
 Prettier (2 changed paths)             pass
 DatabaseServiceUtils.test.tsx          pass (13/13; Tibero case pass)
+bank contract suite                    3 passed, 4 live-runtime skipped
 UI tsc --noEmit                        fail (399 diagnostics; changed paths 0)
 UI core Vite build                     exit 0 (2 declaration diagnostics on unchanged upstream paths)
 ```
@@ -91,9 +94,11 @@ This is not yet evidence that the bank distribution is deployable:
 2. The two source-snapshot findings were intentionally excluded from the
    candidate: `.claude/settings.json` broadly auto-approves tools, and
    `docker/development/docker-compose.yml` pins ingestion image `1.9.6`.
-3. The seven contract test IDs are specifications; the real API, DB, search,
-   permission, UI/IME, Sybase, and Tibero test implementations and results do
-   not exist in this repository.
+3. All seven required test selectors now resolve to committed implementations.
+   Sybase, Tibero, and the Korean IME source guard pass locally; InstanceCode,
+   QueryReport, failed assertion, and bank-column live contracts skip without
+   `OPENMETADATA_BASE_URL`. Candidate-bound T62 results therefore do not yet
+   exist.
 4. T90/T91/T94 judgment contracts are implemented, but no real OpenMetadata
    Docker upgrade run, production-like DB restore, artifact promotion, or
    offline signature verification was executed in this environment.

@@ -411,7 +411,17 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
     assert all(
         gate["candidate"] == evidence["candidate"]["commit_sha"]
         for name, gate in gates.items()
-        if name != "t25_r_vendor_reconstructed_candidate"
+        if name
+        not in {
+            "t25_r_vendor_reconstructed_candidate",
+            "t60_i_required_test_implementations",
+        }
+    )
+    assert (
+        gates["t60_i_required_test_implementations"][
+            "implemented_required_tests"
+        ]
+        == 7
     )
     assert all(
         gate["verdict"] == V.PASS
@@ -421,6 +431,9 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
     assert product["prettier"]["verdict"] == V.PASS
     assert product["tibero_jest"]["verdict"] == V.PASS
     assert product["tibero_jest"]["tests"] > 0
+    assert product["bank_contract_suite"]["implemented"] == 7
+    assert product["bank_contract_suite"]["passed"] == 3
+    assert product["bank_contract_suite"]["skipped_live"] == 4
     assert product["ui_typecheck"]["verdict"] == "fail"
     assert product["ui_typecheck"]["error_lines"] > 0
     assert product["ui_typecheck"]["changed_path_error_lines"] == 0

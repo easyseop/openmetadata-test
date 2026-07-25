@@ -82,3 +82,75 @@ def test_multiple_contracts_merge():
         "tests/bank/test_sso.py::test_tenant_binding",
         "tests/bank/test_authz.py::test_role",
     }
+
+
+def _implementation_catalog(*selectors):
+    return C.parse_catalog({
+        "schema_version": 1,
+        "contracts": [{
+            "id": "CONTRACT-X",
+            "title": "implemented test",
+            "required_tests": list(selectors),
+        }],
+    })
+
+
+def test_required_test_implementation_gate_passes_function_and_method(tmp_path):
+    test_file = tmp_path / "tests" / "bank" / "test_contract.py"
+    test_file.parent.mkdir(parents=True)
+    test_file.write_text(
+        "def test_function():\n"
+        "    pass\n\n"
+        "class TestContract:\n"
+        "    def test_method(self):\n"
+        "        pass\n",
+        encoding="utf-8",
+    )
+    catalog = _implementation_catalog(
+        "tests/bank/test_contract.py::test_function",
+        "tests/bank/test_contract.py::TestContract::test_method[param]",
+    )
+
+    result = C.check_required_test_implementations(tmp_path, catalog)
+
+    assert result.verdict == V.PASS
+    assert result.reasons == ("implemented_required_tests=2",)
+
+
+def test_required_test_implementation_gate_blocks_missing_and_unsafe(tmp_path):
+    catalog = _implementation_catalog(
+        "tests/bank/test_missing.py::test_missing",
+        "../outside.py::test_escape",
+    )
+
+    result = C.check_required_test_implementations(tmp_path, catalog)
+
+    assert result.verdict == V.BLOCK
+    assert len(result.reasons) == 2
+
+
+def test_required_test_implementation_gate_parse_error_is_analysis_error(
+    tmp_path,
+):
+    test_file = tmp_path / "tests" / "bank" / "test_bad.py"
+    test_file.parent.mkdir(parents=True)
+    test_file.write_text("def test_bad(:\n", encoding="utf-8")
+    catalog = _implementation_catalog(
+        "tests/bank/test_bad.py::test_bad",
+    )
+
+    result = C.check_required_test_implementations(tmp_path, catalog)
+
+    assert result.verdict == V.ANALYSIS_ERROR
+    assert "cannot parse required test implementation" in result.reasons[0]
+
+
+def test_required_test_implementation_gate_blocks_empty_catalog(tmp_path):
+    catalog = C.parse_catalog({"schema_version": 1, "contracts": []})
+
+    result = C.check_required_test_implementations(tmp_path, catalog)
+
+    assert result.verdict == V.BLOCK
+    assert result.reasons == (
+        "contract catalog has no required test selectors",
+    )

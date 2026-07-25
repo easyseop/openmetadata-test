@@ -212,8 +212,10 @@ cherry-pick 성공만으로 vendor release 전체가 완성됐다고 오인하�
 - manifest와 registry의 lifecycle status도 일치시킨다.
 - snapshot/upstream SHA와 변경 경로 수를 테스트에서 고정했다.
 
-주의: required test ID는 테스트 **명세**다. 해당 테스트 파일을 이 저장소에
-가짜로 만들어 통과시키지 않았다.
+required test ID 7개는 이제 `tests/bank/contracts/`의 실제 Python selector에
+연결된다. T60-I는 경로 이탈·symlink·파일 누락·AST symbol 누락을 차단한다.
+다만 구현 존재는 실행 성공과 다르며, live runtime 4개와 browser IME 결과는
+T62 candidate-bound pass가 생길 때까지 운영 증거가 아니다.
 
 ### 4.5 T62 — 필수 테스트 실행과 candidate 결속
 
@@ -578,26 +580,76 @@ Node 22 환경에서 focused Jest 재현과 전체 typecheck baseline 분류를 
 임시 ANTLR 4.9.2 JAR SHA-256은
 `bb117b1476691dc2915a318efd36f8957c0ad93447fb1dac01107eb15fe137cd`다.
 
+### 4.16 T60-I required test 구현 존재 게이트와 7개 계약 파일
+
+기존 T60은 catalog의 selector 문자열을 effective test로 계산했지만 실제
+파일·함수가 없어도 통과할 수 있었다. `harness/acgh/contracts.py`에
+`check_required_test_implementations`를 추가해 다음을 fail-closed로 검사한다.
+
+- selector가 `root-relative.py::test_symbol` 형식인가
+- absolute path, `..`, backslash 경로 이탈이 없는가
+- 파일이 root 안의 regular non-symlink 파일로 실제 존재하는가
+- Python AST가 파싱되고 지정 함수 또는 class method가 존재하는가
+- parse 불능은 `analysis_error`, 누락·위험 selector는 `block`인가
+
+실제 source-candidate runner에도 T60-I를 넣었고 결과는
+`implemented_required_tests=7`, `pass`다.
+
+구현 파일:
+
+- `tests/bank/contracts/test_instance_code.py`
+- `tests/bank/contracts/test_query_report.py`
+- `tests/bank/contracts/test_data_assertions.py`
+- `tests/bank/contracts/test_bank_columns.py`
+- `tests/bank/contracts/test_korean_ime.py`
+- `tests/bank/contracts/test_sybase.py`
+- `tests/bank/contracts/test_tibero.py`
+- 공용 helper `_runtime_contract.py`, `_connector_contract.py`
+
+구현 내용:
+
+- InstanceCode: live POST/GET/PUT/search index polling/hard-delete
+- QueryReport: live report 생성, 기존 Query usage 연결·조회·수정 후 보존, 정리
+- Data Assertions: live failed status·owner·table/column projection
+- Bank columns: live ordinal·constraint·은행 extension projection
+- Korean IME: composition start/end guard와 조합 중 state write 차단 source guard
+- Sybase/Tibero: JSON Schema validation·payload round-trip·databaseService ref,
+  generated API/entity/serviceConnection enum, UI selector test, icon 일관성
+
+현재 환경 실행:
+
+```text
+7 collected
+3 passed: Korean IME source guard, Sybase, Tibero
+4 skipped: OPENMETADATA_BASE_URL이 필요한 live 계약
+```
+
+skip은 pass로 승격하지 않는다. 실제 스택에서 필요한 추가 환경 변수는
+`OPENMETADATA_BASE_URL`, 선택 auth token,
+`BANK_CONTRACT_QUERY_ID`, `BANK_FAILED_ASSERTION_FQN`,
+`BANK_COLUMN_TABLE_FQN`, `BANK_COLUMN_NAME`이다.
+
 ## 5. 테스트 결과
 
 전체 명령:
 
 ```bash
-./harness/.venv/bin/python -m pytest harness/tests -ra
+OPENMETADATA_PRODUCT_REPO=/private/tmp/om-product-rebuild \
+  ./harness/.venv/bin/python -m pytest harness/tests tests/bank/contracts -ra
 ```
 
 결과:
 
 ```text
-236 passed, 35 skipped in 15.05s
+243 passed, 39 skipped in 18.17s
 ```
 
-초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 88개 passing test가
+초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 95개 passing test가
 추가됐고, T25-R과 실제 candidate evidence 묶음은 14개다.
 
-35개 skip은 `/home/user/om-mirror`가 없는 현재 macOS 작업 환경에서 실제
-OpenMetadata 미러 기반 테스트가 자동 skip된 것이다. 이번에 추가한 T25-R
-14개 테스트 중 skip은 없다.
+39개 skip 중 35개는 `/home/user/om-mirror`가 없는 현재 macOS 작업 환경의
+미러 기반 테스트, 4개는 `OPENMETADATA_BASE_URL`이 없는 live contract다.
+이번에 추가한 T25-R 14개와 T60-I 단위 테스트 중 skip은 없다.
 
 제품 집중 테스트:
 
@@ -617,7 +669,8 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 |---|---:|---:|---:|
 | T25-R snapshot 재구성 | source plan·owner·엔진·실 candidate 완료 | 완료 | 실제 candidate pass |
 | T26~T29 vendor 등록·라우팅 | 완료 | 완료 | T25/T26 실 candidate pass |
-| T62 test-result binding | 완료 | 완료 | 실제 7개 contract run 없음 |
+| T60-I 구현 존재 | 완료 | 완료 | 7/7 selector resolve pass |
+| T62 test-result binding | 완료 | 완료 | 3 pass·4 live skip, 전체 candidate-bound pass 없음 |
 | T71/T72 운영 정책 | 완료 | 완료 | 조직 승인자·CI 연동 필요 |
 | T80/T81 LLM memo | 완료 | 완료 | 실제 release memo 평가 데이터 없음 |
 | T90 upgrade-run contract | 완료 | 완료 | Docker/DB/search/ingestion 실행 없음 |
@@ -631,7 +684,8 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 ## 7. 다음 실행 순서
 
 1. 각 ID의 조직 owner와 두 사람 승인 라우팅을 확정한다.
-2. `contracts.yaml`의 7개 테스트를 실제 kb runtime suite에 구현한다.
+2. 실제 OpenMetadata 스택에서 live contract 4개와 browser IME를 실행하고
+   7개 전체를 T62 candidate-bound result로 만든다.
 3. Node 22 환경에서 399개 UI typecheck diagnostic을 기준선 분류·수정하고,
    제품 전체 Java/UI build와 source-level test를 candidate에 결속한다.
 4. high 5개를 우선 patch-kill로 검증한다.

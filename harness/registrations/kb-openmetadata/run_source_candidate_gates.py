@@ -73,6 +73,10 @@ def main() -> int:
         catalog,
         active_ids=registry.active_ids(),
     )
+    t60_i = contracts.check_required_test_implementations(
+        args.registration.parents[2],
+        catalog,
+    )
     repository_layout = layout.load_layout(args.layout)
     t30_violations = invariants.check_commit_invariants(
         args.repo, target, head, repository_layout
@@ -81,7 +85,7 @@ def main() -> int:
     commits = gitprim.commits(args.repo, target, head)
     t31_violations = invariants.check_id_invariants(commits, manifests)
     t31 = invariants.to_gate_result("id-invariants", t31_violations)
-    gates = [t25, t26, t30, t31]
+    gates = [t25, t26, t60_i, t30, t31]
     output = {
         "candidate_lock": lock.canonical(),
         "candidate_lock_digest": lock.digest(),

@@ -16,15 +16,16 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 ## 빠른 시작
 
 ```bash
-cd harness
-pip install jsonschema pathspec pyyaml pytest    # 또는 pip install -e ".[dev]"
-python -m pytest                                  # 현재 271개: 236 pass·35 mirror skip
-bash fixtures/fetch_upstream.sh                   # 실제 OM 미러(없으면 미러 테스트 자동 skip)
+pip install jsonschema pathspec pyyaml pytest
+OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata \
+  python -m pytest harness/tests tests/bank/contracts
+# 현재 282개: 243 pass·39 skip(35 mirror + 4 live runtime)
+bash harness/fixtures/fetch_upstream.sh            # 실제 OM 미러(없으면 미러 테스트 자동 skip)
 ```
 
 Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
 
-## 구현 모듈 (현재 271개 테스트: 236 pass·35 mirror skip)
+## 구현 모듈 (현재 282개 테스트: 243 pass·39 skip)
 
 | 모듈 | 담당 | 루트 README 검증기# / 영역 |
 |---|---|---|
@@ -36,6 +37,7 @@ Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
 | `ancestry.py` | vendor 공통 이력·승인 target 포함 검증 | 1 / A2 |
 | `vendor_rebuild.py` | root snapshot 재구성 계획·공유 hunk 소유·candidate 검증 | 1 / A1·A2 |
 | `survival.py`·`registry.py` | active ID 생존·실제 7개 등록 그래프 | 1·14·15 / A1·A2 |
+| `contracts.py` | contract 결속·required selector 파일/함수 구현 존재 | 14·15 / A6 |
 | `conflicts.py`·`routing.py` | merge 해결 증거·vendor/replay 명시 라우팅 | 1 / A2 |
 | `gitprim.py` | git 프리미티브(trailer·-z·tree) | — |
 | `layout.py` | 경로 소유·glob 문법(공용) | 6·7 / A4 |

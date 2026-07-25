@@ -199,8 +199,8 @@ harness/
 
 **완료:** 기존 patch-replay M1~M4, vendor-merge T24~T29·T25-R, 실제 7개 등록부,
 T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
-현재 테스트는 271개이며, 2026-07-25 Python 3.11 환경에서 236개 통과,
-실제 OpenMetadata 미러가 필요한 35개는 skip됐다.
+현재 통합 테스트는 282개이며, 2026-07-25 Python 3.11 환경에서 243개 통과,
+실제 OpenMetadata 미러가 필요한 35개와 live runtime 계약 4개는 skip됐다.
 - **T60** contract 카탈로그+결속 `contracts.py` · **T61** patch-kill
   `patchkill.py` · **T51/52** 구조화 diff `structdiff.py`(실제 table.json
   dataContract 검출) · **T70** 정책 self-protection `policy_guard.py` · **T43**
@@ -210,9 +210,12 @@ T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
 - **제품 집중 검증**: Tibero `DatabaseServiceUtils.test.tsx` 13/13 pass,
   변경 2경로 Prettier pass. Node 24·6GB heap의 전체 UI typecheck는 399개
   diagnostic으로 fail했지만 두 변경 경로의 매칭 오류는 0개다.
-- **현재 차단 조건**: 7개 owner 미배정, contract test는 ID 명세만 존재,
-  제품 전체 Java build와 full UI suite/typecheck green, 실제 T90/T91/T94
-  증거 없음.
+- **T60-I/contract 구현**: catalog의 7 selector 모두 실제 파일·함수로 resolve.
+  로컬 가능한 Sybase·Tibero·IME 3개 pass, OpenMetadata live URL이 필요한
+  InstanceCode·QueryReport·failed assertion·bank column 4개는 skip.
+- **현재 차단 조건**: 7개 owner 미배정, live contract 4개와 browser IME의
+  candidate-bound T62 결과 없음, 제품 전체 Java build와 full UI
+  suite/typecheck green, 실제 T90/T91/T94 증거 없음.
 
 > **T93/T42 라벨 정정(중요)**: build_plan 정본에서 **T42 = upgrade_watch(업스트림
 > 변경 ∩ 감시 → 케이스 D)** = `upgrade_watch.py`+`impact.py`, **T93 = 정책 노후화
@@ -331,7 +334,8 @@ replay tree(T22 `replay.replay_and_compare` 재사용), candidate 변경 시 기
 ### 재개 절차
 1. 이 파일 + `docs/04-진행/openmetadata_build_plan.md` + SRS 부칙 A(`docs/02-설계/openmetadata_governance_requirements.md`) 읽기.
 2. `/home/user/om-mirror` 존재 확인(없으면 §7 재획득), `pip install jsonschema pathspec`.
-3. `cd harness && python -m pytest` → 현재 271개(236 pass·35 mirror skip) 재확인.
+3. `OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata python -m pytest
+   harness/tests tests/bank/contracts` → 현재 282개(243 pass·39 skip) 재확인.
 4. `STATUS.md`의 production blocker와
    `docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`의 실제 실행 순서를 따른다.
 5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4.1 로그 + 이 표 갱신.

@@ -119,8 +119,8 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 
 | # | 검증기 | 왜 필요 · 안 지키면 나올 문제 | 구현 방법론 (또는 계획) | 상태·태스크 |
 |---|---|---|---|---|
-| 14 | 필수 테스트 존재 | 없는 테스트를 '필수'로 걸고 검증했다 **착각** | active ID의 effective test와 candidate-bound 실행 결과가 존재하는지 확인, 누락·skip=block | ✅ `testruns.py` |
-| 15 | contract 결속 | 릴리스마다 **어떤 업무 규칙**이 지켜지는지 모른 채 넘어감 | contract 카탈로그(업무 불변식↔required_tests) + manifest 참조 결속, effective=direct∪파생, 중복선언·미존재=block | ✅ T60 |
+| 14 | 필수 테스트 존재 | 없는 테스트를 '필수'로 걸고 검증했다 **착각** | catalog selector의 실제 파일·함수 존재를 AST로 확인하고, candidate-bound 실행 결과 누락·skip은 별도 차단 | ✅ `contracts.py` + `testruns.py` |
+| 15 | contract 결속 | 릴리스마다 **어떤 업무 규칙**이 지켜지는지 모른 채 넘어감 | contract 카탈로그(업무 불변식↔required_tests) + manifest 참조 결속, effective=direct∪파생, selector 구현 미존재=block | ✅ T60·T60-I |
 | 16 | patch-kill | 패치를 빼도 통과하는 **껍데기 테스트**를 모름 | 패치 없는 worktree에서 테스트 실행 → 실패=PROVEN(입증)·통과=SHELL(block)·실행불가=analysis_error | ✅ T61 |
 | 17 | 테스트-SHA 결속 | 후보 바뀌었는데 **옛 결과를 유효로** 착각 / flaky 뭉갬 | candidate SHA·artifact·harness/suite 결속, high/critical retry-pass=approval | ✅ T62 |
 | 18 | 차등 테스트 | 건수 대사만으론 **관계·의미 손상** 놓침 | 구·신 12단계 결과계약·증거 digest·candidate 결속 | 🟡 T90 계약 구현·실행 미완 |
@@ -218,12 +218,14 @@ M9 업그레이드 검증·릴리스 승격(digest 결속)·반입
 
 ## 개발자 빠른 시작 (하네스 실행)
 
-구현 코드는 `harness/acgh/`, 테스트는 `harness/tests/`. Python 3.11 · git 2.43+.
+구현 코드는 `harness/acgh/`, 게이트 테스트는 `harness/tests/`, 실제 계약은
+`tests/bank/contracts/`. Python 3.11 · git 2.43+.
 
 ```bash
-cd harness
-pip install jsonschema pathspec pyyaml pytest    # 또는 pip install -e ".[dev]"
-python -m pytest                                  # 현재 271개: 236 pass·35 mirror skip
+pip install jsonschema pathspec pyyaml pytest
+OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata \
+  python -m pytest harness/tests tests/bank/contracts
+# 현재 282개: 243 pass·39 skip(35 mirror + 4 live runtime)
 ```
 
 **실제 OM 미러 연결**(게이트·재적용 테스트용, 없으면 해당 테스트 자동 skip):
