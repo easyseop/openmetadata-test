@@ -92,9 +92,10 @@ It pins both third-party actions by 40-hex SHA, pins product commit
 `38bccf9077...`, fetches the two historical upstream fixtures, runs the
 combined test suite, and runs T25/T26/T60-I/T30/T31. Its first remote run is
 The workflow's exact product fetch, test, and gate commands pass in a clean
-local simulation (`280 passed, 4 live skips`; five source gates pass). Its
-first remote run remains pending until this batch is pushed and must not be
-treated as successful remote evidence beforehand.
+local simulation (`280 passed, 4 live skips`; five source gates pass). Remote
+run `30160752510` also passed. GitHub emitted a Node 20 action deprecation
+annotation, so checkout/setup-python were upgraded to pinned Node 24 majors;
+that pin upgrade is pending a second remote validation.
 
 ## Important production blockers
 

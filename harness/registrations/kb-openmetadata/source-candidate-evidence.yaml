@@ -96,7 +96,13 @@ product_verification:
       tests_passed: 280
       tests_skipped_live: 4
       source_gates_passed: 5
-    remote_run: pending
+    prior_remote_run:
+      id: 30160752510
+      head_sha: 73f9fc572ea1b68f77dcbeec59953986a7b76ab1
+      conclusion: success
+      url: https://github.com/easyseop/openmetadata-test/actions/runs/30160752510
+      note: succeeded with a Node 20 action deprecation annotation
+    remote_run: pending_action_upgrade_validation
   environment:
     node: 24.15.0
     yarn: 1.22.22
@@ -140,4 +146,4 @@ limitations:
   - The source candidate is not a release artifact; image/package build, SBOM, signing, and promotion gates remain.
   - The focused Tibero Jest suite passes, but the product-wide UI typecheck still fails with 399 pre-existing or unrelated diagnostics; Java and full UI suites remain unverified.
   - The focused UI run used Node 24 with --ignore-engines because the available environment did not include the package-supported Node 22 runtime.
-  - The source-candidate CI commands pass in a clean local simulation; its first remote GitHub Actions run is not evidence until the workflow reports success.
+  - The first remote source-candidate run passed; checkout/setup-python pins were then upgraded to Node 24 majors, so the upgraded workflow remains pending remote validation.

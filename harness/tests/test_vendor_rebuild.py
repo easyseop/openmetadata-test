@@ -440,7 +440,14 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
         ]
         == 4
     )
-    assert product["source_candidate_ci"]["remote_run"] == "pending"
+    assert (
+        product["source_candidate_ci"]["prior_remote_run"]["conclusion"]
+        == "success"
+    )
+    assert (
+        product["source_candidate_ci"]["remote_run"]
+        == "pending_action_upgrade_validation"
+    )
     assert product["prettier"]["verdict"] == V.PASS
     assert product["tibero_jest"]["verdict"] == V.PASS
     assert product["tibero_jest"]["tests"] > 0

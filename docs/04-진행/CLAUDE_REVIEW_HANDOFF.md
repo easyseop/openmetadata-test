@@ -647,9 +647,8 @@ skip은 pass로 승격하지 않는다. 실제 스택에서 필요한 추가 환
 pin, product evidence lock, read-only permission, 필수 명령 존재를 검증한다.
 live runtime 4개는 이 source job에서 skip되며 T62 운영 job으로 남긴다.
 
-이 workflow의 정의와 로컬 테스트는 완료했지만 첫 원격 GitHub Actions 결과는
-push 뒤 확인 전까지 `pending`이다. workflow의 exact product fetch·mirror
-fetch·test·gate 명령을 빈 임시 환경에서 실행한 결과는 다음과 같다.
+workflow의 exact product fetch·mirror fetch·test·gate 명령을 빈 임시
+환경에서 실행한 결과는 다음과 같다.
 
 ```text
 product HEAD        38bccf90779a... (locked SHA match)
@@ -657,6 +656,12 @@ upstream mirror     UPSTREAM_A/UPSTREAM_B SHA match
 tests               280 passed, 4 live-runtime skipped in 35.12s
 source gates        T25/T26/T60-I/T30/T31 all pass
 ```
+
+첫 원격 run
+[`30160752510`](https://github.com/easyseop/openmetadata-test/actions/runs/30160752510)도
+success였다. GitHub가 checkout v4/setup-python v5의 Node 20 deprecation
+annotation을 냈으므로 checkout v5와 setup-python v6의 공식 tag commit SHA로
+다시 고정했다. 이 action pin upgrade는 두 번째 원격 run 성공 전까지 pending이다.
 
 ## 5. 테스트 결과
 
