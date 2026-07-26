@@ -4,7 +4,9 @@
 > 대상 브랜치: `claude/markdown-file-feedback-26933w`
 > 변경 전 기준 커밋: `9d2a174` (`implement T25 vendor ancestry gate`)
 > 마지막 검증 구현 커밋:
-> `39294bf38172f16528833640c03302aa83ade7b4`
+> `4353f457ca93710f71b08f8c5c6365a33fb3f7d8`
+> 최신 문서 묶음 커밋:
+> `bc0e957109e473885dc702938286eabf91fdbdd5`
 > T63 UI typecheck 기준선 게이트 구현 커밋:
 > `39294bf38172f16528833640c03302aa83ade7b4`
 > 제품 UI 타입 보강 커밋:
@@ -1245,23 +1247,25 @@ targeted gate tests        10 passed
 원격 source-candidate 재현:
 
 ```text
-run                         30215596535
-governance head             eb786adbd76686434eb99f21505fa16f91d45fc0
-suite                       315 passed, 7 skipped in 15.00s
+run                         30216708258
+governance head             bc0e957109e473885dc702938286eabf91fdbdd5
+product commit              70d028a035bb1edb8af5a11f06c4c7dff4cd979b
+suite                       316 passed, 7 skipped in 13.15s
 source gates                5 pass
 T60-I                       9/9
 source patch-kill           2 pass
-patch-kill result digest    sha256:2becbd366029aca7d88f74d364478ff8b6aef77c3a958bf7b61be54a5255cbd8
-artifact ID                 8635710912
-artifact digest             sha256:231137d0bd9bcc6c1ec2e73befb42e6eb02752ac3fe0b31e42b9a1490d4c110b
-artifact expiry             2026-10-24T18:50:55Z
+patch-kill result digest    sha256:965d515da3c307814c027b542c0abc4e9f0d79fc535c7d55bd59ac448b2f797f
+artifact ID                 8636012730
+artifact digest             sha256:813c26df22d828f5281eb87d92a341adec6c45ee4c5ef81c692a0effc50860b4
+artifact expiry             2026-10-24T19:22:20Z
 ```
 
 Run URL:
-`https://github.com/easyseop/openmetadata-test/actions/runs/30215596535`.
+`https://github.com/easyseop/openmetadata-test/actions/runs/30216708258`.
 
-위 원격 run은 `BANK-OM-009` 전의 `ddf0dd2e...` 후보를 검증한 역사적 증거다.
-현재 `70d028a...` 후보의 원격 run은 문서 batch push 뒤 새로 확인해야 한다.
+이 run은 `BANK-OM-009` 제품 commit `70d028a...`와 거버넌스 등록·증적·문서
+batch를 함께 검증한 현재 원격 증거다. 이전 `30215596535`는
+`BANK-OM-009` 전 후보의 역사적 증거로만 유지한다.
 
 ### 4.26 BANK-OM-009 — 공통 검색 결과 타입 정합성 보강
 
@@ -1371,7 +1375,7 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 | T61 patch-kill | source·runtime plan/runner/workflow 완료 | 단위·무환경 fail-closed 완료 | Sybase/Tibero 2/5 pass, runtime high 3개 제거본 배포·실행 없음 |
 | T62 test-result binding·runner | 완료 | 완료 | local fail-closed `2 required pass·7 skip→block`, 실제 runtime run 없음 |
 | T63 UI typecheck baseline delta | 완료 | 10개 완료 | 실제 원본 396/후보 357, 신규 path/code 0·제거 39, verdict `approval` |
-| BANK-OM-009 공통 검색 타입 | 완료 | focused Jest 18/18·T63 10개 완료 | 원본 396→후보 357, 신규 path/code 0·제거 39, 원격 candidate run 대기 |
+| BANK-OM-009 공통 검색 타입 | 완료 | focused Jest 18/18·T63 10개 완료 | 원본 396→후보 357, 신규 path/code 0·제거 39, 원격 run 30216708258 성공 |
 | T71/T72 운영 정책 | 완료 | 완료 | 조직 승인자·CI 연동 필요 |
 | T80/T81 LLM memo | 완료 | 완료 | 실제 release memo 평가 데이터 없음 |
 | T90 upgrade-run contract | 완료 | 완료 | Docker/DB/search/ingestion 실행 없음 |
