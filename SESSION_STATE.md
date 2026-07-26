@@ -266,7 +266,7 @@ skip됐다.
 - **source-candidate CI**: `.github/workflows/source-candidate.yml` 추가. action과
   product commit을 SHA로 고정하고 mirror·통합 테스트·T25/T26/T60-I/T30/T31을
   자동 실행하고 source patch-kill 결과를 90일 artifact로 보존한다. 현재 exact
-  command의 clean local simulation은 306 pass·7 skip, source gate 5개,
+  command의 clean local simulation은 315 pass·7 skip, source gate 5개,
   source patch-kill 2개 pass. 확인 run `30212561441`은 297 pass·5 skip,
   source gate 5개·patch-kill 2개·artifact upload pass로 success. 증거 artifact
   ID `8634882239`, digest `sha256:d5afd822...a7bfa32f`, 만료
@@ -286,6 +286,10 @@ skip됐다.
   T60-I 9/9, source gate 5개·patch-kill 2개 pass다. artifact ID
   `8635517530`, digest `sha256:bbb2bddf...ca40a27`, 만료
   `2026-10-24T18:31:08Z`다.
+  T63 문서까지 포함한 run `30215596535`는 315 pass·7 skip,
+  T60-I 9/9, source gate 5개·patch-kill 2개 pass다. artifact ID
+  `8635710912`, digest `sha256:231137d0...4c110b`, 만료
+  `2026-10-24T18:50:55Z`다.
 - **현재 차단 조건**: 8개 owner 미배정, live API selector 4개와 browser 3개의
   candidate-bound T62 결과 없음, 제품 전체 Java build와 full UI
   suite/typecheck green, 실제 T90/T91/T94 증거 없음.

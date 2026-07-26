@@ -165,7 +165,7 @@ combined test suite, runs T25/T26/T60-I/T30/T31, and runs the two source-capable
 T61 negative controls. Patch-kill evidence is kept as a non-overwritable
 90-day artifact. The workflow's exact
 product fetch, test, and gate commands pass in a clean
-local simulation (`306 passed, 7 operational skips`; five source gates and two
+local simulation (`315 passed, 7 operational skips`; five source gates and two
 source patch-kill experiments pass).
 Historical remote
 run `30160752510` also passed. GitHub emitted a Node 20 action deprecation
@@ -208,6 +208,14 @@ source gates, T60-I 9/9, and both source patch-kill experiments passed.
 Artifact `source-patch-kill-evidence-30214885448-1` has ID `8635517530`,
 digest `sha256:bbb2bddf...ca40a27`, and expires
 `2026-10-24T18:31:08Z`.
+
+T63 and its documentation were verified remotely in
+[`30215596535`](https://github.com/easyseop/openmetadata-test/actions/runs/30215596535)
+at governance head `eb786ad`: `315 passed, 7 skipped in 15.00s`, all five
+source gates, T60-I 9/9, and both source patch-kill experiments passed.
+Artifact `source-patch-kill-evidence-30215596535-1` has ID `8635710912`,
+digest `sha256:231137d0...4c110b`, and expires
+`2026-10-24T18:50:55Z`.
 
 ## Important production blockers
 

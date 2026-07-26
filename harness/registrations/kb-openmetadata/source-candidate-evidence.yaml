@@ -113,7 +113,7 @@ product_verification:
     candidate_sha_locked: true
     local_simulation:
       verdict: pass
-      tests_passed: 306
+      tests_passed: 315
       tests_skipped_operational: 7
       source_gates_passed: 5
     prior_remote_run:
@@ -217,6 +217,22 @@ product_verification:
         digest: sha256:bbb2bddfeb184442f1ada105dd5a89d1c9dfc5fd734fc1aa39c730fd5ca40a27
         expires_at: "2026-10-24T18:31:08Z"
       url: https://github.com/easyseop/openmetadata-test/actions/runs/30214885448
+    t63_baseline_remote_run:
+      id: 30215596535
+      head_sha: eb786adbd76686434eb99f21505fa16f91d45fc0
+      conclusion: success
+      tests_passed: 315
+      tests_skipped_operational: 7
+      implemented_required_tests: 9
+      source_gates_passed: 5
+      source_patch_kill_experiments_passed: 2
+      source_patch_kill_result_digest: sha256:2becbd366029aca7d88f74d364478ff8b6aef77c3a958bf7b61be54a5255cbd8
+      evidence_artifact:
+        id: 8635710912
+        name: source-patch-kill-evidence-30215596535-1
+        digest: sha256:231137d0bd9bcc6c1ec2e73befb42e6eb02752ac3fe0b31e42b9a1490d4c110b
+        expires_at: "2026-10-24T18:50:55Z"
+      url: https://github.com/easyseop/openmetadata-test/actions/runs/30215596535
   environment:
     node: 22.17.0
     yarn: 1.22.22

@@ -1234,6 +1234,24 @@ typecheck pass가 아니다. 특히 같은 path와 같은 TS code에서 메시�
 message normalization까지 fingerprint에 넣을지, 혹은 396건을 전부 수정할지
 독립적으로 판단해야 한다.
 
+원격 source-candidate 재현:
+
+```text
+run                         30215596535
+governance head             eb786adbd76686434eb99f21505fa16f91d45fc0
+suite                       315 passed, 7 skipped in 15.00s
+source gates                5 pass
+T60-I                       9/9
+source patch-kill           2 pass
+patch-kill result digest    sha256:2becbd366029aca7d88f74d364478ff8b6aef77c3a958bf7b61be54a5255cbd8
+artifact ID                 8635710912
+artifact digest             sha256:231137d0bd9bcc6c1ec2e73befb42e6eb02752ac3fe0b31e42b9a1490d4c110b
+artifact expiry             2026-10-24T18:50:55Z
+```
+
+Run URL:
+`https://github.com/easyseop/openmetadata-test/actions/runs/30215596535`.
+
 ## 5. 테스트 결과
 
 전체 명령:
