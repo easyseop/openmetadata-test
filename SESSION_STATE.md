@@ -305,6 +305,13 @@ skip됐다.
 - **현재 차단 조건**: 9개 owner 미배정, live API selector 4개와 browser 3개의
   candidate-bound T62 결과 없음, 제품 전체 Java build와 full UI
   suite/typecheck green, 실제 T90/T91/T94 증거 없음.
+  T63 메시지 변형 5건의 full-log 기술 검토에서는 새 의미 회귀가 식별되지
+  않았지만, 지정 owner의 357건 기준선 승인 또는 수리가 아니므로 판정은
+  `approval`로 유지한다.
+  GitHub API 확인 시 governance·product 작업 브랜치는 모두
+  `protected: false`이고 열린 PR이 없다. required check·지정 리뷰·2인 승인을
+  저장소가 강제하지 않으므로 관리자가 보호 대상 통합 브랜치와 required
+  `Source candidate` check를 정해 설정하기 전에는 릴리스 통제로 간주하지 않는다.
 
 > **T93/T42 라벨 정정(중요)**: build_plan 정본에서 **T42 = upgrade_watch(업스트림
 > 변경 ∩ 감시 → 케이스 D)** = `upgrade_watch.py`+`impact.py`, **T93 = 정책 노후화

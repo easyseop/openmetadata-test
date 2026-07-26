@@ -33,5 +33,35 @@ comparison:
   removed_message_variants: 44
   upstream_message_fingerprint: sha256:bb893ff886aecb68e57062e289d306c276a5541aad9bf2b2b5a9d56e025b1f4f
   candidate_message_fingerprint: sha256:a1b4eb2c82ab5ec5ddad0f98556ac7e0414575db1c26b3d4f9f429b2b75c420f
+message_variant_review:
+  reviewed_at: "2026-07-27T05:00:08+09:00"
+  scope: technical classification only; this is not designated-owner baseline approval
+  conclusion: no new semantic regression was identified in the five same-path/code substitutions; the underlying non-zero diagnostics remain unresolved
+  variants:
+    - path: src/components/AppRouter/SettingsRouter.test.tsx
+      code: TS2551
+      location: "384:45"
+      classification: equivalent_type_rendering
+      finding: the rendered route-object elision count changed from 141 to 146; the missing NOTIFICATION_ALERTS key and NOTIFICATION_ALERT_LIST suggestion are unchanged
+    - path: src/components/DataContract/ContractSchemaFormTab/ContractScehmaFormTab.tsx
+      code: TS2322
+      location: "551:11"
+      classification: equivalent_union_ordering
+      finding: TypeScript reordered Field[] | Column[] as Column[] | Field[]; the readonly Column[] assignment failure is unchanged
+    - path: src/components/DataProducts/InputOutputPortsTab/PortsLineageView/PortNode.component.tsx
+      code: TS2322
+      location: "47:31"
+      classification: equivalent_type_rendering
+      finding: fields in the expanded union member were rendered in a different order; the LineageNodeType assignment failure is unchanged
+    - path: src/components/common/atoms/data/useDataFetching.tsx
+      code: TS2345
+      location: "103:21"
+      classification: expected_mapped_type_expansion
+      finding: the former Pick<..., never> union now renders concrete selected fields after the search mapping repair; the generic SetStateAction<T[]> assignment failure remains
+    - path: src/utils/Alerts/AlertsUtil.tsx
+      code: TS2339
+      location: "1106:32"
+      classification: expected_mapped_type_expansion
+      finding: the former Pick<..., never> union now renders concrete selected fields; the existing id-not-present-on-every-union-member failure remains
 interpretation: The candidate has no new path-and-error-code diagnostic and removes 39, while five changed message variants remain visible for human review; the non-zero baseline is still a release blocker until repaired or approved by the designated owner.
 limitation: Message substitutions are detected and fingerprinted, but they remain approval evidence rather than automatic pass or block because TypeScript can rewrite equivalent union details; the gate never emits pass for a non-zero baseline.

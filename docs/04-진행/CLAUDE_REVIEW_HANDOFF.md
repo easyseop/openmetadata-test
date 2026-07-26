@@ -1244,6 +1244,21 @@ targeted gate tests        10 passed
 축약으로 출력할 수 있으므로 메시지 변형은 자동 block이 아니라 approval
 검토 근거다. Claude는 다섯 변형이 모두 설명 가능한지 독립 검토해야 한다.
 
+2026-07-27 후속 기술 검토에서는 다섯 변형을 full log의 같은 위치와 대조했다.
+
+| 경로·코드 | 판별 | 근거 |
+|---|---|---|
+| `SettingsRouter.test.tsx` TS2551 | 동등한 출력 변화 | route object 생략 개수만 141→146, 누락 키·추천 키 동일 |
+| `ContractScehmaFormTab.tsx` TS2322 | 동등한 union 순서 | `Field[] \| Column[]` 순서만 반전, 할당 실패 동일 |
+| `PortNode.component.tsx` TS2322 | 동등한 출력 변화 | 확장 객체 필드 순서만 변화, `LineageNodeType` 실패 동일 |
+| `useDataFetching.tsx` TS2345 | 예상된 mapped-type 확장 | `Pick<..., never>`가 실제 필드로 확장, 기존 generic 할당 실패는 잔존 |
+| `AlertsUtil.tsx` TS2339 | 예상된 mapped-type 확장 | `Pick<..., never>`가 실제 필드로 확장, 모든 union member의 `id` 보장 실패는 잔존 |
+
+따라서 이 다섯 건에서 새 의미 회귀는 식별되지 않았다. 기계 판정은 의도대로
+`approval`을 유지한다. 이는 지정 owner의 357건 기준선 승인이나 전체 typecheck
+green을 대신하지 않는다. 기계 판독 가능한 상세는
+`ui-typecheck-baseline-evidence.yaml`의 `message_variant_review`에 고정했다.
+
 원격 source-candidate 재현:
 
 ```text
@@ -1382,6 +1397,14 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 | T91 release promotion | 완료 | 완료 | 실제 registry promotion 없음 |
 | T92 retirement | 완료 | 완료 | 실제 retire 대상 없음 |
 | T94 air-gap verification | 완료 | 완료 | 실제 bundle/key/signature 검증 없음 |
+
+GitHub API 기준 governance branch
+`claude/markdown-file-feedback-26933w`와 product branch
+`codex/bank-vendor-1.13.1-rebuild`는 모두 `protected: false`이고 열린 PR이 없다.
+따라서 현재 CI 성공은 재현 증거이지 GitHub가 우회를 차단하는 required check가
+아니다. 저장소 관리자는 보호할 통합 브랜치, `Source candidate` required check,
+지정 reviewer와 2인 승인 규칙을 정해야 한다. 이 외부 정책 변경은 자동 적용하지
+않았다.
 
 따라서 “게이트 엔진 구현 완료”와 “첫 production upgrade 검증 완료”를 같은 뜻으로
 읽으면 안 된다.

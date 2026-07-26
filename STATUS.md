@@ -94,6 +94,15 @@ T63 also fingerprints messages and reports five new and 44 removed message
 variants for review. It therefore returns **approval**, never pass, for this
 non-zero baseline.
 
+The five new message variants were independently classified against the full
+logs. Three are equivalent TypeScript rendering changes (object elision,
+union ordering, and expanded-member ordering); two replace the broken
+`Pick<..., never>` display with concrete mapped fields while preserving an
+existing error at the same path, code, and location. No new semantic
+regression was identified in that technical review. This does not approve the
+remaining 357 diagnostics: designated-owner baseline approval or repair is
+still required.
+
 ## Verification
 
 ```text
@@ -274,6 +283,12 @@ This is not yet evidence that the bank distribution is deployable:
    no new path/code diagnostic and 39 removals, plus five changed message
    variants for review. It still reports `approval`, not `pass`. The broad
    baseline must be repaired or approved after full-log review before release.
+8. GitHub reports both working branches as `protected: false`, and neither
+   branch currently has an open pull request. Therefore required checks,
+   designated review, and two-person approval are not enforced by repository
+   settings. A repository administrator must choose the protected integration
+   target and configure the source-candidate check and review policy before
+   this workflow can be treated as an enforced release control.
 
 Until those items are closed, the honest release state is **blocked**, not
 pass.

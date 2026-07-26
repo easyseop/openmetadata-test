@@ -129,4 +129,15 @@ def test_registered_node22_baseline_evidence_is_honest():
         "sha256:"
     )
     assert comparison["candidate_message_fingerprint"].startswith("sha256:")
+    review = evidence["message_variant_review"]
+    assert len(review["variants"]) == comparison["new_message_variants"]
+    assert {
+        item["classification"] for item in review["variants"]
+    } == {
+        "equivalent_type_rendering",
+        "equivalent_union_ordering",
+        "expected_mapped_type_expansion",
+    }
+    assert all(item["path"].startswith("src/") for item in review["variants"])
+    assert "not designated-owner baseline approval" in review["scope"]
     assert "never emits pass" in evidence["limitation"]
