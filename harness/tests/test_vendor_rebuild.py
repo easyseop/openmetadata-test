@@ -506,6 +506,21 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
         == "sha256:"
         "bb8b97516ea4b39ba5e14a866327ad18785f3b25ee4aeb02b6da3a2cb12cf109"
     )
+    hardening = product["source_candidate_ci"][
+        "candidate_hardening_remote_run"
+    ]
+    assert hardening["conclusion"] == "success"
+    assert hardening["head_sha"] == (
+        "9e95fd06015f97e3ce1b5129a5eb2c0d70b7eab3"
+    )
+    assert hardening["tests_passed"] == 306
+    assert hardening["tests_skipped_operational"] == 7
+    assert hardening["source_gates_passed"] == 5
+    assert hardening["source_patch_kill_experiments_passed"] == 2
+    assert hardening["evidence_artifact"]["digest"] == (
+        "sha256:"
+        "bbb2bddfeb184442f1ada105dd5a89d1c9dfc5fd734fc1aa39c730fd5ca40a27"
+    )
     assert product["prettier"]["verdict"] == V.PASS
     assert product["tibero_jest"]["verdict"] == V.PASS
     assert product["tibero_jest"]["tests"] > 0

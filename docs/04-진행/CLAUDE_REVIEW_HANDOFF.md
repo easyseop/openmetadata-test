@@ -1149,6 +1149,13 @@ T30 commit invariants            pass
 T31 ID invariants                pass
 ```
 
+원격 재검증 run
+[`30214885448`](https://github.com/easyseop/openmetadata-test/actions/runs/30214885448)
+도 `306 passed, 7 skipped`, source gate 5개, T60-I 9/9, source
+patch-kill 2개 pass로 성공했다. 증거 artifact는 ID `8635517530`,
+GitHub digest `sha256:bbb2bddf...ca40a27`, 만료
+`2026-10-24T18:31:08Z`다.
+
 로컬 작업 경로 주의:
 
 macOS Documents 아래 작업본이 저장 공간 최적화로 dataless placeholder가 되어

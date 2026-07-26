@@ -275,6 +275,10 @@ skip됐다.
   최신 확인 run `30213348947`은 297 pass·7 skip, T60-I 9/9, source gate
   5개·patch-kill 2개 pass이며 artifact ID `8635093639`, digest
   `sha256:2cd41e38...aaeee1b`, 만료 `2026-10-24T17:48:17Z`다.
+  `BANK-OM-008` 후보 재결속 run `30214885448`은 306 pass·7 skip,
+  T60-I 9/9, source gate 5개·patch-kill 2개 pass다. artifact ID
+  `8635517530`, digest `sha256:bbb2bddf...ca40a27`, 만료
+  `2026-10-24T18:31:08Z`다.
 - **현재 차단 조건**: 8개 owner 미배정, live API selector 4개와 browser 3개의
   candidate-bound T62 결과 없음, 제품 전체 Java build와 full UI
   suite/typecheck green, 실제 T90/T91/T94 증거 없음.

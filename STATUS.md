@@ -185,6 +185,14 @@ Node 24-uploaded artifact is `source-patch-kill-evidence-30212703620-1`, ID
 `8634920602`, digest `sha256:bb8b9751...b12cf109`, expiry
 `2026-10-24T17:30:09Z`.
 
+The rebound `BANK-OM-008` candidate was verified remotely in
+[`30214885448`](https://github.com/easyseop/openmetadata-test/actions/runs/30214885448)
+at governance head `9e95fd0`: `306 passed, 7 skipped in 13.76s`, all five
+source gates, T60-I 9/9, and both source patch-kill experiments passed.
+Artifact `source-patch-kill-evidence-30214885448-1` has ID `8635517530`,
+digest `sha256:bbb2bddf...ca40a27`, and expires
+`2026-10-24T18:31:08Z`.
+
 ## Important production blockers
 
 This is not yet evidence that the bank distribution is deployable:
