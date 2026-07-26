@@ -1,0 +1,102 @@
+from pathlib import Path
+
+import yaml
+
+from acgh import tsc_baseline as T
+from acgh import verdict as V
+
+
+def _line(path="src/a.ts", code="TS1000", message="broken"):
+    return f"{path}(1,2): error {code}: {message}\n"
+
+
+def test_clean_upstream_and_candidate_pass():
+    result = T.compare("", "", upstream_exit=0, candidate_exit=0)
+    assert result.verdict == V.PASS
+
+
+def test_identical_nonzero_baseline_requires_approval():
+    log = _line()
+    result = T.compare(log, log, upstream_exit=2, candidate_exit=2)
+    assert result.verdict == V.APPROVAL
+    assert "new_diagnostics=0" in result.reasons
+    assert result.reasons[-1].startswith("non-zero upstream baseline")
+
+
+def test_new_candidate_diagnostic_blocks():
+    result = T.compare(
+        _line(),
+        _line() + _line("src/b.ts", "TS2000"),
+        upstream_exit=2,
+        candidate_exit=2,
+    )
+    assert result.verdict == V.BLOCK
+    assert "new_diagnostics=1" in result.reasons
+    assert result.reasons[-1] == "first_new=src/b.ts|TS2000"
+
+
+def test_increased_multiplicity_blocks():
+    result = T.compare(
+        _line(),
+        _line() + _line(),
+        upstream_exit=2,
+        candidate_exit=2,
+    )
+    assert result.verdict == V.BLOCK
+    assert "new_diagnostics=1" in result.reasons
+
+
+def test_removed_diagnostic_still_requires_baseline_approval():
+    result = T.compare(
+        _line() + _line("src/b.ts", "TS2000"),
+        _line(),
+        upstream_exit=2,
+        candidate_exit=2,
+    )
+    assert result.verdict == V.APPROVAL
+    assert "removed_diagnostics=1" in result.reasons
+
+
+def test_exit_diagnostic_mismatch_is_analysis_error():
+    result = T.compare(_line(), _line(), upstream_exit=0, candidate_exit=2)
+    assert result.verdict == V.ANALYSIS_ERROR
+
+
+def test_malformed_or_unsafe_diagnostic_is_analysis_error():
+    malformed = "not-a-path(1,2): error TS1000:\n"
+    result = T.compare(malformed, _line(), upstream_exit=2, candidate_exit=2)
+    assert result.verdict == V.ANALYSIS_ERROR
+
+    unsafe = _line("../outside.ts")
+    result = T.compare(unsafe, _line(), upstream_exit=2, candidate_exit=2)
+    assert result.verdict == V.ANALYSIS_ERROR
+
+
+def test_untrusted_process_exit_is_analysis_error():
+    result = T.compare("", "", upstream_exit=137, candidate_exit=0)
+    assert result.verdict == V.ANALYSIS_ERROR
+
+
+def test_registered_node22_baseline_evidence_is_honest():
+    evidence = yaml.safe_load(
+        (
+            Path(__file__).parents[1]
+            / "registrations"
+            / "kb-openmetadata"
+            / "ui-typecheck-baseline-evidence.yaml"
+        ).read_text(encoding="utf-8")
+    )
+    comparison = evidence["comparison"]
+    assert evidence["upstream"]["sha"] == (
+        "afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9"
+    )
+    assert evidence["candidate"]["sha"] == (
+        "ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d"
+    )
+    assert comparison["verdict"] == V.APPROVAL
+    assert comparison["upstream_diagnostics"] == 396
+    assert comparison["candidate_diagnostics"] == 396
+    assert comparison["new_diagnostics"] == 0
+    assert comparison["removed_diagnostics"] == 0
+    assert comparison["path_code_multiset_fingerprint"].startswith("sha256:")
+    assert "never emits pass" in evidence["limitation"]

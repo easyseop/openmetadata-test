@@ -329,6 +329,15 @@ product_verification:
     candidate_introduced_error_lines_after_fix: 0
     remaining_error_lines_in_candidate_changed_files: 16
     remaining_changed_file_errors_match_upstream_source: true
+    baseline_gate: approval
+    upstream_error_lines: 396
+    candidate_error_lines: 396
+    new_diagnostics: 0
+    removed_diagnostics: 0
+    unique_files: 141
+    path_code_multiset_fingerprint: sha256:a4158616c8921cc299679553b58ba388493a3aaaf5994314cb1a16f78e342fe8
+    evidence: ui-typecheck-baseline-evidence.yaml
+    limitation: Same-path and same-code message substitution is not detected by this coarse fingerprint, so the non-zero baseline requires human approval or full repair and never produces pass.
   ui_core_build:
     command_exit: 0
     declaration_diagnostics: 2
@@ -341,7 +350,7 @@ limitations:
   - The Korean IME source guard passes separately; three required Playwright selectors skip without authenticated page URLs and storage state.
   - The T62 runtime workflow and fail-closed producer are implemented, and the workflow retains its evidence artifact for 90 days, but no real runtime run or organization-owned long-term archive exists yet.
   - The source candidate is not a release artifact; image/package build, SBOM, signing, and promotion gates remain.
-  - The focused Tibero Jest suite passes, but the product-wide Node 22 UI typecheck still fails with 396 upstream-identical or unrelated diagnostics; all three candidate-introduced diagnostics were removed, while Java and the full UI test suite remain unverified.
+  - The focused Tibero Jest suite passes, and an official-upstream comparison under the same Node 22 toolchain has the same 396-diagnostic path/code multiset as the candidate. The baseline gate therefore returns approval, not pass; same-path/same-code message substitution remains reviewable, while Java and the full UI test suite remain unverified.
   - The official Node 22.17.0 runtime now matches the product .nvmrc; the earlier Node 24 --ignore-engines workaround is no longer used for the recorded typecheck.
   - The Node 24 action-pin workflow passed remotely; four live runtime contracts remain skipped because no deployed OpenMetadata URL is attached to the source-only job.
   - The runtime patch-kill workflow is implemented, but no separately built and deployed predecessor artifact has been executed through it.
