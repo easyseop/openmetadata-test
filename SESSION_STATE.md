@@ -247,8 +247,11 @@ skip됐다.
   source gate 5개·patch-kill 2개·artifact upload pass로 success. 증거 artifact
   ID `8634882239`, digest `sha256:d5afd822...a7bfa32f`, 만료
   `2026-10-24T17:26:01Z`. 이 run에서 upload-artifact v4 Node 20 경고가 생겨
-  `8ec6e28`에서 공식 v7.0.1 고정 SHA(Node 24)로 전환했다. 이전 확인 run
-  `30162134698`은 293 pass·5 skip, source gate 5개 pass. 최초 remote run
+  `8ec6e28`에서 공식 v7.0.1 고정 SHA(Node 24)로 전환했다. 최종 확인 run
+  `30212703620`은 annotation 0, 297 pass·5 skip, source gate 5개·patch-kill
+  2개·Node 24 artifact upload pass. artifact ID `8634920602`, digest
+  `sha256:bb8b9751...b12cf109`, 만료 `2026-10-24T17:30:09Z`.
+  이전 확인 run `30162134698`은 293 pass·5 skip, source gate 5개 pass. 최초 remote run
   `30160752510`은 success. Node 20
   deprecation 때문에 checkout v5/setup-python v6 SHA로 올렸고 Node 24
   재검증 run `30160846880`도 annotation 없이 success.

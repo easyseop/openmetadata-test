@@ -484,6 +484,18 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
         == "sha256:"
         "d5afd822d8898e5ed94611f5220caa25ba152a211169f3c990ec73f8a7bfa32f"
     )
+    node24_validation = product["source_candidate_ci"][
+        "node24_artifact_validation_remote_run"
+    ]
+    assert node24_validation["conclusion"] == "success"
+    assert node24_validation["annotations"] == 0
+    assert node24_validation["tests_passed"] == 297
+    assert node24_validation["source_patch_kill_experiments_passed"] == 2
+    assert (
+        node24_validation["evidence_artifact"]["digest"]
+        == "sha256:"
+        "bb8b97516ea4b39ba5e14a866327ad18785f3b25ee4aeb02b6da3a2cb12cf109"
+    )
     assert product["prettier"]["verdict"] == V.PASS
     assert product["tibero_jest"]["verdict"] == V.PASS
     assert product["tibero_jest"]["tests"] > 0

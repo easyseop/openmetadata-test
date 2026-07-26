@@ -152,6 +152,13 @@ gates, both patch-kill experiments, and evidence upload passing. Artifact
 a Node 20 deprecation annotation from upload-artifact v4; commit `8ec6e28`
 upgrades both evidence workflows to pinned upload-artifact v7.0.1 commit
 `043fb46d...d1fc6a0a`, whose official action metadata uses Node 24.
+Validation run
+[`30212703620`](https://github.com/easyseop/openmetadata-test/actions/runs/30212703620)
+then passed at head `9326696` with zero annotations, `297 passed, 5 skipped in
+13.14s`, all five source gates and both patch-kill experiments passing. Its
+Node 24-uploaded artifact is `source-patch-kill-evidence-30212703620-1`, ID
+`8634920602`, digest `sha256:bb8b9751...b12cf109`, expiry
+`2026-10-24T17:30:09Z`.
 
 ## Important production blockers
 

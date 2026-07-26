@@ -161,6 +161,22 @@ product_verification:
         digest: sha256:d5afd822d8898e5ed94611f5220caa25ba152a211169f3c990ec73f8a7bfa32f
         expires_at: "2026-10-24T17:26:01Z"
       url: https://github.com/easyseop/openmetadata-test/actions/runs/30212561441
+    node24_artifact_validation_remote_run:
+      id: 30212703620
+      head_sha: 93266963478a0d4e67466b1b8751a356f9c32f55
+      conclusion: success
+      annotations: 0
+      tests_passed: 297
+      tests_skipped_operational: 5
+      source_gates_passed: 5
+      source_patch_kill_experiments_passed: 2
+      source_patch_kill_result_digest: sha256:c422b79a3bb803a01f866f51bfbb59a7665bb282b822bde68e12810f4c7c9c36
+      evidence_artifact:
+        id: 8634920602
+        name: source-patch-kill-evidence-30212703620-1
+        digest: sha256:bb8b97516ea4b39ba5e14a866327ad18785f3b25ee4aeb02b6da3a2cb12cf109
+        expires_at: "2026-10-24T17:30:09Z"
+      url: https://github.com/easyseop/openmetadata-test/actions/runs/30212703620
   environment:
     node: 24.15.0
     yarn: 1.22.22

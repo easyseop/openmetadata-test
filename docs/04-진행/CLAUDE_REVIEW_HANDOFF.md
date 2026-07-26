@@ -846,7 +846,8 @@ gh run list \
 `043fb46d1a93c77aae656e7c1c64a875d1fc6a0a`를 40-hex SHA로 고정했다.
 공식 `action.yml`의 runtime은 `node24`다. 최초 source patch-kill 원격 실행에서
 v4의 Node 20 deprecation annotation을 확인한 뒤 `8ec6e28`에서 두 workflow를
-함께 전환했다.
+함께 전환했다. 후속 run `30212703620`은 annotation 0으로 success여서 전환이
+실제 GitHub-hosted runner에서도 확인됐다.
 runtime 결과가 pass, block, approval, analysis_error 중 무엇이든
 `candidate-lock.yaml`, `test-run-set.yaml`, `acgh-result.yaml`을 업로드한다.
 
@@ -926,6 +927,14 @@ source patch-kill 2개 pass로 success였다. 보존된 artifact는
 `source-patch-kill-evidence-30212561441-1`, ID `8634882239`, GitHub digest
 `sha256:d5afd822d8898e5ed94611f5220caa25ba152a211169f3c990ec73f8a7bfa32f`,
 만료 시각 `2026-10-24T17:26:01Z`다.
+
+Node 24 action 전환 후 최종 확인
+[`30212703620`](https://github.com/easyseop/openmetadata-test/actions/runs/30212703620)은
+head `9326696`에서 annotation 0, `297 passed, 5 skipped in 13.14s`, source
+gate 5개와 patch-kill 2개 pass로 success였다. 최신 artifact는
+`source-patch-kill-evidence-30212703620-1`, ID `8634920602`, digest
+`sha256:bb8b97516ea4b39ba5e14a866327ad18785f3b25ee4aeb02b6da3a2cb12cf109`,
+만료 `2026-10-24T17:30:09Z`다.
 
 이 결과는 high/critical T61 전체 pass가 아니다. `BANK-OM-001` InstanceCode,
 `BANK-OM-002` QueryReport, `BANK-OM-003` Data Assertions는 코드 predecessor만
