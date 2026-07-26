@@ -415,6 +415,7 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
         not in {
             "t25_r_vendor_reconstructed_candidate",
             "t60_i_required_test_implementations",
+            "t61_source_patch_kill",
         }
     )
     assert (
@@ -423,6 +424,15 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
         ]
         == 7
     )
+    patch_kill = gates["t61_source_patch_kill"]
+    assert patch_kill["verdict"] == V.PASS
+    assert patch_kill["scope"] == "source-capable-high-critical"
+    assert patch_kill["proven"] == ["BANK-OM-006", "BANK-OM-007"]
+    assert patch_kill["pending_runtime"] == [
+        "BANK-OM-001",
+        "BANK-OM-002",
+        "BANK-OM-003",
+    ]
     assert all(
         gate["verdict"] == V.PASS
         for gate in gates.values()

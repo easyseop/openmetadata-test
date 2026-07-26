@@ -1,0 +1,42 @@
+canonical_payload:
+  gates:
+  - name: source-patch-kill:BANK-OM-006
+    reasons:
+    - 'proven: required test failed without the patch'
+    verdict: pass
+  - name: source-patch-kill:BANK-OM-007
+    reasons:
+    - 'proven: required test failed without the patch'
+    verdict: pass
+  harness_version: a2cbb5221f50c10d11af26618d1d310ec8a73552
+  inputs:
+    experiments:
+    - customization_id: BANK-OM-006
+      method: predecessor-source-negative-control
+      required_test: tests/bank/contracts/test_sybase.py::test_connection_schema_roundtrip
+      without_patch_sha: 6e5b654f84ec6441e8affcef90c79f83c9a4d986
+    - customization_id: BANK-OM-007
+      method: predecessor-source-negative-control
+      required_test: tests/bank/contracts/test_tibero.py::test_connection_schema_roundtrip
+      without_patch_sha: 41b224adbd7e1906a96d99657693e439e3d8716b
+    patch_kill_plan_digest: sha256:64cf182eb8871278da2a44dc42780a98a11542ee9f81e8a79475092748b31c38
+    pending_high_critical_ids:
+    - BANK-OM-001
+    - BANK-OM-002
+    - BANK-OM-003
+    repositories:
+      candidate:
+        repository: easyseop/OpenMetadata
+        sha: 38bccf90779a8afe4a4f0e9313e11706f6d940d4
+      governance:
+        repository: easyseop/openmetadata-test
+        sha: a2cbb5221f50c10d11af26618d1d310ec8a73552
+    scope: source-capable-high-critical
+  verdict: pass
+expected_exit_code: 0
+observational_metadata:
+  pending_runtime_experiments: 3
+  run_id: local-a2cbb52
+  source_experiments: 2
+result_digest: sha256:b7a92eb47f1372c8d03c8d5336820abf0df47457178121a3d9509a4f9570aa2b
+schema_version: 1

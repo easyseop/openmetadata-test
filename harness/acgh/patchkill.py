@@ -8,7 +8,9 @@ that does NOT contain the patch and require a failure.
 - test passes without the patch -> SHELL (it asserts nothing about the patch;
   a green "껍데기" that would keep passing even if the customization vanished)
   -> block.
-- test cannot be run (missing binary, timeout) -> INCONCLUSIVE -> analysis_error.
+- required test skips/errors -> INCONCLUSIVE -> analysis_error.
+- harness cannot run (missing binary, timeout, internal exit) -> INFRA_ERROR
+  -> analysis_error.
 
 The caller supplies the without-patch ref (e.g. base upstream, or the candidate
 with this one ID's commits removed via clean-room replay). This mechanism is
@@ -36,12 +38,14 @@ from acgh import verdict
 PROVEN = "proven"
 SHELL = "shell_test"
 INCONCLUSIVE = "inconclusive"
+INFRA_ERROR = "infra_error"
 _SCHEMA_PATH = Path(__file__).parent / "schema" / "patch-kill-plan.schema.json"
 
 _VERDICT = {
     PROVEN: verdict.PASS,
     SHELL: verdict.BLOCK,
     INCONCLUSIVE: verdict.ANALYSIS_ERROR,
+    INFRA_ERROR: verdict.ANALYSIS_ERROR,
 }
 
 
@@ -134,15 +138,15 @@ def patch_kill(
                 env={**os.environ, **(environment or {})},
             )
         except subprocess.TimeoutExpired:
-            return PatchKillResult(INCONCLUSIVE, f"test timed out after {timeout}s")
+            return PatchKillResult(INFRA_ERROR, f"test timed out after {timeout}s")
         except OSError as e:
-            return PatchKillResult(INCONCLUSIVE, f"test could not be executed: {e}")
+            return PatchKillResult(INFRA_ERROR, f"test could not be executed: {e}")
 
         if proc.returncode == 1:
             return PatchKillResult(PROVEN, f"test failed without patch (rc={proc.returncode})")
         if proc.returncode != 0:
             return PatchKillResult(
-                INCONCLUSIVE,
+                INFRA_ERROR,
                 f"test harness exited unexpectedly (rc={proc.returncode})",
             )
         return PatchKillResult(
@@ -187,7 +191,7 @@ def patch_kill_pytest(
             )
         except pytest_runs.PytestRunError as exc:
             return PatchKillResult(
-                INCONCLUSIVE, f"pytest evidence is not trustworthy: {exc}"
+                INFRA_ERROR, f"pytest evidence is not trustworthy: {exc}"
             )
         if outcome == "fail":
             return PatchKillResult(

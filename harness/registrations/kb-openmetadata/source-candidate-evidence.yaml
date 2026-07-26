@@ -1,6 +1,6 @@
 schema_version: 1
 generated_at: "2026-07-27T02:07:44+09:00"
-governance_evidence_commit: 502f42f77734ec4f894aa79360c22e0f67dc1b19
+governance_evidence_commit: a2cbb5221f50c10d11af26618d1d310ec8a73552
 repository: easyseop/OpenMetadata
 branch: codex/bank-vendor-1.13.1-rebuild
 upstream:
@@ -79,6 +79,19 @@ gates:
   t60_i_required_test_implementations:
     verdict: pass
     implemented_required_tests: 7
+  t61_source_patch_kill:
+    verdict: pass
+    scope: source-capable-high-critical
+    implementation_commit: a2cbb5221f50c10d11af26618d1d310ec8a73552
+    evidence: source-patch-kill-evidence.yaml
+    proven:
+      - BANK-OM-006
+      - BANK-OM-007
+    pending_runtime:
+      - BANK-OM-001
+      - BANK-OM-002
+      - BANK-OM-003
+    note: This scoped pass does not mean the complete high-critical T61 gate has passed.
   t30_commit_invariants:
     verdict: pass
     candidate: 38bccf90779a8afe4a4f0e9313e11706f6d940d4

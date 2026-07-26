@@ -8,6 +8,7 @@ import yaml
 
 from acgh import gitprim as G
 from acgh import patchkill as PK
+from acgh import result_io as RIO
 from acgh import verdict as V
 
 
@@ -56,19 +57,19 @@ def test_shell_test_blocks(repo, tmp_path):
     assert r.verdict() == V.BLOCK
 
 
-def test_unrunnable_test_is_inconclusive(repo, tmp_path):
+def test_unrunnable_test_is_infrastructure_error(repo, tmp_path):
     r = PK.patch_kill(str(repo), "main", ["__no_such_binary_xyz__"],
                       str(tmp_path / "wt"))
-    assert r.status == PK.INCONCLUSIVE
+    assert r.status == PK.INFRA_ERROR
     assert r.verdict() == V.ANALYSIS_ERROR
 
 
-def test_unexpected_harness_exit_is_inconclusive(repo, tmp_path):
+def test_unexpected_harness_exit_is_infrastructure_error(repo, tmp_path):
     internal_error = [sys.executable, "-c", "import sys; sys.exit(3)"]
     r = PK.patch_kill(
         str(repo), "main", internal_error, str(tmp_path / "wt")
     )
-    assert r.status == PK.INCONCLUSIVE
+    assert r.status == PK.INFRA_ERROR
     assert r.verdict() == V.ANALYSIS_ERROR
 
 
@@ -83,7 +84,10 @@ def test_pytest_negative_control_requires_an_assertion_failure(
         "from pathlib import Path\n\n"
         "def test_patch_marker():\n"
         "    root = Path(os.environ['OPENMETADATA_PRODUCT_REPO'])\n"
-        f"    assert 'BANK-OM-001' in (root / {om_auth_path!r}).read_text()\n",
+        f"    assert 'BANK-OM-001' in (root / {om_auth_path!r}).read_text()\n\n"
+        "def test_environment_missing():\n"
+        "    import pytest\n"
+        "    pytest.skip('counterfactual runtime is unavailable')\n",
         encoding="utf-8",
     )
     result = PK.patch_kill_pytest(
@@ -95,6 +99,15 @@ def test_pytest_negative_control_requires_an_assertion_failure(
     )
     assert result.status == PK.PROVEN
     assert result.verdict() == V.PASS
+    skipped = PK.patch_kill_pytest(
+        str(repo),
+        "main",
+        suite,
+        "test_negative.py::test_environment_missing",
+        str(tmp_path / "wt-skipped"),
+    )
+    assert skipped.status == PK.INCONCLUSIVE
+    assert skipped.verdict() == V.ANALYSIS_ERROR
 
 
 def test_patch_kill_plan_rejects_duplicate_scope_classification():
@@ -115,6 +128,35 @@ def test_patch_kill_plan_rejects_duplicate_scope_classification():
     )
     with pytest.raises(PK.PatchKillPlanError, match="unique"):
         PK.parse_plan(duplicate)
+
+
+def test_registered_source_patch_kill_evidence_is_self_consistent():
+    registration = (
+        Path(__file__).parents[1] / "registrations" / "kb-openmetadata"
+    )
+    evidence_path = registration / "source-patch-kill-evidence.yaml"
+    evidence = yaml.safe_load(evidence_path.read_text(encoding="utf-8"))
+    plan = PK.load_plan(registration / "patch-kill-plan.yaml")
+    payload = evidence["canonical_payload"]
+
+    assert payload["inputs"]["patch_kill_plan_digest"] == PK.plan_digest(plan)
+    assert payload["inputs"]["pending_high_critical_ids"] == [
+        "BANK-OM-001",
+        "BANK-OM-002",
+        "BANK-OM-003",
+    ]
+    assert [gate["verdict"] for gate in payload["gates"]] == [
+        V.PASS,
+        V.PASS,
+    ]
+    decision = RIO.interpret_result(
+        evidence_path,
+        actual_exit=0,
+        expected_inputs=payload["inputs"],
+        harness_version=payload["harness_version"],
+    )
+    assert decision.verdict == V.PASS
+    assert decision.synthetic is False
 
 
 def test_worktree_cleaned_after_run(repo, tmp_path):
