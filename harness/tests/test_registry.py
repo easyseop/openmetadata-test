@@ -31,12 +31,16 @@ def _load_all():
     }
 
 
-def test_seven_real_customizations_form_closed_registry():
+def test_eight_real_customizations_form_closed_registry():
     reg, catalog, manifests = _load_all()
     assert reg.active_ids() == tuple(
-        f"BANK-OM-{number:03d}" for number in range(1, 8)
+        f"BANK-OM-{number:03d}" for number in range(1, 9)
     )
     assert len(catalog.ids()) == 7
+    assert reg.source_snapshot_ids() == tuple(
+        f"BANK-OM-{number:03d}" for number in range(1, 8)
+    )
+    assert reg.by_id()["BANK-OM-008"].provenance == "candidate-follow-up"
     registry.validate_references(reg, manifests, catalog)
 
 
@@ -100,4 +104,4 @@ def test_real_snapshot_readiness_is_honestly_blocked():
     assert "does not preserve upstream ancestry" in result.reasons[0]
     assert any(".claude/settings.json" in reason for reason in result.reasons)
     assert any("docker/development/docker-compose.yml" in reason for reason in result.reasons)
-    assert sum("owner is not assigned" in reason for reason in result.reasons) == 7
+    assert sum("owner is not assigned" in reason for reason in result.reasons) == 8

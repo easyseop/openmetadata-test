@@ -30,7 +30,7 @@ permissions:
 env:
   PRODUCT_REPOSITORY: easyseop/OpenMetadata
   PRODUCT_BRANCH: codex/bank-vendor-1.13.1-rebuild
-  PRODUCT_SHA: 38bccf90779a8afe4a4f0e9313e11706f6d940d4
+  PRODUCT_SHA: ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d
 
 jobs:
   contracts:

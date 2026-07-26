@@ -22,7 +22,7 @@ def test_workflow_is_manual_read_only_and_separately_approved():
     assert workflow["concurrency"]["cancel-in-progress"] == "false"
     assert (
         workflow["env"]["PRODUCT_SHA"]
-        == "38bccf90779a8afe4a4f0e9313e11706f6d940d4"
+        == "ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d"
     )
     job = workflow["jobs"]["negative-control"]
     assert job["environment"] == "openmetadata-runtime-patch-kill"

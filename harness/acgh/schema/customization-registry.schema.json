@@ -95,6 +95,10 @@
               "pattern": "^CONTRACT-[A-Z0-9-]+$"
             },
             "uniqueItems": true
+          },
+          "provenance": {
+            "enum": ["source-snapshot", "candidate-follow-up"],
+            "default": "source-snapshot"
           }
         }
       }

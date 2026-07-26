@@ -103,7 +103,7 @@ def build_reconstruction_plan(
             f"changed_path_count {expected_count}"
         )
 
-    active_ids = tuple(sorted(registry.active_ids()))
+    active_ids = tuple(sorted(registry.source_snapshot_ids()))
     registered_ids = set(registry.by_id())
     missing = sorted(set(active_ids) - set(manifests_by_id))
     extra = sorted(set(manifests_by_id) - registered_ids)

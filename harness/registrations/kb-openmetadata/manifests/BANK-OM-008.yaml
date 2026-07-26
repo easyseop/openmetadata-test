@@ -1,0 +1,22 @@
+schema_version: 1
+customization_id: BANK-OM-008
+status: active
+kind: core-patch
+title: 은행 탐색 UI 타입 정합성
+implementation:
+  allowed_changed_paths:
+    - openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+    - openmetadata-ui/src/main/resources/ui/src/components/Explore/ExplorePage.interface.ts
+  required_changed_paths:
+    - openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+    - openmetadata-ui/src/main/resources/ui/src/components/Explore/ExplorePage.interface.ts
+upgrade_watch:
+  paths:
+    - openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+    - openmetadata-ui/src/main/resources/ui/src/components/Explore/ExplorePage.interface.ts
+assurance:
+  contracts: [CONTRACT-INSTANCE-CODE, CONTRACT-QUERY-REPORT]
+  direct_tests: []
+series:
+  allowed: false
+  depends_on: [BANK-OM-001, BANK-OM-002]

@@ -81,3 +81,12 @@ entries:
     criticality: high
     manifest: manifests/BANK-OM-007.yaml
     contracts: [CONTRACT-TIBERO-CONNECTOR]
+  - customization_id: BANK-OM-008
+    title: 은행 탐색 UI 타입 정합성
+    owner: UNASSIGNED
+    owner_status: pending
+    status: active
+    criticality: medium
+    manifest: manifests/BANK-OM-008.yaml
+    contracts: [CONTRACT-INSTANCE-CODE, CONTRACT-QUERY-REPORT]
+    provenance: candidate-follow-up

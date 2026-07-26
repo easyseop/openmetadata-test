@@ -29,6 +29,7 @@ class RegistryEntry:
     criticality: str
     manifest: str
     contracts: tuple[str, ...]
+    provenance: str = "source-snapshot"
 
 
 @dataclass(frozen=True)
@@ -41,6 +42,19 @@ class Registry:
             entry.customization_id
             for entry in self.entries
             if entry.status == "active"
+        )
+
+    def source_snapshot_ids(self) -> tuple[str, ...]:
+        """Active IDs imported from the pinned source snapshot.
+
+        Candidate hardening can introduce a separately registered follow-up
+        without pretending that it existed in the original root snapshot.
+        """
+        return tuple(
+            entry.customization_id
+            for entry in self.entries
+            if entry.status == "active"
+            and entry.provenance == "source-snapshot"
         )
 
     def by_id(self) -> dict[str, RegistryEntry]:
@@ -80,6 +94,7 @@ def parse_registry(data: dict) -> Registry:
             criticality=item["criticality"],
             manifest=item["manifest"],
             contracts=tuple(item["contracts"]),
+            provenance=item.get("provenance", "source-snapshot"),
         )
         for item in data["entries"]
     )
