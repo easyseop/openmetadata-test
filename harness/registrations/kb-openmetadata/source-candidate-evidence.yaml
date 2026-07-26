@@ -255,9 +255,9 @@ product_verification:
       passed: 2
       skipped: 7
       verdict: block
-      harness_version: 093724faa499458eb4723511914a1376138ef014
-      suite_version: sha256:7fceb9d7d6c7016f0245c59dc62c75dff4cebdc1bd6686fe09224315b7dd9df1
-      test_run_set_digest: sha256:96dfec4b4475e543edd84bb4d99def685697e6fdf1470de71cf1c3e993d5b196
+      harness_version: 025aa1e8c42eb84c5a67d5a5bc07ce057cbcc661
+      suite_version: sha256:a17125422c654af08ddbc340e2c41c508b1ab869f10394b577ee685e214cb959
+      test_run_set_digest: sha256:6c5991093ff2c02560032308577299b004714056b4faeae9727bdf73cbb3730c
       exit_result_consistent: true
       false_exit_verdict: analysis_error
     operational_run_executed: false

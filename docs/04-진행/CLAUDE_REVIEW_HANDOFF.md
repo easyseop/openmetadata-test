@@ -816,11 +816,11 @@ script에 직접 보간하지 않고 environment를 통해 전달한다.
 로컬 fail-closed 통합 시뮬레이션:
 
 ```text
-candidate_sha       38bccf90779a8afe4a4f0e9313e11706f6d940d4
-harness_version     b29d0ceea3b8b95423242847b0c172415f420411
-suite_version       sha256:9d3c61d9b0865365ec00de2292a06d9b5bdb84281ba8a1dad1ea3efc7879185e
-test_run_set_digest sha256:f693973112bf28818f8ac72c5f7a0b6d554f1eef36090dafa1b533706d3aa8d7
-outcomes            2 pass, 5 skipped
+candidate_sha       ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d
+harness_version     025aa1e8c42eb84c5a67d5a5bc07ce057cbcc661
+suite_version       sha256:a17125422c654af08ddbc340e2c41c508b1ab869f10394b577ee685e214cb959
+test_run_set_digest sha256:6c5991093ff2c02560032308577299b004714056b4faeae9727bdf73cbb3730c
+outcomes            2 pass, 7 skipped
 verdict              block
 actual exit 1        result와 consistent
 위조 actual exit 0   analysis_error
