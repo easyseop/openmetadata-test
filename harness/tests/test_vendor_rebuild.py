@@ -567,12 +567,16 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
     )
     assert product["ui_typecheck"]["error_lines_after_alert_id_hardening"] == 356
     assert (
+        product["ui_typecheck"]["error_lines_after_listing_transform_contract"]
+        == 355
+    )
+    assert (
         product["ui_typecheck"]["candidate_introduced_error_lines_after_fix"]
         == 0
     )
     assert (
         product["ui_typecheck"]["remaining_error_lines_in_candidate_changed_files"]
-        == 16
+        == 12
     )
     assert (
         product["ui_typecheck"][

@@ -1,6 +1,6 @@
 schema_version: 1
-generated_at: "2026-07-27T05:30:08+09:00"
-governance_evidence_commit: d70fe810b65f44b20e79dca7bcdb697f806d99f7
+generated_at: "2026-07-27T06:30:09+09:00"
+governance_evidence_commit: b1d3fa6d00b75c96d837587ea0730f3d6d9e5323
 repository: easyseop/OpenMetadata
 branch: codex/bank-vendor-1.13.1-rebuild
 upstream:
@@ -11,10 +11,10 @@ source_snapshot:
   repository: kangdkdk/kb_openmetadata
   sha: 2c2347043235aa2a4ecba4729774c770fcee5d67
 candidate:
-  commit_sha: b80d24d83124435733d5af05d56515b3a855330e
-  tree_sha: 5925b80951bbbb033261a66e8b6b4931b57db0fe
-  source_tree_digest: sha256:3ca82deffaf856012ffbb41530870f331e5164e5df11c2c1263a8a13a5c91834
-  candidate_lock_digest: sha256:3a176aed3c0f5696e57f43d2c9fab7bdd220e45cd683454c31970a6278554c57
+  commit_sha: 849ae756cd238f218b5e3a6c795a392305cb32ee
+  tree_sha: 22f92a8e0fd2855949e7f115f32c3b9d44c681f6
+  source_tree_digest: sha256:830cf970f38a93a701743420ec710cda55cd1aa5d9a45f03f7eb7221d9f5b643
+  candidate_lock_digest: sha256:61a3f02d3f22420d36e6c035aa7afab050d0faf34d29b5f369af01553fb00156
   note: source_tree_digest binds the Git tree identity; no binary or image release artifact has been built yet
 reconstruction:
   checkpoint_sha: e1ffc5a1eb270c3225736544bb309a0c85af6d2c
@@ -74,6 +74,11 @@ reconstruction:
       touched_paths: 2
       title: harden alert entity id suggestions
       reason: preserve source id preference while falling back to the guaranteed Elasticsearch hit id when a search-source union member omits id
+    - customization_id: BANK-OM-011
+      sha: 849ae756cd238f218b5e3a6c795a392305cb32ee
+      touched_paths: 6
+      title: type generic listing search transforms
+      reason: require index-specific transforms so generic listing hooks never assign a search-source union to an unrelated entity type
 gates:
   t25_r_vendor_reconstructed_candidate:
     verdict: pass
@@ -82,15 +87,15 @@ gates:
     excluded_paths: 2
   t25_vendor_ancestry:
     verdict: pass
-    candidate: b80d24d83124435733d5af05d56515b3a855330e
+    candidate: 849ae756cd238f218b5e3a6c795a392305cb32ee
     approved_target: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
   t26_customization_survival:
     verdict: pass
-    candidate: b80d24d83124435733d5af05d56515b3a855330e
-    active_ids: 10
-    required_paths: 16
-    contracts: 13
-    effective_test_ids: 15
+    candidate: 849ae756cd238f218b5e3a6c795a392305cb32ee
+    active_ids: 11
+    required_paths: 22
+    contracts: 15
+    effective_test_ids: 17
   t60_i_required_test_implementations:
     verdict: pass
     implemented_required_tests: 9
@@ -99,7 +104,7 @@ gates:
     scope: source-capable-high-critical
     implementation_commit: a2cbb5221f50c10d11af26618d1d310ec8a73552
     infra_error_follow_up_commit: 7a2fb5f12af758805cc21abaabb4cb29f1f82dcb
-    candidate_rebind_commit: d70fe810b65f44b20e79dca7bcdb697f806d99f7
+    candidate_rebind_commit: b1d3fa6d00b75c96d837587ea0730f3d6d9e5323
     evidence: source-patch-kill-evidence.yaml
     proven:
       - BANK-OM-006
@@ -111,10 +116,10 @@ gates:
     note: This scoped pass does not mean the complete high-critical T61 gate has passed.
   t30_commit_invariants:
     verdict: pass
-    candidate: b80d24d83124435733d5af05d56515b3a855330e
+    candidate: 849ae756cd238f218b5e3a6c795a392305cb32ee
   t31_id_invariants:
     verdict: pass
-    candidate: b80d24d83124435733d5af05d56515b3a855330e
+    candidate: 849ae756cd238f218b5e3a6c795a392305cb32ee
 product_verification:
   source_candidate_ci:
     workflow: .github/workflows/source-candidate.yml
@@ -327,13 +332,13 @@ product_verification:
     local_no_runtime_simulation:
       simulation_only: true
       artifact_note: source tree identity used only to exercise the runner; this is not deployed artifact evidence
-      candidate_sha: b80d24d83124435733d5af05d56515b3a855330e
+      candidate_sha: 849ae756cd238f218b5e3a6c795a392305cb32ee
       passed: 2
       skipped: 7
       verdict: block
-      harness_version: d70fe810b65f44b20e79dca7bcdb697f806d99f7
-      suite_version: sha256:6cd7b8bab3e1f64de3e2b34a9e4df8698ee2d89e45162696c7f0b4c5e64761a0
-      test_run_set_digest: sha256:b16390320a845ff6e59cddc00d142fe2e03e8626098c0caa7908b8c9584b21f9
+      harness_version: b1d3fa6d00b75c96d837587ea0730f3d6d9e5323
+      suite_version: sha256:fa1cc4a7c31bc780157879dff2d0ee176cbfe0cc625a7c1dfacd7073522e1f7b
+      test_run_set_digest: sha256:75281dfccab465827c546448dbb2ec08d150fc1c5b6d46da88317e125ab4b3a6
       exit_result_consistent: true
       false_exit_verdict: analysis_error
     operational_run_executed: false
@@ -387,22 +392,23 @@ product_verification:
     error_lines_after_candidate_fix: 396
     error_lines_after_search_type_hardening: 357
     error_lines_after_alert_id_hardening: 356
+    error_lines_after_listing_transform_contract: 355
     candidate_introduced_error_lines_after_fix: 0
-    remaining_error_lines_in_candidate_changed_files: 16
+    remaining_error_lines_in_candidate_changed_files: 12
     remaining_changed_file_errors_match_upstream_source: true
     baseline_gate: approval
     upstream_error_lines: 396
-    candidate_error_lines: 356
+    candidate_error_lines: 355
     new_diagnostics: 0
-    removed_diagnostics: 40
+    removed_diagnostics: 41
     upstream_unique_files: 141
-    candidate_unique_files: 135
+    candidate_unique_files: 133
     upstream_path_code_multiset_fingerprint: sha256:a4158616c8921cc299679553b58ba388493a3aaaf5994314cb1a16f78e342fe8
-    candidate_path_code_multiset_fingerprint: sha256:802e292be5a563ffc9875dc8e74336c82fdb7d1c2c65645f5762bf11db2ebc88
-    new_message_variants: 4
-    removed_message_variants: 44
+    candidate_path_code_multiset_fingerprint: sha256:887df7115c667ba66350efb3d9f30b0535ef10c5d16c70d7effb24adf63627f2
+    new_message_variants: 2
+    removed_message_variants: 43
     upstream_message_fingerprint: sha256:bb893ff886aecb68e57062e289d306c276a5541aad9bf2b2b5a9d56e025b1f4f
-    candidate_message_fingerprint: sha256:a3451d13e8de7f502f6f258f0b6b88db8547b0ef44550d8750170534ed5191d8
+    candidate_message_fingerprint: sha256:b14b6e6ea80de49241107ce5eab184063afbc4733a10cf00fe83c4cb0686a1f0
     evidence: ui-typecheck-baseline-evidence.yaml
     limitation: Message substitutions are detected and fingerprinted but require human review because equivalent TypeScript union details can be rewritten; the non-zero baseline requires approval or full repair and never produces pass.
   ui_core_build:
@@ -417,7 +423,7 @@ limitations:
   - The Korean IME source guard passes separately; three required Playwright selectors skip without authenticated page URLs and storage state.
   - The T62 runtime workflow and fail-closed producer are implemented, and the workflow retains its evidence artifact for 90 days, but no real runtime run or organization-owned long-term archive exists yet.
   - The source candidate is not a release artifact; image/package build, SBOM, signing, and promotion gates remain.
-  - The focused Tibero, Curated Assets, and AlertsUtil Jest suites pass. Under the same Node 22 toolchain, official upstream has 396 diagnostics and candidate 356, with no new path/code diagnostic and 40 removed. The baseline gate reports four changed message variants and therefore returns approval, not pass; Java and the full UI test suite remain unverified.
+  - The focused Tibero, Curated Assets, AlertsUtil, data-fetching, and listing Jest suites pass. Under the same Node 22 toolchain, official upstream has 396 diagnostics and candidate 355, with no new path/code diagnostic and 41 removed. The baseline gate reports two changed message variants and therefore returns approval, not pass; Java and the full UI test suite remain unverified.
   - The official Node 22.17.0 runtime now matches the product .nvmrc; the earlier Node 24 --ignore-engines workaround is no longer used for the recorded typecheck.
   - The Node 24 action-pin workflow passed remotely; four live runtime contracts remain skipped because no deployed OpenMetadata URL is attached to the source-only job.
   - The runtime patch-kill workflow is implemented, but no separately built and deployed predecessor artifact has been executed through it.
