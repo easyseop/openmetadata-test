@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -40,6 +41,11 @@ SHELL = "shell_test"
 INCONCLUSIVE = "inconclusive"
 INFRA_ERROR = "infra_error"
 _SCHEMA_PATH = Path(__file__).parent / "schema" / "patch-kill-plan.schema.json"
+_RUNTIME_SCHEMA_PATH = (
+    Path(__file__).parent / "schema" / "runtime-patch-kill-plan.schema.json"
+)
+_FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
+_DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
 
 _VERDICT = {
     PROVEN: verdict.PASS,
@@ -65,8 +71,10 @@ class PatchKillResult:
         return verdict.GateResult(name, self.verdict(), (f"{self.status}: {self.detail}",))
 
 
-def _schema_validator() -> jsonschema.protocols.Validator:
-    schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
+def _schema_validator(
+    path: Path = _SCHEMA_PATH,
+) -> jsonschema.protocols.Validator:
+    schema = json.loads(path.read_text(encoding="utf-8"))
     cls = jsonschema.validators.validator_for(schema)
     cls.check_schema(schema)
     return cls(schema)
@@ -113,6 +121,180 @@ def load_plan(path) -> dict:
 def plan_digest(plan: dict) -> str:
     parse_plan(plan)
     return verdict.canonical_digest(plan)
+
+
+def parse_runtime_plan(data: dict) -> dict:
+    """Validate the deployed-counterfactual plan and its unique bindings."""
+    if not isinstance(data, dict):
+        raise PatchKillPlanError("runtime patch-kill plan is not a mapping")
+    errors = sorted(
+        _schema_validator(_RUNTIME_SCHEMA_PATH).iter_errors(data),
+        key=lambda error: (list(error.absolute_path), error.message),
+    )
+    if errors:
+        loc = lambda error: (
+            "/".join(str(part) for part in error.absolute_path) or "<root>"
+        )
+        raise PatchKillPlanError(
+            "runtime schema: "
+            + "; ".join(f"{loc(error)}: {error.message}" for error in errors)
+        )
+    ids = [item["customization_id"] for item in data["experiments"]]
+    if len(ids) != len(set(ids)):
+        raise PatchKillPlanError(
+            "runtime experiment customization IDs must be unique"
+        )
+    selectors = [item["required_test"] for item in data["experiments"]]
+    if len(selectors) != len(set(selectors)):
+        raise PatchKillPlanError(
+            "each runtime experiment must use a distinct required test"
+        )
+    return data
+
+
+def load_runtime_plan(path) -> dict:
+    return parse_runtime_plan(
+        yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+    )
+
+
+def runtime_plan_digest(plan: dict) -> str:
+    parse_runtime_plan(plan)
+    return verdict.canonical_digest(plan)
+
+
+def runtime_patch_kill(
+    root,
+    *,
+    customization_id: str,
+    required_test: str,
+    probes: list[str],
+    target_repeats: int = 2,
+    timeout_seconds: int = 300,
+    environment: dict[str, str] | None = None,
+) -> tuple[verdict.GateResult, ...]:
+    """Run health probes around repeated deployed-counterfactual failures.
+
+    A target failure is accepted only when every independent probe passes both
+    before and after the target selector. The target selector must fail on
+    every repetition. A passing target is a shell test; skip/error/harness
+    failures are never patch-kill proof.
+    """
+    if not probes:
+        raise PatchKillPlanError("runtime patch-kill probes cannot be empty")
+    if target_repeats < 2:
+        raise PatchKillPlanError(
+            "runtime patch-kill target must run at least twice"
+        )
+
+    def run(selector: str) -> str:
+        try:
+            return pytest_runs.run_selector(
+                root,
+                selector,
+                timeout_seconds=timeout_seconds,
+                environment=environment,
+            )
+        except pytest_runs.PytestRunError as exc:
+            return f"{INFRA_ERROR}:{exc}"
+
+    def probe_gate(phase: str) -> verdict.GateResult:
+        outcomes = [(selector, run(selector)) for selector in probes]
+        reasons = tuple(
+            f"{selector}={outcome}" for selector, outcome in outcomes
+        )
+        probe_verdict = (
+            verdict.PASS
+            if all(outcome == "pass" for _, outcome in outcomes)
+            else verdict.ANALYSIS_ERROR
+        )
+        return verdict.GateResult(
+            f"runtime-patch-kill:{customization_id}:{phase}",
+            probe_verdict,
+            reasons,
+        )
+
+    preflight = probe_gate("preflight")
+    target_outcomes = [run(required_test) for _ in range(target_repeats)]
+    if all(outcome == "fail" for outcome in target_outcomes):
+        target_verdict = verdict.PASS
+        target_status = PROVEN
+    elif any(outcome == "pass" for outcome in target_outcomes):
+        target_verdict = verdict.BLOCK
+        target_status = SHELL
+    else:
+        target_verdict = verdict.ANALYSIS_ERROR
+        target_status = INCONCLUSIVE
+    target = verdict.GateResult(
+        f"runtime-patch-kill:{customization_id}:negative-control",
+        target_verdict,
+        (
+            f"status={target_status}",
+            f"required_test={required_test}",
+            "outcomes=" + ",".join(target_outcomes),
+        ),
+    )
+    postflight = probe_gate("postflight")
+    return preflight, target, postflight
+
+
+def runtime_result_inputs(
+    plan: dict,
+    experiment: dict,
+    *,
+    candidate_sha: str,
+    counterfactual_tree_sha: str,
+    governance_sha: str,
+    counterfactual_artifact_digest: str,
+    deployment_evidence_digest: str,
+    target_environment: str,
+    suite_digest: str,
+) -> dict:
+    """Build the canonical non-secret input binding for a runtime experiment."""
+    parse_runtime_plan(plan)
+    for label, value in {
+        "candidate_sha": candidate_sha,
+        "counterfactual_tree_sha": counterfactual_tree_sha,
+        "governance_sha": governance_sha,
+    }.items():
+        if not _FULL_SHA.fullmatch(value or ""):
+            raise PatchKillPlanError(f"{label} is not a full commit/tree SHA")
+    for label, value in {
+        "counterfactual_artifact_digest": counterfactual_artifact_digest,
+        "deployment_evidence_digest": deployment_evidence_digest,
+        "suite_digest": suite_digest,
+    }.items():
+        if not _DIGEST.fullmatch(value or ""):
+            raise PatchKillPlanError(f"{label} is not a sha256 digest")
+    if not target_environment.strip():
+        raise PatchKillPlanError("target_environment cannot be empty")
+    return {
+        "scope": plan["scope"],
+        "repositories": {
+            "candidate": {
+                "repository": plan["candidate"]["repository"],
+                "sha": candidate_sha,
+            },
+            "counterfactual": {
+                "repository": plan["candidate"]["repository"],
+                "sha": experiment["without_patch_sha"],
+                "tree_sha": counterfactual_tree_sha,
+            },
+            "governance": {
+                "repository": "easyseop/openmetadata-test",
+                "sha": governance_sha,
+            },
+        },
+        "runtime_patch_kill_plan_digest": runtime_plan_digest(plan),
+        "customization_id": experiment["customization_id"],
+        "required_test": experiment["required_test"],
+        "probes": list(experiment["probes"]),
+        "target_repeats": experiment["target_repeats"],
+        "suite_digest": suite_digest,
+        "counterfactual_artifact_digest": counterfactual_artifact_digest,
+        "deployment_evidence_digest": deployment_evidence_digest,
+        "target_environment": target_environment,
+    }
 
 
 def patch_kill(

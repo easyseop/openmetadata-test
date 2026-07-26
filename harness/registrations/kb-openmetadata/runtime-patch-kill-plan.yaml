@@ -1,0 +1,33 @@
+schema_version: 1
+candidate:
+  repository: easyseop/OpenMetadata
+  commit_sha: 38bccf90779a8afe4a4f0e9313e11706f6d940d4
+scope: deployed-counterfactual-high-critical
+experiments:
+  - customization_id: BANK-OM-001
+    without_patch_sha: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
+    required_test: tests/bank/contracts/test_instance_code.py::test_crud_search_roundtrip
+    probes:
+      - tests/bank/contracts/_runtime_patch_kill_probes.py::test_api_health
+    target_repeats: 2
+    method: predecessor-runtime-negative-control
+    rationale: The official predecessor has no InstanceCode API, while the independent API health probe must remain green before and after both required-test failures.
+  - customization_id: BANK-OM-002
+    without_patch_sha: a2566fac322c877a645046264c8ae99df103f794
+    required_test: tests/bank/contracts/test_query_report.py::test_query_usage_roundtrip
+    probes:
+      - tests/bank/contracts/_runtime_patch_kill_probes.py::test_api_health
+      - tests/bank/contracts/_runtime_patch_kill_probes.py::test_query_fixture_health
+    target_repeats: 2
+    method: predecessor-runtime-negative-control
+    rationale: The fixed predecessor contains InstanceCode but no QueryReport API, and both the service and fixed query fixture must remain healthy around the repeated negative control.
+  - customization_id: BANK-OM-003
+    without_patch_sha: 4108411cd5bc6baa8e7f23401628b153897ed356
+    required_test: tests/bank/contracts/test_data_assertions.py::test_failed_assertion_rendered_row
+    probes:
+      - tests/bank/contracts/_runtime_patch_kill_probes.py::test_api_health
+      - tests/bank/contracts/_runtime_patch_kill_probes.py::test_failed_assertion_fixture_health
+      - tests/bank/contracts/_runtime_patch_kill_probes.py::test_authenticated_ui_health
+    target_repeats: 2
+    method: predecessor-runtime-negative-control
+    rationale: The fixed predecessor has no customized Data Assertions page, while API data and a separate authenticated UI route must stay healthy around both rendered-row failures.

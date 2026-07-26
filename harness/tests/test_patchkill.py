@@ -130,6 +130,101 @@ def test_patch_kill_plan_rejects_duplicate_scope_classification():
         PK.parse_plan(duplicate)
 
 
+def test_runtime_plan_closes_the_source_pending_partition():
+    registration = (
+        Path(__file__).parents[1] / "registrations" / "kb-openmetadata"
+    )
+    source = PK.load_plan(registration / "patch-kill-plan.yaml")
+    runtime = PK.load_runtime_plan(
+        registration / "runtime-patch-kill-plan.yaml"
+    )
+    assert {
+        item["customization_id"] for item in runtime["experiments"]
+    } == {
+        item["customization_id"] for item in source["pending"]
+    }
+    assert all(
+        item["target_repeats"] >= 2 for item in runtime["experiments"]
+    )
+
+
+def test_runtime_patch_kill_requires_healthy_bookends_and_two_failures(
+    monkeypatch, tmp_path
+):
+    calls = []
+
+    def run_selector(root, selector, **kwargs):
+        calls.append(selector)
+        return "fail" if selector == "target.py::test_target" else "pass"
+
+    monkeypatch.setattr(PK.pytest_runs, "run_selector", run_selector)
+    gates = PK.runtime_patch_kill(
+        tmp_path,
+        customization_id="BANK-OM-001",
+        required_test="target.py::test_target",
+        probes=["probe.py::test_health"],
+        target_repeats=2,
+    )
+    assert [gate.verdict for gate in gates] == [V.PASS, V.PASS, V.PASS]
+    assert calls == [
+        "probe.py::test_health",
+        "target.py::test_target",
+        "target.py::test_target",
+        "probe.py::test_health",
+    ]
+
+
+@pytest.mark.parametrize(
+    ("probe_outcome", "target_outcome", "expected"),
+    [
+        ("pass", "pass", [V.PASS, V.BLOCK, V.PASS]),
+        ("pass", "skipped", [V.PASS, V.ANALYSIS_ERROR, V.PASS]),
+        ("pass", "error", [V.PASS, V.ANALYSIS_ERROR, V.PASS]),
+        ("fail", "fail", [V.ANALYSIS_ERROR, V.PASS, V.ANALYSIS_ERROR]),
+    ],
+)
+def test_runtime_patch_kill_never_promotes_shell_or_bad_health(
+    monkeypatch,
+    tmp_path,
+    probe_outcome,
+    target_outcome,
+    expected,
+):
+    def run_selector(root, selector, **kwargs):
+        return (
+            target_outcome
+            if selector == "target.py::test_target"
+            else probe_outcome
+        )
+
+    monkeypatch.setattr(PK.pytest_runs, "run_selector", run_selector)
+    gates = PK.runtime_patch_kill(
+        tmp_path,
+        customization_id="BANK-OM-003",
+        required_test="target.py::test_target",
+        probes=["probe.py::test_health"],
+        target_repeats=2,
+    )
+    assert [gate.verdict for gate in gates] == expected
+
+
+def test_runtime_patch_kill_harness_error_is_analysis_error(
+    monkeypatch, tmp_path
+):
+    def fail_runner(root, selector, **kwargs):
+        raise PK.pytest_runs.PytestRunError("untrusted JUnit")
+
+    monkeypatch.setattr(PK.pytest_runs, "run_selector", fail_runner)
+    gates = PK.runtime_patch_kill(
+        tmp_path,
+        customization_id="BANK-OM-002",
+        required_test="target.py::test_target",
+        probes=["probe.py::test_health"],
+    )
+    assert all(gate.verdict == V.ANALYSIS_ERROR for gate in gates)
+    assert "infra_error" in gates[1].reasons[-1]
+
+
 def test_registered_source_patch_kill_evidence_is_self_consistent():
     registration = (
         Path(__file__).parents[1] / "registrations" / "kb-openmetadata"
