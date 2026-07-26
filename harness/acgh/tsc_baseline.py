@@ -1,10 +1,10 @@
 """Candidate-vs-upstream TypeScript diagnostic baseline comparison.
 
-The comparator intentionally uses a conservative path + TypeScript error-code
-multiset. It detects new diagnostics and increased multiplicity, while an
-unchanged non-zero baseline remains ``approval`` rather than ``pass`` because
-same-path/same-code substitution is still possible and the broad typecheck is
-not green.
+The comparator uses a path + TypeScript error-code multiset for blocking
+candidate regressions and a second path + code + message multiset for review
+visibility. An unchanged non-zero coarse baseline remains ``approval`` rather
+than ``pass``; message substitutions are surfaced without pretending the broad
+typecheck is green.
 """
 from __future__ import annotations
 
@@ -17,15 +17,22 @@ from acgh import verdict
 _ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 _DIAGNOSTIC = re.compile(
     r"^(?P<path>[^(\r\n]+)\(\d+,\d+\): "
-    r"error (?P<code>TS\d+): .+$"
+    r"error (?P<code>TS\d+): (?P<message>.+)$"
 )
 _ERROR_MARKER = re.compile(r"error TS\d+:")
 _TRUSTED_EXITS = frozenset({0, 2})
 
 
-def _diagnostics(text: str) -> tuple[Counter[tuple[str, str]], int]:
+def _diagnostics(
+    text: str,
+) -> tuple[
+    Counter[tuple[str, str]],
+    Counter[tuple[str, str, str]],
+    int,
+]:
     cleaned = _ANSI.sub("", text).replace("\r", "")
     found: Counter[tuple[str, str]] = Counter()
+    messages: Counter[tuple[str, str, str]] = Counter()
     malformed = 0
     for line in cleaned.splitlines():
         if not _ERROR_MARKER.search(line):
@@ -38,14 +45,28 @@ def _diagnostics(text: str) -> tuple[Counter[tuple[str, str]], int]:
         if path.startswith("/") or ".." in path.split("/"):
             malformed += 1
             continue
-        found[(path, match.group("code"))] += 1
-    return found, malformed
+        code = match.group("code")
+        found[(path, code)] += 1
+        messages[(path, code, match.group("message"))] += 1
+    return found, messages, malformed
 
 
 def fingerprint(diagnostics: Counter[tuple[str, str]]) -> str:
     expanded = [
         f"{path}|{code}"
         for (path, code), count in sorted(diagnostics.items())
+        for _ in range(count)
+    ]
+    payload = ("\n".join(expanded) + ("\n" if expanded else "")).encode()
+    return "sha256:" + hashlib.sha256(payload).hexdigest()
+
+
+def message_fingerprint(
+    diagnostics: Counter[tuple[str, str, str]],
+) -> str:
+    expanded = [
+        f"{path}|{code}|{message}"
+        for (path, code, message), count in sorted(diagnostics.items())
         for _ in range(count)
     ]
     payload = ("\n".join(expanded) + ("\n" if expanded else "")).encode()
@@ -71,8 +92,10 @@ def compare(
             ),
         )
 
-    upstream, upstream_malformed = _diagnostics(upstream_log)
-    candidate, candidate_malformed = _diagnostics(candidate_log)
+    upstream, upstream_messages, upstream_malformed = _diagnostics(upstream_log)
+    candidate, candidate_messages, candidate_malformed = _diagnostics(
+        candidate_log
+    )
     if upstream_malformed or candidate_malformed:
         return verdict.GateResult(
             name,
@@ -104,6 +127,10 @@ def compare(
     removed = upstream - candidate
     new_count = sum(new.values())
     removed_count = sum(removed.values())
+    new_messages = candidate_messages - upstream_messages
+    removed_messages = upstream_messages - candidate_messages
+    new_message_count = sum(new_messages.values())
+    removed_message_count = sum(removed_messages.values())
     reasons = (
         f"upstream_diagnostics={upstream_count}",
         f"candidate_diagnostics={candidate_count}",
@@ -111,6 +138,16 @@ def compare(
         f"removed_diagnostics={removed_count}",
         f"upstream_fingerprint={fingerprint(upstream)}",
         f"candidate_fingerprint={fingerprint(candidate)}",
+        f"new_message_variants={new_message_count}",
+        f"removed_message_variants={removed_message_count}",
+        (
+            "upstream_message_fingerprint="
+            f"{message_fingerprint(upstream_messages)}"
+        ),
+        (
+            "candidate_message_fingerprint="
+            f"{message_fingerprint(candidate_messages)}"
+        ),
     )
     if new_count:
         first = sorted(new.elements())[0]

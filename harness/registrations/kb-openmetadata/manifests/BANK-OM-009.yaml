@@ -1,0 +1,22 @@
+schema_version: 1
+customization_id: BANK-OM-009
+status: active
+kind: core-patch
+title: 검색 결과 공통 타입 정합성
+implementation:
+  allowed_changed_paths:
+    - openmetadata-ui/src/main/resources/ui/src/interface/search.interface.ts
+    - openmetadata-ui/src/main/resources/ui/src/components/MyData/Widgets/CuratedAssetsWidget/CuratedAssetsWidget.tsx
+  required_changed_paths:
+    - openmetadata-ui/src/main/resources/ui/src/interface/search.interface.ts
+    - openmetadata-ui/src/main/resources/ui/src/components/MyData/Widgets/CuratedAssetsWidget/CuratedAssetsWidget.tsx
+upgrade_watch:
+  paths:
+    - openmetadata-ui/src/main/resources/ui/src/interface/search.interface.ts
+    - openmetadata-ui/src/main/resources/ui/src/components/MyData/Widgets/CuratedAssetsWidget/CuratedAssetsWidget.tsx
+assurance:
+  contracts: [CONTRACT-INSTANCE-CODE, CONTRACT-QUERY-REPORT]
+  direct_tests: []
+series:
+  allowed: false
+  depends_on: [BANK-OM-008]

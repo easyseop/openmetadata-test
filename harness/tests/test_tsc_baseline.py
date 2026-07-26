@@ -57,6 +57,31 @@ def test_removed_diagnostic_still_requires_baseline_approval():
     assert "removed_diagnostics=1" in result.reasons
 
 
+def test_same_path_and_code_message_substitution_is_reported_for_review():
+    result = T.compare(
+        _line(message="upstream message"),
+        _line(message="candidate message"),
+        upstream_exit=2,
+        candidate_exit=2,
+    )
+    assert result.verdict == V.APPROVAL
+    assert "new_diagnostics=0" in result.reasons
+    assert "new_message_variants=1" in result.reasons
+    assert "removed_message_variants=1" in result.reasons
+    assert (
+        next(
+            reason
+            for reason in result.reasons
+            if reason.startswith("upstream_message_fingerprint=")
+        )
+        != next(
+            reason
+            for reason in result.reasons
+            if reason.startswith("candidate_message_fingerprint=")
+        ).replace("candidate_", "upstream_", 1)
+    )
+
+
 def test_exit_diagnostic_mismatch_is_analysis_error():
     result = T.compare(_line(), _line(), upstream_exit=0, candidate_exit=2)
     assert result.verdict == V.ANALYSIS_ERROR
