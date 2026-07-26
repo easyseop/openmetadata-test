@@ -114,9 +114,10 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **T29 · 실제 커스터마이징 등록 (✅ 등록 완료·운영 증거 미완)** — `kb_openmetadata`의 InstanceCode,
   QueryReport, Assertions, 컬럼 확장, IME, Sybase, Tibero를 manifest/contract화.
   원본이 ancestry 없는 단일 root snapshot이므로 vendor branch 재구성 전 T25는
-  의도대로 차단한다. T60-I는 required selector 7개의 실제 Python 파일·함수
-  존재를 AST로 검증한다. 7개 구현은 추가됐고 Sybase/Tibero required contract와
-  별도 IME source guard는 pass했지만, owner 배정과 live API 4개·browser IME의
+  의도대로 차단한다. T60-I는 7개 업무 계약의 required selector 9개가 실제
+  Python 파일·함수로 존재하는지 AST로 검증한다. 9개 구현은 추가됐고
+  Sybase/Tibero required contract와 별도 IME source guard는 pass했지만,
+  owner 배정과 live API 4개·browser 3개의
   T62 실행 증거는 남아 있다. 전체
   113개 diff 중 111개는 7개 manifest에 귀속했고, `.claude/settings.json`의
   자동승인 확대와 Docker Compose의 ingestion `1.9.6` 고정은 별도 blocking
@@ -396,9 +397,10 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 
 ### T62. 테스트-candidate SHA 결속
 - **상태(2026-07-27)**: ✅ 결과계약·flaky 판정·실행기·수동 runtime workflow
-  구현/단위검증 완료. 7개 selector 구현은 완료했고 Sybase/Tibero 두 required
-  contract와 별도 IME source guard는 pass다. live API 4개와 실제 browser IME
-  1개는 환경 부재로 skip했다. 증거 3종은 실행 결과와 관계없이 덮어쓰기 불가
+  구현/단위검증 완료. 9개 selector 구현은 완료했고 Sybase/Tibero 두 required
+  contract와 별도 IME source guard는 pass다. live API 4개와 실제
+  Data Assertions·bank column·IME browser 3개는 환경 부재로 skip했다.
+  증거 3종은 실행 결과와 관계없이 덮어쓰기 불가
   GitHub artifact로 90일 보존하고 ID·digest·URL을 요약한다. candidate-bound
   전체 pass 결과와 90일 이후 조직 장기 보존 연결은 아직 없음.
 - **목적**: 시간차 결함 방지(§10.1).

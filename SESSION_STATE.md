@@ -4,7 +4,8 @@
 > 모든 결정·산출물·다음 단계를 세세하게 기록한다. **작업 재개 시 이 문서를 먼저 읽는다.**
 > 최종 갱신: 2026-07-27 실제 7-ID 재구축, Tibero 후속 보강,
 > T25-R/T25/T26/T60-I/T30/T31 통과, 비개발자용 사용 가이드,
-> T62 runtime 계약 실행기·실제 브라우저 IME 계약·90일 증거 보존까지 반영.
+> T62 runtime 계약 실행기·Data Assertions/은행 컬럼/IME 실제 브라우저 계약·
+> 90일 증거 보존까지 반영.
 > **현재 상태 정본은 [`STATUS.md`](STATUS.md), Claude 검토용 상세는
 > [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)다.**
 > **비개발자 안내 정본은
@@ -23,8 +24,8 @@ vendor merge 기본 / patch replay 선택 전략의 게이트 엔진과 실제 7
 구현했다. `easyseop/OpenMetadata`에 공식 `1.13.1-release` 기반 7-ID vendor
 checkpoint `e1ffc5a1...`를 재구축한 뒤 Tibero 타입·테스트를 보강해 현재
 candidate `38bccf90...`를 만들었다. T25-R은 checkpoint에서, T25/T26/T30/T31은
-현재 candidate에서 통과했다. T60-I도 7/7 selector 구현 존재를 확인했다.
-계약 테스트는 소스 기반 3개가 통과했고 실제 스택이 필요한 4개는 skip이다.
+현재 candidate에서 통과했다. T60-I도 9/9 selector 구현 존재를 확인했다.
+계약 테스트는 소스 기반 3개가 통과했고 실제 API 4개·브라우저 3개는 skip이다.
 실제 upgrade 실행과 release artifact가 없으므로 첫 production release는 아직
 차단 상태다.
 
@@ -207,7 +208,7 @@ harness/
 
 **완료:** 기존 patch-replay M1~M4, vendor-merge T24~T29·T25-R, 실제 7개 등록부,
 T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
-현재 통합 테스트는 302개이며, 고정 upstream mirror와 sparse product checkout을
+현재 통합 테스트는 304개이며, 고정 upstream mirror와 sparse product checkout을
 연결한 CI-equivalent 환경에서 297개 통과, API 4개와 실제 브라우저 IME 1개만
 skip됐다.
 - **T60** contract 카탈로그+결속 `contracts.py` · **T61** patch-kill
@@ -222,7 +223,8 @@ skip됐다.
 - **T60-I/contract 구현**: catalog의 7 selector 모두 실제 파일·함수로 resolve.
   Sybase·Tibero 2개 required contract와 별도 IME source guard는 pass.
   OpenMetadata live URL이 필요한 InstanceCode·QueryReport·failed assertion·
-  bank column 4개, 실제 SchemaEditor 화면이 필요한 browser IME 1개는 skip.
+  bank column API 4개, 실제 Data Assertions·bank column·SchemaEditor 화면이
+  필요한 browser selector 3개는 skip.
 - **T61 source patch-kill**: `patch-kill-plan.yaml`과
   `run_source_patch_kills.py`를 추가했다. Sybase 없는 `6e5b654f...`와 Tibero
   없는 `41b224ad...`에서 각 required test가 JUnit assertion failure를 내므로
@@ -235,7 +237,7 @@ skip됐다.
   `interpret_runtime_result.py`를 구현했다. 각 selector를 shell 없이 별도
   pytest/JUnit으로 실행하고 candidate SHA·배포 digest·governance commit·suite
   digest에 결속하며, 원자적 결과와 실제 exit 불일치를 `analysis_error`로
-  바꾼다. 로컬 무환경 시뮬레이션은 `2 pass·5 skip → block`; 실제 운영 run은
+  바꾼다. 로컬 무환경 시뮬레이션은 `2 pass·7 skip → block`; 실제 운영 run은
   아직 없다. 결과 3종은 pass 여부와 무관하게 실행별 overwrite 불가 GitHub
   artifact로 90일 보존하고 artifact ID·digest·URL을 job summary에 남긴다.
   90일 이후 조직 장기 보존 연결은 남았다.
@@ -380,7 +382,7 @@ replay tree(T22 `replay.replay_and_compare` 재사용), candidate 변경 시 기
 2. `/home/user/om-mirror` 존재 확인(없으면 §7 재획득), `pip install jsonschema pathspec`.
 3. `OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata python -m pytest
    harness/tests tests/bank/contracts` → mirror 연결 기준 현재
-   302개(297 pass·5 operational skip) 재확인.
+   304개(297 pass·7 operational skip) 재확인.
 4. `STATUS.md`의 production blocker와
    `docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`의 실제 실행 순서를 따른다.
 5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4.1 로그 + 이 표 갱신.

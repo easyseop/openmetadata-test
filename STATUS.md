@@ -2,7 +2,8 @@
 
 > Updated: 2026-07-27
 > Branch: `claude/markdown-file-feedback-26933w`
-> Last verified implementation commit: `8ec6e28`
+> Last verified implementation commit: `093724f`
+> Rendered UI runtime-contract expansion commit: `093724f`
 > Nondeveloper guide and handoff implementation commit: `0f0904b`
 > Runtime operations documentation commit: `a291f31`
 > Runtime evidence retention implementation commit: `502f42f`
@@ -61,12 +62,12 @@ member and a Tibero schema-mapping unit test under the same consecutive
 ## Verification
 
 ```text
-297 passed, 5 skipped in 30.45s
+297 passed, 7 skipped in 31.18s
 ```
 
 This CI-equivalent local run used the two fixed historical mirror refs, so the
 previous 35 mirror skips all executed and passed. Four remaining skips require
-a live OpenMetadata URL and one requires a real authenticated browser page;
+a live OpenMetadata URL and three require real authenticated browser pages;
 none are counted as passes. All 14 T25-R tests pass.
 
 T61 source negative controls now run the external Sybase and Tibero contract
@@ -85,7 +86,7 @@ Actual source-candidate gates:
 T25-R vendor-reconstructed-candidate  pass (checkpoint e1ffc5a1...)
 T25   vendor-ancestry                 pass (candidate 38bccf90...)
 T26   customization-survival          pass (candidate 38bccf90...; 7 IDs, 10 required paths)
-T60-I required-test-implementations   pass (7/7 selectors resolve)
+T60-I required-test-implementations   pass (9/9 selectors resolve)
 T30   commit-invariants               pass (candidate 38bccf90...)
 T31   id-invariants                   pass (candidate 38bccf90...)
 ```
@@ -96,7 +97,7 @@ Focused product verification:
 Prettier (2 changed paths)             pass
 DatabaseServiceUtils.test.tsx          pass (13/13; Tibero case pass)
 bank contract source suite             3 passed (Sybase, Tibero, IME source guard)
-required operational contracts         2 passed, 5 skipped (4 API, 1 browser)
+required operational selectors         2 passed, 7 skipped (4 API, 3 browser)
 UI tsc --noEmit                        fail (399 diagnostics; changed paths 0)
 UI core Vite build                     exit 0 (2 declaration diagnostics on unchanged upstream paths)
 ```
@@ -106,7 +107,7 @@ T62 runtime execution is now implemented in
 catalog selector in a fresh pytest process, derives outcomes from JUnit XML,
 retains retries, atomically writes the candidate lock/test-run set/result, and
 checks the result against the actual process exit. A local no-runtime
-simulation produced `2 pass, 5 skipped -> block`; an intentionally false exit
+simulation produced `2 pass, 7 skipped -> block`; an intentionally false exit
 was converted to `analysis_error`. The three evidence YAML files are uploaded
 with pinned `actions/upload-artifact` code as a non-overwritable, 90-day CI
 artifact whose ID, digest, and URL are written to the job summary. No real
@@ -124,7 +125,7 @@ combined test suite, runs T25/T26/T60-I/T30/T31, and runs the two source-capable
 T61 negative controls. Patch-kill evidence is kept as a non-overwritable
 90-day artifact. The workflow's exact
 product fetch, test, and gate commands pass in a clean
-local simulation (`297 passed, 5 operational skips`; five source gates and two
+local simulation (`297 passed, 7 operational skips`; five source gates and two
 source patch-kill experiments pass).
 Historical remote
 run `30160752510` also passed. GitHub emitted a Node 20 action deprecation
@@ -168,12 +169,13 @@ This is not yet evidence that the bank distribution is deployable:
 2. The two source-snapshot findings were intentionally excluded from the
    candidate: `.claude/settings.json` broadly auto-approves tools, and
    `docker/development/docker-compose.yml` pins ingestion image `1.9.6`.
-3. All seven required test selectors now resolve to committed implementations.
-   Sybase and Tibero pass locally. The Korean IME source guard also passes but
-   is not browser evidence. InstanceCode, QueryReport, failed assertion, and
-   bank-column contracts skip without `OPENMETADATA_BASE_URL`; the real IME
-   contract skips without `BANK_IME_EDITOR_URL`. The runtime producer now
-   records these as `2 pass, 5 skipped -> block`, so a full candidate-bound T62
+3. All nine required test selectors across the seven business contracts now
+   resolve to committed implementations. Sybase and Tibero pass locally. The
+   Korean IME source guard also passes but is not browser evidence. InstanceCode,
+   QueryReport, failed assertion, and bank-column API selectors skip without
+   `OPENMETADATA_BASE_URL`; the Data Assertions page, bank-column page, and real
+   IME selectors require their authenticated URLs. The runtime producer now
+   records these as `2 pass, 7 skipped -> block`, so a full candidate-bound T62
    pass does not yet exist.
 4. Sybase and Tibero source patch-kill negative controls pass, but the three
    API-based high IDs still need separately deployed without-patch stacks.

@@ -38,8 +38,8 @@
 ## 0.1 구현 현황 (2026-07-27 · 게이트 엔진 및 실제 7개 등록)
 
 > 아래 표는 **설계**이고, 실제 코드는 `harness/acgh/` 에 있다. 현재 소스에는
-> **302개 테스트**가 있다. 2026-07-27 기준 고정 mirror/product 연결 시 297개
-> 통과, API 4개·browser IME 1개는 운영 환경 부재로 skip이다.
+> **304개 테스트**가 있다. 2026-07-27 기준 고정 mirror/product 연결 시 297개
+> 통과, API 4개·browser 3개는 운영 환경 부재로 skip이다.
 > ✅=구현·테스트 완료, 🟡=핵심 구현(부분), ⬜=미착수.
 
 **기반(카탈로그 22개 밖, 하네스 골격)**: ✅ T05 경로소유 `layout.py` · ✅ T10
@@ -73,7 +73,7 @@ manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과�
 
 게이트 엔진과 실제 7개 등록은 완료됐다. 그러나 원본
 `kangdkdk/kb_openmetadata`는 upstream ancestry 없는 root snapshot이다. 실제
-vendor candidate는 별도 재구축했지만 API 4개·browser IME 1개의 T62 전체 pass와
+vendor candidate는 별도 재구축했지만 API 4개·browser 3개의 T62 전체 pass와
 실제 T90/T91/T94 운영 증거가 없다. 따라서 현재 release 판정은 통과가 아니라
 **차단**이 정답이다.
 

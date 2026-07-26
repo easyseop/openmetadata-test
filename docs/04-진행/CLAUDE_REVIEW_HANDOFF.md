@@ -4,7 +4,9 @@
 > 대상 브랜치: `claude/markdown-file-feedback-26933w`
 > 변경 전 기준 커밋: `9d2a174` (`implement T25 vendor ancestry gate`)
 > 마지막 검증 구현 커밋:
-> `502f42f77734ec4f894aa79360c22e0f67dc1b19`
+> `093724faa499458eb4723511914a1376138ef014`
+> Data Assertions·bank column 실제 화면 계약 보강 커밋:
+> `093724faa499458eb4723511914a1376138ef014`
 > 비개발자 가이드·인수인계 구현 커밋:
 > `0f0904b47c08c1febf95d17e2c7364adf01e3b98`
 > T62 runtime 계약 게이트 구현 커밋:
@@ -244,7 +246,7 @@ cherry-pick 성공만으로 vendor release 전체가 완성됐다고 오인하�
 
 required test ID 7개는 이제 `tests/bank/contracts/`의 실제 Python selector에
 연결된다. T60-I는 경로 이탈·symlink·파일 누락·AST symbol 누락을 차단한다.
-다만 구현 존재는 실행 성공과 다르며, live API 4개와 browser IME 결과는
+다만 구현 존재는 실행 성공과 다르며, live API 4개와 browser 3개 결과는
 T62 candidate-bound pass가 생길 때까지 운영 증거가 아니다.
 
 ### 4.5 T62 — 필수 테스트 실행과 candidate 결속
@@ -610,7 +612,7 @@ Node 22 환경에서 focused Jest 재현과 전체 typecheck baseline 분류를 
 임시 ANTLR 4.9.2 JAR SHA-256은
 `bb117b1476691dc2915a318efd36f8957c0ad93447fb1dac01107eb15fe137cd`다.
 
-### 4.16 T60-I required test 구현 존재 게이트와 7개 계약 파일
+### 4.16 T60-I required test 구현 존재 게이트와 9개 selector
 
 기존 T60은 catalog의 selector 문자열을 effective test로 계산했지만 실제
 파일·함수가 없어도 통과할 수 있었다. `harness/acgh/contracts.py`에
@@ -623,7 +625,7 @@ Node 22 환경에서 focused Jest 재현과 전체 typecheck baseline 분류를 
 - parse 불능은 `analysis_error`, 누락·위험 selector는 `block`인가
 
 실제 source-candidate runner에도 T60-I를 넣었고 결과는
-`implemented_required_tests=7`, `pass`다.
+`implemented_required_tests=9`, `pass`다.
 
 구현 파일:
 
@@ -640,8 +642,8 @@ Node 22 환경에서 focused Jest 재현과 전체 typecheck baseline 분류를 
 
 - InstanceCode: live POST/GET/PUT/search index polling/hard-delete
 - QueryReport: live report 생성, 기존 Query usage 연결·조회·수정 후 보존, 정리
-- Data Assertions: live failed status·owner·table/column projection
-- Bank columns: live ordinal·constraint·은행 extension projection
+- Data Assertions: live failed status·owner·table/column API와 실제 화면 행 projection
+- Bank columns: live ordinal·constraint·은행 extension API와 실제 화면 행 projection
 - Korean IME: composition start/end guard와 조합 중 state write 차단 source guard
 - Sybase/Tibero: JSON Schema validation·payload round-trip·databaseService ref,
   generated API/entity/serviceConnection enum, UI selector test, icon 일관성
@@ -649,10 +651,10 @@ Node 22 환경에서 focused Jest 재현과 전체 typecheck baseline 분류를 
 현재 source 환경 실행:
 
 ```text
-8 collected
+10 collected
 3 passed: Korean IME source guard, Sybase, Tibero
-5 skipped: OPENMETADATA_BASE_URL이 필요한 live 계약 4,
-           BANK_IME_EDITOR_URL이 필요한 browser IME 계약 1
+7 skipped: OPENMETADATA_BASE_URL이 필요한 live selector 4,
+           실제 로그인 URL이 필요한 browser selector 3
 ```
 
 Korean IME의 required selector는 이제 실제 browser test이며 source guard는
@@ -660,7 +662,8 @@ Korean IME의 required selector는 이제 실제 browser test이며 source guard
 추가 환경 변수는
 `OPENMETADATA_BASE_URL`, 선택 auth token,
 `BANK_CONTRACT_QUERY_ID`, `BANK_FAILED_ASSERTION_FQN`,
-`BANK_COLUMN_TABLE_FQN`, `BANK_COLUMN_NAME`, `BANK_IME_EDITOR_URL`, 선택
+`BANK_COLUMN_TABLE_FQN`, `BANK_COLUMN_NAME`, `BANK_IME_EDITOR_URL`,
+`BANK_DATA_ASSERTIONS_URL`, `BANK_COLUMN_UI_URL`, 선택
 `BANK_BROWSER_STORAGE_STATE_B64`다.
 
 ### 4.17 source-candidate GitHub Actions
@@ -673,13 +676,13 @@ Korean IME의 required selector는 이제 실제 browser test이며 source guard
 3. 고정 SHA의 1.12.13/1.13.0 mirror fixture fetch
 4. product branch를 blobless·depth 16·sparse 방식으로 checkout
 5. checkout HEAD가 `38bccf90779...`와 정확히 같은지 확인
-6. harness + 7 contract selector 실행
+6. harness + 7개 업무 contract의 9 selector 실행
 7. T25/T26/T60-I/T30/T31 source-candidate runner 실행
 
 외부 action은 tag가 아니라 40-hex commit으로 고정했고 workflow permissions는
 `contents: read`뿐이다. `harness/tests/test_source_candidate_workflow.py`가 action
 pin, product evidence lock, read-only permission, 필수 명령 존재를 검증한다.
-API runtime 4개와 browser IME 1개는 이 source job에서 skip되며 T62 운영
+API runtime 4개와 browser 3개는 이 source job에서 skip되며 T62 운영
 job으로 남긴다.
 
 workflow의 exact product fetch·mirror fetch·test·gate 명령을 빈 임시
@@ -797,8 +800,9 @@ OPENMETADATA_PRODUCT_REPO=/private/tmp/om-ci-validation-38bccf \
    누락·파손·stale·exit 불일치는 `analysis_error`다.
 
 수동 workflow는 `openmetadata-runtime` GitHub environment 승인을 요구한다.
-입력은 배포 artifact `sha256` digest, API base URL, 편집 가능한 SchemaEditor
-URL이다. auth token과 browser storage state는 environment secret, Query ID와
+입력은 배포 artifact `sha256` digest, API base URL, Data Assertions URL,
+bank column table URL, 편집 가능한 SchemaEditor URL이다. auth token과
+browser storage state는 environment secret, Query ID와
 테스트 FQN/테이블/컬럼은 environment variable로 받는다. 입력 문자열은 shell
 script에 직접 보간하지 않고 environment를 통해 전달한다.
 
@@ -942,6 +946,57 @@ gate 5개와 patch-kill 2개 pass로 success였다. 최신 artifact는
 빌드·배포하고 같은 runtime contract를 실행해야 한다. 따라서 현 상태는
 **source-capable high 2/5 pass, runtime high 3/5 pending**이다.
 
+### 4.22 Data Assertions·bank column 실제 화면 계약 보강
+
+구현 커밋:
+
+- `093724faa499458eb4723511914a1376138ef014`
+
+변경 파일:
+
+- `tests/bank/contracts/_browser_contract.py`
+- `tests/bank/contracts/test_data_assertions.py`
+- `tests/bank/contracts/test_bank_columns.py`
+- `tests/bank/contracts/test_korean_ime.py`
+- `harness/registrations/kb-openmetadata/contracts.yaml`
+- `.github/workflows/runtime-contracts.yml`
+- `harness/tests/test_runtime_contract_workflow.py`
+
+발견한 문제와 개발 방식:
+
+1. `BANK-OM-003`과 `BANK-OM-004` manifest의 변경 경로는 UI 코드인데 기존
+   required selector는 API 응답만 확인했다. UI 패치를 제거해도 API 검사는
+   통과할 수 있으므로 patch survival 증거로 부족했다.
+2. Data Assertions 브라우저 selector는 API에서 고정 실패 test case의
+   table·column·owner·Failed 상태를 읽고, 로그인된 실제 페이지의 같은 행에서
+   네 값을 다시 대조한다.
+3. bank column 브라우저 selector는 API에서 고정 컬럼의
+   `attributeName`·`instanceName`·`infoType`을 읽고 실제 schema table 행에서
+   세 확장값이 렌더됐는지 대조한다.
+4. 세 브라우저 계약은 공통 storage-state decoder와 Playwright import
+   fail-closed helper를 공유한다. URL을 설정했는데 Playwright가 없거나 로그인
+   상태가 잘못되면 skip/pass가 아니라 test failure다.
+5. runtime workflow에 `data_assertions_url`, `bank_column_ui_url` 필수 입력을
+   추가했다. 기존 artifact digest, API base URL, IME URL과 합쳐 다섯 수동
+   입력이며 비밀 로그인 상태는 계속 environment secret으로만 받는다.
+6. 업무 contract 수는 7개 그대로지만 required selector는 7개에서 9개로
+   늘었다. 무환경 로컬 실행의 정직한 결과도 `2 pass·7 skip→block`으로 바뀐다.
+
+검증:
+
+```text
+targeted contract/workflow tests  13 passed, 6 skipped
+fixed mirror full suite           297 passed, 7 skipped in 31.18s
+T60-I                             pass (implemented_required_tests=9)
+T62 no-runtime simulation         2 pass, 7 skipped -> block
+suite digest                      sha256:7fceb9d7...b7dd9df1
+test-run-set digest               sha256:96dfec4b...d5b196
+```
+
+일곱 skip은 API 환경이 필요한 selector 4개와 실제 로그인 화면이 필요한
+Data Assertions·bank column·IME selector 3개다. 실제 runtime 실행 증거는 아직
+없으며, 이 구현을 운영 통과로 표현하면 안 된다.
+
 ## 5. 테스트 결과
 
 전체 명령:
@@ -955,15 +1010,16 @@ OPENMETADATA_PRODUCT_REPO=/private/tmp/om-ci-validation-38bccf \
 결과:
 
 ```text
-297 passed, 5 skipped in 30.45s
+297 passed, 7 skipped in 31.18s
 ```
 
 초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 149개 passing test가
 추가됐고, T25-R과 실제 candidate evidence 묶음은 14개다.
 
-고정 mirror를 연결해 기존 mirror 의존 35개도 모두 실행·통과했다. 남은 5개는
-`OPENMETADATA_BASE_URL`이 없는 API contract 4개와
-`BANK_IME_EDITOR_URL`이 없는 browser contract 1개다. T25-R 14개와 T60-I,
+고정 mirror를 연결해 기존 mirror 의존 35개도 모두 실행·통과했다. 남은 7개는
+`OPENMETADATA_BASE_URL`이 없는 API selector 4개와
+실제 Data Assertions·bank column·SchemaEditor URL이 없는 browser selector
+3개다. T25-R 14개와 T60-I,
 pytest/JUnit adapter 단위 테스트 중 skip은 없다.
 
 제품 집중 테스트:
@@ -984,9 +1040,9 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 |---|---:|---:|---:|
 | T25-R snapshot 재구성 | source plan·owner·엔진·실 candidate 완료 | 완료 | 실제 candidate pass |
 | T26~T29 vendor 등록·라우팅 | 완료 | 완료 | T25/T26 실 candidate pass |
-| T60-I 구현 존재 | 완료 | 완료 | 7/7 selector resolve pass |
+| T60-I 구현 존재 | 완료 | 완료 | 9/9 selector resolve pass |
 | T61 patch-kill | plan·runner·증거 완료 | source experiment 완료 | Sybase/Tibero 2/5 pass, API 기반 high 3개 제거본 배포 없음 |
-| T62 test-result binding·runner | 완료 | 완료 | local fail-closed `2 required pass·5 skip→block`, 실제 runtime run 없음 |
+| T62 test-result binding·runner | 완료 | 완료 | local fail-closed `2 required pass·7 skip→block`, 실제 runtime run 없음 |
 | T71/T72 운영 정책 | 완료 | 완료 | 조직 승인자·CI 연동 필요 |
 | T80/T81 LLM memo | 완료 | 완료 | 실제 release memo 평가 데이터 없음 |
 | T90 upgrade-run contract | 완료 | 완료 | Docker/DB/search/ingestion 실행 없음 |
@@ -1001,8 +1057,8 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 
 1. 각 ID의 조직 owner와 두 사람 승인 라우팅을 확정한다.
 2. `openmetadata-runtime` environment의 secret/variable을 설정하고
-   `Runtime contracts` workflow에서 API 4개와 browser IME를 실행해 7개 전체
-   T62 candidate-bound pass를 만든다.
+   `Runtime contracts` workflow에서 API 4개와 browser 3개를 실행해 9개
+   selector 전체의 T62 candidate-bound pass를 만든다.
 3. Node 22 환경에서 399개 UI typecheck diagnostic을 기준선 분류·수정하고,
    제품 전체 Java/UI build와 source-level test를 candidate에 결속한다.
 4. InstanceCode·QueryReport·Data Assertions 제거본을 각각 빌드·배포해 남은

@@ -1,6 +1,6 @@
 schema_version: 1
-generated_at: "2026-07-27T02:28:43+09:00"
-governance_evidence_commit: 8ec6e28442c1ed483bb2f1c39c0a6d628f1d213d
+generated_at: "2026-07-27T02:46:31+09:00"
+governance_evidence_commit: 093724faa499458eb4723511914a1376138ef014
 repository: easyseop/OpenMetadata
 branch: codex/bank-vendor-1.13.1-rebuild
 upstream:
@@ -78,7 +78,7 @@ gates:
     effective_test_ids: 7
   t60_i_required_test_implementations:
     verdict: pass
-    implemented_required_tests: 7
+    implemented_required_tests: 9
   t61_source_patch_kill:
     verdict: pass
     scope: source-capable-high-critical
@@ -108,7 +108,7 @@ product_verification:
     local_simulation:
       verdict: pass
       tests_passed: 297
-      tests_skipped_operational: 5
+      tests_skipped_operational: 7
       source_gates_passed: 5
     prior_remote_run:
       id: 30160752510
@@ -191,9 +191,10 @@ product_verification:
     tibero_test: should return correct schema and UI schema for Tibero
   bank_contract_suite:
     implemented: 7
+    required_selectors: 9
     source_suite_passed: 3
     required_contracts_passed: 2
-    skipped_operational: 5
+    skipped_operational: 7
     passed_contracts:
       - CONTRACT-SYBASE-CONNECTOR
       - CONTRACT-TIBERO-CONNECTOR
@@ -205,6 +206,8 @@ product_verification:
       - CONTRACT-DATA-ASSERTIONS
       - CONTRACT-BANK-COLUMN-VIEW
     browser_environment_required:
+      - CONTRACT-DATA-ASSERTIONS
+      - CONTRACT-BANK-COLUMN-VIEW
       - CONTRACT-KOREAN-IME
   runtime_contract_gate:
     implementation_commit: b29d0ceea3b8b95423242847b0c172415f420411
@@ -226,10 +229,11 @@ product_verification:
       artifact_note: source tree identity used only to exercise the runner; this is not deployed artifact evidence
       candidate_sha: 38bccf90779a8afe4a4f0e9313e11706f6d940d4
       passed: 2
-      skipped: 5
+      skipped: 7
       verdict: block
-      suite_version: sha256:9d3c61d9b0865365ec00de2292a06d9b5bdb84281ba8a1dad1ea3efc7879185e
-      test_run_set_digest: sha256:f693973112bf28818f8ac72c5f7a0b6d554f1eef36090dafa1b533706d3aa8d7
+      harness_version: 093724faa499458eb4723511914a1376138ef014
+      suite_version: sha256:7fceb9d7d6c7016f0245c59dc62c75dff4cebdc1bd6686fe09224315b7dd9df1
+      test_run_set_digest: sha256:96dfec4b4475e543edd84bb4d99def685697e6fdf1470de71cf1c3e993d5b196
       exit_result_consistent: true
       false_exit_verdict: analysis_error
     operational_run_executed: false

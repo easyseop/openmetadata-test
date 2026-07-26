@@ -19,13 +19,13 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 pip install jsonschema pathspec pyyaml pytest
 OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata \
   python -m pytest harness/tests tests/bank/contracts
-# 고정 mirror 연결 시 302개: 297 pass·5 operational skip
+# 고정 mirror 연결 시 304개: 297 pass·7 operational skip
 bash harness/fixtures/fetch_upstream.sh            # 실제 OM 미러(없으면 미러 테스트 자동 skip)
 ```
 
 Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
 
-## 구현 모듈 (현재 302개 테스트: 297 pass·5 operational skip)
+## 구현 모듈 (현재 304개 테스트: 297 pass·7 operational skip)
 
 | 모듈 | 담당 | 루트 README 검증기# / 영역 |
 |---|---|---|
@@ -150,7 +150,8 @@ python harness/registrations/kb-openmetadata/run_runtime_contracts.py \
 
 필수 환경은 `OPENMETADATA_BASE_URL`, 선택 auth token,
 `BANK_CONTRACT_QUERY_ID`, `BANK_FAILED_ASSERTION_FQN`,
-`BANK_COLUMN_TABLE_FQN`, `BANK_COLUMN_NAME`, `BANK_IME_EDITOR_URL`이다.
+`BANK_COLUMN_TABLE_FQN`, `BANK_COLUMN_NAME`, `BANK_IME_EDITOR_URL`,
+`BANK_DATA_ASSERTIONS_URL`, `BANK_COLUMN_UI_URL`이다.
 로그인된 브라우저 상태가 필요하면 JSON storage state를 base64로 인코딩해
 `BANK_BROWSER_STORAGE_STATE_B64`로 주입한다. 비밀값은 파일·인수인계서에
 기록하지 않는다. 하나라도 skip이면 runner는 `block`으로 종료한다.

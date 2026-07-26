@@ -422,7 +422,7 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
         gates["t60_i_required_test_implementations"][
             "implemented_required_tests"
         ]
-        == 7
+        == 9
     )
     patch_kill = gates["t61_source_patch_kill"]
     assert patch_kill["verdict"] == V.PASS
@@ -448,7 +448,7 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
         product["source_candidate_ci"]["local_simulation"][
             "tests_skipped_operational"
         ]
-        == 5
+        == 7
     )
     assert (
         product["source_candidate_ci"]["prior_remote_run"]["conclusion"]
@@ -500,9 +500,10 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
     assert product["tibero_jest"]["verdict"] == V.PASS
     assert product["tibero_jest"]["tests"] > 0
     assert product["bank_contract_suite"]["implemented"] == 7
+    assert product["bank_contract_suite"]["required_selectors"] == 9
     assert product["bank_contract_suite"]["source_suite_passed"] == 3
     assert product["bank_contract_suite"]["required_contracts_passed"] == 2
-    assert product["bank_contract_suite"]["skipped_operational"] == 5
+    assert product["bank_contract_suite"]["skipped_operational"] == 7
     runtime = product["runtime_contract_gate"]
     assert runtime["junit_exit_reconciled"] is True
     assert runtime["local_no_runtime_simulation"]["verdict"] == V.BLOCK

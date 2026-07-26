@@ -25,9 +25,9 @@
 > 현재 상태: T24~T29와 실제 7개 등록부, T25-R snapshot 재구성 검증기,
 > Docker-free 운영 게이트를 구현했다. 공식 `1.13.1-release`에서 시작한 실제
 > 7-ID vendor candidate도 `easyseop/OpenMetadata`에 만들었고 T25-R/T25/T26/
-> T60-I/T30/T31이 통과했다. 필수 계약 selector 7개는 모두 실제 구현됐고
+> T60-I/T30/T31이 통과했다. 7개 업무 계약의 필수 selector 9개는 모두 실제 구현됐고
 > Sybase/Tibero 두 계약과 한글 IME 소스 가드는 통과했다. 실제 OpenMetadata
-> API 4개와 실제 브라우저 IME 1개는 아직 skip이다. 별도 T62 runtime workflow와
+> API 4개와 실제 브라우저 3개는 아직 skip이다. 별도 T62 runtime workflow와
 > 원자적 candidate-bound 결과 생성기는 구현했고, 생성된 증거 3종은 실행 결과와
 > 관계없이 덮어쓰기 불가 GitHub artifact로 90일 보존한다. 실제 운영 실행은 없다.
 > T61은 Sybase/Tibero 패치가 없는 고정 소스에서 두 계약이 실제 실패함을
@@ -237,12 +237,12 @@ M9 업그레이드 검증·릴리스 승격(digest 결속)·반입
 pip install jsonschema pathspec pyyaml pytest
 OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata \
   python -m pytest harness/tests tests/bank/contracts
-# 고정 mirror 연결 시 302개: 297 pass·5 operational skip
+# 고정 mirror 연결 시 304개: 297 pass·7 operational skip
 ```
 
 동일한 source 범위는
 `.github/workflows/source-candidate.yml`이 고정 product SHA와 고정 action SHA로
-자동 재현한다. API 4개와 브라우저 IME 1개는
+자동 재현한다. API 4개와 브라우저 3개는
 `.github/workflows/runtime-contracts.yml`의 수동 T62 운영 job 대상이다.
 이 job은 후보 SHA·배포 artifact digest·하네스 commit·suite digest를 묶고,
 skip을 pass로 올리지 않는다. `candidate-lock.yaml`, `test-run-set.yaml`,
