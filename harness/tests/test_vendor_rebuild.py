@@ -565,6 +565,7 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
         product["ui_typecheck"]["error_lines_after_search_type_hardening"]
         == 357
     )
+    assert product["ui_typecheck"]["error_lines_after_alert_id_hardening"] == 356
     assert (
         product["ui_typecheck"]["candidate_introduced_error_lines_after_fix"]
         == 0
