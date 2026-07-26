@@ -237,7 +237,7 @@ M9 업그레이드 검증·릴리스 승격(digest 결속)·반입
 pip install jsonschema pathspec pyyaml pytest
 OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata \
   python -m pytest harness/tests tests/bank/contracts
-# 고정 mirror 연결 시 304개: 297 pass·7 operational skip
+# 고정 mirror 연결 시 313개: 306 pass·7 operational skip
 ```
 
 동일한 source 범위는
@@ -256,7 +256,12 @@ skip을 pass로 올리지 않는다. `candidate-lock.yaml`, `test-run-set.yaml`,
 `analysis_error`다. 결과는
 `source-patch-kill-evidence-<run_id>-<run_attempt>` artifact로 90일 보존한다.
 이것은 source-capable high ID 2개만의 결과이며, API 기반 high ID 3개는 제거본
-배포 후 별도 T61 실행이 필요하다.
+배포 후 별도 T61 실행이 필요하다. 그 세 건을 위한
+`.github/workflows/runtime-patch-kill.yml`은 일반 T62와 분리된 승인 환경에서
+한 ID씩 실행한다. 대상 계약은 두 번 모두 실패해야 하고 독립 API/data/UI
+health probe는 전후 모두 통과해야 한다. source/tree/artifact/deployment
+evidence/governance/suite/environment를 한 결과에 결속하지만, 실제 제거본
+build·배포·운영 실행은 아직 없다.
 
 **실제 OM 미러 연결**(게이트·재적용 테스트용, 없으면 해당 테스트 자동 skip):
 

@@ -4,9 +4,11 @@
 > 대상 브랜치: `claude/markdown-file-feedback-26933w`
 > 변경 전 기준 커밋: `9d2a174` (`implement T25 vendor ancestry gate`)
 > 마지막 검증 구현 커밋:
-> `093724faa499458eb4723511914a1376138ef014`
+> `1956b7880506674e37ad2428248a9fc69817dbc2`
 > Data Assertions·bank column 실제 화면 계약 보강 커밋:
 > `093724faa499458eb4723511914a1376138ef014`
+> T61 deployed runtime patch-kill 게이트 구현 커밋:
+> `1956b7880506674e37ad2428248a9fc69817dbc2`
 > 비개발자 가이드·인수인계 구현 커밋:
 > `0f0904b47c08c1febf95d17e2c7364adf01e3b98`
 > T62 runtime 계약 게이트 구현 커밋:
@@ -997,6 +999,81 @@ test-run-set digest               sha256:96dfec4b...d5b196
 Data Assertions·bank column·IME selector 3개다. 실제 runtime 실행 증거는 아직
 없으며, 이 구현을 운영 통과로 표현하면 안 된다.
 
+이 배치의 원격 run
+[`30213348947`](https://github.com/easyseop/openmetadata-test/actions/runs/30213348947)은
+head `a502d92`에서 `297 passed, 7 skipped in 14.87s`, T60-I 9/9, source gate
+5개, source patch-kill 2개 pass로 success였다. 증거 artifact는
+`source-patch-kill-evidence-30213348947-1`, ID `8635093639`, digest
+`sha256:2cd41e38...aaeee1b`, 만료 `2026-10-24T17:48:17Z`다.
+
+### 4.23 T61 deployed runtime patch-kill 전용 게이트
+
+구현 커밋:
+
+- `1956b7880506674e37ad2428248a9fc69817dbc2`
+
+핵심 파일:
+
+- `harness/acgh/patchkill.py`
+- `harness/acgh/schema/runtime-patch-kill-plan.schema.json`
+- `harness/registrations/kb-openmetadata/runtime-patch-kill-plan.yaml`
+- `harness/registrations/kb-openmetadata/run_runtime_patch_kill.py`
+- `harness/registrations/kb-openmetadata/interpret_runtime_patch_kill_result.py`
+- `tests/bank/contracts/_runtime_patch_kill_probes.py`
+- `.github/workflows/runtime-patch-kill.yml`
+- `harness/tests/test_runtime_patch_kill_workflow.py`
+
+목적과 개발 방식:
+
+1. source plan의 pending ID 세 개와 runtime plan의 experiment 세 개가 정확히
+   같은 집합인지 검사해 고우선순위 범위 누락을 막는다.
+2. `BANK-OM-001/002/003`은 각각 커스터마이징을 넣기 직전의 고정 predecessor
+   SHA를 사용한다. 선택 selector는 해당 manifest contract에서 파생된
+   required selector여야 하고, predecessor 뒤 commit에 같은 ID trailer가
+   실제 존재해야 한다.
+3. target selector를 연속 두 번 실행해 두 번 모두 assertion failure일 때만
+   negative control을 `proven/pass`로 본다. 한 번이라도 pass면
+   `shell_test/block`, skip·test error·JUnit/exit 불일치·timeout은
+   `analysis_error`다.
+4. 단순 서비스 장애를 기능 소실 검출로 오인하지 않도록 독립 health probe를
+   target 전후에 실행한다. InstanceCode는 인증 API, QueryReport는 API와 고정
+   Query, Data Assertions는 API·실패 test case·별도 로그인 UI 표식을 확인한다.
+   전후 probe가 모두 pass하지 않으면 target이 실패했어도 전체는
+   `analysis_error`다.
+5. result는 full candidate, predecessor source/tree, 배포된 제거본 artifact
+   digest, source→artifact·fixture 배포 기록 digest, governance commit,
+   suite digest, 비밀이 아닌 환경 ID를 함께 결속한다. URL·token·browser
+   storage state는 증거 YAML에 기록하지 않는다.
+6. 별도 `openmetadata-runtime-patch-kill` environment 승인과 환경별
+   concurrency 직렬화를 사용해 일반 T62 실행과 권한·충돌 범위를 분리했다.
+7. 결과와 실제 process exit를 CI 마지막 단계에서 다시 대조하고, pass·block·
+   analysis_error 여부와 무관하게 overwrite 불가 artifact로 90일 보존한다.
+
+고정 predecessor:
+
+| ID | without-patch SHA | target |
+|---|---|---|
+| `BANK-OM-001` | `afcb2d2...` | InstanceCode CRUD/search |
+| `BANK-OM-002` | `a2566fac...` | QueryReport usage |
+| `BANK-OM-003` | `4108411c...` | Data Assertions rendered row |
+
+검증:
+
+```text
+fixed mirror full suite             306 passed, 7 skipped in 34.28s
+runtime patch-kill unit/workflow    pass
+BANK-OM-001 no-runtime rehearsal    analysis_error
+BANK-OM-002 no-runtime rehearsal    analysis_error
+BANK-OM-003 no-runtime rehearsal    analysis_error
+forged actual exit 0                synthetic analysis_error
+```
+
+중요 한계: 이 세 SHA는 순차 재구축 predecessor이지 candidate에서 대상 ID만 뺀
+완전한 candidate-minus-one 재빌드가 아니다. 전후 probe와 배포 기록 digest가
+거짓 증거 위험을 줄이지만 없애지는 않는다. Claude는 ID 격리 제거본을 추가로
+요구할지 독립 검토해야 한다. 또한 실제 predecessor artifact의 build·배포·workflow
+실행은 0건이므로 **T61 전체 pass가 아니다**.
+
 ## 5. 테스트 결과
 
 전체 명령:
@@ -1010,10 +1087,10 @@ OPENMETADATA_PRODUCT_REPO=/private/tmp/om-ci-validation-38bccf \
 결과:
 
 ```text
-297 passed, 7 skipped in 31.18s
+306 passed, 7 skipped in 34.28s
 ```
 
-초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 149개 passing test가
+초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 158개 passing test가
 추가됐고, T25-R과 실제 candidate evidence 묶음은 14개다.
 
 고정 mirror를 연결해 기존 mirror 의존 35개도 모두 실행·통과했다. 남은 7개는
@@ -1041,7 +1118,7 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 | T25-R snapshot 재구성 | source plan·owner·엔진·실 candidate 완료 | 완료 | 실제 candidate pass |
 | T26~T29 vendor 등록·라우팅 | 완료 | 완료 | T25/T26 실 candidate pass |
 | T60-I 구현 존재 | 완료 | 완료 | 9/9 selector resolve pass |
-| T61 patch-kill | plan·runner·증거 완료 | source experiment 완료 | Sybase/Tibero 2/5 pass, API 기반 high 3개 제거본 배포 없음 |
+| T61 patch-kill | source·runtime plan/runner/workflow 완료 | 단위·무환경 fail-closed 완료 | Sybase/Tibero 2/5 pass, runtime high 3개 제거본 배포·실행 없음 |
 | T62 test-result binding·runner | 완료 | 완료 | local fail-closed `2 required pass·7 skip→block`, 실제 runtime run 없음 |
 | T71/T72 운영 정책 | 완료 | 완료 | 조직 승인자·CI 연동 필요 |
 | T80/T81 LLM memo | 완료 | 완료 | 실제 release memo 평가 데이터 없음 |
@@ -1062,7 +1139,7 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 3. Node 22 환경에서 399개 UI typecheck diagnostic을 기준선 분류·수정하고,
    제품 전체 Java/UI build와 source-level test를 candidate에 결속한다.
 4. InstanceCode·QueryReport·Data Assertions 제거본을 각각 빌드·배포해 남은
-   high 3개 patch-kill을 검증한다.
+   high 3개 runtime patch-kill을 실행한다.
 5. runtime workflow의 YAML 결과를 조직의 장기 증거 저장소에 보존한다.
 6. 실제 OM 구/신 스택에서 T90 12단계 evidence를 생성한다.
 7. image/package/Helm digest, SBOM과 서명을 생성한다.
@@ -1081,7 +1158,7 @@ sed -n '1,220p' docs/00-사용가이드/비개발자_사용_가이드.md
 ```
 
 그 다음에는 owner·승인 라우팅을 입력할 조직 결정을 먼저 확보하고, 실제
-OpenMetadata 테스트 스택에서 live contract 4개를 실행한다. 운영 URL이나
+OpenMetadata 테스트 스택에서 API 4개와 browser 3개를 실행한다. 운영 URL이나
 비밀값이 아직 없으면 임의로 성공 처리하지 말고 `skip/blocker`를 유지한다.
 
 ### Claude 이관 시 반드시 답할 다섯 질문
@@ -1089,7 +1166,7 @@ OpenMetadata 테스트 스택에서 live contract 4개를 실행한다. 운영 U
 | 질문 | 이 문서에서 확인할 곳 |
 |---|---|
 | 최종 목적은 무엇인가 | §1 |
-| 지금까지 무엇을 만들었는가 | §4.1~§4.21 |
+| 지금까지 무엇을 만들었는가 | §4.1~§4.23 |
 | 어떤 방식으로 만들었는가 | 각 구현 절의 파일·개발 방식 |
 | 무엇으로 검증했고 무엇이 미실행인가 | §5~§6 |
 | 다음에 무엇을 어떤 순서로 할 것인가 | §7과 첫 실행 명령 |
@@ -1120,6 +1197,12 @@ OpenMetadata 테스트 스택에서 live contract 4개를 실행한다. 운영 U
 15. predecessor source negative control이 대상 패치 이외의 차이 때문에
     거짓 `proven`을 만들 수 있는지, 그리고 JUnit failure와 test error를 모든
     경로에서 올바르게 구분하는가.
+16. runtime patch-kill의 전후 health probe가 인증 실패, fixture 손상, UI 장애를
+    target 기능 소실과 충분히 분리하는가.
+17. ordered predecessor 방식이 candidate-minus-one이 아닌 탓에 거짓 `proven`을
+    만들 counterexample이 있는가. 있다면 ID 격리 재빌드를 필수화해야 하는가.
+18. counterfactual artifact digest와 deployment evidence digest만으로 실제 URL이
+    그 바이트를 서비스했다는 결속이 충분한가.
 
 검토 결과는 `Blocking / Serious / Minor / Validated`로 나누고, 각 항목에 정확한
 파일·라인·재현 테스트를 제시해 달라. 문서의 완료 표시가 아니라 코드와

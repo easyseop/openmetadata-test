@@ -19,13 +19,13 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 pip install jsonschema pathspec pyyaml pytest
 OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata \
   python -m pytest harness/tests tests/bank/contracts
-# 고정 mirror 연결 시 304개: 297 pass·7 operational skip
+# 고정 mirror 연결 시 313개: 306 pass·7 operational skip
 bash harness/fixtures/fetch_upstream.sh            # 실제 OM 미러(없으면 미러 테스트 자동 skip)
 ```
 
 Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
 
-## 구현 모듈 (현재 304개 테스트: 297 pass·7 operational skip)
+## 구현 모듈 (현재 313개 테스트: 306 pass·7 operational skip)
 
 | 모듈 | 담당 | 루트 README 검증기# / 영역 |
 |---|---|---|
@@ -130,6 +130,21 @@ JUnit상 assertion failure만 `proven/pass`다. 패치가 없는데 통과하면
 pass이며, InstanceCode·QueryReport·Data Assertions는 제거본을 실제 배포해야
 하므로 pending이다. 즉 전체 high/critical T61 통과가 아니라 2/5 scoped pass다.
 Source CI artifact는 실행별 고유 이름으로 90일 보존된다.
+
+## T61 deployed runtime patch-kill
+
+`Runtime patch-kill` workflow는 source plan에서 pending인 InstanceCode,
+QueryReport, Data Assertions 중 하나를 별도 제거본 환경에서 검사한다. 대상
+required selector는 연속 두 번 실패해야 하고, 기능과 독립적인 API·fixture·UI
+health probe는 실행 전후 모두 통과해야 한다. 대상 통과는 `block`, probe
+실패·skip·error·timeout·JUnit/exit 불일치는 `analysis_error`다.
+
+정본 plan은 `runtime-patch-kill-plan.yaml`이다. full candidate와 predecessor
+source/tree, 배포 artifact digest, source→artifact·fixture 배포 기록 digest,
+governance/suite digest, 환경 ID를 결과에 묶고 전용
+`openmetadata-runtime-patch-kill` 승인 환경에서 한 스택당 직렬 실행한다.
+증거는 덮어쓰기 없이 90일 보존한다. 세 제거본의 실제 build·배포·실행은 아직
+0건이며, 고정 predecessor가 완전한 candidate-minus-one은 아니라는 한계가 있다.
 
 ## T62 실제 환경 계약 실행
 

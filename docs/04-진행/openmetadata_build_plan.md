@@ -380,12 +380,15 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **선행**: T04·T14.
 
 ### T61. patch-kill test
-- **상태(2026-07-27)**: 🟡 source-capable high 2/5 완료. Sybase는
+- **상태(2026-07-27)**: 🟡 source-capable high 2/5 증거 완료, runtime high
+  3/5 검사기 구현 완료·운영 실행 미완. Sybase는
   `6e5b654f...`, Tibero는 `41b224ad...` 고정 predecessor에서 외부 contract가
   assertion failure를 내는 것을 JUnit/exit 대조로 입증했다. candidate·
   governance commit·plan digest·selector·without-patch SHA를 machine result에
   결속하고 CI artifact로 90일 보존한다. InstanceCode·QueryReport·Data
-  Assertions는 제거본 runtime 배포가 없어 pending이다.
+  Assertions는 별도 승인 workflow, target 2회 실행, 전후 API/data/UI health
+  probe, predecessor source/tree·artifact·deployment evidence·suite 결속까지
+  구현했지만 제거본 runtime 배포가 없어 pending이다.
 - **목적**: 테스트가 커스터마이징 생존을 실제로 입증(§5·C-4).
 - **충족**: P0-5·P0-7 / 신규 REQ.
 - **구현**: critical/high 패치를 제외한 임시 스택 생성 → 그 ID required 테스트 실행 →

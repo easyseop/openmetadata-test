@@ -1,6 +1,6 @@
 schema_version: 1
-generated_at: "2026-07-27T02:46:31+09:00"
-governance_evidence_commit: 093724faa499458eb4723511914a1376138ef014
+generated_at: "2026-07-27T02:58:20+09:00"
+governance_evidence_commit: 1956b7880506674e37ad2428248a9fc69817dbc2
 repository: easyseop/OpenMetadata
 branch: codex/bank-vendor-1.13.1-rebuild
 upstream:
@@ -75,7 +75,7 @@ gates:
     active_ids: 7
     required_paths: 10
     contracts: 7
-    effective_test_ids: 7
+    effective_test_ids: 9
   t60_i_required_test_implementations:
     verdict: pass
     implemented_required_tests: 9
@@ -107,7 +107,7 @@ product_verification:
     candidate_sha_locked: true
     local_simulation:
       verdict: pass
-      tests_passed: 297
+      tests_passed: 306
       tests_skipped_operational: 7
       source_gates_passed: 5
     prior_remote_run:
@@ -177,6 +177,23 @@ product_verification:
         digest: sha256:bb8b97516ea4b39ba5e14a866327ad18785f3b25ee4aeb02b6da3a2cb12cf109
         expires_at: "2026-10-24T17:30:09Z"
       url: https://github.com/easyseop/openmetadata-test/actions/runs/30212703620
+    rendered_contract_remote_run:
+      id: 30213348947
+      head_sha: a502d92db1ad77baeb12cae155febb97af85be0c
+      conclusion: success
+      annotations: 0
+      tests_passed: 297
+      tests_skipped_operational: 7
+      implemented_required_tests: 9
+      source_gates_passed: 5
+      source_patch_kill_experiments_passed: 2
+      source_patch_kill_result_digest: sha256:a2a52fe71848e9a9118a6e1d60da02414fa8a8c90e0d26e51435c3414edb1864
+      evidence_artifact:
+        id: 8635093639
+        name: source-patch-kill-evidence-30213348947-1
+        digest: sha256:2cd41e38e638913f9fc99e154b1dae07dbca11f26089248ed921316d8aaeee1b
+        expires_at: "2026-10-24T17:48:17Z"
+      url: https://github.com/easyseop/openmetadata-test/actions/runs/30213348947
   environment:
     node: 24.15.0
     yarn: 1.22.22
@@ -249,6 +266,36 @@ product_verification:
       missing_files: error
       reports_artifact_id_digest_url: true
     retention_limit: GitHub retains the non-overwritable evidence artifact for 90 days; an organization-owned long-term archive is not connected yet
+  runtime_patch_kill_gate:
+    implementation_commit: 1956b7880506674e37ad2428248a9fc69817dbc2
+    workflow: .github/workflows/runtime-patch-kill.yml
+    environment: openmetadata-runtime-patch-kill
+    source_pending_partition_closed:
+      - BANK-OM-001
+      - BANK-OM-002
+      - BANK-OM-003
+    method: predecessor-runtime-negative-control
+    target_repeats: 2
+    health_bookends:
+      - preflight
+      - postflight
+    bindings:
+      - candidate_commit
+      - counterfactual_source_commit
+      - counterfactual_tree
+      - counterfactual_artifact_digest
+      - deployment_evidence_digest
+      - governance_commit
+      - suite_digest
+      - target_environment
+    evidence_retention_days: 90
+    local_no_runtime_validation:
+      BANK-OM-001: analysis_error
+      BANK-OM-002: analysis_error
+      BANK-OM-003: analysis_error
+      false_exit: analysis_error
+    operational_runs_executed: 0
+    limitation: The fixed predecessors are ordered reconstruction checkpoints, not isolated candidate-minus-one rebuilds; deployment evidence and healthy probes reduce but do not erase that review concern.
   ui_typecheck:
     verdict: fail
     command: NODE_OPTIONS=--max-old-space-size=6144 yarn tsc:check
@@ -262,10 +309,11 @@ product_verification:
     version: 4.9.2
     sha256: bb117b1476691dc2915a318efd36f8957c0ad93447fb1dac01107eb15fe137cd
 limitations:
-  - All seven required test selectors resolve to implementations, but four live API/DB/search projection contracts skip because no OpenMetadata runtime URL is available.
-  - The Korean IME source guard passes separately; the required Playwright contract skips without an authenticated editable SchemaEditor URL and storage state.
+  - All nine required test selectors resolve to implementations, but four live API/DB/search selectors skip because no OpenMetadata runtime URL is available.
+  - The Korean IME source guard passes separately; three required Playwright selectors skip without authenticated page URLs and storage state.
   - The T62 runtime workflow and fail-closed producer are implemented, and the workflow retains its evidence artifact for 90 days, but no real runtime run or organization-owned long-term archive exists yet.
   - The source candidate is not a release artifact; image/package build, SBOM, signing, and promotion gates remain.
   - The focused Tibero Jest suite passes, but the product-wide UI typecheck still fails with 399 pre-existing or unrelated diagnostics; Java and full UI suites remain unverified.
   - The focused UI run used Node 24 with --ignore-engines because the available environment did not include the package-supported Node 22 runtime.
   - The Node 24 action-pin workflow passed remotely; four live runtime contracts remain skipped because no deployed OpenMetadata URL is attached to the source-only job.
+  - The runtime patch-kill workflow is implemented, but no separately built and deployed predecessor artifact has been executed through it.

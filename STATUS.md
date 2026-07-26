@@ -2,8 +2,9 @@
 
 > Updated: 2026-07-27
 > Branch: `claude/markdown-file-feedback-26933w`
-> Last verified implementation commit: `093724f`
+> Last verified implementation commit: `1956b78`
 > Rendered UI runtime-contract expansion commit: `093724f`
+> Runtime patch-kill gate implementation commit: `1956b78`
 > Nondeveloper guide and handoff implementation commit: `0f0904b`
 > Runtime operations documentation commit: `a291f31`
 > Runtime evidence retention implementation commit: `502f42f`
@@ -62,7 +63,7 @@ member and a Tibero schema-mapping unit test under the same consecutive
 ## Verification
 
 ```text
-297 passed, 7 skipped in 31.18s
+306 passed, 7 skipped in 34.28s
 ```
 
 This CI-equivalent local run used the two fixed historical mirror refs, so the
@@ -79,6 +80,16 @@ to candidate `38bccf90...`, governance implementation `7a2fb5f...`, the plan
 digest, both predecessor SHAs, and both exact selectors. This is a
 **source-capable 2/5 high-ID result**, not complete T61: InstanceCode,
 QueryReport, and Data Assertions still require deployed counterfactual stacks.
+
+The separate `Runtime patch-kill` workflow now implements those remaining
+three plans. Each selected required test must fail twice on its locked
+predecessor deployment while independent API/data/UI probes pass both before
+and after. Candidate, predecessor source/tree, deployed artifact digest,
+deployment-record digest, governance commit, suite digest, and environment ID
+are bound into one fail-closed result and retained for 90 days. All three
+no-environment rehearsals correctly returned `analysis_error`; no predecessor
+artifact has actually been built or deployed, so the 3/5 runtime evidence is
+still pending.
 
 Actual source-candidate gates:
 
@@ -125,7 +136,7 @@ combined test suite, runs T25/T26/T60-I/T30/T31, and runs the two source-capable
 T61 negative controls. Patch-kill evidence is kept as a non-overwritable
 90-day artifact. The workflow's exact
 product fetch, test, and gate commands pass in a clean
-local simulation (`297 passed, 7 operational skips`; five source gates and two
+local simulation (`306 passed, 7 operational skips`; five source gates and two
 source patch-kill experiments pass).
 Historical remote
 run `30160752510` also passed. GitHub emitted a Node 20 action deprecation
@@ -177,9 +188,10 @@ This is not yet evidence that the bank distribution is deployable:
    IME selectors require their authenticated URLs. The runtime producer now
    records these as `2 pass, 7 skipped -> block`, so a full candidate-bound T62
    pass does not yet exist.
-4. Sybase and Tibero source patch-kill negative controls pass, but the three
-   API-based high IDs still need separately deployed without-patch stacks.
-   Therefore the complete high/critical T61 gate is not passed.
+4. Sybase and Tibero source patch-kill negative controls pass, and a separate
+   fail-closed runtime checker now exists for the other three high IDs. Those
+   three still need separately built and deployed predecessor stacks and real
+   executions. Therefore the complete high/critical T61 gate is not passed.
 5. T90/T91/T94 judgment contracts are implemented, but no real OpenMetadata
    Docker upgrade run, production-like DB restore, artifact promotion, or
    offline signature verification was executed in this environment.

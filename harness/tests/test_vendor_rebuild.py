@@ -442,7 +442,7 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
     assert product["source_candidate_ci"]["candidate_sha_locked"] is True
     assert (
         product["source_candidate_ci"]["local_simulation"]["tests_passed"]
-        == 297
+        == 306
     )
     assert (
         product["source_candidate_ci"]["local_simulation"][
@@ -522,6 +522,17 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
     assert retention["missing_files"] == "error"
     assert retention["reports_artifact_id_digest_url"] is True
     assert runtime["operational_run_executed"] is False
+    runtime_patch_kill = product["runtime_patch_kill_gate"]
+    assert runtime_patch_kill["operational_runs_executed"] == 0
+    assert runtime_patch_kill["target_repeats"] == 2
+    assert set(runtime_patch_kill["source_pending_partition_closed"]) == {
+        "BANK-OM-001",
+        "BANK-OM-002",
+        "BANK-OM-003",
+    }
+    assert set(
+        runtime_patch_kill["local_no_runtime_validation"].values()
+    ) == {V.ANALYSIS_ERROR}
     assert product["ui_typecheck"]["verdict"] == "fail"
     assert product["ui_typecheck"]["error_lines"] > 0
     assert product["ui_typecheck"]["changed_path_error_lines"] == 0

@@ -208,8 +208,8 @@ harness/
 
 **완료:** 기존 patch-replay M1~M4, vendor-merge T24~T29·T25-R, 실제 7개 등록부,
 T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
-현재 통합 테스트는 304개이며, 고정 upstream mirror와 sparse product checkout을
-연결한 CI-equivalent 환경에서 297개 통과, API 4개와 실제 브라우저 IME 1개만
+현재 통합 테스트는 313개이며, 고정 upstream mirror와 sparse product checkout을
+연결한 CI-equivalent 환경에서 306개 통과, API 4개와 실제 브라우저 3개만
 skip됐다.
 - **T60** contract 카탈로그+결속 `contracts.py` · **T61** patch-kill
   `patchkill.py` · **T51/52** 구조화 diff `structdiff.py`(실제 table.json
@@ -220,7 +220,7 @@ skip됐다.
 - **제품 집중 검증**: Tibero `DatabaseServiceUtils.test.tsx` 13/13 pass,
   변경 2경로 Prettier pass. Node 24·6GB heap의 전체 UI typecheck는 399개
   diagnostic으로 fail했지만 두 변경 경로의 매칭 오류는 0개다.
-- **T60-I/contract 구현**: catalog의 7 selector 모두 실제 파일·함수로 resolve.
+- **T60-I/contract 구현**: catalog의 9 selector 모두 실제 파일·함수로 resolve.
   Sybase·Tibero 2개 required contract와 별도 IME source guard는 pass.
   OpenMetadata live URL이 필요한 InstanceCode·QueryReport·failed assertion·
   bank column API 4개, 실제 Data Assertions·bank column·SchemaEditor 화면이
@@ -232,6 +232,13 @@ skip됐다.
   digest·selector·without-patch SHA가
   `source-patch-kill-evidence.yaml`에 결속됐다. API 기반 high ID 3개는
   제거본 runtime 미배포로 pending이므로 전체 T61 pass는 아니다.
+- **T61 runtime patch-kill 검사기**:
+  `runtime-patch-kill-plan.yaml`, 별도 runner/interpreter와
+  `.github/workflows/runtime-patch-kill.yml`을 구현했다. source pending 세 ID를
+  정확히 포괄하고, target 2회 실패와 전후 API/data/UI health pass를 함께
+  요구하며 source/tree/artifact/deployment evidence/governance/suite/environment
+  identity를 결속한다. 무환경 모의 세 건과 거짓 exit는 모두
+  `analysis_error`로 차단됐다. 실제 제거본 build·배포·실행은 0건이다.
 - **T62 runtime job**: `.github/workflows/runtime-contracts.yml`,
   `acgh/pytest_runs.py`, `run_runtime_contracts.py`,
   `interpret_runtime_result.py`를 구현했다. 각 selector를 shell 없이 별도
@@ -244,8 +251,8 @@ skip됐다.
 - **source-candidate CI**: `.github/workflows/source-candidate.yml` 추가. action과
   product commit을 SHA로 고정하고 mirror·통합 테스트·T25/T26/T60-I/T30/T31을
   자동 실행하고 source patch-kill 결과를 90일 artifact로 보존한다. 현재 exact
-  command의 clean local simulation은 297 pass·5 skip, source gate 5개,
-  source patch-kill 2개 pass. 최신 확인 run `30212561441`은 297 pass·5 skip,
+  command의 clean local simulation은 306 pass·7 skip, source gate 5개,
+  source patch-kill 2개 pass. 확인 run `30212561441`은 297 pass·5 skip,
   source gate 5개·patch-kill 2개·artifact upload pass로 success. 증거 artifact
   ID `8634882239`, digest `sha256:d5afd822...a7bfa32f`, 만료
   `2026-10-24T17:26:01Z`. 이 run에서 upload-artifact v4 Node 20 경고가 생겨
@@ -257,7 +264,10 @@ skip됐다.
   `30160752510`은 success. Node 20
   deprecation 때문에 checkout v5/setup-python v6 SHA로 올렸고 Node 24
   재검증 run `30160846880`도 annotation 없이 success.
-- **현재 차단 조건**: 7개 owner 미배정, live API contract 4개와 browser IME의
+  최신 확인 run `30213348947`은 297 pass·7 skip, T60-I 9/9, source gate
+  5개·patch-kill 2개 pass이며 artifact ID `8635093639`, digest
+  `sha256:2cd41e38...aaeee1b`, 만료 `2026-10-24T17:48:17Z`다.
+- **현재 차단 조건**: 7개 owner 미배정, live API selector 4개와 browser 3개의
   candidate-bound T62 결과 없음, 제품 전체 Java build와 full UI
   suite/typecheck green, 실제 T90/T91/T94 증거 없음.
 
@@ -297,7 +307,7 @@ skip됐다.
 | T27 merge conflict evidence | ✅ | `acgh/conflicts.py` |
 | T28 전략 라우팅 | ✅ | `acgh/routing.py` |
 | T29 실제 7개 등록 | ✅ 등록·⚠ 운영증거 | `acgh/registry.py` + `registrations/kb-openmetadata/` |
-| T61 patch-kill | 🟡 source high 2/5 | `acgh/patchkill.py` + `patch-kill-plan.yaml` + `source-patch-kill-evidence.yaml` |
+| T61 patch-kill | 🟡 source 2/5 증거·runtime 3/5 검사기 구현 | `acgh/patchkill.py` + source/runtime plan·workflow + `source-patch-kill-evidence.yaml` |
 | T62 test-run 결속·실행 경계 | ✅ 실행기·90일 증거 보존·⚠ 운영미실행 | `acgh/testruns.py` + `acgh/pytest_runs.py` + `runtime-contracts.yml` |
 | T71/T72 fast lane·break-glass | ✅ | `acgh/fastlane.py` + `acgh/breakglass.py` |
 | T80/T81 LLM Memo·지표 | ✅ | `acgh/impact_memo.py` |
@@ -382,7 +392,7 @@ replay tree(T22 `replay.replay_and_compare` 재사용), candidate 변경 시 기
 2. `/home/user/om-mirror` 존재 확인(없으면 §7 재획득), `pip install jsonschema pathspec`.
 3. `OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata python -m pytest
    harness/tests tests/bank/contracts` → mirror 연결 기준 현재
-   304개(297 pass·7 operational skip) 재확인.
+   313개(306 pass·7 operational skip) 재확인.
 4. `STATUS.md`의 production blocker와
    `docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`의 실제 실행 순서를 따른다.
 5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4.1 로그 + 이 표 갱신.
