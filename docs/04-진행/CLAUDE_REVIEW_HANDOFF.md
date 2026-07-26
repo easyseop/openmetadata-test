@@ -6,7 +6,7 @@
 > 마지막 검증 구현 커밋:
 > `b1d3fa6d00b75c96d837587ea0730f3d6d9e5323`
 > 최신 문서 묶음 커밋:
-> `2573c63edc16c8b853ac6c8b3a51562a5360a4b5` (이번 묶음 직전)
+> `a71509295bdb1f5d7b0a74df0e398e514143ca19` (원격 증적 동기화 직전)
 > T63 UI typecheck 기준선 게이트 구현 커밋:
 > `39294bf38172f16528833640c03302aa83ade7b4`
 > 제품 UI 타입 보강 커밋:
@@ -25,7 +25,9 @@
 > `849ae756cd238f218b5e3a6c795a392305cb32ee`
 > BANK-OM-011 거버넌스 등록 / evidence 재결속:
 > `b1d3fa6d00b75c96d837587ea0730f3d6d9e5323` /
-> `c246ae2`
+> `c246ae29e56f51a131c9b5752e901209b0062b06`
+> BANK-OM-011 증적 분류·문서 커밋:
+> `a71509295bdb1f5d7b0a74df0e398e514143ca19`
 > Data Assertions·bank column 실제 화면 계약 보강 커밋:
 > `093724faa499458eb4723511914a1376138ef014`
 > T61 deployed runtime patch-kill 게이트 구현 커밋:
@@ -1525,7 +1527,26 @@ source patch-kill result     sha256:a0f194b3f566d92fedfe7bc9aeaf35c65fa54ea79f37
 
 T63 verdict는 개선 후에도 `approval`이다. 신규 path/code는 없지만 후보 자체에
 355개 진단이 남아 있으므로 designated owner 승인 또는 추가 수리가 필요하다.
-정확한 후보의 첫 원격 source-candidate run은 이 문서 묶음을 push한 뒤 기록한다.
+
+원격 재현:
+
+```text
+run                         30222439344
+governance head             a71509295bdb1f5d7b0a74df0e398e514143ca19
+product commit              849ae756cd238f218b5e3a6c795a392305cb32ee
+suite                       316 passed, 7 skipped in 13.71s
+active IDs                  11
+source gates                5 pass
+T60-I                       9/9
+source patch-kill           2 pass
+patch-kill result digest    sha256:9b4e4fecf6016bd0fd8ca8cef66c1538af8e7a215c813069a4d6f945a3be71ae
+artifact ID                 8637594508
+artifact digest             sha256:c6221ec87d2e0e9052d447022c88af1e2861fa895b35e90864c49476d47c38d5
+artifact expiry             2026-10-24T22:05:46Z
+```
+
+Run URL:
+`https://github.com/easyseop/openmetadata-test/actions/runs/30222439344`.
 
 ## 5. 테스트 결과
 
@@ -1576,7 +1597,7 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 | T63 UI typecheck baseline delta | 완료 | 10개 완료 | 실제 원본 396/후보 355, 신규 path/code 0·제거 41, verdict `approval` |
 | BANK-OM-009 공통 검색 타입 | 완료 | focused Jest 18/18·T63 10개 완료 | 원본 396→후보 357, 신규 path/code 0·제거 39, 원격 run 30216708258 성공 |
 | BANK-OM-010 알림 엔터티 ID fallback | 완료 | focused Jest 112/112·T63 10개 완료 | 원본 396→후보 356, 신규 path/code 0·제거 40, 원격 run 30219786626 성공 |
-| BANK-OM-011 목록 변환 타입 계약 | 완료 | focused Jest 7/7·T63 10개 완료 | 원본 396→후보 355, 신규 path/code 0·제거 41, 원격 run 대기 |
+| BANK-OM-011 목록 변환 타입 계약 | 완료 | focused Jest 7/7·T63 10개 완료 | 원본 396→후보 355, 신규 path/code 0·제거 41, 원격 run 30222439344 성공 |
 | T71/T72 운영 정책 | 완료 | 완료 | 조직 승인자·CI 연동 필요 |
 | T80/T81 LLM memo | 완료 | 완료 | 실제 release memo 평가 데이터 없음 |
 | T90 upgrade-run contract | 완료 | 완료 | Docker/DB/search/ingestion 실행 없음 |

@@ -5,7 +5,7 @@
 > Last verified implementation commit: `b1d3fa6`
 > Current product candidate: `849ae756cd238f218b5e3a6c795a392305cb32ee`
 > BANK-OM-011 governance registration / evidence rebind: `b1d3fa6` / `c246ae2`
-> Recorded BANK-OM-010 evidence run: [`30219786626`](https://github.com/easyseop/openmetadata-test/actions/runs/30219786626)
+> Recorded BANK-OM-011 evidence run: [`30222439344`](https://github.com/easyseop/openmetadata-test/actions/runs/30222439344)
 > UI typecheck baseline delta gate commit: `39294bf`
 > Product UI hardening commits: `ddf0dd2`, `70d028a`, `b80d24d`, `849ae756`
 > BANK-OM-010 governance registration commit: `d70fe81`
@@ -281,11 +281,14 @@ Artifact `source-patch-kill-evidence-30219786626-1` has ID `8636860716`,
 digest `sha256:88a16a93...7eb5910`, and expires
 `2026-10-24T20:49:23Z`.
 
-`BANK-OM-011` is locally registered and rebound to product `849ae756cd...`.
-The fixed-mirror governance suite passes 316 tests with seven operational
-skips; T25/T26/T60-I/T30/T31 and both source patch-kill experiments pass.
-The first remote source-candidate run for this exact candidate is pending the
-documentation push.
+The `BANK-OM-011` candidate was verified remotely in
+[`30222439344`](https://github.com/easyseop/openmetadata-test/actions/runs/30222439344)
+at governance head `a715092`: `316 passed, 7 skipped in 13.71s`, all five
+source gates, 11 active customization IDs, T60-I 9/9, and both source
+patch-kill experiments passed against product commit `849ae756cd...`.
+Artifact `source-patch-kill-evidence-30222439344-1` has ID `8637594508`,
+digest `sha256:c6221ec8...47c38d5`, and expires
+`2026-10-24T22:05:46Z`.
 
 ## Important production blockers
 

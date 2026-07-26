@@ -323,10 +323,10 @@ skip됐다.
   governance head `90036ff`에서 316 pass·7 skip, active ID 10개, T60-I 9/9,
   source gate 5개·patch-kill 2개 pass다. artifact ID `8636860716`, digest
   `sha256:88a16a93...7eb5910`, 만료 `2026-10-24T20:49:23Z`다.
-  현재 `BANK-OM-011` 후보 `849ae756...`는 등록 `b1d3fa6`, evidence 재결속
-  `c246ae2`까지 완료했고 로컬 fixed-mirror suite 316 pass·운영 7 skip,
-  source gate 5개·patch-kill 2개 pass다. 정확한 후보의 첫 원격 run은 문서
-  push 뒤 확인한다.
+  현재 `BANK-OM-011` 후보 `849ae756...` 결속 run `30222439344`는 governance
+  head `a715092`에서 316 pass·7 skip, active ID 11개, T60-I 9/9, source gate
+  5개·patch-kill 2개 pass다. artifact ID `8637594508`, digest
+  `sha256:c6221ec8...47c38d5`, 만료 `2026-10-24T22:05:46Z`다.
 - **현재 차단 조건**: 11개 owner 미배정, live API selector 4개와 browser 3개의
   candidate-bound T62 결과 없음, 제품 전체 Java build와 full UI
   suite/typecheck green, 실제 T90/T91/T94 증거 없음.
