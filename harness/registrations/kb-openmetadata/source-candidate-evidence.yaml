@@ -1,6 +1,6 @@
 schema_version: 1
 generated_at: "2026-07-27T02:07:44+09:00"
-governance_evidence_commit: a2cbb5221f50c10d11af26618d1d310ec8a73552
+governance_evidence_commit: 7a2fb5f12af758805cc21abaabb4cb29f1f82dcb
 repository: easyseop/OpenMetadata
 branch: codex/bank-vendor-1.13.1-rebuild
 upstream:
@@ -83,6 +83,7 @@ gates:
     verdict: pass
     scope: source-capable-high-critical
     implementation_commit: a2cbb5221f50c10d11af26618d1d310ec8a73552
+    infra_error_follow_up_commit: 7a2fb5f12af758805cc21abaabb4cb29f1f82dcb
     evidence: source-patch-kill-evidence.yaml
     proven:
       - BANK-OM-006
@@ -106,7 +107,7 @@ product_verification:
     candidate_sha_locked: true
     local_simulation:
       verdict: pass
-      tests_passed: 293
+      tests_passed: 297
       tests_skipped_operational: 5
       source_gates_passed: 5
     prior_remote_run:

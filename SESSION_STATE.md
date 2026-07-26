@@ -207,8 +207,8 @@ harness/
 
 **완료:** 기존 patch-replay M1~M4, vendor-merge T24~T29·T25-R, 실제 7개 등록부,
 T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
-현재 통합 테스트는 298개이며, 고정 upstream mirror와 sparse product checkout을
-연결한 CI-equivalent 환경에서 293개 통과, API 4개와 실제 브라우저 IME 1개만
+현재 통합 테스트는 302개이며, 고정 upstream mirror와 sparse product checkout을
+연결한 CI-equivalent 환경에서 297개 통과, API 4개와 실제 브라우저 IME 1개만
 skip됐다.
 - **T60** contract 카탈로그+결속 `contracts.py` · **T61** patch-kill
   `patchkill.py` · **T51/52** 구조화 diff `structdiff.py`(실제 table.json
@@ -223,6 +223,13 @@ skip됐다.
   Sybase·Tibero 2개 required contract와 별도 IME source guard는 pass.
   OpenMetadata live URL이 필요한 InstanceCode·QueryReport·failed assertion·
   bank column 4개, 실제 SchemaEditor 화면이 필요한 browser IME 1개는 skip.
+- **T61 source patch-kill**: `patch-kill-plan.yaml`과
+  `run_source_patch_kills.py`를 추가했다. Sybase 없는 `6e5b654f...`와 Tibero
+  없는 `41b224ad...`에서 각 required test가 JUnit assertion failure를 내므로
+  두 source experiment는 pass다. candidate·governance `a2cbb52...`·plan
+  digest·selector·without-patch SHA가
+  `source-patch-kill-evidence.yaml`에 결속됐다. API 기반 high ID 3개는
+  제거본 runtime 미배포로 pending이므로 전체 T61 pass는 아니다.
 - **T62 runtime job**: `.github/workflows/runtime-contracts.yml`,
   `acgh/pytest_runs.py`, `run_runtime_contracts.py`,
   `interpret_runtime_result.py`를 구현했다. 각 selector를 shell 없이 별도
@@ -234,8 +241,9 @@ skip됐다.
   90일 이후 조직 장기 보존 연결은 남았다.
 - **source-candidate CI**: `.github/workflows/source-candidate.yml` 추가. action과
   product commit을 SHA로 고정하고 mirror·통합 테스트·T25/T26/T60-I/T30/T31을
-  자동 실행한다. 현재 exact command의 clean local simulation은 293 pass·5 skip 및
-  source gate 5개 pass. 최신 확인 run `30162134698`도 293 pass·5 skip,
+  자동 실행하고 source patch-kill 결과를 90일 artifact로 보존한다. 현재 exact
+  command의 clean local simulation은 297 pass·5 skip, source gate 5개,
+  source patch-kill 2개 pass. 최신 확인 run `30162134698`은 이전 head에서 293 pass·5 skip,
   source gate 5개 pass로 success. 최초 remote run `30160752510`은 success. Node 20
   deprecation 때문에 checkout v5/setup-python v6 SHA로 올렸고 Node 24
   재검증 run `30160846880`도 annotation 없이 success.
@@ -279,6 +287,7 @@ skip됐다.
 | T27 merge conflict evidence | ✅ | `acgh/conflicts.py` |
 | T28 전략 라우팅 | ✅ | `acgh/routing.py` |
 | T29 실제 7개 등록 | ✅ 등록·⚠ 운영증거 | `acgh/registry.py` + `registrations/kb-openmetadata/` |
+| T61 patch-kill | 🟡 source high 2/5 | `acgh/patchkill.py` + `patch-kill-plan.yaml` + `source-patch-kill-evidence.yaml` |
 | T62 test-run 결속·실행 경계 | ✅ 실행기·90일 증거 보존·⚠ 운영미실행 | `acgh/testruns.py` + `acgh/pytest_runs.py` + `runtime-contracts.yml` |
 | T71/T72 fast lane·break-glass | ✅ | `acgh/fastlane.py` + `acgh/breakglass.py` |
 | T80/T81 LLM Memo·지표 | ✅ | `acgh/impact_memo.py` |
@@ -303,8 +312,9 @@ skip됐다.
 1. 공식 `1.13.1-release`에서 vendor branch를 만들고 7개 기능을 ID series로
    재구성한 뒤 T25-R과 T25 ancestry를 통과시킨다.
 2. 7개 owner/승인 라우팅을 배정한다.
-3. API·DB·검색·권한·UI/IME·Sybase·Tibero contract test를 실제로 구현하고
-   T61 patch-kill과 T62 candidate-bound result를 만든다.
+3. InstanceCode·QueryReport·Data Assertions 제거본을 실제 배포해 남은 T61
+   3건을 실행하고, API·DB·검색·권한·UI/IME 전체 T62 candidate-bound result를
+   만든다.
 4. Docker/운영 유사 데이터로 T90 12단계를 실행한다.
 5. T91 실제 artifact 승격과 T94 실제 오프라인 서명·내부망 재검증을 수행한다.
 
@@ -362,7 +372,7 @@ replay tree(T22 `replay.replay_and_compare` 재사용), candidate 변경 시 기
 2. `/home/user/om-mirror` 존재 확인(없으면 §7 재획득), `pip install jsonschema pathspec`.
 3. `OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata python -m pytest
    harness/tests tests/bank/contracts` → mirror 연결 기준 현재
-   298개(293 pass·5 operational skip) 재확인.
+   302개(297 pass·5 operational skip) 재확인.
 4. `STATUS.md`의 production blocker와
    `docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`의 실제 실행 순서를 따른다.
 5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4.1 로그 + 이 표 갱신.

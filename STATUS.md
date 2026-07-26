@@ -2,10 +2,11 @@
 
 > Updated: 2026-07-27
 > Branch: `claude/markdown-file-feedback-26933w`
-> Last verified implementation commit: `502f42f`
+> Last verified implementation commit: `7a2fb5f`
 > Nondeveloper guide and handoff implementation commit: `0f0904b`
 > Runtime operations documentation commit: `a291f31`
 > Runtime evidence retention implementation commit: `502f42f`
+> Source patch-kill implementation commits: `a2cbb52`, `7a2fb5f`
 > Detailed review handoff: [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)
 > Nondeveloper entry point: [`docs/00-사용가이드/비개발자_사용_가이드.md`](docs/00-사용가이드/비개발자_사용_가이드.md)
 
@@ -59,13 +60,23 @@ member and a Tibero schema-mapping unit test under the same consecutive
 ## Verification
 
 ```text
-293 passed, 5 skipped in 36.73s
+297 passed, 5 skipped in 30.45s
 ```
 
 This CI-equivalent local run used the two fixed historical mirror refs, so the
 previous 35 mirror skips all executed and passed. Four remaining skips require
 a live OpenMetadata URL and one requires a real authenticated browser page;
 none are counted as passes. All 14 T25-R tests pass.
+
+T61 source negative controls now run the external Sybase and Tibero contract
+tests against fixed predecessor commits that do not contain the corresponding
+connector patch. Both tests fail as required, so their scoped patch-kill
+verdict is pass. The machine result is
+`harness/registrations/kb-openmetadata/source-patch-kill-evidence.yaml`, bound
+to candidate `38bccf90...`, governance implementation `7a2fb5f...`, the plan
+digest, both predecessor SHAs, and both exact selectors. This is a
+**source-capable 2/5 high-ID result**, not complete T61: InstanceCode,
+QueryReport, and Data Assertions still require deployed counterfactual stacks.
 
 Actual source-candidate gates:
 
@@ -106,11 +117,14 @@ candidate's own Tibero test passed, but the broad typecheck failure remains a
 release blocker rather than being reclassified as a test pass.
 
 Source-candidate CI is defined in `.github/workflows/source-candidate.yml`.
-It pins both third-party actions by 40-hex SHA, pins product commit
+It pins all third-party actions by 40-hex SHA, pins product commit
 `38bccf9077...`, fetches the two historical upstream fixtures, runs the
-combined test suite, and runs T25/T26/T60-I/T30/T31. The workflow's exact
+combined test suite, runs T25/T26/T60-I/T30/T31, and runs the two source-capable
+T61 negative controls. Patch-kill evidence is kept as a non-overwritable
+90-day artifact. The workflow's exact
 product fetch, test, and gate commands pass in a clean
-local simulation (`293 passed, 5 operational skips`; five source gates pass).
+local simulation (`297 passed, 5 operational skips`; five source gates and two
+source patch-kill experiments pass).
 Historical remote
 run `30160752510` also passed. GitHub emitted a Node 20 action deprecation
 annotation, so checkout/setup-python were upgraded to pinned Node 24 majors;
@@ -143,15 +157,18 @@ This is not yet evidence that the bank distribution is deployable:
    contract skips without `BANK_IME_EDITOR_URL`. The runtime producer now
    records these as `2 pass, 5 skipped -> block`, so a full candidate-bound T62
    pass does not yet exist.
-4. T90/T91/T94 judgment contracts are implemented, but no real OpenMetadata
+4. Sybase and Tibero source patch-kill negative controls pass, but the three
+   API-based high IDs still need separately deployed without-patch stacks.
+   Therefore the complete high/critical T61 gate is not passed.
+5. T90/T91/T94 judgment contracts are implemented, but no real OpenMetadata
    Docker upgrade run, production-like DB restore, artifact promotion, or
    offline signature verification was executed in this environment.
    Runtime YAML is retained in GitHub for 90 days, but an organization-owned
    long-term evidence archive is not connected.
-5. The candidate lock currently binds the source Git tree identity. A complete
+6. The candidate lock currently binds the source Git tree identity. A complete
    Java/UI build, image/package digest, SBOM, signing, and promotion evidence
    still need to be produced.
-6. The focused Tibero Jest suite passes 13/13, but the product-wide UI
+7. The focused Tibero Jest suite passes 13/13, but the product-wide UI
    typecheck reports 399 diagnostics. Neither changed Tibero path appears in
    those diagnostics; the broad baseline still must be repaired or
    independently baselined on the supported Node 22 toolchain.

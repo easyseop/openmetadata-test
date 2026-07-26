@@ -19,13 +19,13 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 pip install jsonschema pathspec pyyaml pytest
 OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata \
   python -m pytest harness/tests tests/bank/contracts
-# 고정 mirror 연결 시 298개: 293 pass·5 operational skip
+# 고정 mirror 연결 시 302개: 297 pass·5 operational skip
 bash harness/fixtures/fetch_upstream.sh            # 실제 OM 미러(없으면 미러 테스트 자동 skip)
 ```
 
 Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
 
-## 구현 모듈 (현재 298개 테스트: 293 pass·5 operational skip)
+## 구현 모듈 (현재 302개 테스트: 297 pass·5 operational skip)
 
 | 모듈 | 담당 | 루트 README 검증기# / 영역 |
 |---|---|---|
@@ -101,10 +101,35 @@ registered JSON의 최종 의미 값과 나머지 파일 내용은 snapshot과 �
 - `registrations/kb-openmetadata/source-candidate-evidence.yaml`
 - `registrations/kb-openmetadata/reconstruct_series.py`
 - `registrations/kb-openmetadata/run_source_candidate_gates.py`
+- `registrations/kb-openmetadata/patch-kill-plan.yaml`
+- `registrations/kb-openmetadata/source-patch-kill-evidence.yaml`
+- `registrations/kb-openmetadata/run_source_patch_kills.py`
 - product branch:
   `easyseop/OpenMetadata:codex/bank-vendor-1.13.1-rebuild`
 - reconstruction checkpoint: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
 - current candidate: `38bccf90779a8afe4a4f0e9313e11706f6d940d4`
+
+## T61 source patch-kill
+
+`run_source_patch_kills.py`는 고정 candidate와 plan이 일치하는지, 각
+without-patch SHA가 candidate의 조상인지, 그 뒤에 해당 Customization-ID commit이
+실제로 있는지, selector가 contract에 결속됐는지를 먼저 확인한다. 그 다음 별도
+worktree에서 selector를 실행한다.
+
+```bash
+python harness/registrations/kb-openmetadata/run_source_patch_kills.py \
+  --repo /path/to/locked/OpenMetadata \
+  --harness harness \
+  --registration harness/registrations/kb-openmetadata \
+  --output /safe/evidence/source-patch-kill.yaml
+```
+
+JUnit상 assertion failure만 `proven/pass`다. 패치가 없는데 통과하면
+`shell_test/block`, skip·test error면 `inconclusive/analysis_error`, pytest
+내부 오류·timeout이면 `infra_error/analysis_error`다. 현재 Sybase와 Tibero 두 source experiment는
+pass이며, InstanceCode·QueryReport·Data Assertions는 제거본을 실제 배포해야
+하므로 pending이다. 즉 전체 high/critical T61 통과가 아니라 2/5 scoped pass다.
+Source CI artifact는 실행별 고유 이름으로 90일 보존된다.
 
 ## T62 실제 환경 계약 실행
 

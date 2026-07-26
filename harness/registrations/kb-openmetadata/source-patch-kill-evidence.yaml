@@ -8,7 +8,7 @@ canonical_payload:
     reasons:
     - 'proven: required test failed without the patch'
     verdict: pass
-  harness_version: a2cbb5221f50c10d11af26618d1d310ec8a73552
+  harness_version: 7a2fb5f12af758805cc21abaabb4cb29f1f82dcb
   inputs:
     experiments:
     - customization_id: BANK-OM-006
@@ -30,13 +30,13 @@ canonical_payload:
         sha: 38bccf90779a8afe4a4f0e9313e11706f6d940d4
       governance:
         repository: easyseop/openmetadata-test
-        sha: a2cbb5221f50c10d11af26618d1d310ec8a73552
+        sha: 7a2fb5f12af758805cc21abaabb4cb29f1f82dcb
     scope: source-capable-high-critical
   verdict: pass
 expected_exit_code: 0
 observational_metadata:
   pending_runtime_experiments: 3
-  run_id: local-a2cbb52
+  run_id: local-final
   source_experiments: 2
-result_digest: sha256:b7a92eb47f1372c8d03c8d5336820abf0df47457178121a3d9509a4f9570aa2b
+result_digest: sha256:1cadd0bed3e58b01d5720bd1519452de838785f1d1328b14dc58c4de04bc9e2d
 schema_version: 1

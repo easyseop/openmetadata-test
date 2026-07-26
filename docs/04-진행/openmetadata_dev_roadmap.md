@@ -170,7 +170,8 @@ path 문법)를 반영한 뒤 동결. T12·T13은 즉시 진행 가능.
   selector의 파일·AST 함수 구현 존재까지 검사하고 실제 실행 결과는 T62에 맡긴다.
 - **T61 patch-kill** — high/critical 우선·상태 4종(killed/survived/inconclusive/
   infra_error). *왜*: 테스트가 커스터마이징 생존을 실제로 입증하는지 검증(껍데기
-  테스트 방지).
+  테스트 방지). 현재 Sybase/Tibero source negative control 2/5 pass, API 기반
+  high ID 3개는 제거본 runtime 배포 대기.
 
 ### M7 — 정책·운영
 - **T70 정책 base-평가** — policy PR을 base 정책으로 판정·attestation 분리. *왜*:
@@ -330,6 +331,7 @@ T93·T42 · T50 · T70 최소.
 | T42 upgrade_watch(케이스 D) | ✅ 완료 | `acgh/upgrade_watch.py`+`impact.py` | 8 테스트(실제 A→B diff 4789변경). watch∩net→approval, 영향표면+판정없는 LLM memo(§7) |
 | T93 정책 노후화 drift | ✅ 완료 | `acgh/policy_drift.py` | 5 테스트. 0-매칭 패턴(빈 총)=approval, 신규 미분류 모듈(실제 openmetadata-mcp 등)=analysis_error |
 | T50 선언형 verifier | ✅ 완료 | `acgh/verifier.py` | 10 테스트. JSON Pointer·file_hash·module_present(비실행), 실행형 거부, `..` 경로이탈 차단(P0-8) |
+| T61 patch-kill | 🟡 source high 2/5 | `acgh/patchkill.py` + `patch-kill-plan.yaml` + `run_source_patch_kills.py` | Sybase/Tibero 고정 predecessor에서 required test assertion failure를 JUnit/exit로 입증, candidate·governance·plan·selector 결속, CI artifact 90일. API 기반 high 3개는 제거본 배포 필요 |
 | T62 test-result 결속·runtime 실행 | ✅ 구현·⚠ 운영미실행 | `acgh/testruns.py` + `acgh/pytest_runs.py` + schema + `runtime-contracts.yml` | selector별 격리 pytest/JUnit, atomic run-set/result, SHA/artifact/governance/suite 결속, 실제 exit 대조. 결과 3종을 overwrite 불가 artifact로 90일 보존. 로컬 무환경 시뮬레이션 `2 pass·5 skip→block`, exit 위조→analysis_error |
 | T71 fast lane | ✅ 구현 | `acgh/fastlane.py` | 5 테스트. 유형별 최소 gate, mixed=합집합, core=전체 전략 route |
 | T72 break-glass | ✅ 구현 | `acgh/breakglass.py` + schema | 8 테스트. 2인·만료·scope·사후검증·통계·timezone, 무결성 gate 비면제, verdict 불변 |
@@ -339,8 +341,8 @@ T93·T42 · T50 · T70 최소.
 | T92 retirement | ✅ 구현 | `acgh/retirement.py` + schema | 6 테스트. 공식대체·ADR·회귀·2인·active→retired |
 | T94 내부망 반입 | 🟡 검증기 구현 | `acgh/airgap.py` + schema | 6 테스트. 파일 hash·release-lock·signature verifier fail-closed. 실제 서명/내부망 미수행 |
 
-> **게이트 엔진 구현 현황:** 현재 통합 테스트는 298개이며, 고정 mirror를
-> 연결한 CI-equivalent 실행에서 293개 통과·API 4개와 browser IME 1개 skip이다.
+> **게이트 엔진 구현 현황:** 현재 통합 테스트는 302개이며, 고정 mirror를
+> 연결한 CI-equivalent 실행에서 297개 통과·API 4개와 browser IME 1개 skip이다.
 > 7-ID vendor candidate와 T60-I 7/7 구현 존재까지 완료했지만 contract 전체의
 > candidate-bound T62 결과와 T90 운영 증거가 생기기 전에는
 > **MVP2 달성 또는 배포 가능**으로 표현하지 않는다.

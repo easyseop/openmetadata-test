@@ -35,10 +35,10 @@
 
 ---
 
-## 0.1 구현 현황 (2026-07-25 · 게이트 엔진 및 실제 7개 등록)
+## 0.1 구현 현황 (2026-07-27 · 게이트 엔진 및 실제 7개 등록)
 
 > 아래 표는 **설계**이고, 실제 코드는 `harness/acgh/` 에 있다. 현재 소스에는
-> **298개 테스트**가 있다. 2026-07-25 기준 고정 mirror/product 연결 시 293개
+> **302개 테스트**가 있다. 2026-07-27 기준 고정 mirror/product 연결 시 297개
 > 통과, API 4개·browser IME 1개는 운영 환경 부재로 skip이다.
 > ✅=구현·테스트 완료, 🟡=핵심 구현(부분), ⬜=미착수.
 
@@ -63,7 +63,7 @@ manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과�
 | 13 | 구조화 diff providers | T51·T52 | ✅ | `structdiff.py` |
 | 14 | 필수 테스트 존재 | CG | ✅ | `testruns.py` |
 | 15 | contract 결속 | T60 | ✅ | `contracts.py` + `schema/contract-catalog.schema.json` |
-| 16 | patch-kill test | T61 | ✅ | `patchkill.py` |
+| 16 | patch-kill test | T61 | 🟡 source high 2/5, runtime high 3개 대기 | `patchkill.py` |
 | 17 | SHA 결속 | T62 | ✅ 실행기·workflow·90일 증거 보존 구현, 운영 run 대기 | `binding.py`·`testruns.py`·`pytest_runs.py` |
 | 18 | 차등 테스트 | T90 | 🟡 결과계약 완료·실제 스택 미실행 | `upgrade_run.py` |
 | 19 | 정책 base-평가 | T70 | ✅ | `policy_guard.py` |
@@ -199,7 +199,11 @@ vendor candidate는 별도 재구축했지만 API 4개·browser IME 1개의 T62 
 ### 16. patch-kill test (T61)
 - **뭘 잡나**: 그 패치를 빼면 해당 required 테스트가 **실제로 실패하는지** = 테스트가 커스터마이징 생존을 입증하는지.
 - **막는 사고**: 패치를 제거해도 테스트가 통과 → 그 테스트는 **생존을 증명하지 못하는 껍데기**인데 그걸 모름.
-- **못 잡는 것**: 테스트가 없는 새 의미 차원.
+- **현재 증거**: Sybase/Tibero는 고정 predecessor에서 JUnit상 assertion
+  failure를 입증했고 결과를 candidate·governance·plan·selector에 결속했다.
+  API 기반 high ID 3개는 제거본 runtime 배포가 없어 pending이다.
+- **못 잡는 것**: 테스트가 없는 새 의미 차원, 아직 실행하지 않은 runtime
+  counterfactual.
 
 ### 17. 테스트-candidate SHA 결속 (T62)
 - **뭘 잡나**: 테스트 결과가 정확한 candidate SHA·이미지 digest·governance

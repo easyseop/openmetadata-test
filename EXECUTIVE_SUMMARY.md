@@ -46,7 +46,7 @@ cherry-pick 재적용은 필수 운영 방식이 아니라 이식성 확인·복
 | 현재 구현 | 실제 운영에서 남은 단계 |
 |---|---|
 | 공식 1.13.1 기반 실제 7-ID vendor candidate와 source 누락 검사 | 조직 owner·2인 승인 경로 지정 |
-| 7개 업무 계약 구현 존재, candidate-bound runtime 실행기, 실행 증거 90일 보존 | API 4개·browser IME 1개 실제 환경 통과와 90일 이후 조직 장기 보존 |
+| 7개 업무 계약 구현 존재, Sybase/Tibero patch-kill, candidate-bound runtime 실행기, 실행 증거 90일 보존 | API 기반 high ID 3개 patch-kill, API 4개·browser IME 1개 실제 환경 통과와 90일 이후 조직 장기 보존 |
 | 변경 범위·민감 경로·업스트림 영향 후보 통제 | 실제 DB·검색·ingestion 업그레이드 실행 |
 | 릴리스·내부망 반입 결과계약과 검증기 | 실제 artifact/SBOM/서명·승격·반입 증거 |
 
@@ -73,10 +73,11 @@ cherry-pick 재적용은 필수 운영 방식이 아니라 이식성 확인·복
 | 변경 범위·민감 경로 검증 | 구현 완료 |
 | 업스트림 영향 분석 | 구현 완료(후보 표시) |
 | 업무 계약 실행·후보 결속 | 실행기·별도 runtime workflow·90일 증거 artifact 완료, 실제 run 필요 |
+| 테스트 생존 입증(T61) | Sybase/Tibero source negative control 통과, API 기반 high ID 3개 제거본 배포 필요 |
 | 실제 DB·검색 업그레이드 검증 | 결과계약 구현·실제 실행 필요 |
 | 내부망 반입·릴리스 승격 | 검증기 구현·실제 승격/서명 필요 |
 
-(현재 검증 298개 중 293개 통과. API 4개와 실제 브라우저 IME 1개는 필요한
+(현재 검증 302개 중 297개 통과. API 4개와 실제 브라우저 IME 1개는 필요한
 운영 환경이 없어 skip이며 통과로 계산하지 않는다.)
 
 ## 9. 주요 잔여 위험

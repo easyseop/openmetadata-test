@@ -30,6 +30,8 @@
 > API 4개와 실제 브라우저 IME 1개는 아직 skip이다. 별도 T62 runtime workflow와
 > 원자적 candidate-bound 결과 생성기는 구현했고, 생성된 증거 3종은 실행 결과와
 > 관계없이 덮어쓰기 불가 GitHub artifact로 90일 보존한다. 실제 운영 실행은 없다.
+> T61은 Sybase/Tibero 패치가 없는 고정 소스에서 두 계약이 실제 실패함을
+> 입증했지만, 배포된 제거본이 필요한 high ID 3개는 아직 미실행이다.
 > 실제 업그레이드 실행과 release artifact도 없으므로 현재 production release는
 > 차단 상태다.
 > 상세는 [`STATUS.md`](STATUS.md)와
@@ -235,7 +237,7 @@ M9 업그레이드 검증·릴리스 승격(digest 결속)·반입
 pip install jsonschema pathspec pyyaml pytest
 OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata \
   python -m pytest harness/tests tests/bank/contracts
-# 고정 mirror 연결 시 298개: 293 pass·5 operational skip
+# 고정 mirror 연결 시 302개: 297 pass·5 operational skip
 ```
 
 동일한 source 범위는
@@ -247,6 +249,14 @@ skip을 pass로 올리지 않는다. `candidate-lock.yaml`, `test-run-set.yaml`,
 `acgh-result.yaml`은 `runtime-contract-evidence-<run_id>-<run_attempt>` 이름으로
 90일 보존되고 artifact ID·GitHub digest·URL은 job summary에 남는다. 90일을
 넘는 감사 보존은 만료 전에 조직 소유 저장소로 별도 이관해야 한다.
+
+같은 source CI는 `patch-kill-plan.yaml`의 고정 predecessor에서 Sybase/Tibero
+계약을 다시 실행한다. 두 계약은 해당 패치가 없을 때 실패해야 통과하며, JUnit과
+실제 pytest exit가 불일치하거나 test error/skip이면 성공이 아니라
+`analysis_error`다. 결과는
+`source-patch-kill-evidence-<run_id>-<run_attempt>` artifact로 90일 보존한다.
+이것은 source-capable high ID 2개만의 결과이며, API 기반 high ID 3개는 제거본
+배포 후 별도 T61 실행이 필요하다.
 
 **실제 OM 미러 연결**(게이트·재적용 테스트용, 없으면 해당 테스트 자동 skip):
 

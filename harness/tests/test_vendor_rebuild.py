@@ -442,7 +442,7 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
     assert product["source_candidate_ci"]["candidate_sha_locked"] is True
     assert (
         product["source_candidate_ci"]["local_simulation"]["tests_passed"]
-        == 293
+        == 297
     )
     assert (
         product["source_candidate_ci"]["local_simulation"][

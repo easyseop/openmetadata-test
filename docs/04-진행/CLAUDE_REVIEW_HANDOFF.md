@@ -12,6 +12,10 @@
 > T62 운영 문서·가이드 동기화 커밋: `a291f31`
 > T62 CI evidence 90일 보존 구현 커밋:
 > `502f42f77734ec4f894aa79360c22e0f67dc1b19`
+> T61 source patch-kill 구현 커밋:
+> `a2cbb5221f50c10d11af26618d1d310ec8a73552`
+> T61 infra_error 분리·고정 증거 검증 커밋:
+> `7a2fb5f12af758805cc21abaabb4cb29f1f82dcb`
 > 현재 커밋은 체크아웃 후 `git rev-parse HEAD`로 확인한다.
 
 ## 0. 지속 갱신 규칙
@@ -856,6 +860,65 @@ runtime 결과가 pass, block, approval, analysis_error 중 무엇이든
 이관해야 한다. 실제 runtime workflow를 아직 실행하지 않았으므로 실제 artifact
 ID/digest는 존재하지 않는다.
 
+### 4.21 T61 source-capable patch-kill
+
+구현 커밋:
+
+- `a2cbb5221f50c10d11af26618d1d310ec8a73552`
+
+구현 파일:
+
+- `harness/acgh/patchkill.py`
+- `harness/acgh/schema/patch-kill-plan.schema.json`
+- `harness/registrations/kb-openmetadata/patch-kill-plan.yaml`
+- `harness/registrations/kb-openmetadata/run_source_patch_kills.py`
+- `harness/registrations/kb-openmetadata/source-patch-kill-evidence.yaml`
+- `.github/workflows/source-candidate.yml`
+- `harness/tests/test_patchkill.py`
+- `harness/tests/test_source_candidate_workflow.py`
+
+개발 방식:
+
+1. active high/critical ID 5개를 plan에서 source experiment 또는 runtime
+   pending 중 정확히 하나로 분류한다. 중복·누락은 실행 오류다.
+2. plan candidate가 실제 product HEAD와 같은지, without-patch SHA가 candidate
+   조상인지, 그 뒤 커밋에 대상 `Customization-ID`가 실제 존재하는지 확인한다.
+3. selector가 해당 manifest의 contract-derived required test인지 확인한다.
+4. 각 고정 predecessor를 임시 detached worktree로 열고 외부 governance
+   selector를 실행한다. 제품 소스의 테스트 파일을 신뢰해 실행하는 구조가 아니다.
+5. 기존 T62 pytest adapter로 JUnit과 실제 pytest exit를 대조한다. assertion
+   failure만 `proven/pass`다. patch가 없는데 pass면 `shell_test/block`,
+   skip·test error면 `inconclusive/analysis_error`, internal exit·timeout이면
+   `infra_error/analysis_error`다.
+6. candidate·governance commit·plan digest·selector·without-patch SHA와
+   pending ID를 `acgh-result`에 결속한다.
+7. Source candidate CI가 이 두 experiment를 실행하고 결과를
+   `source-patch-kill-evidence-<run_id>-<run_attempt>` artifact로 overwrite
+   없이 90일 보존한다.
+
+실행 결과:
+
+```text
+BANK-OM-006 Sybase
+  without patch: 6e5b654f84ec6441e8affcef90c79f83c9a4d986
+  selector: tests/bank/contracts/test_sybase.py::test_connection_schema_roundtrip
+  outcome: required test failed -> proven/pass
+
+BANK-OM-007 Tibero
+  without patch: 41b224adbd7e1906a96d99657693e439e3d8716b
+  selector: tests/bank/contracts/test_tibero.py::test_connection_schema_roundtrip
+  outcome: required test failed -> proven/pass
+
+source-scoped verdict: pass
+result digest: sha256:1cadd0bed3e58b01d5720bd1519452de838785f1d1328b14dc58c4de04bc9e2d
+```
+
+이 결과는 high/critical T61 전체 pass가 아니다. `BANK-OM-001` InstanceCode,
+`BANK-OM-002` QueryReport, `BANK-OM-003` Data Assertions는 코드 predecessor만
+읽어서는 API·DB·검색 동작을 반증할 수 없다. 각 ID를 제외한 image를 별도로
+빌드·배포하고 같은 runtime contract를 실행해야 한다. 따라서 현 상태는
+**source-capable high 2/5 pass, runtime high 3/5 pending**이다.
+
 ## 5. 테스트 결과
 
 전체 명령:
@@ -869,10 +932,10 @@ OPENMETADATA_PRODUCT_REPO=/private/tmp/om-ci-validation-38bccf \
 결과:
 
 ```text
-293 passed, 5 skipped in 36.73s
+297 passed, 5 skipped in 30.45s
 ```
 
-초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 145개 passing test가
+초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 149개 passing test가
 추가됐고, T25-R과 실제 candidate evidence 묶음은 14개다.
 
 고정 mirror를 연결해 기존 mirror 의존 35개도 모두 실행·통과했다. 남은 5개는
@@ -899,6 +962,7 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 | T25-R snapshot 재구성 | source plan·owner·엔진·실 candidate 완료 | 완료 | 실제 candidate pass |
 | T26~T29 vendor 등록·라우팅 | 완료 | 완료 | T25/T26 실 candidate pass |
 | T60-I 구현 존재 | 완료 | 완료 | 7/7 selector resolve pass |
+| T61 patch-kill | plan·runner·증거 완료 | source experiment 완료 | Sybase/Tibero 2/5 pass, API 기반 high 3개 제거본 배포 없음 |
 | T62 test-result binding·runner | 완료 | 완료 | local fail-closed `2 required pass·5 skip→block`, 실제 runtime run 없음 |
 | T71/T72 운영 정책 | 완료 | 완료 | 조직 승인자·CI 연동 필요 |
 | T80/T81 LLM memo | 완료 | 완료 | 실제 release memo 평가 데이터 없음 |
@@ -918,7 +982,8 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
    T62 candidate-bound pass를 만든다.
 3. Node 22 환경에서 399개 UI typecheck diagnostic을 기준선 분류·수정하고,
    제품 전체 Java/UI build와 source-level test를 candidate에 결속한다.
-4. high 5개를 우선 patch-kill로 검증한다.
+4. InstanceCode·QueryReport·Data Assertions 제거본을 각각 빌드·배포해 남은
+   high 3개 patch-kill을 검증한다.
 5. runtime workflow의 YAML 결과를 조직의 장기 증거 저장소에 보존한다.
 6. 실제 OM 구/신 스택에서 T90 12단계 evidence를 생성한다.
 7. image/package/Helm digest, SBOM과 서명을 생성한다.
@@ -945,7 +1010,7 @@ OpenMetadata 테스트 스택에서 live contract 4개를 실행한다. 운영 U
 | 질문 | 이 문서에서 확인할 곳 |
 |---|---|
 | 최종 목적은 무엇인가 | §1 |
-| 지금까지 무엇을 만들었는가 | §4.1~§4.20 |
+| 지금까지 무엇을 만들었는가 | §4.1~§4.21 |
 | 어떤 방식으로 만들었는가 | 각 구현 절의 파일·개발 방식 |
 | 무엇으로 검증했고 무엇이 미실행인가 | §5~§6 |
 | 다음에 무엇을 어떤 순서로 할 것인가 | §7과 첫 실행 명령 |
@@ -973,6 +1038,9 @@ OpenMetadata 테스트 스택에서 live contract 4개를 실행한다. 운영 U
     악의적 workflow input을 어떤 경로에서도 pass로 약화하지 않는가.
 14. pinned artifact upload와 90일 보존 계약이 실패·차단 증거까지 잃지 않고,
     실행 간 overwrite나 파일 누락을 허용하지 않는가.
+15. predecessor source negative control이 대상 패치 이외의 차이 때문에
+    거짓 `proven`을 만들 수 있는지, 그리고 JUnit failure와 test error를 모든
+    경로에서 올바르게 구분하는가.
 
 검토 결과는 `Blocking / Serious / Minor / Validated`로 나누고, 각 항목에 정확한
 파일·라인·재현 테스트를 제시해 달라. 문서의 완료 표시가 아니라 코드와
