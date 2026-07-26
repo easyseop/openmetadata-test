@@ -116,14 +116,14 @@ def test_registered_node22_baseline_evidence_is_honest():
         "afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9"
     )
     assert evidence["candidate"]["sha"] == (
-        "70d028a035bb1edb8af5a11f06c4c7dff4cd979b"
+        "b80d24d83124435733d5af05d56515b3a855330e"
     )
     assert comparison["verdict"] == V.APPROVAL
     assert comparison["upstream_diagnostics"] == 396
-    assert comparison["candidate_diagnostics"] == 357
+    assert comparison["candidate_diagnostics"] == 356
     assert comparison["new_diagnostics"] == 0
-    assert comparison["removed_diagnostics"] == 39
-    assert comparison["new_message_variants"] == 5
+    assert comparison["removed_diagnostics"] == 40
+    assert comparison["new_message_variants"] == 4
     assert comparison["removed_message_variants"] == 44
     assert comparison["upstream_path_code_multiset_fingerprint"].startswith(
         "sha256:"

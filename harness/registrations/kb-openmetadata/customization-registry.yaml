@@ -99,3 +99,12 @@ entries:
     manifest: manifests/BANK-OM-009.yaml
     contracts: [CONTRACT-INSTANCE-CODE, CONTRACT-QUERY-REPORT]
     provenance: candidate-follow-up
+  - customization_id: BANK-OM-010
+    title: 알림 엔터티 ID 검색 타입 안전성
+    owner: UNASSIGNED
+    owner_status: pending
+    status: active
+    criticality: medium
+    manifest: manifests/BANK-OM-010.yaml
+    contracts: [CONTRACT-INSTANCE-CODE, CONTRACT-QUERY-REPORT]
+    provenance: candidate-follow-up

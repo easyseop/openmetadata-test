@@ -1,7 +1,7 @@
 schema_version: 1
 candidate:
   repository: easyseop/OpenMetadata
-  commit_sha: 70d028a035bb1edb8af5a11f06c4c7dff4cd979b
+  commit_sha: b80d24d83124435733d5af05d56515b3a855330e
 scope: source-capable-high-critical
 experiments:
   - customization_id: BANK-OM-006

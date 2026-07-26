@@ -1,0 +1,22 @@
+schema_version: 1
+customization_id: BANK-OM-010
+status: active
+kind: core-patch
+title: 알림 엔터티 ID 검색 타입 안전성
+implementation:
+  allowed_changed_paths:
+    - openmetadata-ui/src/main/resources/ui/src/utils/Alerts/AlertsUtil.tsx
+    - openmetadata-ui/src/main/resources/ui/src/utils/Alerts/AlertsUtil.test.tsx
+  required_changed_paths:
+    - openmetadata-ui/src/main/resources/ui/src/utils/Alerts/AlertsUtil.tsx
+    - openmetadata-ui/src/main/resources/ui/src/utils/Alerts/AlertsUtil.test.tsx
+upgrade_watch:
+  paths:
+    - openmetadata-ui/src/main/resources/ui/src/utils/Alerts/AlertsUtil.tsx
+    - openmetadata-ui/src/main/resources/ui/src/utils/Alerts/AlertsUtil.test.tsx
+assurance:
+  contracts: [CONTRACT-INSTANCE-CODE, CONTRACT-QUERY-REPORT]
+  direct_tests: []
+series:
+  allowed: false
+  depends_on: [BANK-OM-009]

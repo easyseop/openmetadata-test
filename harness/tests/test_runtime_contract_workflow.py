@@ -20,7 +20,7 @@ def test_runtime_workflow_is_manual_read_only_and_candidate_locked():
     assert workflow["permissions"] == {"contents": "read"}
     assert (
         workflow["env"]["PRODUCT_SHA"]
-        == "70d028a035bb1edb8af5a11f06c4c7dff4cd979b"
+        == "b80d24d83124435733d5af05d56515b3a855330e"
     )
     job = workflow["jobs"]["contracts"]
     assert job["environment"] == "openmetadata-runtime"
