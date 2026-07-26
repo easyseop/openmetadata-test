@@ -50,7 +50,7 @@ concurrency:
 env:
   PRODUCT_REPOSITORY: easyseop/OpenMetadata
   PRODUCT_BRANCH: codex/bank-vendor-1.13.1-rebuild
-  PRODUCT_SHA: b80d24d83124435733d5af05d56515b3a855330e
+  PRODUCT_SHA: 849ae756cd238f218b5e3a6c795a392305cb32ee
 
 jobs:
   negative-control:

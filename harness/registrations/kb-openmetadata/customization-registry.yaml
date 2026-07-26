@@ -108,3 +108,12 @@ entries:
     manifest: manifests/BANK-OM-010.yaml
     contracts: [CONTRACT-INSTANCE-CODE, CONTRACT-QUERY-REPORT]
     provenance: candidate-follow-up
+  - customization_id: BANK-OM-011
+    title: 검색 목록 변환 타입 계약
+    owner: UNASSIGNED
+    owner_status: pending
+    status: active
+    criticality: medium
+    manifest: manifests/BANK-OM-011.yaml
+    contracts: [CONTRACT-INSTANCE-CODE, CONTRACT-QUERY-REPORT]
+    provenance: candidate-follow-up

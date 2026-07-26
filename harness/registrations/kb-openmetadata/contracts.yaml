@@ -5,13 +5,13 @@ contracts:
     invariant: InstanceCode의 codeGroup/codeValue가 CRUD와 재색인 뒤에도 동일하게 조회된다.
     required_tests:
       - tests/bank/contracts/test_instance_code.py::test_crud_search_roundtrip
-    customization_ids: [BANK-OM-001, BANK-OM-008, BANK-OM-009, BANK-OM-010]
+    customization_ids: [BANK-OM-001, BANK-OM-008, BANK-OM-009, BANK-OM-010, BANK-OM-011]
   - id: CONTRACT-QUERY-REPORT
     title: QueryReport and query usage linkage
     invariant: QueryReport와 연결된 Query 목록이 생성·수정·삭제 및 재색인 뒤에도 보존된다.
     required_tests:
       - tests/bank/contracts/test_query_report.py::test_query_usage_roundtrip
-    customization_ids: [BANK-OM-002, BANK-OM-008, BANK-OM-009, BANK-OM-010]
+    customization_ids: [BANK-OM-002, BANK-OM-008, BANK-OM-009, BANK-OM-010, BANK-OM-011]
   - id: CONTRACT-DATA-ASSERTIONS
     title: Data assertion status and ownership view
     invariant: 실패한 test case가 상태·소유자·테이블·컬럼과 함께 일관되게 노출된다.

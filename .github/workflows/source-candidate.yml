@@ -17,7 +17,7 @@ concurrency:
 env:
   PRODUCT_REPOSITORY: easyseop/OpenMetadata
   PRODUCT_BRANCH: codex/bank-vendor-1.13.1-rebuild
-  PRODUCT_SHA: b80d24d83124435733d5af05d56515b3a855330e
+  PRODUCT_SHA: 849ae756cd238f218b5e3a6c795a392305cb32ee
 
 jobs:
   governance:
@@ -55,6 +55,12 @@ jobs:
             "/openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-sybase.svg" \
             "/openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-tibero.svg" \
             "/openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx" \
+            "/openmetadata-ui/src/main/resources/ui/src/components/DataProduct/hooks/useDataProductListingData.tsx" \
+            "/openmetadata-ui/src/main/resources/ui/src/components/common/atoms/compositions/useListingData.test.tsx" \
+            "/openmetadata-ui/src/main/resources/ui/src/components/common/atoms/compositions/useListingData.tsx" \
+            "/openmetadata-ui/src/main/resources/ui/src/components/common/atoms/data/useDataFetching.test.tsx" \
+            "/openmetadata-ui/src/main/resources/ui/src/components/common/atoms/data/useDataFetching.tsx" \
+            "/openmetadata-ui/src/main/resources/ui/src/components/common/atoms/domain/compositions/useDomainListing.tsx" \
             "/openmetadata-ui/src/main/resources/ui/src/generated/api/services/createDatabaseService.ts" \
             "/openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/sybaseConnection.ts" \
             "/openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/tiberoConnection.ts" \

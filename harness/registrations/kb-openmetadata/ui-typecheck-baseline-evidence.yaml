@@ -1,11 +1,11 @@
 schema_version: 1
-generated_at: "2026-07-27T05:30:08+09:00"
+generated_at: "2026-07-27T06:30:09+09:00"
 upstream:
   repository: open-metadata/OpenMetadata
   sha: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
 candidate:
   repository: easyseop/OpenMetadata
-  sha: b80d24d83124435733d5af05d56515b3a855330e
+  sha: 849ae756cd238f218b5e3a6c795a392305cb32ee
 environment:
   node: 22.17.0
   yarn: 1.22.22
@@ -16,47 +16,37 @@ preparation:
   - Share the same installed dependency tree and run the same yarn tsc:check command.
 logs:
   upstream_sha256: 6bca51ba43a80099f00336469504bdef7120df61c34658a685c7d50a97b18610
-  candidate_sha256: c34f3d533ccfc36a74ea2d3cf7d056e362b4b116052a7cb0bfdbdf900d6bd263
+  candidate_sha256: 2398dd7e3c09d2700e76b7494e5190a7b81beccbad191b5d11426158d1b83eb1
 comparison:
   verdict: approval
   upstream_exit: 2
   candidate_exit: 2
   upstream_diagnostics: 396
-  candidate_diagnostics: 356
+  candidate_diagnostics: 355
   new_diagnostics: 0
-  removed_diagnostics: 40
+  removed_diagnostics: 41
   upstream_unique_files: 141
-  candidate_unique_files: 135
+  candidate_unique_files: 133
   upstream_path_code_multiset_fingerprint: sha256:a4158616c8921cc299679553b58ba388493a3aaaf5994314cb1a16f78e342fe8
-  candidate_path_code_multiset_fingerprint: sha256:802e292be5a563ffc9875dc8e74336c82fdb7d1c2c65645f5762bf11db2ebc88
-  new_message_variants: 4
-  removed_message_variants: 44
+  candidate_path_code_multiset_fingerprint: sha256:887df7115c667ba66350efb3d9f30b0535ef10c5d16c70d7effb24adf63627f2
+  new_message_variants: 2
+  removed_message_variants: 43
   upstream_message_fingerprint: sha256:bb893ff886aecb68e57062e289d306c276a5541aad9bf2b2b5a9d56e025b1f4f
-  candidate_message_fingerprint: sha256:a3451d13e8de7f502f6f258f0b6b88db8547b0ef44550d8750170534ed5191d8
+  candidate_message_fingerprint: sha256:b14b6e6ea80de49241107ce5eab184063afbc4733a10cf00fe83c4cb0686a1f0
 message_variant_review:
-  reviewed_at: "2026-07-27T05:30:08+09:00"
+  reviewed_at: "2026-07-27T06:30:09+09:00"
   scope: technical classification only; this is not designated-owner baseline approval
-  conclusion: no new semantic regression was identified in the four remaining same-path/code substitutions; the underlying non-zero diagnostics remain unresolved
+  conclusion: no new semantic regression was identified in the two remaining same-path/code substitutions; the underlying non-zero diagnostics remain unresolved
   variants:
     - path: src/components/AppRouter/SettingsRouter.test.tsx
       code: TS2551
       location: "384:45"
       classification: equivalent_type_rendering
       finding: the rendered route-object elision count changed from 141 to 146; the missing NOTIFICATION_ALERTS key and NOTIFICATION_ALERT_LIST suggestion are unchanged
-    - path: src/components/DataContract/ContractSchemaFormTab/ContractScehmaFormTab.tsx
-      code: TS2322
-      location: "551:11"
-      classification: equivalent_union_ordering
-      finding: TypeScript reordered Field[] | Column[] as Column[] | Field[]; the readonly Column[] assignment failure is unchanged
     - path: src/components/DataProducts/InputOutputPortsTab/PortsLineageView/PortNode.component.tsx
       code: TS2322
       location: "47:31"
       classification: equivalent_type_rendering
       finding: fields in the expanded union member were rendered in a different order; the LineageNodeType assignment failure is unchanged
-    - path: src/components/common/atoms/data/useDataFetching.tsx
-      code: TS2345
-      location: "103:21"
-      classification: expected_mapped_type_expansion
-      finding: the former Pick<..., never> union now renders concrete selected fields after the search mapping repair; the generic SetStateAction<T[]> assignment failure remains
-interpretation: The candidate has no new path-and-error-code diagnostic and removes 40, while four changed message variants remain visible for human review; the non-zero baseline is still a release blocker until repaired or approved by the designated owner.
+interpretation: The candidate has no new path-and-error-code diagnostic and removes 41, while two changed message variants remain visible for human review; the non-zero baseline is still a release blocker until repaired or approved by the designated owner.
 limitation: Message substitutions are detected and fingerprinted, but they remain approval evidence rather than automatic pass or block because TypeScript can rewrite equivalent union details; the gate never emits pass for a non-zero baseline.
