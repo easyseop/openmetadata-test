@@ -10,7 +10,7 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 > 검증한다. 실제 7-ID vendor branch와 T62 runtime 실행 경계까지 구현했지만
 > 운영 contract 전체 pass와 release artifact 생성 전에는 release pass가 아니다.
 
-> **요구사항 충족(영역 A1~A8)·검증기 22종의 왜/안 지키면/방법론·전체 개발 범위·
+> **요구사항 충족(영역 A1~A8)·검증기 23종의 왜/안 지키면/방법론·전체 개발 범위·
 > 설계 배경은 루트 [`../README.md`](../README.md) 가 정본이다.** 이 파일은 하네스
 > 실행에 필요한 최소 정보만 둔다.
 
@@ -20,13 +20,13 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 pip install jsonschema pathspec pyyaml pytest
 OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata \
   python -m pytest harness/tests tests/bank/contracts
-# 고정 mirror 연결 시 313개: 306 pass·7 operational skip
+# 고정 mirror 연결 시 322개: 315 pass·7 operational skip
 bash harness/fixtures/fetch_upstream.sh            # 실제 OM 미러(없으면 미러 테스트 자동 skip)
 ```
 
 Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
 
-## 구현 모듈 (현재 313개 테스트: 306 pass·7 operational skip)
+## 구현 모듈 (현재 322개 테스트: 315 pass·7 operational skip)
 
 | 모듈 | 담당 | 루트 README 검증기# / 영역 |
 |---|---|---|
@@ -55,6 +55,7 @@ Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
 | `policy_drift.py` | 정책 노후화 drift | 8 / A5 |
 | `verifier.py` | 선언형 verifier(비실행형) | 12 / A4 |
 | `testruns.py`·`pytest_runs.py` | 필수 테스트 실행·JUnit/재시도·candidate/artifact/version 결속 | 14·17 / A6 |
+| `tsc_baseline.py` | 공식 upstream 대비 UI typecheck 진단 multiset 비교 | 23 / A6 |
 | `fastlane.py`·`breakglass.py` | 변경 유형별 경량 경로·긴급 예외 검증 | 19 / A7 |
 | `impact_memo.py` | 근거 기반 LLM Memo·품질지표(판정권 없음) | 22 / A5 |
 | `upgrade_run.py` | migration·차등·rollback 12단계 결과 계약 | 18 / A6 |
@@ -181,6 +182,29 @@ python harness/registrations/kb-openmetadata/run_runtime_contracts.py \
 출력은 `candidate-lock.yaml`, `test-run-set.yaml`, `acgh-result.yaml`이다.
 `interpret_runtime_result.py`가 실제 process exit와 result를 다시 대조하고,
 누락·파손·stale·불일치를 `analysis_error`로 처리한다.
+
+## T63 UI typecheck 기준선 비교
+
+공식 upstream과 candidate를 같은 Node/Yarn·생성 단계·명령으로 실행한 전체
+로그를 비교한다. 경로와 TypeScript 오류 코드의 **multiset**을 사용하므로 같은
+오류가 한 번 더 생긴 경우도 신규 진단으로 차단한다.
+
+```bash
+python harness/registrations/kb-openmetadata/compare_ui_typecheck.py \
+  --harness harness \
+  --upstream-log /safe/evidence/upstream-tsc.log \
+  --candidate-log /safe/evidence/candidate-tsc.log \
+  --upstream-exit 2 \
+  --candidate-exit 2
+```
+
+후보에 신규 진단이 있으면 `block`, 로그 형식이나 exit가 모순이면
+`analysis_error`, 둘 다 깨끗하면 `pass`다. 공식 원본과 후보가 같은 비영
+기준선을 가지면 `approval`이다. 현재 Node 22 증거는 양쪽 396건·141파일,
+신규 0건, 동일 fingerprint이며
+`ui-typecheck-baseline-evidence.yaml`에 고정했다. 메시지 내용만 같은
+경로·코드 안에서 바뀌는 경우는 이 거친 fingerprint가 잡지 못하므로 full log
+review 또는 전체 수정 없이는 release pass가 아니다.
 
 GitHub workflow는 결과가 pass·block·approval·analysis_error 중 무엇이든 이
 3개 파일을 `runtime-contract-evidence-<run_id>-<run_attempt>` artifact로

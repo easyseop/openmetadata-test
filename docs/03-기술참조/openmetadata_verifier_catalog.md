@@ -35,14 +35,14 @@
 
 ---
 
-## 0.1 구현 현황 (2026-07-27 · 게이트 엔진 및 실제 7개 등록)
+## 0.1 구현 현황 (2026-07-27 · 게이트 엔진 및 실제 7개+후속 1개 등록)
 
 > 아래 표는 **설계**이고, 실제 코드는 `harness/acgh/` 에 있다. 현재 소스에는
-> **313개 테스트**가 있다. 2026-07-27 기준 고정 mirror/product 연결 시 306개
+> **322개 테스트**가 있다. 2026-07-27 기준 고정 mirror/product 연결 시 315개
 > 통과, API 4개·browser 3개는 운영 환경 부재로 skip이다.
 > ✅=구현·테스트 완료, 🟡=핵심 구현(부분), ⬜=미착수.
 
-**기반(카탈로그 22개 밖, 하네스 골격)**: ✅ T05 경로소유 `layout.py` · ✅ T10
+**기반(카탈로그 23개 밖, 하네스 골격)**: ✅ T05 경로소유 `layout.py` · ✅ T10
 manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과계약/CI
 어댑터 `result_io.py` · ✅ T12 git 프리미티브 `gitprim.py`.
 
@@ -70,6 +70,7 @@ manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과�
 | 20 | digest 승격 | T91 | ✅ 엔진·실제 승격 미실행 | `release.py`·`airgap.py` |
 | 21 | verdict 엔진 | T13 | ✅ | `verdict.py` |
 | 22 | LLM Impact Memo | T80 | ✅ advisory schema·품질지표 | `impact.py`·`impact_memo.py` |
+| 23 | UI typecheck 기준선 delta | T63 | ✅ 원본/후보 실제 비교·비영 기준선 approval | `tsc_baseline.py` |
 
 게이트 엔진과 실제 7개 등록은 완료됐다. 그러나 원본
 `kangdkdk/kb_openmetadata`는 upstream ancestry 없는 root snapshot이다. 실제
@@ -219,6 +220,20 @@ vendor candidate는 별도 재구축했지만 API 4개·browser 3개의 T62 전�
 - **막는 사고**: 건수 대사만으로는 **관계·의미 손상**을 놓침.
 - **못 잡는 것**: 후보 환경이 재현 못 하는 운영 부하·외부 연계 차이(→ 운영 관찰).
 
+### 23. UI typecheck 기준선 delta (T63)
+
+- **뭘 잡나**: 같은 Node/Yarn과 생성 절차에서 candidate의 TypeScript 진단이
+  공식 upstream 기준선보다 새로 생기거나 같은 경로·코드에서 횟수가 증가했는지.
+- **막는 사고**: 수백 건의 기존 오류에 후보가 만든 오류가 섞였는데 총건수나
+  일부 파일만 보고 “원래 있던 오류”라고 승인하는 것.
+- **구현**: 전체 로그를 ANSI 제거 후 파싱하고 `(repo-relative path, TS code)`
+  multiset과 정규 fingerprint를 비교한다. 신규/증가=`block`, malformed·경로
+  이탈·exit 불일치=`analysis_error`, 둘 다 0=`pass`, 동일 비영 기준선=`approval`.
+- **현재 증거**: 공식 1.13.1과 후보 모두 396건·141파일, 신규/제거 0,
+  fingerprint `sha256:a4158616...e342fe8`.
+- **못 잡는 것**: 같은 경로·같은 TS 코드에서 메시지만 치환된 경우와 타입 오류가
+  아닌 빌드/런타임 결함. 따라서 비영 기준선은 자동 pass가 아니다.
+
 ---
 
 ## 계층 4 — 무결성 · 정책 · 집계
@@ -289,3 +304,4 @@ E 깊은 의존·의미 붕괴 → (계층3) 테스트만: 16 patch-kill · 15 c
 | 20 | digest 승격 | 검증본과 다른 산출물 배포 | 4 | T91 |
 | 21 | verdict 엔진 | 차단이 승인으로 격하 / 고장 우회 | 4 | T13 |
 | 22 | LLM Memo | (보조) 의미 변경 놓침 전에 후보 제시 | 보조 | T80 |
+| 23 | UI typecheck 기준선 | 기존 오류에 후보 신규 오류가 묻힘 | 3 | T63 |

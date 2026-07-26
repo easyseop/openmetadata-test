@@ -46,7 +46,7 @@ T24 · T25 · T26 · T29                     (M2 vendor merge 기본)
    ├── T27                                (충돌 증거)
    └── T28 → T20 · T21 · T22             (선택 replay)
    ↓
-T40 · T62 · T32 · T41                     (M3 완전성·결속)
+T40 · T62 · T63 · T32 · T41               (M3 완전성·결속)
    ↓
 T93 → T42 + T50                           (M4 감시·영향·verifier)
    ↓
@@ -143,6 +143,9 @@ path 문법)를 반영한 뒤 동결. T12·T13은 즉시 진행 가능.
 - **T62 테스트-SHA 결속** — 테스트 실행 **전에** candidate SHA·digest 결속,
   retry-pass 구분, 증거 artifact 90일 보존. *왜*: 옛 테스트 결과를 유효로
   착각하거나 flaky를 성공으로 뭉개고 실패 증거를 잃는 것을 막는다.
+- **T63 UI typecheck 기준선** — 공식 upstream과 candidate 전체 로그를 동일
+  toolchain에서 path+TS-code multiset으로 비교. *왜*: 큰 기존 오류 묶음에
+  후보 신규 오류가 묻히는 것을 차단하고, 비영 기준선을 pass로 과장하지 않는다.
 - **T32 최종상태 불변식** — 순효과 0(intrinsic + counterfactual 2단)·무단 revert.
   *왜*: "이름표는 있는데 기능은 사라진" 상태를 잡는다.
 - **T33 게이트 문구 정정** — 등록·재적용 ≠ 기능 완전성 표기. *왜*: 보장 범위
@@ -212,7 +215,7 @@ path 문법)를 반영한 뒤 동결. T12·T13은 즉시 진행 가능.
 - **말할 수 있는 것**: "판정할 수 있는 결정적 틀과 소스 고정 체계가 섰다."
 
 ### ▸ MVP1 — Candidate-control (candidate를 기계적으로 통제)
-**포함**: T01~T05 · T10~T15 · T30·T31 · T20~T23 · T40·T41·T62·T32·T33 ·
+**포함**: T01~T05 · T10~T15 · T30·T31 · T20~T23 · T40·T41·T62·T63·T32·T33 ·
 T93·T42 · T50 · T70 최소.
 
 **커버되는 문제**:
@@ -333,6 +336,7 @@ T93·T42 · T50 · T70 최소.
 | T50 선언형 verifier | ✅ 완료 | `acgh/verifier.py` | 10 테스트. JSON Pointer·file_hash·module_present(비실행), 실행형 거부, `..` 경로이탈 차단(P0-8) |
 | T61 patch-kill | 🟡 source 2/5 증거·runtime 3/5 검사기 구현 | `acgh/patchkill.py` + source/runtime plan·runner·workflow | Sybase/Tibero 고정 predecessor에서 실제 failure 입증. InstanceCode/QueryReport/Data Assertions는 별도 승인 workflow, 전후 health probe, target 2회 실패, source/tree/artifact/deployment/suite 결속, 90일 증거 보존까지 구현. 제거본 빌드·배포·운영 실행은 필요 |
 | T62 test-result 결속·runtime 실행 | ✅ 구현·⚠ 운영미실행 | `acgh/testruns.py` + `acgh/pytest_runs.py` + schema + `runtime-contracts.yml` | selector별 격리 pytest/JUnit, atomic run-set/result, SHA/artifact/governance/suite 결속, 실제 exit 대조. Data Assertions·bank column도 API와 실제 화면을 함께 확인. 결과 3종을 overwrite 불가 artifact로 90일 보존. 로컬 무환경 시뮬레이션 `2 pass·7 skip→block`, exit 위조→analysis_error |
+| T63 UI typecheck 기준선 delta | ✅ 검사기·실증거·⚠ approval | `acgh/tsc_baseline.py` + CLI + evidence | 공식 1.13.1/후보 동일 Node 22 실행: 각각 396 diagnostics·141 files, 신규/제거 0, 동일 path/code multiset fingerprint. 비영 기준선은 pass가 아니라 approval; same-path/code 메시지 치환은 full-log review 필요 |
 | T71 fast lane | ✅ 구현 | `acgh/fastlane.py` | 5 테스트. 유형별 최소 gate, mixed=합집합, core=전체 전략 route |
 | T72 break-glass | ✅ 구현 | `acgh/breakglass.py` + schema | 8 테스트. 2인·만료·scope·사후검증·통계·timezone, 무결성 gate 비면제, verdict 불변 |
 | T80/T81 Impact Memo | ✅ 구현 | `acgh/impact_memo.py` + schema | 7 테스트. 사실/추론/미확인·근거·snapshot, verdict/command 금지, 품질지표 |
@@ -341,8 +345,8 @@ T93·T42 · T50 · T70 최소.
 | T92 retirement | ✅ 구현 | `acgh/retirement.py` + schema | 6 테스트. 공식대체·ADR·회귀·2인·active→retired |
 | T94 내부망 반입 | 🟡 검증기 구현 | `acgh/airgap.py` + schema | 6 테스트. 파일 hash·release-lock·signature verifier fail-closed. 실제 서명/내부망 미수행 |
 
-> **게이트 엔진 구현 현황:** 현재 통합 테스트는 313개이며, 고정 mirror를
-> 연결한 CI-equivalent 실행에서 306개 통과·API 4개와 browser 3개 skip이다.
+> **게이트 엔진 구현 현황:** 현재 통합 테스트는 322개이며, 고정 mirror를
+> 연결한 CI-equivalent 실행에서 315개 통과·API 4개와 browser 3개 skip이다.
 > 7-ID vendor candidate와 T60-I 7/7 구현 존재까지 완료했지만 contract 전체의
 > candidate-bound T62 결과와 T90 운영 증거가 생기기 전에는
 > **MVP2 달성 또는 배포 가능**으로 표현하지 않는다.

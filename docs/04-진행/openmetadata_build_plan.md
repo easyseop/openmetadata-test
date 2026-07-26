@@ -62,7 +62,7 @@ M1    기반: T10(스키마)·T12(git)·T13(verdict) + [신규 T15] result/CI ad
       ※ T12·T13 즉시 착수 가능 / T10·T11은 부칙 A 반영 후 동결
 M1.5  source stack preflight: T30·T31 (재적용 전에 소스 불변식 검사)
 M2    통합: T24→T25→T26(vendor merge 기본) + T20→T23(replay 선택 모드)
-M3    완전성·결속: T40(touched/net 분리) → T32(최종상태) → T62(테스트-SHA 결속) → T33 → T41
+M3    완전성·결속: T40(touched/net 분리) → T32(최종상태) → T62(테스트-SHA 결속) → T63(UI 타입 기준선) → T33 → T41
 M4    감시·영향: T93(watch drift, 먼저) → T42(영향분석) + T50(선언형 verifier; 실행형·sandbox는 후속)
 M5    증거 생성기: T51·T52 (공통 provider SDK 후 병렬 가능) + provider 자기보호(C-3)
 M6    테스트 결속: T60(contract 정본) → T61(patch-kill — high/critical 우선, 상태 4종)
@@ -423,6 +423,26 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **수용**: candidate에 커밋 추가 시 기존 결과 무효, retry-pass가 성공으로 뭉개지지 않음.
 - **선행**: T32.
 
+### T63. UI typecheck 공식 기준선 delta
+
+- **상태(2026-07-27)**: ✅ 비교기·CLI·실제 upstream/candidate 증거 구현.
+  공식 `1.13.1-release`와 candidate를 Node 22.17.0/Yarn 1.22.22, 동일 생성
+  단계와 dependency tree로 실행했다. 양쪽 모두 396 diagnostics·141 files,
+  신규/제거 0, path+TS-code multiset fingerprint가 같다. verdict는
+  `approval`이며 release pass가 아니다.
+- **목적**: 큰 기존 오류 기준선에 후보 신규 오류가 묻히는 시간차·총건수 착시를
+  차단한다.
+- **구현**: ANSI를 제거한 전체 `tsc` 로그에서 repo-relative path와 TS error
+  code를 multiplicity가 보존되는 multiset으로 파싱한다. 신규 또는 증가=
+  `block`; unsafe/malformed path, 예상 밖 exit, exit/진단 불일치=
+  `analysis_error`; 양쪽 clean=`pass`; 신규 없는 비영 baseline=`approval`.
+  결과와 로그 SHA, toolchain, upstream/candidate SHA는 등록 evidence에 고정한다.
+- **수용**: 신규 진단과 같은 진단의 중복 증가가 차단되고, 비영 기준선이 pass로
+  승격되지 않으며, malformed 로그로 우회할 수 없다.
+- **한계**: 같은 path+code 안의 메시지 치환은 fingerprint가 잡지 못하므로
+  designated owner의 full-log review 또는 전체 오류 수정이 필요하다.
+- **선행**: T24·T62.
+
 ---
 
 ## M7. 정책 자기보호 · fast lane · break-glass
@@ -547,6 +567,7 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 | T50 선언형 verifier | 임의실행 제거 | P0-8 |
 | T60/61 contract·patch-kill | 생존 입증 | P0-5·P0-7·C-4 |
 | T62 SHA 결속 | 시간차 | §10.1 |
+| T63 UI 타입 기준선 | 기존 오류에 신규 오류가 묻힘 | §10.1 |
 | T70 정책 base 평가 | 자기보호 | P0-9 |
 | T80 LLM Memo | 보조 | P0-7·§7 |
 | T91 digest 승격 | 재현성 | §10.1 |

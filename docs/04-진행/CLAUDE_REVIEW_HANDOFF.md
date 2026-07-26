@@ -4,7 +4,9 @@
 > 대상 브랜치: `claude/markdown-file-feedback-26933w`
 > 변경 전 기준 커밋: `9d2a174` (`implement T25 vendor ancestry gate`)
 > 마지막 검증 구현 커밋:
-> `5823eda35da4b0242aa59c00d6e19802c4a10afc`
+> `39294bf38172f16528833640c03302aa83ade7b4`
+> T63 UI typecheck 기준선 게이트 구현 커밋:
+> `39294bf38172f16528833640c03302aa83ade7b4`
 > 제품 UI 타입 보강 커밋:
 > `ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d`
 > Data Assertions·bank column 실제 화면 계약 보강 커밋:
@@ -1164,6 +1166,74 @@ Git read가 중단됐다. 유실 방지를 위해 이 세션은
 작업 묶음마다 원격 branch에 push한다. 다음 작업자는 Documents 복제본을 신뢰하기
 전에 `stat`/`git status`를 확인하고, 문제가 있으면 원격 branch를 새로 clone한다.
 
+### 4.25 T63 — 공식 upstream 대비 UI typecheck 기준선 delta
+
+구현 커밋:
+
+- `39294bf38172f16528833640c03302aa83ade7b4`
+
+구현 파일:
+
+- `harness/acgh/tsc_baseline.py`
+- `harness/tests/test_tsc_baseline.py`
+- `harness/registrations/kb-openmetadata/compare_ui_typecheck.py`
+- `harness/registrations/kb-openmetadata/ui-typecheck-baseline-evidence.yaml`
+- `harness/registrations/kb-openmetadata/source-candidate-evidence.yaml`
+
+개발 목적:
+
+후보 typecheck가 수백 건의 기존 오류를 포함할 때 총건수나 후보 변경 파일만
+비교하면, 후보가 새로 만든 오류가 다른 기존 오류의 감소에 상쇄되거나 기존 오류
+묶음에 묻힐 수 있다. T63은 공식 upstream과 candidate의 **전체 로그**를 같은
+toolchain에서 비교해 이 착시를 차단한다.
+
+구현 방법:
+
+1. ANSI escape를 제거하고 `repo-relative path(line,column): error TSxxxx: ...`
+   형식만 primary diagnostic으로 파싱한다.
+2. `(path, TS error code)`를 set이 아니라 multiset으로 세어 같은 오류의 중복
+   증가도 신규 진단으로 검출한다.
+3. 후보 신규/증가는 `block`, unsafe/malformed path와 예상 밖 process exit,
+   exit/진단 건수 모순은 `analysis_error`다.
+4. upstream/candidate가 모두 clean일 때만 `pass`다. 신규가 없어도 upstream
+   baseline이 비어 있지 않으면 반드시 `approval`이다.
+5. 정렬된 multiset의 SHA-256 fingerprint와 원본 로그 SHA, toolchain,
+   upstream/candidate SHA를 machine evidence에 고정했다.
+
+실제 비교 환경:
+
+```text
+official upstream SHA     afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
+candidate SHA             ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d
+Node / Yarn                22.17.0 / 1.22.22
+Node archive SHA-256       cc9cc294eaf782dd93c8c51f460da610cc35753c6a9947411731524d16e97914
+upstream raw log SHA-256   6bca51ba43a80099f00336469504bdef7120df61c34658a685c7d50a97b18610
+candidate raw log SHA-256  768fe9f45465068c3815feb471f3c5a4dcd694e4dae3b3914ea6832bce9b0b76
+```
+
+ANTLR과 parsed schema를 양쪽 worktree에서 생성하고 동일 dependency tree와
+`NODE_OPTIONS=--max-old-space-size=6144 yarn tsc:check`를 사용했다. 최초
+생성물 없는 upstream 실행의 535건은 준비 불일치라 폐기했고, 준비가 같은 두
+로그만 증거로 등록했다.
+
+실제 판정:
+
+```text
+upstream diagnostics      396
+candidate diagnostics     396
+unique files              141
+new / removed             0 / 0
+path+code fingerprint     sha256:a4158616c8921cc299679553b58ba388493a3aaaf5994314cb1a16f78e342fe8
+verdict / exit             approval / 2
+targeted tests             9 passed
+```
+
+이 결과는 “후보가 새 path/code 진단을 추가하지 않았다”는 근거이지 제품 전체
+typecheck pass가 아니다. 특히 같은 path와 같은 TS code에서 메시지만 치환되는
+경우는 이 fingerprint가 잡지 못한다. Claude는 전체 로그 리뷰를 요구할지,
+message normalization까지 fingerprint에 넣을지, 혹은 396건을 전부 수정할지
+독립적으로 판단해야 한다.
+
 ## 5. 테스트 결과
 
 전체 명령:
@@ -1177,10 +1247,10 @@ OPENMETADATA_PRODUCT_REPO=/private/tmp/om-product-rebuild \
 결과:
 
 ```text
-306 passed, 7 skipped in 34.28s
+315 passed, 7 skipped in 31.13s
 ```
 
-초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 158개 passing test가
+초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 167개 passing test가
 추가됐고, T25-R과 실제 candidate evidence 묶음은 14개다.
 
 고정 mirror를 연결해 기존 mirror 의존 35개도 모두 실행·통과했다. 남은 7개는
@@ -1210,6 +1280,7 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 | T60-I 구현 존재 | 완료 | 완료 | 9/9 selector resolve pass |
 | T61 patch-kill | source·runtime plan/runner/workflow 완료 | 단위·무환경 fail-closed 완료 | Sybase/Tibero 2/5 pass, runtime high 3개 제거본 배포·실행 없음 |
 | T62 test-result binding·runner | 완료 | 완료 | local fail-closed `2 required pass·7 skip→block`, 실제 runtime run 없음 |
+| T63 UI typecheck baseline delta | 완료 | 9개 완료 | 실제 원본/후보 비교 `396=396`, 신규 0, verdict `approval` |
 | T71/T72 운영 정책 | 완료 | 완료 | 조직 승인자·CI 연동 필요 |
 | T80/T81 LLM memo | 완료 | 완료 | 실제 release memo 평가 데이터 없음 |
 | T90 upgrade-run contract | 완료 | 완료 | Docker/DB/search/ingestion 실행 없음 |
@@ -1226,9 +1297,11 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 2. `openmetadata-runtime` environment의 secret/variable을 설정하고
    `Runtime contracts` workflow에서 API 4개와 browser 3개를 실행해 9개
    selector 전체의 T62 candidate-bound pass를 만든다.
-3. Node 22에서 후보가 만든 3개 UI typecheck diagnostic은 수정 완료했다.
-   남은 upstream/unrelated 396개를 기준선 승인 또는 수정하고, 제품 전체
-   Java/UI build와 source-level test를 candidate에 결속한다.
+3. Node 22에서 후보가 만든 3개 UI typecheck diagnostic은 수정 완료했고,
+   T63은 공식 원본과 후보가 각각 396건·141파일, 동일 path/code multiset임을
+   확인했다. 다만 verdict는 `approval`이다. full log를 검토해 조직 기준선으로
+   승인하거나 오류를 수정하고, 제품 전체 Java/UI build와 source-level test를
+   candidate에 결속한다.
 4. InstanceCode·QueryReport·Data Assertions 제거본을 각각 빌드·배포해 남은
    high 3개 runtime patch-kill을 실행한다.
 5. runtime workflow의 YAML 결과를 조직의 장기 증거 저장소에 보존한다.
@@ -1257,7 +1330,7 @@ OpenMetadata 테스트 스택에서 API 4개와 browser 3개를 실행한다. �
 | 질문 | 이 문서에서 확인할 곳 |
 |---|---|
 | 최종 목적은 무엇인가 | §1 |
-| 지금까지 무엇을 만들었는가 | §4.1~§4.24 |
+| 지금까지 무엇을 만들었는가 | §4.1~§4.25 |
 | 어떤 방식으로 만들었는가 | 각 구현 절의 파일·개발 방식 |
 | 무엇으로 검증했고 무엇이 미실행인가 | §5~§6 |
 | 다음에 무엇을 어떤 순서로 할 것인가 | §7과 첫 실행 명령 |
@@ -1300,9 +1373,11 @@ OpenMetadata 테스트 스택에서 API 4개와 browser 3개를 실행한다. �
 20. `BANK-OM-008` 하나가 InstanceCode와 QueryReport의 공유 UI 타입 보강을
     표현하는 것이 단일 변경 목적 규칙에 맞는가, 아니면 더 나은 추적 모델이
     필요한가.
-21. Node 22 typecheck의 남은 396건을 upstream 기준선으로 승인할 때
-    candidate-changed line 비교만으로 충분한지, 공식 upstream 동일 toolchain
-    전체 실행을 필수화해야 하는가.
+21. 공식 upstream 동일 toolchain 전체 실행은 완료됐고 후보와 같은 396건·
+    path/code fingerprint를 냈다. 이 근거가 기준선 승인에 충분한가.
+22. T63의 path+TS-code multiset granularity가 충분한가, 아니면 같은 path/code
+    안의 message substitution도 결정적으로 잡도록 정규화 메시지를 evidence에
+    포함해야 하는가.
 
 검토 결과는 `Blocking / Serious / Minor / Validated`로 나누고, 각 항목에 정확한
 파일·라인·재현 테스트를 제시해 달라. 문서의 완료 표시가 아니라 코드와

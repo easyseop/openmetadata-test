@@ -33,7 +33,9 @@
 > 관계없이 덮어쓰기 불가 GitHub artifact로 90일 보존한다. 실제 운영 실행은 없다.
 > 지원 Node 22 typecheck에서 후보가 만든 오류 3건을 찾아 제품 commit
 > `ddf0dd2e...`로 모두 수정했고, 현재 candidate의 T25/T26/T30/T31도 다시
-> 통과했다. 남은 396개 UI 진단은 upstream-identical 또는 unrelated 기준선이다.
+> 통과했다. 공식 upstream도 같은 Node 22 환경에서 396개 진단을 냈고 후보와
+> path+error-code multiset이 같았다. T63 기준선 게이트는 신규 오류 0을 확인했지만
+> 비어 있지 않은 기준선이므로 `pass`가 아니라 `approval`이다.
 > T61은 Sybase/Tibero 패치가 없는 고정 소스에서 두 계약이 실제 실패함을
 > 입증했지만, 배포된 제거본이 필요한 high ID 3개는 아직 미실행이다.
 > 실제 업그레이드 실행과 release artifact도 없으므로 현재 production release는
@@ -68,7 +70,7 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 ## 내 요구사항은 어디까지 충족되나 (영역 · 체크리스트)
 
 기능을 **영역(Area)**으로 묶어 요구사항과 매핑한다. 각 영역의 상세한 *왜 필요 ·
-안 지키면 · 방법론*은 바로 아래 **[검증기 22종]** 표를 본다.
+안 지키면 · 방법론*은 바로 아래 **[검증기 23종]** 표를 본다.
 
 | 영역ID | 영역 | 한 줄 | MVP | 담당 검증기(#) |
 |---|---|---|---|---|
@@ -100,7 +102,7 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 > T94 서명 반입 증거다. 단위 테스트 성공을 배포 가능으로
 > 해석하지 않는다.
 
-## 전체 검증기 22종 — 왜 필요 · 안 지키면 · 어떻게 구현
+## 전체 검증기 23종 — 왜 필요 · 안 지키면 · 어떻게 구현
 
 > 상태: **✅ 완료 · 🟡 부분 · ⬜ 계획.** 단일 정본은
 > [`docs/03-기술참조/openmetadata_verifier_catalog.md`](docs/03-기술참조/openmetadata_verifier_catalog.md) §0.1.
@@ -148,11 +150,12 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 | 20 | digest 승격 | **검증본과 다른 산출물**이 배포/반입됨 | release-lock으로 commit·image·Helm·test digest 동일성, 내부망 hash/signature 재검증 | 🟡 T91/T94 엔진·실행 미완 |
 | 21 | verdict 엔진 | max 집계로 **차단이 승인으로 격하** / 고장을 통과로 우회 | **심각도 순위** 집계(exit code로 안 함), 분석실패·빈 입력=차단(fail-closed) | ✅ T13 |
 
-### 보조 — LLM (판정 아님)
+### 보조·기준선
 
 | # | 검증기 | 무엇을 하나 · 한계 | 구현 방법론 (또는 계획) | 상태·태스크 |
 |---|---|---|---|---|
 | 22 | LLM Impact Memo | 애매한 의미 변경을 **후보로 좁혀줌** · pass 부여 불가·100% recall 아님 | 사실/추론/미확인·근거·snapshot을 strict schema로, verdict/command/action 금지, 품질지표 | ✅ T80/T81 |
+| 23 | UI 타입 기준선 비교 | 후보가 공식 원본보다 타입 오류를 늘려도 기존 오류에 묻힘 | 동일 Node/Yarn에서 전체 로그의 경로+TS 코드 multiset 비교, 신규·증가=block, 비어 있지 않은 동일 기준선=approval | ✅ T63 |
 
 ---
 
@@ -241,7 +244,7 @@ M9 업그레이드 검증·릴리스 승격(digest 결속)·반입
 pip install jsonschema pathspec pyyaml pytest
 OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata \
   python -m pytest harness/tests tests/bank/contracts
-# 고정 mirror 연결 시 313개: 306 pass·7 operational skip
+# 고정 mirror 연결 시 322개: 315 pass·7 operational skip
 ```
 
 동일한 source 범위는

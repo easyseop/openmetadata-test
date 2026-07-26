@@ -2,7 +2,8 @@
 
 > Updated: 2026-07-27
 > Branch: `claude/markdown-file-feedback-26933w`
-> Last verified implementation commit: `5823eda`
+> Last verified implementation commit: `39294bf`
+> UI typecheck baseline delta gate commit: `39294bf`
 > Product UI hardening commit: `ddf0dd2`
 > Rendered UI runtime-contract expansion commit: `093724f`
 > Runtime patch-kill gate implementation commit: `1956b78`
@@ -72,10 +73,19 @@ diagnostic count fell from 399 to 396, and no candidate-introduced diagnostic
 remains. The remaining 16 diagnostics that happen to be in candidate-changed
 files are on source lines identical to official upstream 1.13.1.
 
+The full official `1.13.1-release` tree was then generated and typechecked with
+the same Node 22.17.0, Yarn 1.22.22, dependency tree, and command. It also
+produced 396 diagnostics across 141 files. The upstream and candidate
+path-plus-TypeScript-code multisets have the same
+`sha256:a4158616...e342fe8` fingerprint, with zero additions or removals. The
+new T63 comparator therefore returns **approval**, never pass, for this
+non-zero baseline; same-path/same-code message substitution still requires
+human log review or a clean repair.
+
 ## Verification
 
 ```text
-306 passed, 7 skipped in 34.28s
+315 passed, 7 skipped in 31.13s
 ```
 
 This CI-equivalent local run used the two fixed historical mirror refs, so the
@@ -121,7 +131,7 @@ Prettier (2 changed paths)             pass
 DatabaseServiceUtils.test.tsx          pass (13/13; Tibero case pass)
 bank contract source suite             3 passed (Sybase, Tibero, IME source guard)
 required operational selectors         2 passed, 7 skipped (4 API, 3 browser)
-UI tsc --noEmit (Node 22.17.0)          fail (396 upstream/unrelated diagnostics; candidate-introduced 0)
+UI tsc --noEmit (Node 22.17.0)          approval (upstream 396 = candidate 396; new 0; non-zero baseline)
 UI core Vite build                     exit 0 (2 declaration diagnostics on unchanged upstream paths)
 ```
 
@@ -141,6 +151,12 @@ product `.nvmrc`; the downloaded archive matched its published SHA-256
 `cc9cc294...e97914`. The candidate's own Tibero test passed and the three
 candidate-introduced type errors are fixed, but the remaining broad upstream
 baseline still blocks a clean product-wide typecheck.
+
+T63 is implemented in `harness/acgh/tsc_baseline.py` with a registration CLI
+and machine evidence. It counts a multiset rather than a set so duplicate
+diagnostics cannot disappear silently, rejects malformed paths and unexpected
+process exits as `analysis_error`, blocks any new candidate diagnostic, and
+keeps an unchanged non-zero baseline at `approval`.
 
 Source-candidate CI is defined in `.github/workflows/source-candidate.yml`.
 It pins all third-party actions by 40-hex SHA, pins product commit
@@ -222,9 +238,10 @@ This is not yet evidence that the bank distribution is deployable:
    Java/UI build, image/package digest, SBOM, signing, and promotion evidence
    still need to be produced.
 7. The focused Tibero Jest suite passes 13/13. The supported Node 22 typecheck
-   confirms the three candidate-introduced diagnostics are fixed, but still
-   reports 396 upstream-identical or unrelated diagnostics. That broad
-   baseline must be repaired or formally baselined before release.
+   confirms the three candidate-introduced diagnostics are fixed. Official
+   upstream and candidate both report 396 diagnostics in 141 files with the
+   same path/code multiset, so T63 reports `approval`, not `pass`. The broad
+   baseline must be repaired or approved after full-log review before release.
 
 Until those items are closed, the honest release state is **blocked**, not
 pass.

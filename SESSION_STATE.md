@@ -6,7 +6,7 @@
 > `BANK-OM-008` 후보 전용 UI 타입 정합성 보강,
 > T25-R/T25/T26/T60-I/T30/T31 통과, 비개발자용 사용 가이드,
 > T62 runtime 계약 실행기·Data Assertions/은행 컬럼/IME 실제 브라우저 계약·
-> 90일 증거 보존까지 반영.
+> 90일 증거 보존, T63 공식 upstream UI typecheck 기준선 비교까지 반영.
 > **현재 상태 정본은 [`STATUS.md`](STATUS.md), Claude 검토용 상세는
 > [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)다.**
 > **비개발자 안내 정본은
@@ -68,7 +68,7 @@ Tibero 보강과 은행 탐색 UI 타입 정합성 보강을 적용해 현재 ca
 | `openmetadata_governance_requirements.md` | **SRS — P0 9건 반영 + 부칙 A(2차 검토)** | **본문 충돌 시 부칙 A 우선** |
 | `docs/04-진행/openmetadata_build_plan.md` | **순차 개발 실행 계획** — M0~M9, T01~T94 | 개발 스펙 정본 |
 | `docs/04-진행/openmetadata_dev_roadmap.md` | **개발 로드맵 & MVP 커버리지 맵** — 진행 추적 | 커버리지 정본 |
-| `docs/03-기술참조/openmetadata_verifier_catalog.md` | 검증기 22종(§0.1 구현현황) | |
+| `docs/03-기술참조/openmetadata_verifier_catalog.md` | 검증기 23종(§0.1 구현현황) | |
 | `docs/02-설계/ADR-001-vendor-merge-default.md` | **vendor merge 기본·replay 선택 결정** | **최우선 정본** |
 
 > **검토이력 삭제(2026-07-23)**: 과거 검토 대화 5종(1·2차 요청·응답·외부검토)은
@@ -212,8 +212,8 @@ harness/
 **완료:** 기존 patch-replay M1~M4, vendor-merge T24~T29·T25-R, 실제 7개
 snapshot 등록과 1개 candidate-follow-up 등록부,
 T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
-현재 통합 테스트는 313개이며, 고정 upstream mirror와 sparse product checkout을
-연결한 CI-equivalent 환경에서 306개 통과, API 4개와 실제 브라우저 3개만
+현재 통합 테스트는 322개이며, 고정 upstream mirror와 product checkout을
+연결한 CI-equivalent 환경에서 315개 통과(31.13초), API 4개와 실제 브라우저 3개만
 skip됐다.
 - **T60** contract 카탈로그+결속 `contracts.py` · **T61** patch-kill
   `patchkill.py` · **T51/52** 구조화 diff `structdiff.py`(실제 table.json
@@ -227,6 +227,13 @@ skip됐다.
   399→396으로 줄었고 candidate-introduced 오류는 0개다. 남은 오류 중
   candidate 변경 파일에 보이는 16건은 공식 upstream과 같은 소스 줄이다.
   수정 2경로 Prettier도 pass다.
+- **T63 UI typecheck 기준선 비교**: 공식 `1.13.1-release`도 같은 Node/Yarn,
+  같은 ANTLR·schema 생성과 같은 dependency tree에서 전체 실행했다. 원본과
+  후보가 각각 396 diagnostics·141 files이며 path+TS-code multiset
+  fingerprint `sha256:a4158616...e342fe8`가 같다. 신규·제거 진단은 0이다.
+  `acgh/tsc_baseline.py`는 신규/증가를 block, malformed/exit 불일치를
+  analysis_error로 만들고, 비어 있지 않은 동일 기준선은 pass가 아니라
+  approval로 유지한다.
 - **T60-I/contract 구현**: catalog의 9 selector 모두 실제 파일·함수로 resolve.
   Sybase·Tibero 2개 required contract와 별도 IME source guard는 pass.
   OpenMetadata live URL이 필요한 InstanceCode·QueryReport·failed assertion·
@@ -287,7 +294,7 @@ skip됐다.
 > 변경 ∩ 감시 → 케이스 D)** = `upgrade_watch.py`+`impact.py`, **T93 = 정책 노후화
 > drift(패턴이 신버전에 ≥1 매칭? 신규 미분류 모듈?)** = `policy_drift.py`. 초기
 > 커밋들이 이 둘을 뒤바꿔 라벨링했으나 커밋 `21bfc15`에서 정정(기능은 둘 다 구현
-> 완료). 검증기 카탈로그 §0.1에 전체 22개 구현현황표 있음.
+> 완료). 검증기 카탈로그 §0.1에 전체 23개 구현현황표 있음.
 
 | 태스크 | 상태 | 모듈 |
 |---|---|---|
@@ -321,6 +328,7 @@ skip됐다.
 | T29 실제 7개 snapshot + 1개 후보 보강 등록 | ✅ 등록·⚠ 운영증거 | `acgh/registry.py` + `registrations/kb-openmetadata/` |
 | T61 patch-kill | 🟡 source 2/5 증거·runtime 3/5 검사기 구현 | `acgh/patchkill.py` + source/runtime plan·workflow + `source-patch-kill-evidence.yaml` |
 | T62 test-run 결속·실행 경계 | ✅ 실행기·90일 증거 보존·⚠ 운영미실행 | `acgh/testruns.py` + `acgh/pytest_runs.py` + `runtime-contracts.yml` |
+| T63 UI typecheck 기준선 delta | ✅ 검사기·실제 원본/후보 증거·⚠ 승인 필요 | `acgh/tsc_baseline.py` + `compare_ui_typecheck.py` + `ui-typecheck-baseline-evidence.yaml` |
 | T71/T72 fast lane·break-glass | ✅ | `acgh/fastlane.py` + `acgh/breakglass.py` |
 | T80/T81 LLM Memo·지표 | ✅ | `acgh/impact_memo.py` |
 | T90 업그레이드 결과계약 | 🟡 실제 실행 필요 | `acgh/upgrade_run.py` |
@@ -345,8 +353,9 @@ skip됐다.
 2. InstanceCode·QueryReport·Data Assertions 제거본을 실제 배포해 남은 T61
    3건을 실행하고, API·DB·검색·권한·UI/IME 전체 T62 candidate-bound result를
    만든다.
-3. 남은 396개 upstream UI 진단을 공식 기준선으로 승인하거나 수정하고, 전체
-   Java/UI 테스트를 후보와 결속한다.
+3. T63은 공식 원본과 후보의 396개 path/code multiset이 같음을 확인했지만
+   `approval`이다. 전체 로그를 검토해 기준선을 조직적으로 승인하거나 오류를
+   수정하고, 전체 Java/UI 테스트를 후보와 결속한다.
 4. Docker/운영 유사 데이터로 T90 12단계를 실행한다.
 5. T91 실제 artifact 승격과 T94 실제 오프라인 서명·내부망 재검증을 수행한다.
 
@@ -404,7 +413,7 @@ replay tree(T22 `replay.replay_and_compare` 재사용), candidate 변경 시 기
 2. `/home/user/om-mirror` 존재 확인(없으면 §7 재획득), `pip install jsonschema pathspec`.
 3. `OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata python -m pytest
    harness/tests tests/bank/contracts` → mirror 연결 기준 현재
-   313개(306 pass·7 operational skip) 재확인.
+   322개(315 pass·7 operational skip) 재확인.
 4. `STATUS.md`의 production blocker와
    `docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`의 실제 실행 순서를 따른다.
 5. 각 태스크 완료 시 `openmetadata_dev_roadmap.md` §4.1 로그 + 이 표 갱신.
