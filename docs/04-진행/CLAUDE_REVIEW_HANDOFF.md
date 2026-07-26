@@ -1423,6 +1423,32 @@ artifact expiry             2026-10-24T20:49:23Z
 Run URL:
 `https://github.com/easyseop/openmetadata-test/actions/runs/30219786626`.
 
+### 4.28 2026-07-27 06:00 KST 저장소·문서 정합성 점검
+
+정기 점검에서 다음을 다시 확인했다.
+
+```text
+governance local / remote     434d92bb2c41a9749700525add2355c0ea3f7aeb / equal
+product local / remote        b80d24d83124435733d5af05d56515b3a855330e / equal
+working trees                 both clean
+latest governance run         30219859614 / success
+local fixed-mirror suite      316 passed / 7 operational skips / 28.21s
+open PR or review             none on both working branches
+branch protection             disabled on both working branches
+```
+
+비개발자 가이드의 “최근 성공 실행” 링크가 이전 후보 run `30214885448`을
+가리키던 문서 불일치를 발견해, 현재 `BANK-OM-010` 후보와 patch-kill 증거가
+결속된 run `30219786626`으로 바로잡았다.
+
+T63에 남은 실제 `useDataFetching.tsx` TS2345도 호출 경로까지 다시 검토했다.
+기본 변환은 `SearchResponse<SearchIndex>`의 union source를 임의의 제네릭
+`T[]`로 돌려주므로 현재 선언만으로는 타입 안전성을 증명할 수 없다. 단순
+cast는 진단만 숨기므로 자동 수정하지 않았다. 다음 제품 수정은 검색 인덱스
+`SI`와 `SearchIndexSearchSourceMapping[SI]`를 hook·listing props 전체에
+연결하는 설계, 또는 custom transform을 필수화하는 설계 중 하나를 오너가
+선택한 뒤 focused hook/listing 테스트와 T63 재결속을 함께 수행해야 한다.
+
 ## 5. 테스트 결과
 
 전체 명령:

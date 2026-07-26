@@ -43,6 +43,10 @@ T60-I도 9/9 selector 구현
 - 제품 브랜치: `codex/bank-vendor-1.13.1-rebuild`
 - 제품 재구축 checkpoint: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
 - 제품 candidate: `b80d24d83124435733d5af05d56515b3a855330e`
+- 2026-07-27 06:00 KST 정기 점검: 거버넌스 `434d92b`, 제품
+  `b80d24d`의 로컬/원격이 각각 일치하고 작업 트리는 깨끗하다. 최종 동기화
+  run `30219859614`는 성공했고 고정 mirror 로컬 suite는 316 pass·운영 7
+  skip이다. 열린 PR·리뷰는 없으며 두 작업 브랜치는 아직 보호되지 않았다.
 - 커밋 작성자·도구 출처는 실제 작업 주체에 맞게 기록한다. 과거 세션이나 다른
   도구의 출처를 새 커밋에 복사하지 않는다.
 - 푸시: `git push -u origin claude/markdown-file-feedback-26933w`
