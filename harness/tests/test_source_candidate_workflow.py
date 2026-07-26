@@ -46,5 +46,23 @@ def test_source_candidate_workflow_pins_actions_and_runs_all_source_gates():
     commands = "\n".join(step.get("run", "") for step in steps)
     assert "pytest harness/tests tests/bank/contracts -ra" in commands
     assert "run_source_candidate_gates.py" in commands
+    assert "run_source_patch_kills.py" in commands
+    assert '--run-id "${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"' in commands
     assert "--filter=blob:none" in commands
     assert "rev-parse HEAD" in commands
+
+    upload = next(
+        step
+        for step in steps
+        if step.get("name") == "Preserve source patch-kill evidence"
+    )
+    assert (
+        upload["uses"]
+        == "actions/upload-artifact@"
+        "ea165f8d65b6e75b540449e92b4886f43607fa02"
+    )
+    assert upload["if"] == "always()"
+    assert upload["with"]["if-no-files-found"] == "error"
+    assert upload["with"]["retention-days"] == "90"
+    assert upload["with"]["overwrite"] == "false"
+    assert upload["with"]["include-hidden-files"] == "false"

@@ -79,3 +79,24 @@ jobs:
             --harness harness \
             --registration harness/registrations/kb-openmetadata \
             --layout harness/policies/repository-layout.yaml
+
+      - name: Run source-capable patch-kill experiments
+        run: |
+          python harness/registrations/kb-openmetadata/run_source_patch_kills.py \
+            --repo product \
+            --harness harness \
+            --registration harness/registrations/kb-openmetadata \
+            --output "$RUNNER_TEMP/source-patch-kill/acgh-result.yaml" \
+            --run-id "${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+
+      - name: Preserve source patch-kill evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: source-patch-kill-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/source-patch-kill/acgh-result.yaml
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0
+          overwrite: false
+          include-hidden-files: false

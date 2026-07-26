@@ -1,0 +1,23 @@
+schema_version: 1
+candidate:
+  repository: easyseop/OpenMetadata
+  commit_sha: 38bccf90779a8afe4a4f0e9313e11706f6d940d4
+scope: source-capable-high-critical
+experiments:
+  - customization_id: BANK-OM-006
+    without_patch_sha: 6e5b654f84ec6441e8affcef90c79f83c9a4d986
+    required_test: tests/bank/contracts/test_sybase.py::test_connection_schema_roundtrip
+    method: predecessor-source-negative-control
+    rationale: The fixed predecessor contains every earlier bank customization but no Sybase commit; the external contract suite must detect the missing Sybase cross-layer schema.
+  - customization_id: BANK-OM-007
+    without_patch_sha: 41b224adbd7e1906a96d99657693e439e3d8716b
+    required_test: tests/bank/contracts/test_tibero.py::test_connection_schema_roundtrip
+    method: predecessor-source-negative-control
+    rationale: The fixed predecessor contains the completed Sybase series but no Tibero commit or follow-up; the external contract suite must detect the missing Tibero cross-layer schema.
+pending:
+  - customization_id: BANK-OM-001
+    reason: InstanceCode needs a deployed counterfactual service plus database and search checks; a source predecessor alone cannot prove the runtime contract.
+  - customization_id: BANK-OM-002
+    reason: QueryReport needs a deployed counterfactual service and a real query entity; a source predecessor alone cannot prove the runtime contract.
+  - customization_id: BANK-OM-003
+    reason: Data Assertions needs a deployed counterfactual service and failed test-case data; a source predecessor alone cannot prove the runtime contract.

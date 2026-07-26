@@ -1,8 +1,10 @@
 """T61 patch-kill tests on a real OM auth file (base = without the bank patch)."""
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
+import yaml
 
 from acgh import gitprim as G
 from acgh import patchkill as PK
@@ -59,6 +61,60 @@ def test_unrunnable_test_is_inconclusive(repo, tmp_path):
                       str(tmp_path / "wt"))
     assert r.status == PK.INCONCLUSIVE
     assert r.verdict() == V.ANALYSIS_ERROR
+
+
+def test_unexpected_harness_exit_is_inconclusive(repo, tmp_path):
+    internal_error = [sys.executable, "-c", "import sys; sys.exit(3)"]
+    r = PK.patch_kill(
+        str(repo), "main", internal_error, str(tmp_path / "wt")
+    )
+    assert r.status == PK.INCONCLUSIVE
+    assert r.verdict() == V.ANALYSIS_ERROR
+
+
+def test_pytest_negative_control_requires_an_assertion_failure(
+    repo, tmp_path, om_auth_path
+):
+    suite = tmp_path / "suite"
+    suite.mkdir()
+    selector = suite / "test_negative.py"
+    selector.write_text(
+        "import os\n"
+        "from pathlib import Path\n\n"
+        "def test_patch_marker():\n"
+        "    root = Path(os.environ['OPENMETADATA_PRODUCT_REPO'])\n"
+        f"    assert 'BANK-OM-001' in (root / {om_auth_path!r}).read_text()\n",
+        encoding="utf-8",
+    )
+    result = PK.patch_kill_pytest(
+        str(repo),
+        "main",
+        suite,
+        "test_negative.py::test_patch_marker",
+        str(tmp_path / "wt"),
+    )
+    assert result.status == PK.PROVEN
+    assert result.verdict() == V.PASS
+
+
+def test_patch_kill_plan_rejects_duplicate_scope_classification():
+    plan_path = (
+        Path(__file__).parents[1]
+        / "registrations"
+        / "kb-openmetadata"
+        / "patch-kill-plan.yaml"
+    )
+    plan = yaml.safe_load(plan_path.read_text(encoding="utf-8"))
+    assert PK.parse_plan(plan) == plan
+    duplicate = yaml.safe_load(plan_path.read_text(encoding="utf-8"))
+    duplicate["pending"].append(
+        {
+            "customization_id": "BANK-OM-006",
+            "reason": "This deliberately duplicates a source experiment for validation.",
+        }
+    )
+    with pytest.raises(PK.PatchKillPlanError, match="unique"):
+        PK.parse_plan(duplicate)
 
 
 def test_worktree_cleaned_after_run(repo, tmp_path):
