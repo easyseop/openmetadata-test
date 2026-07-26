@@ -1401,8 +1401,27 @@ source patch-kill result digest       sha256:1925be2e...4c4b56
 소비하는 알림 엔터티 ID 선택기의 런타임 fallback과 우선순위를 고정하므로
 검토 질문과 변경 경로가 다르다. 009 이력을 수정하지 않고 별도 follow-up으로
 등록했으며 T25-R은 원본 7개만, 현재 생존·불변식·runtime lock은 010까지
-검사한다. 현재 후보의 첫 원격 source-candidate run은 이 문서 batch push 뒤
-확인한다.
+검사한다.
+
+원격 재현:
+
+```text
+run                         30219786626
+governance head             90036ff4fdec8292c33bbb65e5bdc7bcfd14d597
+product commit              b80d24d83124435733d5af05d56515b3a855330e
+suite                       316 passed, 7 skipped in 15.29s
+active IDs                  10
+source gates                5 pass
+T60-I                       9/9
+source patch-kill           2 pass
+patch-kill result digest    sha256:b6a574091ae2bcc8745811179674b3dff90b83e356dc99fceb2363a19cd18541
+artifact ID                 8636860716
+artifact digest             sha256:88a16a937b1aa0a590ebcb15798a87d9ef6c33a4dd87d93f2f9f6c5427eb5910
+artifact expiry             2026-10-24T20:49:23Z
+```
+
+Run URL:
+`https://github.com/easyseop/openmetadata-test/actions/runs/30219786626`.
 
 ## 5. 테스트 결과
 
@@ -1452,7 +1471,7 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 | T62 test-result binding·runner | 완료 | 완료 | local fail-closed `2 required pass·7 skip→block`, 실제 runtime run 없음 |
 | T63 UI typecheck baseline delta | 완료 | 10개 완료 | 실제 원본 396/후보 356, 신규 path/code 0·제거 40, verdict `approval` |
 | BANK-OM-009 공통 검색 타입 | 완료 | focused Jest 18/18·T63 10개 완료 | 원본 396→후보 357, 신규 path/code 0·제거 39, 원격 run 30216708258 성공 |
-| BANK-OM-010 알림 엔터티 ID fallback | 완료 | focused Jest 112/112·T63 10개 완료 | 원본 396→후보 356, 신규 path/code 0·제거 40, 원격 candidate run 대기 |
+| BANK-OM-010 알림 엔터티 ID fallback | 완료 | focused Jest 112/112·T63 10개 완료 | 원본 396→후보 356, 신규 path/code 0·제거 40, 원격 run 30219786626 성공 |
 | T71/T72 운영 정책 | 완료 | 완료 | 조직 승인자·CI 연동 필요 |
 | T80/T81 LLM memo | 완료 | 완료 | 실제 release memo 평가 데이터 없음 |
 | T90 upgrade-run contract | 완료 | 완료 | Docker/DB/search/ingestion 실행 없음 |

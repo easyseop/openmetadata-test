@@ -3,7 +3,7 @@
 > Updated: 2026-07-27
 > Branch: `claude/markdown-file-feedback-26933w`
 > Last verified implementation commit: `d70fe81`
-> Recorded BANK-OM-009 evidence run: [`30216708258`](https://github.com/easyseop/openmetadata-test/actions/runs/30216708258)
+> Recorded BANK-OM-010 evidence run: [`30219786626`](https://github.com/easyseop/openmetadata-test/actions/runs/30219786626)
 > UI typecheck baseline delta gate commit: `39294bf`
 > Product UI hardening commits: `ddf0dd2`, `70d028a`, `b80d24d`
 > BANK-OM-010 governance registration commit: `d70fe81`
@@ -257,6 +257,15 @@ source gates, T60-I 9/9, and both source patch-kill experiments passed against
 the locked product commit `70d028a035...`. Artifact
 `source-patch-kill-evidence-30216708258-1` has ID `8636012730`, digest
 `sha256:813c26df...50860b4`, and expires `2026-10-24T19:22:20Z`.
+
+The current `BANK-OM-010` candidate was verified remotely in
+[`30219786626`](https://github.com/easyseop/openmetadata-test/actions/runs/30219786626)
+at governance head `90036ff`: `316 passed, 7 skipped in 15.29s`, all five
+source gates, 10 active customization IDs, T60-I 9/9, and both source
+patch-kill experiments passed against product commit `b80d24d831...`.
+Artifact `source-patch-kill-evidence-30219786626-1` has ID `8636860716`,
+digest `sha256:88a16a93...7eb5910`, and expires
+`2026-10-24T20:49:23Z`.
 
 ## Important production blockers
 
