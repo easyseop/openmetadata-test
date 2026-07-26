@@ -17,12 +17,14 @@ contracts:
     invariant: 실패한 test case가 상태·소유자·테이블·컬럼과 함께 일관되게 노출된다.
     required_tests:
       - tests/bank/contracts/test_data_assertions.py::test_failed_assertion_projection
+      - tests/bank/contracts/test_data_assertions.py::test_failed_assertion_rendered_row
     customization_ids: [BANK-OM-003]
   - id: CONTRACT-BANK-COLUMN-VIEW
     title: Bank column metadata presentation
     invariant: 컬럼 순번·키·제약조건 등 행내 확장 정보가 스키마와 검색 화면에서 동일하게 표시된다.
     required_tests:
       - tests/bank/contracts/test_bank_columns.py::test_extended_column_projection
+      - tests/bank/contracts/test_bank_columns.py::test_extended_column_rendered_row
     customization_ids: [BANK-OM-004]
   - id: CONTRACT-KOREAN-IME
     title: Korean IME composition is lossless

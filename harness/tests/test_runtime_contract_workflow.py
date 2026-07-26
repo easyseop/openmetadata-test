@@ -34,6 +34,8 @@ def test_runtime_workflow_requires_identity_and_live_inputs():
         "artifact_digest",
         "base_url",
         "ime_editor_url",
+        "data_assertions_url",
+        "bank_column_ui_url",
     }.issubset(inputs)
     assert all(inputs[name]["required"] == "true" for name in inputs)
 

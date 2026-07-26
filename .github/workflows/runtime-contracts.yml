@@ -15,6 +15,14 @@ on:
         description: Authenticated page URL containing an editable SchemaEditor
         required: true
         type: string
+      data_assertions_url:
+        description: Authenticated customized data assertions page URL
+        required: true
+        type: string
+      bank_column_ui_url:
+        description: Authenticated table schema page URL with bank extensions
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -37,6 +45,8 @@ jobs:
       BANK_COLUMN_TABLE_FQN: ${{ vars.BANK_COLUMN_TABLE_FQN }}
       BANK_COLUMN_NAME: ${{ vars.BANK_COLUMN_NAME }}
       BANK_IME_EDITOR_URL: ${{ inputs.ime_editor_url }}
+      BANK_DATA_ASSERTIONS_URL: ${{ inputs.data_assertions_url }}
+      BANK_COLUMN_UI_URL: ${{ inputs.bank_column_ui_url }}
       BANK_BROWSER_STORAGE_STATE_B64: ${{ secrets.BANK_BROWSER_STORAGE_STATE_B64 }}
 
     steps:

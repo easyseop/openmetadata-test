@@ -1,11 +1,11 @@
 """CONTRACT-KOREAN-IME source guard and real browser composition round-trip."""
 
-import base64
-import json
 import os
 from pathlib import Path
 
 import pytest
+
+from _browser_contract import browser_storage_state, sync_playwright_or_fail
 
 
 def test_hangul_composition_source_guard():
@@ -32,20 +32,6 @@ def test_hangul_composition_source_guard():
     for fragment in required_fragments:
         assert fragment in source
     assert source.count("if (isComposingRef.current)") >= 2
-
-
-def _browser_storage_state():
-    encoded = os.environ.get("BANK_BROWSER_STORAGE_STATE_B64")
-    if not encoded:
-        return None
-    try:
-        raw = base64.b64decode(encoded, validate=True)
-        state = json.loads(raw.decode("utf-8"))
-    except (ValueError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-        pytest.fail(f"BANK_BROWSER_STORAGE_STATE_B64 is invalid: {exc}")
-    if not isinstance(state, dict):
-        pytest.fail("BANK_BROWSER_STORAGE_STATE_B64 must decode to a JSON object")
-    return state
 
 
 def _replace_during_composition(wrapper, stages):
@@ -93,12 +79,7 @@ def test_hangul_composition_roundtrip():
             "BANK_IME_EDITOR_URL is required for the browser IME contract"
         )
 
-    try:
-        from playwright.sync_api import sync_playwright
-    except ImportError:
-        pytest.fail(
-            "Playwright is required when BANK_IME_EDITOR_URL is configured"
-        )
+    sync_playwright = sync_playwright_or_fail()
 
     try:
         editor_index = int(os.environ.get("BANK_IME_EDITOR_INDEX", "0"))
@@ -109,7 +90,7 @@ def test_hangul_composition_roundtrip():
 
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(headless=True)
-        context = browser.new_context(storage_state=_browser_storage_state())
+        context = browser.new_context(storage_state=browser_storage_state())
         page = context.new_page()
         page.goto(editor_url, wait_until="domcontentloaded")
         container = page.get_by_test_id("code-mirror-container").nth(
