@@ -49,8 +49,9 @@ Read in this order:
 Do not infer deployment readiness from unit-test success. In particular,
 confirm that the root-snapshot ancestry blocker, unassigned owners, two
 unregistered blocking paths, API/browser runtime skips, unexecuted
-`Runtime contracts` workflow, missing durable runtime evidence retention, and
-unexecuted T90/T91/T94 operational evidence remain visible and fail closed.
+`Runtime contracts` workflow, the 90-day-only evidence retention boundary,
+missing organization-owned archive, and unexecuted T90/T91/T94 operational
+evidence remain visible and fail closed.
 
 Report findings as:
 

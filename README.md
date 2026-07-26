@@ -28,7 +28,8 @@
 > T60-I/T30/T31이 통과했다. 필수 계약 selector 7개는 모두 실제 구현됐고
 > Sybase/Tibero 두 계약과 한글 IME 소스 가드는 통과했다. 실제 OpenMetadata
 > API 4개와 실제 브라우저 IME 1개는 아직 skip이다. 별도 T62 runtime workflow와
-> 원자적 candidate-bound 결과 생성기는 구현했지만 실제 운영 실행은 없다.
+> 원자적 candidate-bound 결과 생성기는 구현했고, 생성된 증거 3종은 실행 결과와
+> 관계없이 덮어쓰기 불가 GitHub artifact로 90일 보존한다. 실제 운영 실행은 없다.
 > 실제 업그레이드 실행과 release artifact도 없으므로 현재 production release는
 > 차단 상태다.
 > 상세는 [`STATUS.md`](STATUS.md)와
@@ -242,7 +243,10 @@ OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata \
 자동 재현한다. API 4개와 브라우저 IME 1개는
 `.github/workflows/runtime-contracts.yml`의 수동 T62 운영 job 대상이다.
 이 job은 후보 SHA·배포 artifact digest·하네스 commit·suite digest를 묶고,
-skip을 pass로 올리지 않는다.
+skip을 pass로 올리지 않는다. `candidate-lock.yaml`, `test-run-set.yaml`,
+`acgh-result.yaml`은 `runtime-contract-evidence-<run_id>-<run_attempt>` 이름으로
+90일 보존되고 artifact ID·GitHub digest·URL은 job summary에 남는다. 90일을
+넘는 감사 보존은 만료 전에 조직 소유 저장소로 별도 이관해야 한다.
 
 **실제 OM 미러 연결**(게이트·재적용 테스트용, 없으면 해당 테스트 자동 skip):
 

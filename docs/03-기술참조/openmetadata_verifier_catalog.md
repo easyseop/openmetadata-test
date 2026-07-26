@@ -64,7 +64,7 @@ manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과�
 | 14 | 필수 테스트 존재 | CG | ✅ | `testruns.py` |
 | 15 | contract 결속 | T60 | ✅ | `contracts.py` + `schema/contract-catalog.schema.json` |
 | 16 | patch-kill test | T61 | ✅ | `patchkill.py` |
-| 17 | SHA 결속 | T62 | ✅ 실행기·workflow 구현, 운영 run 대기 | `binding.py`·`testruns.py`·`pytest_runs.py` |
+| 17 | SHA 결속 | T62 | ✅ 실행기·workflow·90일 증거 보존 구현, 운영 run 대기 | `binding.py`·`testruns.py`·`pytest_runs.py` |
 | 18 | 차등 테스트 | T90 | 🟡 결과계약 완료·실제 스택 미실행 | `upgrade_run.py` |
 | 19 | 정책 base-평가 | T70 | ✅ | `policy_guard.py` |
 | 20 | digest 승격 | T91 | ✅ 엔진·실제 승격 미실행 | `release.py`·`airgap.py` |
@@ -204,9 +204,11 @@ vendor candidate는 별도 재구축했지만 API 4개·browser IME 1개의 T62 
 ### 17. 테스트-candidate SHA 결속 (T62)
 - **뭘 잡나**: 테스트 결과가 정확한 candidate SHA·이미지 digest·governance
   commit·suite digest에 묶였는지. selector별 JUnit/실제 exit 대조와 재시도
-  결과(first/retry/flaky/fail)도 보존한다.
+  결과(first/retry/flaky/fail)도 보존한다. CI의 증거 3종은 실행별 고유
+  artifact로 90일 보존하고 ID·GitHub digest·URL을 남긴다.
 - **막는 사고**: 테스트 통과 후 candidate에 커밋이 추가돼도 **옛 결과를 유효로** 착각 / flaky retry-pass를 성공으로 뭉갬.
-- **못 잡는 것**: 테스트 자체의 커버리지 부족, 실제 runtime을 실행하지 않은 상태.
+- **못 잡는 것**: 테스트 자체의 커버리지 부족, 실제 runtime을 실행하지 않은 상태,
+  90일을 넘는 조직 장기 보존.
 
 ### 18. 업그레이드 차등 테스트 (T90)
 - **뭘 잡나**: 구·신 버전에 같은 데이터·요청을 넣어 인증·권한·API 응답·엔티티 관계·검색·ingestion 결과가 달라졌는지.

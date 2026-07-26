@@ -1,14 +1,17 @@
 # Claude 독립 검토 인수인계
 
-> 작성일: 2026-07-25
+> 작성일: 2026-07-27
 > 대상 브랜치: `claude/markdown-file-feedback-26933w`
 > 변경 전 기준 커밋: `9d2a174` (`implement T25 vendor ancestry gate`)
-> 마지막 검증 구현 커밋: `efd7615`
+> 마지막 검증 구현 커밋:
+> `502f42f77734ec4f894aa79360c22e0f67dc1b19`
 > 비개발자 가이드·인수인계 구현 커밋:
 > `0f0904b47c08c1febf95d17e2c7364adf01e3b98`
 > T62 runtime 계약 게이트 구현 커밋:
 > `b29d0ceea3b8b95423242847b0c172415f420411`
 > T62 운영 문서·가이드 동기화 커밋: `a291f31`
+> T62 CI evidence 90일 보존 구현 커밋:
+> `502f42f77734ec4f894aa79360c22e0f67dc1b19`
 > 현재 커밋은 체크아웃 후 `git rev-parse HEAD`로 확인한다.
 
 ## 0. 지속 갱신 규칙
@@ -808,14 +811,15 @@ actual exit 1        result와 consistent
 
 이 시뮬레이션은 runner 동작만 검사하기 위해 source tree identity digest를
 artifact 입력으로 사용했다. 실제 배포 artifact나 운영 T62 증거가 아니다.
-실제 runtime workflow는 아직 실행하지 않았다. 또한 현재 workflow는 비밀이 없는
-YAML을 GitHub job summary에 남기지만 별도 장기 증거 저장소에는 업로드하지 않는다.
-장기 보존 연결은 남은 운영 작업이다.
+실제 runtime workflow는 아직 실행하지 않았다. 구현 당시에는 비밀이 없는 YAML을
+GitHub job summary에만 남겼으며, 이 제한은 바로 다음 §4.20의 90일 CI artifact
+보존으로 보강했다. 조직 소유의 영구/장기 보존 연결은 여전히 남은 운영 작업이다.
 
-구현 `b29d0ce`와 문서 `a291f31`은 원격 브랜치에 push됐다. push 뒤
-`source-candidate` run 조회를 시도했지만 이 세션의 외부 GitHub API 승인 도구가
-사용 한도에 도달해 새 run의 결론은 확인하지 못했다. 따라서 원격 성공을 추정해
-기록하지 않는다. 다음 작업자는 먼저 아래 명령으로 `a291f31` 이후 run을 확인한다.
+구현 `b29d0ce`와 문서 `a291f31`은 원격 브랜치에 push됐다. 뒤늦게 확인한
+최종 sync run
+[`30162134698`](https://github.com/easyseop/openmetadata-test/actions/runs/30162134698)은
+head `45d0994`에서 success였고 `293 passed, 5 skipped in 13.68s`,
+`implemented_required_tests=7`, T25/T26/T60-I/T30/T31 pass를 기록했다.
 
 ```bash
 gh run list \
@@ -824,6 +828,33 @@ gh run list \
   --workflow source-candidate.yml \
   --limit 5
 ```
+
+### 4.20 T62 runtime evidence CI artifact 보존
+
+구현 커밋:
+
+- `502f42f77734ec4f894aa79360c22e0f67dc1b19`
+
+`runtime-contracts.yml`에 공식 `actions/upload-artifact` v4 commit
+`ea165f8d65b6e75b540449e92b4886f43607fa02`를 40-hex SHA로 고정했다.
+runtime 결과가 pass, block, approval, analysis_error 중 무엇이든
+`candidate-lock.yaml`, `test-run-set.yaml`, `acgh-result.yaml`을 업로드한다.
+
+보존 계약:
+
+- artifact 이름: `runtime-contract-evidence-<run_id>-<run_attempt>`
+- 보존 기간: 90일
+- overwrite: false
+- 파일이 하나도 없으면 upload 단계도 error
+- 압축 재해석을 줄이기 위해 compression level 0
+- hidden file은 포함하지 않음
+- 업로드 성공 시 artifact ID, GitHub 계산 digest, URL을 job summary에 기록
+- machine result의 observational run ID도 `<run_id>-<run_attempt>`로 일치
+
+이 보존은 job summary 단독보다 강하지만 영구 감사 저장소는 아니다. 조직 보존
+기간이 90일을 넘으면 만료 전에 artifact와 GitHub digest를 별도 증거 저장소로
+이관해야 한다. 실제 runtime workflow를 아직 실행하지 않았으므로 실제 artifact
+ID/digest는 존재하지 않는다.
 
 ## 5. 테스트 결과
 
@@ -838,7 +869,7 @@ OPENMETADATA_PRODUCT_REPO=/private/tmp/om-ci-validation-38bccf \
 결과:
 
 ```text
-293 passed, 5 skipped in 29.97s
+293 passed, 5 skipped in 36.73s
 ```
 
 초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 145개 passing test가
@@ -914,7 +945,7 @@ OpenMetadata 테스트 스택에서 live contract 4개를 실행한다. 운영 U
 | 질문 | 이 문서에서 확인할 곳 |
 |---|---|
 | 최종 목적은 무엇인가 | §1 |
-| 지금까지 무엇을 만들었는가 | §4.1~§4.19 |
+| 지금까지 무엇을 만들었는가 | §4.1~§4.20 |
 | 어떤 방식으로 만들었는가 | 각 구현 절의 파일·개발 방식 |
 | 무엇으로 검증했고 무엇이 미실행인가 | §5~§6 |
 | 다음에 무엇을 어떤 순서로 할 것인가 | §7과 첫 실행 명령 |
@@ -940,6 +971,8 @@ OpenMetadata 테스트 스택에서 live contract 4개를 실행한다. 운영 U
     connector 파일의 Sybase/Tibero 순서가 리뷰 가능한가.
 13. runtime workflow가 pytest crash, JUnit/exit 불일치, skip, stale artifact,
     악의적 workflow input을 어떤 경로에서도 pass로 약화하지 않는가.
+14. pinned artifact upload와 90일 보존 계약이 실패·차단 증거까지 잃지 않고,
+    실행 간 overwrite나 파일 누락을 허용하지 않는가.
 
 검토 결과는 `Blocking / Serious / Minor / Validated`로 나누고, 각 항목에 정확한
 파일·라인·재현 테스트를 제시해 달라. 문서의 완료 표시가 아니라 코드와

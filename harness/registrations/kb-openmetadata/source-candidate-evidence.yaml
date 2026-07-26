@@ -1,6 +1,6 @@
 schema_version: 1
-generated_at: "2026-07-25T23:35:00+09:00"
-governance_evidence_commit: b29d0ceea3b8b95423242847b0c172415f420411
+generated_at: "2026-07-27T02:07:44+09:00"
+governance_evidence_commit: 502f42f77734ec4f894aa79360c22e0f67dc1b19
 repository: easyseop/OpenMetadata
 branch: codex/bank-vendor-1.13.1-rebuild
 upstream:
@@ -123,6 +123,15 @@ product_verification:
       tests_skipped_live: 4
       source_gates_passed: 5
       url: https://github.com/easyseop/openmetadata-test/actions/runs/30161253922
+    runtime_handoff_remote_run:
+      id: 30162134698
+      head_sha: 45d0994dd3d7e2adcc25592575a2786a4f2132bc
+      conclusion: success
+      tests_passed: 293
+      tests_skipped_operational: 5
+      source_gates_passed: 5
+      duration_seconds: 13.68
+      url: https://github.com/easyseop/openmetadata-test/actions/runs/30162134698
   environment:
     node: 24.15.0
     yarn: 1.22.22
@@ -154,6 +163,7 @@ product_verification:
       - CONTRACT-KOREAN-IME
   runtime_contract_gate:
     implementation_commit: b29d0ceea3b8b95423242847b0c172415f420411
+    evidence_retention_commit: 502f42f77734ec4f894aa79360c22e0f67dc1b19
     workflow: .github/workflows/runtime-contracts.yml
     selectors_executed_without_shell: true
     junit_exit_reconciled: true
@@ -178,7 +188,16 @@ product_verification:
       exit_result_consistent: true
       false_exit_verdict: analysis_error
     operational_run_executed: false
-    retention_limit: workflow writes non-secret evidence to the GitHub job summary; durable external evidence storage is not connected yet
+    evidence_retention:
+      provider: github-actions-artifact
+      action: actions/upload-artifact
+      action_commit: ea165f8d65b6e75b540449e92b4886f43607fa02
+      artifact_name: runtime-contract-evidence-<run_id>-<run_attempt>
+      retention_days: 90
+      overwrite: false
+      missing_files: error
+      reports_artifact_id_digest_url: true
+    retention_limit: GitHub retains the non-overwritable evidence artifact for 90 days; an organization-owned long-term archive is not connected yet
   ui_typecheck:
     verdict: fail
     command: NODE_OPTIONS=--max-old-space-size=6144 yarn tsc:check
@@ -194,7 +213,7 @@ product_verification:
 limitations:
   - All seven required test selectors resolve to implementations, but four live API/DB/search projection contracts skip because no OpenMetadata runtime URL is available.
   - The Korean IME source guard passes separately; the required Playwright contract skips without an authenticated editable SchemaEditor URL and storage state.
-  - The T62 runtime workflow and fail-closed producer are implemented, but no real runtime run or durable external evidence-store upload has occurred.
+  - The T62 runtime workflow and fail-closed producer are implemented, and the workflow retains its evidence artifact for 90 days, but no real runtime run or organization-owned long-term archive exists yet.
   - The source candidate is not a release artifact; image/package build, SBOM, signing, and promotion gates remain.
   - The focused Tibero Jest suite passes, but the product-wide UI typecheck still fails with 399 pre-existing or unrelated diagnostics; Java and full UI suites remain unverified.
   - The focused UI run used Node 24 with --ignore-engines because the available environment did not include the package-supported Node 22 runtime.

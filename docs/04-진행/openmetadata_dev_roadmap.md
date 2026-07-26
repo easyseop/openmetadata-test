@@ -141,8 +141,8 @@ path 문법)를 반영한 뒤 동결. T12·T13은 즉시 진행 가능.
 - **T40 구현범위 drift** — touched(상한)/net(하한) 분리, upgrade_watch 제외.
   *왜*: 명세와 실제가 어긋나 뒤의 분석이 무력화되는 것을 막는다.
 - **T62 테스트-SHA 결속** — 테스트 실행 **전에** candidate SHA·digest 결속,
-  retry-pass 구분. *왜*: 옛 테스트 결과를 유효로 착각하거나 flaky를 성공으로
-  뭉개는 것을 막는다.
+  retry-pass 구분, 증거 artifact 90일 보존. *왜*: 옛 테스트 결과를 유효로
+  착각하거나 flaky를 성공으로 뭉개고 실패 증거를 잃는 것을 막는다.
 - **T32 최종상태 불변식** — 순효과 0(intrinsic + counterfactual 2단)·무단 revert.
   *왜*: "이름표는 있는데 기능은 사라진" 상태를 잡는다.
 - **T33 게이트 문구 정정** — 등록·재적용 ≠ 기능 완전성 표기. *왜*: 보장 범위
@@ -330,7 +330,7 @@ T93·T42 · T50 · T70 최소.
 | T42 upgrade_watch(케이스 D) | ✅ 완료 | `acgh/upgrade_watch.py`+`impact.py` | 8 테스트(실제 A→B diff 4789변경). watch∩net→approval, 영향표면+판정없는 LLM memo(§7) |
 | T93 정책 노후화 drift | ✅ 완료 | `acgh/policy_drift.py` | 5 테스트. 0-매칭 패턴(빈 총)=approval, 신규 미분류 모듈(실제 openmetadata-mcp 등)=analysis_error |
 | T50 선언형 verifier | ✅ 완료 | `acgh/verifier.py` | 10 테스트. JSON Pointer·file_hash·module_present(비실행), 실행형 거부, `..` 경로이탈 차단(P0-8) |
-| T62 test-result 결속·runtime 실행 | ✅ 구현·⚠ 운영미실행 | `acgh/testruns.py` + `acgh/pytest_runs.py` + schema + `runtime-contracts.yml` | selector별 격리 pytest/JUnit, atomic run-set/result, SHA/artifact/governance/suite 결속, 실제 exit 대조. 로컬 무환경 시뮬레이션 `2 pass·5 skip→block`, exit 위조→analysis_error |
+| T62 test-result 결속·runtime 실행 | ✅ 구현·⚠ 운영미실행 | `acgh/testruns.py` + `acgh/pytest_runs.py` + schema + `runtime-contracts.yml` | selector별 격리 pytest/JUnit, atomic run-set/result, SHA/artifact/governance/suite 결속, 실제 exit 대조. 결과 3종을 overwrite 불가 artifact로 90일 보존. 로컬 무환경 시뮬레이션 `2 pass·5 skip→block`, exit 위조→analysis_error |
 | T71 fast lane | ✅ 구현 | `acgh/fastlane.py` | 5 테스트. 유형별 최소 gate, mixed=합집합, core=전체 전략 route |
 | T72 break-glass | ✅ 구현 | `acgh/breakglass.py` + schema | 8 테스트. 2인·만료·scope·사후검증·통계·timezone, 무결성 gate 비면제, verdict 불변 |
 | T80/T81 Impact Memo | ✅ 구현 | `acgh/impact_memo.py` + schema | 7 테스트. 사실/추론/미확인·근거·snapshot, verdict/command 금지, 품질지표 |

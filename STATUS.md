@@ -1,10 +1,11 @@
 # Current implementation status
 
-> Updated: 2026-07-25
+> Updated: 2026-07-27
 > Branch: `claude/markdown-file-feedback-26933w`
-> Last verified implementation commit: `b29d0ce`
+> Last verified implementation commit: `502f42f`
 > Nondeveloper guide and handoff implementation commit: `0f0904b`
 > Runtime operations documentation commit: `a291f31`
+> Runtime evidence retention implementation commit: `502f42f`
 > Detailed review handoff: [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)
 > Nondeveloper entry point: [`docs/00-사용가이드/비개발자_사용_가이드.md`](docs/00-사용가이드/비개발자_사용_가이드.md)
 
@@ -58,7 +59,7 @@ member and a Tibero schema-mapping unit test under the same consecutive
 ## Verification
 
 ```text
-293 passed, 5 skipped in 29.97s
+293 passed, 5 skipped in 36.73s
 ```
 
 This CI-equivalent local run used the two fixed historical mirror refs, so the
@@ -94,7 +95,10 @@ catalog selector in a fresh pytest process, derives outcomes from JUnit XML,
 retains retries, atomically writes the candidate lock/test-run set/result, and
 checks the result against the actual process exit. A local no-runtime
 simulation produced `2 pass, 5 skipped -> block`; an intentionally false exit
-was converted to `analysis_error`. No real runtime workflow has been executed.
+was converted to `analysis_error`. The three evidence YAML files are uploaded
+with pinned `actions/upload-artifact` code as a non-overwritable, 90-day CI
+artifact whose ID, digest, and URL are written to the job summary. No real
+runtime workflow has been executed.
 
 The focused UI run used Yarn 1.22.22 and Node 24.15.0 with
 `--ignore-engines` because this environment has no Node 22 runtime. The
@@ -119,9 +123,10 @@ batch then passed remotely in
 [`30161253922`](https://github.com/easyseop/openmetadata-test/actions/runs/30161253922)
 with `280 passed, 4 skipped in 12.83s` and all five source gates passing.
 Runtime implementation `b29d0ce` and documentation `a291f31` are pushed. Their
-new remote run could not be queried in this session because external GitHub API
-approval hit the tool usage limit; no remote success is claimed. The exact
-local verification is `293 passed, 5 skipped` with all five source gates pass.
+remote run
+[`30162134698`](https://github.com/easyseop/openmetadata-test/actions/runs/30162134698)
+passed at head `45d0994` with `293 passed, 5 skipped in 13.68s` and all five
+source gates passing.
 
 ## Important production blockers
 
@@ -141,6 +146,8 @@ This is not yet evidence that the bank distribution is deployable:
 4. T90/T91/T94 judgment contracts are implemented, but no real OpenMetadata
    Docker upgrade run, production-like DB restore, artifact promotion, or
    offline signature verification was executed in this environment.
+   Runtime YAML is retained in GitHub for 90 days, but an organization-owned
+   long-term evidence archive is not connected.
 5. The candidate lock currently binds the source Git tree identity. A complete
    Java/UI build, image/package digest, SBOM, signing, and promotion evidence
    still need to be produced.

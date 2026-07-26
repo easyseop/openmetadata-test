@@ -387,17 +387,21 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **선행**: T60·T20.
 
 ### T62. 테스트-candidate SHA 결속
-- **상태(2026-07-25)**: ✅ 결과계약·flaky 판정·실행기·수동 runtime workflow
+- **상태(2026-07-27)**: ✅ 결과계약·flaky 판정·실행기·수동 runtime workflow
   구현/단위검증 완료. 7개 selector 구현은 완료했고 Sybase/Tibero 두 required
   contract와 별도 IME source guard는 pass다. live API 4개와 실제 browser IME
-  1개는 환경 부재로 skip했다. candidate-bound 전체 pass 결과는 아직 없음.
+  1개는 환경 부재로 skip했다. 증거 3종은 실행 결과와 관계없이 덮어쓰기 불가
+  GitHub artifact로 90일 보존하고 ID·digest·URL을 요약한다. candidate-bound
+  전체 pass 결과와 90일 이후 조직 장기 보존 연결은 아직 없음.
 - **목적**: 시간차 결함 방지(§10.1).
 - **충족**: P0(§10.1) / REQ-OR 신규.
 - **구현**: 테스트 결과를 candidate SHA·이미지 digest·harness/suite 버전에 결속.
   catalog selector를 shell 없이 별도 pytest process로 실행하고 JUnit XML과 실제
   exit를 대조한다. 결과 set과 machine result는 원자적으로 기록하며, 누락·파손·
   exit 불일치는 analysis_error다. candidate 변경 시 결과 자동 무효화. 재시도
-  결과 구분(first/retry/flaky/fail), critical/high retry-pass=승인.
+  결과 구분(first/retry/flaky/fail), critical/high retry-pass=승인. CI는
+  `runtime-contract-evidence-<run_id>-<run_attempt>` artifact를 overwrite 없이
+  90일 보존하며, 파일 누락도 실패로 처리한다.
 - **수용**: candidate에 커밋 추가 시 기존 결과 무효, retry-pass가 성공으로 뭉개지지 않음.
 - **선행**: T32.
 

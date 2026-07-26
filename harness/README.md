@@ -134,6 +134,12 @@ python harness/registrations/kb-openmetadata/run_runtime_contracts.py \
 `interpret_runtime_result.py`가 실제 process exit와 result를 다시 대조하고,
 누락·파손·stale·불일치를 `analysis_error`로 처리한다.
 
+GitHub workflow는 결과가 pass·block·approval·analysis_error 중 무엇이든 이
+3개 파일을 `runtime-contract-evidence-<run_id>-<run_attempt>` artifact로
+업로드한다. 같은 실행 증거는 덮어쓸 수 없고 90일 보존되며, 파일이 없으면 업로드
+단계도 실패한다. artifact ID·GitHub digest·URL은 job summary에서 확인한다.
+90일을 넘는 조직 감사 보존은 만료 전에 별도 장기 저장소로 이관한다.
+
 ## 디렉터리
 
 ```

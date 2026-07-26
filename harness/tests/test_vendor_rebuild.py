@@ -448,6 +448,17 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
     assert remote["conclusion"] == "success"
     assert remote["annotations"] == 0
     assert remote["head_sha"] == "7063b0b23e1816c1480e88d6d6c29d5cc539ae1f"
+    runtime_handoff = product["source_candidate_ci"][
+        "runtime_handoff_remote_run"
+    ]
+    assert runtime_handoff["conclusion"] == "success"
+    assert (
+        runtime_handoff["head_sha"]
+        == "45d0994dd3d7e2adcc25592575a2786a4f2132bc"
+    )
+    assert runtime_handoff["tests_passed"] == 293
+    assert runtime_handoff["tests_skipped_operational"] == 5
+    assert runtime_handoff["source_gates_passed"] == 5
     assert product["prettier"]["verdict"] == V.PASS
     assert product["tibero_jest"]["verdict"] == V.PASS
     assert product["tibero_jest"]["tests"] > 0
@@ -462,6 +473,15 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
         runtime["local_no_runtime_simulation"]["false_exit_verdict"]
         == V.ANALYSIS_ERROR
     )
+    retention = runtime["evidence_retention"]
+    assert (
+        retention["action_commit"]
+        == "ea165f8d65b6e75b540449e92b4886f43607fa02"
+    )
+    assert retention["retention_days"] == 90
+    assert retention["overwrite"] is False
+    assert retention["missing_files"] == "error"
+    assert retention["reports_artifact_id_digest_url"] is True
     assert runtime["operational_run_executed"] is False
     assert product["ui_typecheck"]["verdict"] == "fail"
     assert product["ui_typecheck"]["error_lines"] > 0

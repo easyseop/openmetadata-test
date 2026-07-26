@@ -2,9 +2,9 @@
 
 > **목적**: 컨텍스트가 리셋돼도 이 문서 하나로 작업을 이어갈 수 있게 현재까지의
 > 모든 결정·산출물·다음 단계를 세세하게 기록한다. **작업 재개 시 이 문서를 먼저 읽는다.**
-> 최종 갱신: 2026-07-25 실제 7-ID 재구축, Tibero 후속 보강,
+> 최종 갱신: 2026-07-27 실제 7-ID 재구축, Tibero 후속 보강,
 > T25-R/T25/T26/T60-I/T30/T31 통과, 비개발자용 사용 가이드,
-> T62 runtime 계약 실행기와 실제 브라우저 IME 계약까지 반영.
+> T62 runtime 계약 실행기·실제 브라우저 IME 계약·90일 증거 보존까지 반영.
 > **현재 상태 정본은 [`STATUS.md`](STATUS.md), Claude 검토용 상세는
 > [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)다.**
 > **비개발자 안내 정본은
@@ -203,7 +203,7 @@ harness/
 
 ## 10. 재개 절차 (다음 세션)
 
-### 현재 위치 (2026-07-25, 최신)
+### 현재 위치 (2026-07-27, 최신)
 
 **완료:** 기존 patch-replay M1~M4, vendor-merge T24~T29·T25-R, 실제 7개 등록부,
 T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
@@ -229,11 +229,14 @@ skip됐다.
   pytest/JUnit으로 실행하고 candidate SHA·배포 digest·governance commit·suite
   digest에 결속하며, 원자적 결과와 실제 exit 불일치를 `analysis_error`로
   바꾼다. 로컬 무환경 시뮬레이션은 `2 pass·5 skip → block`; 실제 운영 run은
-  아직 없다.
+  아직 없다. 결과 3종은 pass 여부와 무관하게 실행별 overwrite 불가 GitHub
+  artifact로 90일 보존하고 artifact ID·digest·URL을 job summary에 남긴다.
+  90일 이후 조직 장기 보존 연결은 남았다.
 - **source-candidate CI**: `.github/workflows/source-candidate.yml` 추가. action과
   product commit을 SHA로 고정하고 mirror·통합 테스트·T25/T26/T60-I/T30/T31을
   자동 실행한다. 현재 exact command의 clean local simulation은 293 pass·5 skip 및
-  source gate 5개 pass. 최초 remote run `30160752510`은 success. Node 20
+  source gate 5개 pass. 최신 확인 run `30162134698`도 293 pass·5 skip,
+  source gate 5개 pass로 success. 최초 remote run `30160752510`은 success. Node 20
   deprecation 때문에 checkout v5/setup-python v6 SHA로 올렸고 Node 24
   재검증 run `30160846880`도 annotation 없이 success.
 - **현재 차단 조건**: 7개 owner 미배정, live API contract 4개와 browser IME의
@@ -276,7 +279,7 @@ skip됐다.
 | T27 merge conflict evidence | ✅ | `acgh/conflicts.py` |
 | T28 전략 라우팅 | ✅ | `acgh/routing.py` |
 | T29 실제 7개 등록 | ✅ 등록·⚠ 운영증거 | `acgh/registry.py` + `registrations/kb-openmetadata/` |
-| T62 test-run 결속·실행 경계 | ✅ 구현·⚠ 운영미실행 | `acgh/testruns.py` + `acgh/pytest_runs.py` + `runtime-contracts.yml` |
+| T62 test-run 결속·실행 경계 | ✅ 실행기·90일 증거 보존·⚠ 운영미실행 | `acgh/testruns.py` + `acgh/pytest_runs.py` + `runtime-contracts.yml` |
 | T71/T72 fast lane·break-glass | ✅ | `acgh/fastlane.py` + `acgh/breakglass.py` |
 | T80/T81 LLM Memo·지표 | ✅ | `acgh/impact_memo.py` |
 | T90 업그레이드 결과계약 | 🟡 실제 실행 필요 | `acgh/upgrade_run.py` |
