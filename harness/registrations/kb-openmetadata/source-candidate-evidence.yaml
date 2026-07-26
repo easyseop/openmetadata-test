@@ -405,10 +405,10 @@ product_verification:
     candidate_unique_files: 133
     upstream_path_code_multiset_fingerprint: sha256:a4158616c8921cc299679553b58ba388493a3aaaf5994314cb1a16f78e342fe8
     candidate_path_code_multiset_fingerprint: sha256:887df7115c667ba66350efb3d9f30b0535ef10c5d16c70d7effb24adf63627f2
-    new_message_variants: 2
-    removed_message_variants: 43
+    new_message_variants: 10
+    removed_message_variants: 51
     upstream_message_fingerprint: sha256:bb893ff886aecb68e57062e289d306c276a5541aad9bf2b2b5a9d56e025b1f4f
-    candidate_message_fingerprint: sha256:b14b6e6ea80de49241107ce5eab184063afbc4733a10cf00fe83c4cb0686a1f0
+    candidate_message_fingerprint: sha256:6b1766895781fe40749b51c2b4a1f9af0e2dcd5032ddb928767ca5567fd2a9df
     evidence: ui-typecheck-baseline-evidence.yaml
     limitation: Message substitutions are detected and fingerprinted but require human review because equivalent TypeScript union details can be rewritten; the non-zero baseline requires approval or full repair and never produces pass.
   ui_core_build:
@@ -423,7 +423,7 @@ limitations:
   - The Korean IME source guard passes separately; three required Playwright selectors skip without authenticated page URLs and storage state.
   - The T62 runtime workflow and fail-closed producer are implemented, and the workflow retains its evidence artifact for 90 days, but no real runtime run or organization-owned long-term archive exists yet.
   - The source candidate is not a release artifact; image/package build, SBOM, signing, and promotion gates remain.
-  - The focused Tibero, Curated Assets, AlertsUtil, data-fetching, and listing Jest suites pass. Under the same Node 22 toolchain, official upstream has 396 diagnostics and candidate 355, with no new path/code diagnostic and 41 removed. The baseline gate reports two changed message variants and therefore returns approval, not pass; Java and the full UI test suite remain unverified.
+  - The focused Tibero, Curated Assets, AlertsUtil, data-fetching, and listing Jest suites pass. Under the same clean-cache Node 22 toolchain, official upstream has 396 diagnostics and candidate 355, with no new path/code diagnostic and 41 removed. The baseline gate reports ten changed message variants and therefore returns approval, not pass; Java and the full UI test suite remain unverified.
   - The official Node 22.17.0 runtime now matches the product .nvmrc; the earlier Node 24 --ignore-engines workaround is no longer used for the recorded typecheck.
   - The Node 24 action-pin workflow passed remotely; four live runtime contracts remain skipped because no deployed OpenMetadata URL is attached to the source-only job.
   - The runtime patch-kill workflow is implemented, but no separately built and deployed predecessor artifact has been executed through it.

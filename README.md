@@ -22,7 +22,7 @@
 모드**로 유지한다. 이 결정의 정본은
 [`ADR-001`](docs/02-설계/ADR-001-vendor-merge-default.md)이다.
 
-> 현재 상태: T24~T29와 7개 source-snapshot 기능 + 3개 candidate-follow-up
+> 현재 상태: T24~T29와 7개 source-snapshot 기능 + 4개 candidate-follow-up
 > 등록부, T25-R snapshot 재구성 검증기,
 > Docker-free 운영 게이트를 구현했다. 공식 `1.13.1-release`에서 시작한 실제
 > 7-ID vendor candidate도 `easyseop/OpenMetadata`에 만들었고 T25-R/T25/T26/
@@ -37,8 +37,11 @@
 > metadataService 검색 타입 매핑과 Curated Assets의 과도하게 넓은 상태 타입을
 > 보강했다. `BANK-OM-010` 제품 commit `b80d24d...`는 알림 엔터티 ID 검색에서
 > `_source.id`를 우선 사용하고 누락 시 Elasticsearch hit `_id`로 안전하게
-> 보완한다. 공식 upstream은 396개, 현재 후보는 356개 진단이며 T63은 신규
-> path/code 오류 0·제거 40과 메시지 변형 4건을 기록한다. 비어 있지 않은
+> 보완한다. `BANK-OM-011` 제품 commit `849ae756...`는 제네릭 목록 hook이
+> 임의 엔터티 타입을 추측하지 않고 Domain/DataProduct별 명시적 변환만
+> 사용하게 한다. 공식 upstream은 396개, 현재 후보는 355개 진단이며 T63은
+> 신규 path/code 오류 0·제거 41과 clean-cache 메시지 변형 10건을 기록한다.
+> 비어 있지 않은
 > 기준선이므로 `pass`가 아니라 `approval`이다.
 > T61은 Sybase/Tibero 패치가 없는 고정 소스에서 두 계약이 실제 실패함을
 > 입증했지만, 배포된 제거본이 필요한 high ID 3개는 아직 미실행이다.

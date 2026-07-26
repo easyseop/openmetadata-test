@@ -2,10 +2,12 @@
 
 > Updated: 2026-07-27
 > Branch: `claude/markdown-file-feedback-26933w`
-> Last verified implementation commit: `d70fe81`
+> Last verified implementation commit: `b1d3fa6`
+> Current product candidate: `849ae756cd238f218b5e3a6c795a392305cb32ee`
+> BANK-OM-011 governance registration / evidence rebind: `b1d3fa6` / `c246ae2`
 > Recorded BANK-OM-010 evidence run: [`30219786626`](https://github.com/easyseop/openmetadata-test/actions/runs/30219786626)
 > UI typecheck baseline delta gate commit: `39294bf`
-> Product UI hardening commits: `ddf0dd2`, `70d028a`, `b80d24d`
+> Product UI hardening commits: `ddf0dd2`, `70d028a`, `b80d24d`, `849ae756`
 > BANK-OM-010 governance registration commit: `d70fe81`
 > BANK-OM-010 evidence rebind commit: `5e6d0a8`
 > 2026-07-27 06:00 KST repository health check: governance `434d92b`,
@@ -51,6 +53,9 @@ A second candidate-follow-up, `BANK-OM-009`, closes the shared search result
 type mapping gap exposed by that integration.
 A third candidate-follow-up, `BANK-OM-010`, makes alert entity-ID suggestions
 safe for search-source union members that omit `_source.id`.
+A fourth candidate-follow-up, `BANK-OM-011`, requires every generic listing
+caller to provide an index-specific response transform instead of assigning a
+search-source union to an arbitrary entity type.
 
 T25-R now supplies the snapshot-to-vendor reconstruction planner and candidate
 gate. The 113 pinned source paths deterministically classify as 67
@@ -61,11 +66,11 @@ The actual vendor branch is now built and pushed:
 - repository: `easyseop/OpenMetadata`
 - branch: `codex/bank-vendor-1.13.1-rebuild`
 - reconstruction checkpoint: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
-- current candidate: `b80d24d83124435733d5af05d56515b3a855330e`
+- current candidate: `849ae756cd238f218b5e3a6c795a392305cb32ee`
 - official parent: `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9`
 - seven reconstruction commits, one consecutive `BANK-OM-007` follow-up, and
-  three registered candidate-hardening commits (`BANK-OM-008` through
-  `BANK-OM-010`)
+  four registered candidate-hardening commits (`BANK-OM-008` through
+  `BANK-OM-011`)
 
 T25-R passes on the exact reconstruction checkpoint. T25 ancestry, T26
 survival, T30 commit invariants, and T31 ID invariants pass on the current
@@ -100,27 +105,30 @@ Product commit `b80d24d831` then preserves `_source.id` when present and falls
 back to the guaranteed Elasticsearch hit `_id` for alert entity-ID
 suggestions. The AlertsUtil suite passes 112/112, including both ID paths.
 
+Product commit `849ae756cd` then removes the unsafe generic default transform
+from `useDataFetching`. Domain and DataProduct listings provide concrete,
+index-specific transforms, and a new hook test proves that only transformed
+entities enter state. The focused data-fetching/listing suites pass 7/7.
+
 The full official `1.13.1-release` tree was generated and typechecked with
 the same Node 22.17.0, Yarn 1.22.22, dependency tree, and command. It also
-produced 396 diagnostics across 141 files. Candidate `b80d24d` has 356
-diagnostics across 135 files: zero new path/code diagnostics and 40 removed.
-T63 also fingerprints messages and reports four new and 44 removed message
+produced 396 diagnostics across 141 files. Candidate `849ae756` has 355
+diagnostics across 133 files: zero new path/code diagnostics and 41 removed.
+T63 also fingerprints messages and reports ten new and 51 removed message
 variants for review. It therefore returns **approval**, never pass, for this
 non-zero baseline.
 
-The four remaining message variants were independently classified against the
-full logs. Three are equivalent TypeScript rendering changes (object elision,
-union ordering, and expanded-member ordering); one replaces the broken
-`Pick<..., never>` display with concrete mapped fields while preserving an
-existing error at the same path, code, and location. No new semantic
+The ten remaining message variants were independently classified against the
+clean-cache full logs as equivalent TypeScript union ordering or rendering
+changes. No new semantic
 regression was identified in that technical review. This does not approve the
-remaining 356 diagnostics: designated-owner baseline approval or repair is
+remaining 355 diagnostics: designated-owner baseline approval or repair is
 still required.
 
 ## Verification
 
 ```text
-316 passed, 7 skipped in 40.04s
+316 passed, 7 skipped in 30.67s
 ```
 
 This CI-equivalent local run used the two fixed historical mirror refs, so the
@@ -133,7 +141,7 @@ tests against fixed predecessor commits that do not contain the corresponding
 connector patch. Both tests fail as required, so their scoped patch-kill
 verdict is pass. The machine result is
 `harness/registrations/kb-openmetadata/source-patch-kill-evidence.yaml`, bound
-to candidate `b80d24d8...`, governance rebind `d70fe81...`, the plan
+to candidate `849ae756...`, governance registration `b1d3fa6...`, the plan
 digest, both predecessor SHAs, and both exact selectors. This is a
 **source-capable 2/5 high-ID result**, not complete T61: InstanceCode,
 QueryReport, and Data Assertions still require deployed counterfactual stacks.
@@ -152,23 +160,24 @@ Actual source-candidate gates:
 
 ```text
 T25-R vendor-reconstructed-candidate  pass (checkpoint e1ffc5a1...)
-T25   vendor-ancestry                 pass (candidate b80d24d8...)
-T26   customization-survival          pass (candidate b80d24d8...; 10 IDs, 16 required paths)
+T25   vendor-ancestry                 pass (candidate 849ae756...)
+T26   customization-survival          pass (candidate 849ae756...; 11 IDs, 22 required paths)
 T60-I required-test-implementations   pass (9/9 selectors resolve)
-T30   commit-invariants               pass (candidate b80d24d8...)
-T31   id-invariants                   pass (candidate b80d24d8...)
+T30   commit-invariants               pass (candidate 849ae756...)
+T31   id-invariants                   pass (candidate 849ae756...)
 ```
 
 Focused product verification:
 
 ```text
-Prettier (2 changed paths)             pass
+Prettier (6 changed paths)             pass
 DatabaseServiceUtils.test.tsx          pass (13/13; Tibero case pass)
 CuratedAssetsWidget.test.tsx           pass (18/18; pre-existing act warnings remain)
 AlertsUtil.test.tsx                    pass (112/112; pre-existing FormContext warnings remain)
+useDataFetching/useListingData tests   pass (7/7; pre-existing Router warnings remain)
 bank contract source suite             3 passed (Sybase, Tibero, IME source guard)
 required operational selectors         2 passed, 7 skipped (4 API, 3 browser)
-UI tsc --noEmit (Node 22.17.0)          approval (upstream 396 > candidate 356; new 0, removed 40)
+UI tsc --noEmit (Node 22.17.0)          approval (upstream 396 > candidate 355; new 0, removed 41)
 UI core Vite build                     exit 0 (2 declaration diagnostics on unchanged upstream paths)
 ```
 
@@ -198,7 +207,7 @@ same-path/code message substitutions instead of allowing them to remain hidden.
 
 Source-candidate CI is defined in `.github/workflows/source-candidate.yml`.
 It pins all third-party actions by 40-hex SHA, pins product commit
-`b80d24d831...`, fetches the two historical upstream fixtures, runs the
+`849ae756cd...`, fetches the two historical upstream fixtures, runs the
 combined test suite, runs T25/T26/T60-I/T30/T31, and runs the two source-capable
 T61 negative controls. Patch-kill evidence is kept as a non-overwritable
 90-day artifact. The workflow's exact
@@ -263,7 +272,7 @@ the locked product commit `70d028a035...`. Artifact
 `source-patch-kill-evidence-30216708258-1` has ID `8636012730`, digest
 `sha256:813c26df...50860b4`, and expires `2026-10-24T19:22:20Z`.
 
-The current `BANK-OM-010` candidate was verified remotely in
+The `BANK-OM-010` candidate was verified remotely in
 [`30219786626`](https://github.com/easyseop/openmetadata-test/actions/runs/30219786626)
 at governance head `90036ff`: `316 passed, 7 skipped in 15.29s`, all five
 source gates, 10 active customization IDs, T60-I 9/9, and both source
@@ -272,11 +281,17 @@ Artifact `source-patch-kill-evidence-30219786626-1` has ID `8636860716`,
 digest `sha256:88a16a93...7eb5910`, and expires
 `2026-10-24T20:49:23Z`.
 
+`BANK-OM-011` is locally registered and rebound to product `849ae756cd...`.
+The fixed-mirror governance suite passes 316 tests with seven operational
+skips; T25/T26/T60-I/T30/T31 and both source patch-kill experiments pass.
+The first remote source-candidate run for this exact candidate is pending the
+documentation push.
+
 ## Important production blockers
 
 This is not yet evidence that the bank distribution is deployable:
 
-1. The ten registered owners are deliberately `UNASSIGNED`/`pending`.
+1. The eleven registered owners are deliberately `UNASSIGNED`/`pending`.
 2. The two source-snapshot findings were intentionally excluded from the
    candidate: `.claude/settings.json` broadly auto-approves tools, and
    `docker/development/docker-compose.yml` pins ingestion image `1.9.6`.
@@ -300,11 +315,12 @@ This is not yet evidence that the bank distribution is deployable:
 6. The candidate lock currently binds the source Git tree identity. A complete
    Java/UI build, image/package digest, SBOM, signing, and promotion evidence
    still need to be produced.
-7. The focused Tibero and Curated Assets Jest suites pass 13/13 and 18/18.
+7. The focused Tibero, Curated Assets, AlertsUtil, and generic listing suites
+   pass 13/13, 18/18, 112/112, and 7/7.
    The supported Node 22 typecheck
    confirms the three candidate-introduced diagnostics are fixed. Official
-   upstream reports 396 diagnostics while candidate reports 356; T63 finds
-   no new path/code diagnostic and 40 removals, plus four changed message
+   upstream reports 396 diagnostics while candidate reports 355; T63 finds
+   no new path/code diagnostic and 41 removals, plus ten changed message
    variants for review. It still reports `approval`, not `pass`. The broad
    baseline must be repaired or approved after full-log review before release.
 8. GitHub reports both working branches as `protected: false`, and neither

@@ -4,9 +4,9 @@
 > 대상 브랜치: `claude/markdown-file-feedback-26933w`
 > 변경 전 기준 커밋: `9d2a174` (`implement T25 vendor ancestry gate`)
 > 마지막 검증 구현 커밋:
-> `d70fe810b65f44b20e79dca7bcdb697f806d99f7`
+> `b1d3fa6d00b75c96d837587ea0730f3d6d9e5323`
 > 최신 문서 묶음 커밋:
-> `2d070aea8de1d5dd22f11282eda93d364720344c`
+> `2573c63edc16c8b853ac6c8b3a51562a5360a4b5` (이번 묶음 직전)
 > T63 UI typecheck 기준선 게이트 구현 커밋:
 > `39294bf38172f16528833640c03302aa83ade7b4`
 > 제품 UI 타입 보강 커밋:
@@ -21,6 +21,11 @@
 > BANK-OM-010 거버넌스 등록 / evidence 재결속:
 > `d70fe810b65f44b20e79dca7bcdb697f806d99f7` /
 > `5e6d0a8`
+> 검색 목록 변환 타입 계약 제품 커밋:
+> `849ae756cd238f218b5e3a6c795a392305cb32ee`
+> BANK-OM-011 거버넌스 등록 / evidence 재결속:
+> `b1d3fa6d00b75c96d837587ea0730f3d6d9e5323` /
+> `c246ae2`
 > Data Assertions·bank column 실제 화면 계약 보강 커밋:
 > `093724faa499458eb4723511914a1376138ef014`
 > T61 deployed runtime patch-kill 게이트 구현 커밋:
@@ -587,7 +592,7 @@ Tibero 보강 직후 source candidate(현재 후보의 직전 조상):
 - candidate-lock digest:
   `sha256:9f2e3760b7b1ab44fa24fe8872c74b4003dcf29dbdc7282e403f2595b7ebeacd`
 
-현재 source candidate와 새 lock은 §4.27의 `b80d24d...` 및
+현재 source candidate와 새 lock은 §4.29의 `849ae756...` 및
 `source-candidate-evidence.yaml`을 정본으로 사용한다.
 
 후속 candidate 검증:
@@ -696,7 +701,7 @@ Korean IME의 required selector는 이제 실제 browser test이며 source guard
 2. `harness[dev]` 잠금 범위 설치
 3. 고정 SHA의 1.12.13/1.13.0 mirror fixture fetch
 4. product branch를 blobless·depth 16·sparse 방식으로 checkout
-5. checkout HEAD가 `b80d24d831...`와 정확히 같은지 확인
+5. checkout HEAD가 `849ae756cd...`와 정확히 같은지 확인
 6. harness + 7개 업무 contract의 9 selector 실행
 7. T25/T26/T60-I/T30/T31 source-candidate runner 실행
 
@@ -710,9 +715,9 @@ workflow의 exact product fetch·mirror fetch·test·gate 명령을 빈 임시
 환경에서 실행한 결과는 다음과 같다.
 
 ```text
-product HEAD        b80d24d831... (locked SHA match)
+product HEAD        849ae756cd... (locked SHA match)
 upstream mirror     UPSTREAM_A/UPSTREAM_B SHA match
-tests               316 passed, 7 live-runtime skipped in 40.04s
+tests               316 passed, 7 live-runtime skipped in 30.67s
 source gates        T25/T26/T60-I/T30/T31 all pass
 ```
 
@@ -830,10 +835,10 @@ script에 직접 보간하지 않고 environment를 통해 전달한다.
 로컬 fail-closed 통합 시뮬레이션:
 
 ```text
-candidate_sha       b80d24d83124435733d5af05d56515b3a855330e
-harness_version     d70fe810b65f44b20e79dca7bcdb697f806d99f7
-suite_version       sha256:6cd7b8bab3e1f64de3e2b34a9e4df8698ee2d89e45162696c7f0b4c5e64761a0
-test_run_set_digest sha256:b16390320a845ff6e59cddc00d142fe2e03e8626098c0caa7908b8c9584b21f9
+candidate_sha       849ae756cd238f218b5e3a6c795a392305cb32ee
+harness_version     b1d3fa6d00b75c96d837587ea0730f3d6d9e5323
+suite_version       sha256:fa1cc4a7c31bc780157879dff2d0ee176cbfe0cc625a7c1dfacd7073522e1f7b
+test_run_set_digest sha256:75281dfccab465827c546448dbb2ec08d150fc1c5b6d46da88317e125ab4b3a6
 outcomes            2 pass, 7 skipped
 verdict              block
 actual exit 1        result와 consistent
@@ -1216,11 +1221,11 @@ toolchain에서 비교해 이 착시를 차단한다.
 
 ```text
 official upstream SHA     afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
-candidate SHA             b80d24d83124435733d5af05d56515b3a855330e
+candidate SHA             849ae756cd238f218b5e3a6c795a392305cb32ee
 Node / Yarn                22.17.0 / 1.22.22
 Node archive SHA-256       cc9cc294eaf782dd93c8c51f460da610cc35753c6a9947411731524d16e97914
 upstream raw log SHA-256   6bca51ba43a80099f00336469504bdef7120df61c34658a685c7d50a97b18610
-candidate raw log SHA-256  c34f3d533ccfc36a74ea2d3cf7d056e362b4b116052a7cb0bfdbdf900d6bd263
+candidate raw log SHA-256  619310266436c12a194537bcc2ca75be7d50b51fd91f03b659a039f9a208bda0
 ```
 
 ANTLR과 parsed schema를 양쪽 worktree에서 생성하고 동일 dependency tree와
@@ -1232,34 +1237,41 @@ ANTLR과 parsed schema를 양쪽 worktree에서 생성하고 동일 dependency t
 
 ```text
 upstream diagnostics      396 (141 files)
-candidate diagnostics     356 (135 files)
-new / removed path+code   0 / 40
+candidate diagnostics     355 (133 files)
+new / removed path+code   0 / 41
 upstream path+code fp     sha256:a4158616c8921cc299679553b58ba388493a3aaaf5994314cb1a16f78e342fe8
-candidate path+code fp    sha256:802e292be5a563ffc9875dc8e74336c82fdb7d1c2c65645f5762bf11db2ebc88
-new / removed messages    4 / 44
+candidate path+code fp    sha256:887df7115c667ba66350efb3d9f30b0535ef10c5d16c70d7effb24adf63627f2
+new / removed messages    10 / 51
 upstream message fp       sha256:bb893ff886aecb68e57062e289d306c276a5541aad9bf2b2b5a9d56e025b1f4f
-candidate message fp      sha256:a3451d13e8de7f502f6f258f0b6b88db8547b0ef44550d8750170534ed5191d8
+candidate message fp      sha256:6b1766895781fe40749b51c2b4a1f9af0e2dcd5032ddb928767ca5567fd2a9df
 verdict / exit             approval / 2
 targeted gate tests        10 passed
 ```
 
-이 결과는 “후보가 새 path/code 진단을 추가하지 않았고 기존 40건을 제거했다”는
+이 결과는 “후보가 새 path/code 진단을 추가하지 않았고 기존 41건을 제거했다”는
 근거이지 제품 전체 typecheck pass가 아니다. 같은 path/code 안의 메시지 치환도
 두 번째 fingerprint로 탐지한다. 다만 TypeScript가 동등한 union을 다른 순서나
 축약으로 출력할 수 있으므로 메시지 변형은 자동 block이 아니라 approval
-검토 근거다. Claude는 네 변형이 모두 설명 가능한지 독립 검토해야 한다.
+검토 근거다. Claude는 열 변형이 모두 설명 가능한지 독립 검토해야 한다.
 
-2026-07-27 후속 기술 검토에서는 네 변형을 full log의 같은 위치와 대조했다.
+2026-07-27 clean-cache 후속 기술 검토에서는 열 변형을 full log의 같은
+path/code와 대조했다.
 
 | 경로·코드 | 판별 | 근거 |
 |---|---|---|
+| `Suggestions.tsx` TS2345 | 동등한 union 순서 | search-source union 앞부분 순서만 변화, `SuggestionsObject` 할당 실패 동일 |
 | `SettingsRouter.test.tsx` TS2551 | 동등한 출력 변화 | route object 생략 개수만 141→146, 누락 키·추천 키 동일 |
-| `ContractScehmaFormTab.tsx` TS2322 | 동등한 union 순서 | `Field[] \| Column[]` 순서만 반전, 할당 실패 동일 |
+| `AuthProvider.tsx` TS2345 | 동등한 union 순서 | callback literal 2개의 순서만 변화, string 할당 실패 동일 |
+| `GenericProvider.tsx:94` TS2345 | 동등한 union 순서 | `WidgetConfig[]`와 index-signature member 순서만 변화, state initializer 실패 동일 |
+| `GenericProvider.tsx:186` TS2345 | 동등한 union 순서 | 같은 union 순서만 변화, `SetStateAction` 실패 동일 |
+| `ContractScehmaFormTab.tsx` TS2322 | 동등한 union 순서 | `Field[]`/`Column[]` 순서만 변화, readonly 배열 할당 실패 동일 |
 | `PortNode.component.tsx` TS2322 | 동등한 출력 변화 | 확장 객체 필드 순서만 변화, `LineageNodeType` 실패 동일 |
-| `useDataFetching.tsx` TS2345 | 예상된 mapped-type 확장 | `Pick<..., never>`가 실제 필드로 확장, 기존 generic 할당 실패는 잔존 |
+| `Lineage.test.tsx` TS2739 | 동등한 속성 순서 | 누락 속성 `entityType`/`columns`의 표시 순서만 변화 |
+| `ExplorePageV1.component.tsx` TS2322 | 동등한 union 순서 | `never[]`/`QueryFieldInterface` 순서만 변화, 배열 할당 실패 동일 |
+| `ExploreUtils.tsx` TS2339 | 동등한 union 순서 | 같은 union 순서만 변화, `flatMap` 부재 실패 동일 |
 
-따라서 이 네 건에서 새 의미 회귀는 식별되지 않았다. 기계 판정은 의도대로
-`approval`을 유지한다. 이는 지정 owner의 356건 기준선 승인이나 전체 typecheck
+따라서 이 열 건에서 새 의미 회귀는 식별되지 않았다. 기계 판정은 의도대로
+`approval`을 유지한다. 이는 지정 owner의 355건 기준선 승인이나 전체 typecheck
 green을 대신하지 않는다. 기계 판독 가능한 상세는
 `ui-typecheck-baseline-evidence.yaml`의 `message_variant_review`에 고정했다.
 
@@ -1438,7 +1450,7 @@ branch protection             disabled on both working branches
 ```
 
 비개발자 가이드의 “최근 성공 실행” 링크가 이전 후보 run `30214885448`을
-가리키던 문서 불일치를 발견해, 현재 `BANK-OM-010` 후보와 patch-kill 증거가
+가리키던 문서 불일치를 발견해, 당시 `BANK-OM-010` 후보와 patch-kill 증거가
 결속된 run `30219786626`으로 바로잡았다.
 
 T63에 남은 실제 `useDataFetching.tsx` TS2345도 호출 경로까지 다시 검토했다.
@@ -1448,6 +1460,72 @@ cast는 진단만 숨기므로 자동 수정하지 않았다. 다음 제품 수�
 `SI`와 `SearchIndexSearchSourceMapping[SI]`를 hook·listing props 전체에
 연결하는 설계, 또는 custom transform을 필수화하는 설계 중 하나를 오너가
 선택한 뒤 focused hook/listing 테스트와 T63 재결속을 함께 수행해야 한다.
+
+### 4.29 BANK-OM-011 — 검색 목록 변환 타입 계약
+
+§4.28에서 남긴 두 설계안 중 custom transform을 필수화하는 방식을 구현했다.
+임의의 제네릭 `T`를 search-source union으로부터 자동 추측하지 않고, 실제
+호출자인 Domain/DataProduct가 자신의 `SearchIndex` 응답 변환을 명시한다.
+
+제품:
+
+```text
+commit                       849ae756cd238f218b5e3a6c795a392305cb32ee
+tree                         22f92a8e0fd2855949e7f115f32c3b9d44c681f6
+trailer                      Customization-ID: BANK-OM-011
+changed paths                6
+```
+
+개발 방식:
+
+1. `DataFetchingConfig<T, SI>`가 `SearchIndex` 타입 `SI`를 보존한다.
+2. `DataFetchingSearchResponse<SI>`가 `searchQuery`의 단일/배열 조건부
+   반환형을 hook 계약에 그대로 전달한다.
+3. optional default transform을 제거하고 transform을 필수로 만든다.
+4. `useListingData<T, SI>`가 동일 transform을 손실 없이 전달한다.
+5. Domain/DataProduct hook은 각각 `SearchIndex.DOMAIN`과
+   `SearchIndex.DATA_PRODUCT` 응답을 명시적으로 entity 배열로 변환한다.
+6. 새 `useDataFetching.test.tsx`는 raw 응답이 아니라 transform 반환값만
+   state에 저장되는 계약을 고정한다.
+
+거버넌스:
+
+```text
+registration commit          b1d3fa6d00b75c96d837587ea0730f3d6d9e5323
+evidence rebind commit       c246ae2
+manifest                     manifests/BANK-OM-011.yaml
+provenance                   candidate-follow-up
+depends_on                   BANK-OM-010
+active IDs / required paths  11 / 22
+contract refs / selectors    15 / 9
+```
+
+검증:
+
+```text
+Prettier                     6/6 paths pass
+focused Jest                 2 suites, 7/7 tests pass
+focused warning              기존 React Router future warning, failure 아님
+T63 upstream / candidate     396 / 355
+T63 new / removed path+code  0 / 41
+T63 new / removed messages   10 / 51
+candidate raw log SHA-256    619310266436c12a194537bcc2ca75be7d50b51fd91f03b659a039f9a208bda0
+candidate path+code fp       sha256:887df7115c667ba66350efb3d9f30b0535ef10c5d16c70d7effb24adf63627f2
+candidate message fp         sha256:6b1766895781fe40749b51c2b4a1f9af0e2dcd5032ddb928767ca5567fd2a9df
+source tree digest           sha256:830cf970f38a93a701743420ec710cda55cd1aa5d9a45f03f7eb7221d9f5b643
+candidate-lock digest        sha256:61a3f02d3f22420d36e6c035aa7afab050d0faf34d29b5f369af01553fb00156
+T25/T26/T60-I/T30/T31        all pass
+full governance suite        316 passed, 7 operational skips in 30.67s
+runtime simulation           2 pass, 7 skip -> block
+runtime suite digest         sha256:fa1cc4a7c31bc780157879dff2d0ee176cbfe0cc625a7c1dfacd7073522e1f7b
+runtime run-set digest       sha256:75281dfccab465827c546448dbb2ec08d150fc1c5b6d46da88317e125ab4b3a6
+source patch-kill            2 pass
+source patch-kill result     sha256:a0f194b3f566d92fedfe7bc9aeaf35c65fa54ea79f37eb97088aa02ac00e6746
+```
+
+T63 verdict는 개선 후에도 `approval`이다. 신규 path/code는 없지만 후보 자체에
+355개 진단이 남아 있으므로 designated owner 승인 또는 추가 수리가 필요하다.
+정확한 후보의 첫 원격 source-candidate run은 이 문서 묶음을 push한 뒤 기록한다.
 
 ## 5. 테스트 결과
 
@@ -1462,7 +1540,7 @@ OPENMETADATA_PRODUCT_REPO=/private/tmp/om-product-rebuild \
 결과:
 
 ```text
-316 passed, 7 skipped in 40.04s
+316 passed, 7 skipped in 30.67s
 ```
 
 초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 168개 passing test가
@@ -1495,9 +1573,10 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 | T60-I 구현 존재 | 완료 | 완료 | 9/9 selector resolve pass |
 | T61 patch-kill | source·runtime plan/runner/workflow 완료 | 단위·무환경 fail-closed 완료 | Sybase/Tibero 2/5 pass, runtime high 3개 제거본 배포·실행 없음 |
 | T62 test-result binding·runner | 완료 | 완료 | local fail-closed `2 required pass·7 skip→block`, 실제 runtime run 없음 |
-| T63 UI typecheck baseline delta | 완료 | 10개 완료 | 실제 원본 396/후보 356, 신규 path/code 0·제거 40, verdict `approval` |
+| T63 UI typecheck baseline delta | 완료 | 10개 완료 | 실제 원본 396/후보 355, 신규 path/code 0·제거 41, verdict `approval` |
 | BANK-OM-009 공통 검색 타입 | 완료 | focused Jest 18/18·T63 10개 완료 | 원본 396→후보 357, 신규 path/code 0·제거 39, 원격 run 30216708258 성공 |
 | BANK-OM-010 알림 엔터티 ID fallback | 완료 | focused Jest 112/112·T63 10개 완료 | 원본 396→후보 356, 신규 path/code 0·제거 40, 원격 run 30219786626 성공 |
+| BANK-OM-011 목록 변환 타입 계약 | 완료 | focused Jest 7/7·T63 10개 완료 | 원본 396→후보 355, 신규 path/code 0·제거 41, 원격 run 대기 |
 | T71/T72 운영 정책 | 완료 | 완료 | 조직 승인자·CI 연동 필요 |
 | T80/T81 LLM memo | 완료 | 완료 | 실제 release memo 평가 데이터 없음 |
 | T90 upgrade-run contract | 완료 | 완료 | Docker/DB/search/ingestion 실행 없음 |
@@ -1523,8 +1602,10 @@ GitHub API 기준 governance branch
    `Runtime contracts` workflow에서 API 4개와 browser 3개를 실행해 9개
    selector 전체의 T62 candidate-bound pass를 만든다.
 3. Node 22에서 후보가 만든 3개 UI diagnostic, 공통 검색 타입 39건, 알림
-   엔터티 ID 타입 1건은 수정 완료했고, T63은 공식 원본 396건 대비 후보
-   356건, 신규 path/code 0을 확인했다. 메시지 변형 4건이 남아 verdict는
+   엔터티 ID 타입 1건과 목록 변환 타입 1건은 수정 완료했고, T63은 공식 원본
+   396건 대비 후보 355건, 신규 path/code 0을 확인했다. clean-cache 메시지
+   변형 10건이
+   남아 verdict는
    `approval`이다. full log를
    검토해 조직 기준선으로
    승인하거나 오류를 수정하고, 제품 전체 Java/UI build와 source-level test를
@@ -1600,9 +1681,9 @@ OpenMetadata 테스트 스택에서 API 4개와 browser 3개를 실행한다. �
 20. `BANK-OM-008` 하나가 InstanceCode와 QueryReport의 공유 UI 타입 보강을
     표현하는 것이 단일 변경 목적 규칙에 맞는가, 아니면 더 나은 추적 모델이
     필요한가.
-21. 공식 upstream 동일 toolchain 전체 실행은 396건, 후보는 356건이며 신규
-    path/code 0·제거 40이다. 이 근거가 기준선 승인에 충분한가.
-22. T63은 message substitution도 fingerprint해 4개 신규 변형을 드러낸다.
+21. 공식 upstream 동일 toolchain 전체 실행은 396건, 후보는 355건이며 신규
+    path/code 0·제거 41이다. 이 근거가 기준선 승인에 충분한가.
+22. T63은 message substitution도 fingerprint해 10개 신규 변형을 드러낸다.
     이들을 approval 검토 근거로 두는 것이 맞는가, 자동 block해야 하는가.
 23. `BANK-OM-009`의 `METADATA_SERVICE` mapping과 Curated Assets
     `DATA_ASSET` narrowing이 실제 검색 API의 heterogeneous 결과를 충분히
@@ -1610,6 +1691,9 @@ OpenMetadata 테스트 스택에서 API 4개와 browser 3개를 실행한다. �
 24. `BANK-OM-010`이 `_source.id`를 우선하고 hit `_id`로 fallback하는 계약이
     모든 검색 인덱스에서 실제 엔터티 UUID 의미를 보존하는가. `_id`와 source
     ID가 달라질 수 있는 인덱스가 있다면 해당 인덱스를 명시적으로 제외해야 하는가.
+25. `BANK-OM-011`의 필수 transform 계약이 새로운 목록 호출자가 변환을 빼먹는
+    문제는 컴파일 단계에서 차단하면서도, 잘못된 수동 transform의 런타임 의미
+    오류를 충분히 테스트하게 하는가.
 
 검토 결과는 `Blocking / Serious / Minor / Validated`로 나누고, 각 항목에 정확한
 파일·라인·재현 테스트를 제시해 달라. 문서의 완료 표시가 아니라 코드와

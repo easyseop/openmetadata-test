@@ -70,7 +70,7 @@ manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과�
 | 20 | digest 승격 | T91 | ✅ 엔진·실제 승격 미실행 | `release.py`·`airgap.py` |
 | 21 | verdict 엔진 | T13 | ✅ | `verdict.py` |
 | 22 | LLM Impact Memo | T80 | ✅ advisory schema·품질지표 | `impact.py`·`impact_memo.py` |
-| 23 | UI typecheck 기준선 delta | T63 | ✅ 원본 396/후보 356 실제 비교·비영 기준선 approval | `tsc_baseline.py` |
+| 23 | UI typecheck 기준선 delta | T63 | ✅ 원본 396/후보 355 실제 비교·비영 기준선 approval | `tsc_baseline.py` |
 
 게이트 엔진과 실제 7개 등록은 완료됐다. 그러나 원본
 `kangdkdk/kb_openmetadata`는 upstream ancestry 없는 root snapshot이다. 실제
@@ -231,8 +231,9 @@ vendor candidate는 별도 재구축했지만 API 4개·browser 3개의 T62 전�
   multiset은 같은 오류 종류 안의 설명 변화도 검토 근거로 남긴다.
   신규/증가=`block`, malformed·경로 이탈·exit 불일치=`analysis_error`,
   둘 다 0=`pass`, 신규 없는 비영 기준선=`approval`.
-- **현재 증거**: 공식 1.13.1은 396건·141파일, 후보는 356건·135파일이며
-  신규 path/code 0·제거 40이다. 메시지 multiset은 신규 변형 4·제거 44를
+- **현재 증거**: 공식 1.13.1은 396건·141파일, 후보는 355건·133파일이며
+  신규 path/code 0·제거 41이다. clean-cache 메시지 multiset은 신규 변형
+  10·제거 51을
   별도 fingerprint로 드러낸다.
 - **못 잡는 것**: 메시지 변화가 실제 의미 변화인지 TypeScript의 동등한 union
   출력 변화인지 자동 판정하는 것과 타입 오류가 아닌 빌드/런타임 결함.

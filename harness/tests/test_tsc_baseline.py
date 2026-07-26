@@ -123,8 +123,8 @@ def test_registered_node22_baseline_evidence_is_honest():
     assert comparison["candidate_diagnostics"] == 355
     assert comparison["new_diagnostics"] == 0
     assert comparison["removed_diagnostics"] == 41
-    assert comparison["new_message_variants"] == 2
-    assert comparison["removed_message_variants"] == 43
+    assert comparison["new_message_variants"] == 10
+    assert comparison["removed_message_variants"] == 51
     assert comparison["upstream_path_code_multiset_fingerprint"].startswith(
         "sha256:"
     )
@@ -133,7 +133,7 @@ def test_registered_node22_baseline_evidence_is_honest():
     assert len(review["variants"]) == comparison["new_message_variants"]
     assert {
         item["classification"] for item in review["variants"]
-    } == {"equivalent_type_rendering"}
+    } == {"equivalent_type_rendering", "equivalent_union_ordering"}
     assert all(item["path"].startswith("src/") for item in review["variants"])
     assert "not designated-owner baseline approval" in review["scope"]
     assert "never emits pass" in evidence["limitation"]

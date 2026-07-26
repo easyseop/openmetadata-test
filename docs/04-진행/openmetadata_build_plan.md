@@ -110,8 +110,9 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
   candidate-follow-up `BANK-OM-008`로 수정했다. 현재 candidate
   `ddf0dd2e...`에서 세 오류를 제거했다. 이어 `BANK-OM-009`가 공통 검색
   결과 타입 매핑을 보강했다. `BANK-OM-010`은 알림 검색에서 `_source.id`가
-  없는 union member를 hit `_id`로 안전하게 보완한다. 현재 candidate
-  `b80d24d8...`는 10개 active ID로 T25/T26/T30/T31을 통과했다.
+  없는 union member를 hit `_id`로 안전하게 보완한다. `BANK-OM-011`은
+  제네릭 목록 검색의 임의 기본 변환을 없애고 인덱스별 명시 변환을 요구한다.
+  현재 candidate `849ae756...`는 11개 active ID로 T25/T26/T30/T31을 통과했다.
 - **T26 · customization survival gate (✅ 구현·단위검증 완료)** — ID별 required state·path·contract가
   merge candidate에 남아 있는지 검증.
 - **T27 · merge conflict evidence (✅ 구현·단위검증 완료)** — 충돌 파일·해결 결정·승인자를 구조화 기록.
@@ -129,8 +130,8 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
   finding으로 등록했다. 원본 재구성 후 필요한 공통 UI 타입 보강은
   `provenance: candidate-follow-up`인 `BANK-OM-008`로 따로 등록한다.
   그 뒤 공통 검색 타입 보강은 `BANK-OM-009`, 알림 엔터티 ID 검색 안전성은
-  `BANK-OM-010`으로 등록한다. T25-R은 여전히 원본 7개만 재구성하고,
-  T26/T30/T31은 현재 10개 ID 후보를
+  `BANK-OM-010`, 목록 변환 타입 계약은 `BANK-OM-011`로 등록한다. T25-R은
+  여전히 원본 7개만 재구성하고, T26/T30/T31은 현재 11개 ID 후보를
   검사한다.
 
 ### MVP 2단계 (2차 검토 B-5 수용)
@@ -433,8 +434,9 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **상태(2026-07-27)**: ✅ 비교기·CLI·실제 upstream/candidate 증거 구현.
   공식 `1.13.1-release`와 candidate를 Node 22.17.0/Yarn 1.22.22, 동일 생성
   단계와 dependency tree로 실행했다. 공식 원본은 396 diagnostics·141 files,
-  후보는 356 diagnostics·135 files다. 신규 path/code 0·제거 40이며 메시지
-  변형도 신규 4·제거 44로 별도 fingerprint한다. verdict는 `approval`이며
+  후보는 355 diagnostics·133 files다. 신규 path/code 0·제거 41이며 메시지
+  clean-cache 변형도 신규 10·제거 51로 별도 fingerprint한다. verdict는
+  `approval`이며
   release pass가 아니다.
 - **목적**: 큰 기존 오류 기준선에 후보 신규 오류가 묻히는 시간차·총건수 착시를
   차단한다.

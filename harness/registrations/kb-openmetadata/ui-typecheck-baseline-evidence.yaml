@@ -16,7 +16,7 @@ preparation:
   - Share the same installed dependency tree and run the same yarn tsc:check command.
 logs:
   upstream_sha256: 6bca51ba43a80099f00336469504bdef7120df61c34658a685c7d50a97b18610
-  candidate_sha256: 2398dd7e3c09d2700e76b7494e5190a7b81beccbad191b5d11426158d1b83eb1
+  candidate_sha256: 619310266436c12a194537bcc2ca75be7d50b51fd91f03b659a039f9a208bda0
 comparison:
   verdict: approval
   upstream_exit: 2
@@ -29,24 +29,64 @@ comparison:
   candidate_unique_files: 133
   upstream_path_code_multiset_fingerprint: sha256:a4158616c8921cc299679553b58ba388493a3aaaf5994314cb1a16f78e342fe8
   candidate_path_code_multiset_fingerprint: sha256:887df7115c667ba66350efb3d9f30b0535ef10c5d16c70d7effb24adf63627f2
-  new_message_variants: 2
-  removed_message_variants: 43
+  new_message_variants: 10
+  removed_message_variants: 51
   upstream_message_fingerprint: sha256:bb893ff886aecb68e57062e289d306c276a5541aad9bf2b2b5a9d56e025b1f4f
-  candidate_message_fingerprint: sha256:b14b6e6ea80de49241107ce5eab184063afbc4733a10cf00fe83c4cb0686a1f0
+  candidate_message_fingerprint: sha256:6b1766895781fe40749b51c2b4a1f9af0e2dcd5032ddb928767ca5567fd2a9df
 message_variant_review:
   reviewed_at: "2026-07-27T06:30:09+09:00"
   scope: technical classification only; this is not designated-owner baseline approval
-  conclusion: no new semantic regression was identified in the two remaining same-path/code substitutions; the underlying non-zero diagnostics remain unresolved
+  conclusion: no new semantic regression was identified in the ten remaining same-path/code substitutions; the underlying non-zero diagnostics remain unresolved
   variants:
+    - path: src/components/AppBar/Suggestions.tsx
+      code: TS2345
+      location: "113:20"
+      classification: equivalent_union_ordering
+      finding: search-source union members were reordered; the SuggestionsObject state assignment failure is unchanged
     - path: src/components/AppRouter/SettingsRouter.test.tsx
       code: TS2551
       location: "384:45"
       classification: equivalent_type_rendering
       finding: the rendered route-object elision count changed from 141 to 146; the missing NOTIFICATION_ALERTS key and NOTIFICATION_ALERT_LIST suggestion are unchanged
+    - path: src/components/Auth/AuthProviders/AuthProvider.tsx
+      code: TS2345
+      location: "626:17"
+      classification: equivalent_union_ordering
+      finding: the two callback route literals were reordered; the string-to-literal-union assignment failure is unchanged
+    - path: src/components/Customization/GenericProvider/GenericProvider.tsx
+      code: TS2345
+      location: "94:5"
+      classification: equivalent_union_ordering
+      finding: WidgetConfig[] and the index-signature member were reordered; the useState initializer assignment failure is unchanged
+    - path: src/components/Customization/GenericProvider/GenericProvider.tsx
+      code: TS2345
+      location: "186:7"
+      classification: equivalent_union_ordering
+      finding: WidgetConfig[] and the index-signature member were reordered; the SetStateAction assignment failure is unchanged
+    - path: src/components/DataContract/ContractSchemaFormTab/ContractScehmaFormTab.tsx
+      code: TS2322
+      location: "551:11"
+      classification: equivalent_union_ordering
+      finding: Field[] and Column[] were reordered; the readonly Column[] assignment failure is unchanged
     - path: src/components/DataProducts/InputOutputPortsTab/PortsLineageView/PortNode.component.tsx
       code: TS2322
       location: "47:31"
       classification: equivalent_type_rendering
       finding: fields in the expanded union member were rendered in a different order; the LineageNodeType assignment failure is unchanged
-interpretation: The candidate has no new path-and-error-code diagnostic and removes 41, while two changed message variants remain visible for human review; the non-zero baseline is still a release blocker until repaired or approved by the designated owner.
+    - path: src/components/Lineage/Lineage.test.tsx
+      code: TS2739
+      location: "29:3"
+      classification: equivalent_union_ordering
+      finding: the two missing LineageNodeType properties were reordered; the missing-property failure is unchanged
+    - path: src/pages/ExplorePage/ExplorePageV1.component.tsx
+      code: TS2322
+      location: "147:11"
+      classification: equivalent_union_ordering
+      finding: never[] and QueryFieldInterface union members were reordered; the array assignment failure is unchanged
+    - path: src/utils/ExploreUtils.tsx
+      code: TS2339
+      location: "127:5"
+      classification: equivalent_union_ordering
+      finding: never[] and QueryFieldInterface union members were reordered; the missing flatMap failure is unchanged
+interpretation: The candidate has no new path-and-error-code diagnostic and removes 41, while ten changed message variants remain visible for human review; the non-zero baseline is still a release blocker until repaired or approved by the designated owner.
 limitation: Message substitutions are detected and fingerprinted, but they remain approval evidence rather than automatic pass or block because TypeScript can rewrite equivalent union details; the gate never emits pass for a non-zero baseline.
