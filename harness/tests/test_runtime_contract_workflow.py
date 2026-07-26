@@ -53,3 +53,19 @@ def test_runtime_workflow_requires_identity_and_live_inputs():
     assert "actual_exit=$?" in commands
     assert "interpret_runtime_result.py" in commands
     assert "--actual-exit" in commands
+    assert '--run-id "${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"' in commands
+
+    upload = next(
+        step for step in steps if step.get("name") == "Preserve runtime evidence"
+    )
+    assert (
+        upload["uses"]
+        == "actions/upload-artifact@"
+        "ea165f8d65b6e75b540449e92b4886f43607fa02"
+    )
+    assert upload["if"] == "always()"
+    assert upload["with"]["if-no-files-found"] == "error"
+    assert upload["with"]["retention-days"] == "90"
+    assert upload["with"]["overwrite"] == "false"
+    assert upload["with"]["include-hidden-files"] == "false"
+    assert "runtime-evidence/*.yaml" in upload["with"]["path"]

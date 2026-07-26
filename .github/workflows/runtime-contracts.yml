@@ -91,7 +91,8 @@ jobs:
             --harness harness \
             --registration harness/registrations/kb-openmetadata \
             --artifact-digest "$DEPLOYED_ARTIFACT_DIGEST" \
-            --output-dir "$RUNNER_TEMP/runtime-evidence"
+            --output-dir "$RUNNER_TEMP/runtime-evidence" \
+            --run-id "${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           actual_exit=$?
           echo "actual_exit=$actual_exit" >> "$GITHUB_OUTPUT"
           exit 0
@@ -107,6 +108,32 @@ jobs:
               echo '```' >> "$GITHUB_STEP_SUMMARY"
             fi
           done
+
+      - name: Preserve runtime evidence
+        id: evidence-upload
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: runtime-contract-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/runtime-evidence/*.yaml
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0
+          overwrite: false
+          include-hidden-files: false
+
+      - name: Publish evidence artifact identity
+        if: always() && steps.evidence-upload.outcome == 'success'
+        env:
+          EVIDENCE_ARTIFACT_ID: ${{ steps.evidence-upload.outputs.artifact-id }}
+          EVIDENCE_ARTIFACT_DIGEST: ${{ steps.evidence-upload.outputs.artifact-digest }}
+          EVIDENCE_ARTIFACT_URL: ${{ steps.evidence-upload.outputs.artifact-url }}
+        run: |
+          echo "### Preserved runtime evidence" >> "$GITHUB_STEP_SUMMARY"
+          echo "- artifact id: $EVIDENCE_ARTIFACT_ID" >> "$GITHUB_STEP_SUMMARY"
+          echo "- artifact digest: $EVIDENCE_ARTIFACT_DIGEST" >> "$GITHUB_STEP_SUMMARY"
+          echo "- artifact URL: $EVIDENCE_ARTIFACT_URL" >> "$GITHUB_STEP_SUMMARY"
+          echo "- retention: 90 days" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Enforce result and exit consistency
         if: always()
