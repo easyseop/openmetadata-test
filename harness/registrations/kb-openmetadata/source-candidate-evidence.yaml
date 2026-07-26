@@ -1,6 +1,6 @@
 schema_version: 1
-generated_at: "2026-07-27T03:21:43+09:00"
-governance_evidence_commit: 5823eda35da4b0242aa59c00d6e19802c4a10afc
+generated_at: "2026-07-27T04:10:14+09:00"
+governance_evidence_commit: 4353f457ca93710f71b08f8c5c6365a33fb3f7d8
 repository: easyseop/OpenMetadata
 branch: codex/bank-vendor-1.13.1-rebuild
 upstream:
@@ -11,10 +11,10 @@ source_snapshot:
   repository: kangdkdk/kb_openmetadata
   sha: 2c2347043235aa2a4ecba4729774c770fcee5d67
 candidate:
-  commit_sha: ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d
-  tree_sha: efc8d61b968fba51c8b0532e99473c4f5558a2b1
-  source_tree_digest: sha256:f9523ed7cd865f785986ec24317c4c7dd7c1302d10236578e2baa8923a1dff67
-  candidate_lock_digest: sha256:4fa05d1d54334a4417e744fb641fbb346b34b3a3669c1f32ad1ddb0e8d7616a4
+  commit_sha: 70d028a035bb1edb8af5a11f06c4c7dff4cd979b
+  tree_sha: 648b34491dfa2722180ef4d38835e3ead05e12f2
+  source_tree_digest: sha256:531cf55029747aaccb4876212968eaeb8f01b8bffe364c73d2cdae426e27648b
+  candidate_lock_digest: sha256:32cbf75ac30d58c41d1597c0122493897a5031315edb1da94c4aefacb8baca5b
   note: source_tree_digest binds the Git tree identity; no binary or image release artifact has been built yet
 reconstruction:
   checkpoint_sha: e1ffc5a1eb270c3225736544bb309a0c85af6d2c
@@ -64,6 +64,11 @@ reconstruction:
       touched_paths: 2
       title: fix bank explore UI type contracts
       reason: supply required list-page titles and extend ExploreSearchIndex for the two bank search indices without rewriting the seven source-snapshot commits
+    - customization_id: BANK-OM-009
+      sha: 70d028a035bb1edb8af5a11f06c4c7dff4cd979b
+      touched_paths: 2
+      title: harden shared search result typing
+      reason: map metadataService to its generated search source, include the two bank search sources in the common union, and narrow Curated Assets state to the dataAsset result type
 gates:
   t25_r_vendor_reconstructed_candidate:
     verdict: pass
@@ -72,15 +77,15 @@ gates:
     excluded_paths: 2
   t25_vendor_ancestry:
     verdict: pass
-    candidate: ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d
+    candidate: 70d028a035bb1edb8af5a11f06c4c7dff4cd979b
     approved_target: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
   t26_customization_survival:
     verdict: pass
-    candidate: ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d
-    active_ids: 8
-    required_paths: 12
-    contracts: 9
-    effective_test_ids: 11
+    candidate: 70d028a035bb1edb8af5a11f06c4c7dff4cd979b
+    active_ids: 9
+    required_paths: 14
+    contracts: 11
+    effective_test_ids: 13
   t60_i_required_test_implementations:
     verdict: pass
     implemented_required_tests: 9
@@ -89,7 +94,7 @@ gates:
     scope: source-capable-high-critical
     implementation_commit: a2cbb5221f50c10d11af26618d1d310ec8a73552
     infra_error_follow_up_commit: 7a2fb5f12af758805cc21abaabb4cb29f1f82dcb
-    candidate_rebind_commit: 5823eda35da4b0242aa59c00d6e19802c4a10afc
+    candidate_rebind_commit: 4353f457ca93710f71b08f8c5c6365a33fb3f7d8
     evidence: source-patch-kill-evidence.yaml
     proven:
       - BANK-OM-006
@@ -101,10 +106,10 @@ gates:
     note: This scoped pass does not mean the complete high-critical T61 gate has passed.
   t30_commit_invariants:
     verdict: pass
-    candidate: ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d
+    candidate: 70d028a035bb1edb8af5a11f06c4c7dff4cd979b
   t31_id_invariants:
     verdict: pass
-    candidate: ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d
+    candidate: 70d028a035bb1edb8af5a11f06c4c7dff4cd979b
 product_verification:
   source_candidate_ci:
     workflow: .github/workflows/source-candidate.yml
@@ -113,7 +118,7 @@ product_verification:
     candidate_sha_locked: true
     local_simulation:
       verdict: pass
-      tests_passed: 315
+      tests_passed: 316
       tests_skipped_operational: 7
       source_gates_passed: 5
     prior_remote_run:
@@ -284,13 +289,13 @@ product_verification:
     local_no_runtime_simulation:
       simulation_only: true
       artifact_note: source tree identity used only to exercise the runner; this is not deployed artifact evidence
-      candidate_sha: ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d
+      candidate_sha: 70d028a035bb1edb8af5a11f06c4c7dff4cd979b
       passed: 2
       skipped: 7
       verdict: block
-      harness_version: 025aa1e8c42eb84c5a67d5a5bc07ce057cbcc661
-      suite_version: sha256:a17125422c654af08ddbc340e2c41c508b1ab869f10394b577ee685e214cb959
-      test_run_set_digest: sha256:6c5991093ff2c02560032308577299b004714056b4faeae9727bdf73cbb3730c
+      harness_version: 4353f457ca93710f71b08f8c5c6365a33fb3f7d8
+      suite_version: sha256:56f9e771d739b66a614c966cb52124536942aa1b9be8c19ac3f2a8a1ef0b7f46
+      test_run_set_digest: sha256:5aa51415109017cf7c86600a14c94d296c16b63fcd1f790bf84e2a4cbd7362d5
       exit_result_consistent: true
       false_exit_verdict: analysis_error
     operational_run_executed: false
@@ -342,18 +347,25 @@ product_verification:
     runtime: Node 22.17.0 and Yarn 1.22.22
     error_lines_before_candidate_fix: 399
     error_lines_after_candidate_fix: 396
+    error_lines_after_search_type_hardening: 357
     candidate_introduced_error_lines_after_fix: 0
     remaining_error_lines_in_candidate_changed_files: 16
     remaining_changed_file_errors_match_upstream_source: true
     baseline_gate: approval
     upstream_error_lines: 396
-    candidate_error_lines: 396
+    candidate_error_lines: 357
     new_diagnostics: 0
-    removed_diagnostics: 0
-    unique_files: 141
-    path_code_multiset_fingerprint: sha256:a4158616c8921cc299679553b58ba388493a3aaaf5994314cb1a16f78e342fe8
+    removed_diagnostics: 39
+    upstream_unique_files: 141
+    candidate_unique_files: 135
+    upstream_path_code_multiset_fingerprint: sha256:a4158616c8921cc299679553b58ba388493a3aaaf5994314cb1a16f78e342fe8
+    candidate_path_code_multiset_fingerprint: sha256:e26de34b7554d7d9e94df524c191550059454781268ba669a505a0c075d7521a
+    new_message_variants: 5
+    removed_message_variants: 44
+    upstream_message_fingerprint: sha256:bb893ff886aecb68e57062e289d306c276a5541aad9bf2b2b5a9d56e025b1f4f
+    candidate_message_fingerprint: sha256:a1b4eb2c82ab5ec5ddad0f98556ac7e0414575db1c26b3d4f9f429b2b75c420f
     evidence: ui-typecheck-baseline-evidence.yaml
-    limitation: Same-path and same-code message substitution is not detected by this coarse fingerprint, so the non-zero baseline requires human approval or full repair and never produces pass.
+    limitation: Message substitutions are detected and fingerprinted but require human review because equivalent TypeScript union details can be rewritten; the non-zero baseline requires approval or full repair and never produces pass.
   ui_core_build:
     command_exit: 0
     declaration_diagnostics: 2
@@ -366,7 +378,7 @@ limitations:
   - The Korean IME source guard passes separately; three required Playwright selectors skip without authenticated page URLs and storage state.
   - The T62 runtime workflow and fail-closed producer are implemented, and the workflow retains its evidence artifact for 90 days, but no real runtime run or organization-owned long-term archive exists yet.
   - The source candidate is not a release artifact; image/package build, SBOM, signing, and promotion gates remain.
-  - The focused Tibero Jest suite passes, and an official-upstream comparison under the same Node 22 toolchain has the same 396-diagnostic path/code multiset as the candidate. The baseline gate therefore returns approval, not pass; same-path/same-code message substitution remains reviewable, while Java and the full UI test suite remain unverified.
+  - The focused Tibero and Curated Assets Jest suites pass. Under the same Node 22 toolchain, official upstream has 396 diagnostics and candidate 357, with no new path/code diagnostic and 39 removed. The baseline gate reports five changed message variants and therefore returns approval, not pass; Java and the full UI test suite remain unverified.
   - The official Node 22.17.0 runtime now matches the product .nvmrc; the earlier Node 24 --ignore-engines workaround is no longer used for the recorded typecheck.
   - The Node 24 action-pin workflow passed remotely; four live runtime contracts remain skipped because no deployed OpenMetadata URL is attached to the source-only job.
   - The runtime patch-kill workflow is implemented, but no separately built and deployed predecessor artifact has been executed through it.

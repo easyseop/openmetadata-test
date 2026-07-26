@@ -452,7 +452,7 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
     assert product["source_candidate_ci"]["candidate_sha_locked"] is True
     assert (
         product["source_candidate_ci"]["local_simulation"]["tests_passed"]
-        == 315
+        == 316
     )
     assert (
         product["source_candidate_ci"]["local_simulation"][
@@ -561,6 +561,10 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
     assert product["ui_typecheck"]["verdict"] == "fail"
     assert product["ui_typecheck"]["error_lines_before_candidate_fix"] == 399
     assert product["ui_typecheck"]["error_lines_after_candidate_fix"] == 396
+    assert (
+        product["ui_typecheck"]["error_lines_after_search_type_hardening"]
+        == 357
+    )
     assert (
         product["ui_typecheck"]["candidate_introduced_error_lines_after_fix"]
         == 0

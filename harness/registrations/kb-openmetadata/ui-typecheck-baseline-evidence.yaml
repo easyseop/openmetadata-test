@@ -1,11 +1,11 @@
 schema_version: 1
-generated_at: "2026-07-27T03:40:00+09:00"
+generated_at: "2026-07-27T04:10:14+09:00"
 upstream:
   repository: open-metadata/OpenMetadata
   sha: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
 candidate:
   repository: easyseop/OpenMetadata
-  sha: ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d
+  sha: 70d028a035bb1edb8af5a11f06c4c7dff4cd979b
 environment:
   node: 22.17.0
   yarn: 1.22.22
@@ -16,16 +16,22 @@ preparation:
   - Share the same installed dependency tree and run the same yarn tsc:check command.
 logs:
   upstream_sha256: 6bca51ba43a80099f00336469504bdef7120df61c34658a685c7d50a97b18610
-  candidate_sha256: 768fe9f45465068c3815feb471f3c5a4dcd694e4dae3b3914ea6832bce9b0b76
+  candidate_sha256: 8d44e59e82f892fa0d3a8ffd9b66ab04ecddfe8e8b87634e728ef6991ffb148f
 comparison:
   verdict: approval
   upstream_exit: 2
   candidate_exit: 2
   upstream_diagnostics: 396
-  candidate_diagnostics: 396
+  candidate_diagnostics: 357
   new_diagnostics: 0
-  removed_diagnostics: 0
-  unique_files: 141
-  path_code_multiset_fingerprint: sha256:a4158616c8921cc299679553b58ba388493a3aaaf5994314cb1a16f78e342fe8
-interpretation: No new path-and-error-code diagnostic is present, but the non-zero upstream baseline remains a release blocker until repaired or approved by the designated owner.
-limitation: A same-path and same-code message substitution can evade this coarse fingerprint, so approval and full log review remain required; the gate never emits pass for a non-zero baseline.
+  removed_diagnostics: 39
+  upstream_unique_files: 141
+  candidate_unique_files: 135
+  upstream_path_code_multiset_fingerprint: sha256:a4158616c8921cc299679553b58ba388493a3aaaf5994314cb1a16f78e342fe8
+  candidate_path_code_multiset_fingerprint: sha256:e26de34b7554d7d9e94df524c191550059454781268ba669a505a0c075d7521a
+  new_message_variants: 5
+  removed_message_variants: 44
+  upstream_message_fingerprint: sha256:bb893ff886aecb68e57062e289d306c276a5541aad9bf2b2b5a9d56e025b1f4f
+  candidate_message_fingerprint: sha256:a1b4eb2c82ab5ec5ddad0f98556ac7e0414575db1c26b3d4f9f429b2b75c420f
+interpretation: The candidate has no new path-and-error-code diagnostic and removes 39, while five changed message variants remain visible for human review; the non-zero baseline is still a release blocker until repaired or approved by the designated owner.
+limitation: Message substitutions are detected and fingerprinted, but they remain approval evidence rather than automatic pass or block because TypeScript can rewrite equivalent union details; the gate never emits pass for a non-zero baseline.

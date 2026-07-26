@@ -116,12 +116,17 @@ def test_registered_node22_baseline_evidence_is_honest():
         "afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9"
     )
     assert evidence["candidate"]["sha"] == (
-        "ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d"
+        "70d028a035bb1edb8af5a11f06c4c7dff4cd979b"
     )
     assert comparison["verdict"] == V.APPROVAL
     assert comparison["upstream_diagnostics"] == 396
-    assert comparison["candidate_diagnostics"] == 396
+    assert comparison["candidate_diagnostics"] == 357
     assert comparison["new_diagnostics"] == 0
-    assert comparison["removed_diagnostics"] == 0
-    assert comparison["path_code_multiset_fingerprint"].startswith("sha256:")
+    assert comparison["removed_diagnostics"] == 39
+    assert comparison["new_message_variants"] == 5
+    assert comparison["removed_message_variants"] == 44
+    assert comparison["upstream_path_code_multiset_fingerprint"].startswith(
+        "sha256:"
+    )
+    assert comparison["candidate_message_fingerprint"].startswith("sha256:")
     assert "never emits pass" in evidence["limitation"]
