@@ -243,8 +243,13 @@ skip됐다.
   product commit을 SHA로 고정하고 mirror·통합 테스트·T25/T26/T60-I/T30/T31을
   자동 실행하고 source patch-kill 결과를 90일 artifact로 보존한다. 현재 exact
   command의 clean local simulation은 297 pass·5 skip, source gate 5개,
-  source patch-kill 2개 pass. 최신 확인 run `30162134698`은 이전 head에서 293 pass·5 skip,
-  source gate 5개 pass로 success. 최초 remote run `30160752510`은 success. Node 20
+  source patch-kill 2개 pass. 최신 확인 run `30212561441`은 297 pass·5 skip,
+  source gate 5개·patch-kill 2개·artifact upload pass로 success. 증거 artifact
+  ID `8634882239`, digest `sha256:d5afd822...a7bfa32f`, 만료
+  `2026-10-24T17:26:01Z`. 이 run에서 upload-artifact v4 Node 20 경고가 생겨
+  `8ec6e28`에서 공식 v7.0.1 고정 SHA(Node 24)로 전환했다. 이전 확인 run
+  `30162134698`은 293 pass·5 skip, source gate 5개 pass. 최초 remote run
+  `30160752510`은 success. Node 20
   deprecation 때문에 checkout v5/setup-python v6 SHA로 올렸고 Node 24
   재검증 run `30160846880`도 annotation 없이 success.
 - **현재 차단 조건**: 7개 owner 미배정, live API contract 4개와 browser IME의

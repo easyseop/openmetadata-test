@@ -469,6 +469,21 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
     assert runtime_handoff["tests_passed"] == 293
     assert runtime_handoff["tests_skipped_operational"] == 5
     assert runtime_handoff["source_gates_passed"] == 5
+    source_patch_kill = product["source_candidate_ci"][
+        "source_patch_kill_remote_run"
+    ]
+    assert source_patch_kill["conclusion"] == "success"
+    assert (
+        source_patch_kill["head_sha"]
+        == "17b74279cb48ce282c2c7507c79fbaeff31b5740"
+    )
+    assert source_patch_kill["tests_passed"] == 297
+    assert source_patch_kill["source_patch_kill_experiments_passed"] == 2
+    assert (
+        source_patch_kill["evidence_artifact"]["digest"]
+        == "sha256:"
+        "d5afd822d8898e5ed94611f5220caa25ba152a211169f3c990ec73f8a7bfa32f"
+    )
     assert product["prettier"]["verdict"] == V.PASS
     assert product["tibero_jest"]["verdict"] == V.PASS
     assert product["tibero_jest"]["tests"] > 0
@@ -486,8 +501,9 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
     retention = runtime["evidence_retention"]
     assert (
         retention["action_commit"]
-        == "ea165f8d65b6e75b540449e92b4886f43607fa02"
+        == "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a"
     )
+    assert retention["action_runtime"] == "node24"
     assert retention["retention_days"] == 90
     assert retention["overwrite"] is False
     assert retention["missing_files"] == "error"

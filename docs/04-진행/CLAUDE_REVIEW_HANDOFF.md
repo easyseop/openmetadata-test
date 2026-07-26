@@ -16,6 +16,8 @@
 > `a2cbb5221f50c10d11af26618d1d310ec8a73552`
 > T61 infra_error 분리·고정 증거 검증 커밋:
 > `7a2fb5f12af758805cc21abaabb4cb29f1f82dcb`
+> artifact action Node 24 전환 커밋:
+> `8ec6e28442c1ed483bb2f1c39c0a6d628f1d213d`
 > 현재 커밋은 체크아웃 후 `git rev-parse HEAD`로 확인한다.
 
 ## 0. 지속 갱신 규칙
@@ -839,8 +841,12 @@ gh run list \
 
 - `502f42f77734ec4f894aa79360c22e0f67dc1b19`
 
-`runtime-contracts.yml`에 공식 `actions/upload-artifact` v4 commit
-`ea165f8d65b6e75b540449e92b4886f43607fa02`를 40-hex SHA로 고정했다.
+`runtime-contracts.yml`과 `source-candidate.yml`에 공식
+`actions/upload-artifact` v7.0.1 commit
+`043fb46d1a93c77aae656e7c1c64a875d1fc6a0a`를 40-hex SHA로 고정했다.
+공식 `action.yml`의 runtime은 `node24`다. 최초 source patch-kill 원격 실행에서
+v4의 Node 20 deprecation annotation을 확인한 뒤 `8ec6e28`에서 두 workflow를
+함께 전환했다.
 runtime 결과가 pass, block, approval, analysis_error 중 무엇이든
 `candidate-lock.yaml`, `test-run-set.yaml`, `acgh-result.yaml`을 업로드한다.
 
@@ -912,6 +918,14 @@ BANK-OM-007 Tibero
 source-scoped verdict: pass
 result digest: sha256:1cadd0bed3e58b01d5720bd1519452de838785f1d1328b14dc58c4de04bc9e2d
 ```
+
+첫 원격 실행
+[`30212561441`](https://github.com/easyseop/openmetadata-test/actions/runs/30212561441)은
+head `17b7427`에서 `297 passed, 5 skipped in 19.57s`, source gate 5개 pass,
+source patch-kill 2개 pass로 success였다. 보존된 artifact는
+`source-patch-kill-evidence-30212561441-1`, ID `8634882239`, GitHub digest
+`sha256:d5afd822d8898e5ed94611f5220caa25ba152a211169f3c990ec73f8a7bfa32f`,
+만료 시각 `2026-10-24T17:26:01Z`다.
 
 이 결과는 high/critical T61 전체 pass가 아니다. `BANK-OM-001` InstanceCode,
 `BANK-OM-002` QueryReport, `BANK-OM-003` Data Assertions는 코드 predecessor만

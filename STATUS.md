@@ -2,11 +2,12 @@
 
 > Updated: 2026-07-27
 > Branch: `claude/markdown-file-feedback-26933w`
-> Last verified implementation commit: `7a2fb5f`
+> Last verified implementation commit: `8ec6e28`
 > Nondeveloper guide and handoff implementation commit: `0f0904b`
 > Runtime operations documentation commit: `a291f31`
 > Runtime evidence retention implementation commit: `502f42f`
 > Source patch-kill implementation commits: `a2cbb52`, `7a2fb5f`
+> Node 24 artifact action upgrade commit: `8ec6e28`
 > Detailed review handoff: [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)
 > Nondeveloper entry point: [`docs/00-사용가이드/비개발자_사용_가이드.md`](docs/00-사용가이드/비개발자_사용_가이드.md)
 
@@ -141,6 +142,16 @@ remote run
 [`30162134698`](https://github.com/easyseop/openmetadata-test/actions/runs/30162134698)
 passed at head `45d0994` with `293 passed, 5 skipped in 13.68s` and all five
 source gates passing.
+
+The first remote source patch-kill run
+[`30212561441`](https://github.com/easyseop/openmetadata-test/actions/runs/30212561441)
+passed at head `17b7427` with `297 passed, 5 skipped in 19.57s`, all five source
+gates, both patch-kill experiments, and evidence upload passing. Artifact
+`source-patch-kill-evidence-30212561441-1` has ID `8634882239`, GitHub digest
+`sha256:d5afd822...a7bfa32f`, and expiry `2026-10-24T17:26:01Z`. That run exposed
+a Node 20 deprecation annotation from upload-artifact v4; commit `8ec6e28`
+upgrades both evidence workflows to pinned upload-artifact v7.0.1 commit
+`043fb46d...d1fc6a0a`, whose official action metadata uses Node 24.
 
 ## Important production blockers
 
