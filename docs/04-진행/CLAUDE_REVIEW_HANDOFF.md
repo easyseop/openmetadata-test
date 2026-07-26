@@ -4,7 +4,9 @@
 > 대상 브랜치: `claude/markdown-file-feedback-26933w`
 > 변경 전 기준 커밋: `9d2a174` (`implement T25 vendor ancestry gate`)
 > 마지막 검증 구현 커밋:
-> `1956b7880506674e37ad2428248a9fc69817dbc2`
+> `5823eda35da4b0242aa59c00d6e19802c4a10afc`
+> 제품 UI 타입 보강 커밋:
+> `ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d`
 > Data Assertions·bank column 실제 화면 계약 보강 커밋:
 > `093724faa499458eb4723511914a1376138ef014`
 > T61 deployed runtime patch-kill 게이트 구현 커밋:
@@ -561,7 +563,7 @@ schema를 반환한다는 집중 단위 테스트도 없었다. 이 상태는
 | `38bccf90779a` | BANK-OM-007 | `openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts` | `ConfigType.Tibero = "Tibero"` 추가 |
 | `38bccf90779a` | BANK-OM-007 | `openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx` | Tibero JSON schema·공통 UI schema 반환 단위 테스트 추가 |
 
-현재 source candidate:
+Tibero 보강 직후 source candidate(현재 후보의 직전 조상):
 
 - commit: `38bccf90779a8afe4a4f0e9313e11706f6d940d4`
 - governance evidence commit: `efd7615470311feb58f1523fb4305561c53410b0`
@@ -570,6 +572,9 @@ schema를 반환한다는 집중 단위 테스트도 없었다. 이 상태는
   `sha256:d7efa79efcc700bf05aa8d54070c551954ae2b4a29aac40fb9df5c94a71bd907`
 - candidate-lock digest:
   `sha256:9f2e3760b7b1ab44fa24fe8872c74b4003dcf29dbdc7282e403f2595b7ebeacd`
+
+현재 source candidate와 새 lock은 §4.24의 `ddf0dd2e...` 및
+`source-candidate-evidence.yaml`을 정본으로 사용한다.
 
 후속 candidate 검증:
 
@@ -677,7 +682,7 @@ Korean IME의 required selector는 이제 실제 browser test이며 source guard
 2. `harness[dev]` 잠금 범위 설치
 3. 고정 SHA의 1.12.13/1.13.0 mirror fixture fetch
 4. product branch를 blobless·depth 16·sparse 방식으로 checkout
-5. checkout HEAD가 `38bccf90779...`와 정확히 같은지 확인
+5. checkout HEAD가 `ddf0dd2ebaf...`와 정확히 같은지 확인
 6. harness + 7개 업무 contract의 9 selector 실행
 7. T25/T26/T60-I/T30/T31 source-candidate runner 실행
 
@@ -691,7 +696,7 @@ workflow의 exact product fetch·mirror fetch·test·gate 명령을 빈 임시
 환경에서 실행한 결과는 다음과 같다.
 
 ```text
-product HEAD        38bccf90779a... (locked SHA match)
+product HEAD        ddf0dd2ebaf... (locked SHA match)
 upstream mirror     UPSTREAM_A/UPSTREAM_B SHA match
 tests               280 passed, 4 live-runtime skipped in 35.12s
 source gates        T25/T26/T60-I/T30/T31 all pass
@@ -1074,13 +1079,91 @@ forged actual exit 0                synthetic analysis_error
 요구할지 독립 검토해야 한다. 또한 실제 predecessor artifact의 build·배포·workflow
 실행은 0건이므로 **T61 전체 pass가 아니다**.
 
+### 4.24 BANK-OM-008 — 지원 Node 22 기반 후보 UI 타입 보강
+
+제품 커밋:
+
+- `ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d`
+- trailer: `Customization-ID: BANK-OM-008`
+
+거버넌스 등록 구현 커밋:
+
+- `5823eda35da4b0242aa59c00d6e19802c4a10afc`
+
+수정 파일:
+
+- 제품
+  - `openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx`
+  - `openmetadata-ui/src/main/resources/ui/src/components/Explore/ExplorePage.interface.ts`
+- 거버넌스
+  - `harness/acgh/registry.py`
+  - `harness/acgh/vendor_rebuild.py`
+  - `harness/acgh/schema/customization-registry.schema.json`
+  - `harness/registrations/kb-openmetadata/manifests/BANK-OM-008.yaml`
+  - `harness/registrations/kb-openmetadata/customization-registry.yaml`
+  - 세 workflow와 source/runtime patch-kill candidate lock
+
+발견과 수정 방법:
+
+1. 제품 `.nvmrc`와 같은 공식 Node `22.17.0` darwin-arm64 archive를 사용했다.
+   archive SHA-256은
+   `cc9cc294eaf782dd93c8c51f460da610cc35753c6a9947411731524d16e97914`
+   로 공식 게시값과 일치한다. Yarn은 Corepack의 `1.22.22`다.
+2. 수정 전 전체 `yarn tsc:check`는 399 diagnostics였다. 후보 변경 파일과
+   교차하면 4개 파일에 오류가 있었지만, source line을 공식
+   `afcb2d2...` worktree와 비교해 16건은 upstream에 같은 코드로 존재함을
+   확인했다.
+3. 후보가 실제로 새로 만든 오류는 세 건이었다.
+   - InstanceCode 목록 route의 필수 `pageTitle` 누락
+   - QueryReport 목록 route의 필수 `pageTitle` 누락
+   - 두 search index가 `ExploreSearchIndex` union에 없어
+     `SearchClassBase.getTabsInfo()`가 거부된 오류
+4. 두 route에 번역된 복수형 page title을 전달하고 union에
+   `INSTANCE_CODE`, `QUERY_REPORT`를 추가했다.
+5. 수정 후 동일 Node/Yarn/6GB heap 전체 typecheck는 396 diagnostics다.
+   세 후보 오류가 모두 사라졌고, 후보가 만든 새 오류는 0건이다. 수정 두 파일의
+   Prettier check도 pass했다. 전체 명령은 여전히 exit 2이므로 제품 전체
+   typecheck를 pass로 표현하면 안 된다.
+
+왜 새 ID인가:
+
+기존 제품 이력은 001→007과 연속 007 후속으로 고정돼 있다. 지금 001/002를 다시
+사용하면 T31의 non-contiguous series를 깨고, 두 ID를 한 commit에 쓰면 T30의
+multiple-ID를 깬다. 과거 이력을 force-push로 재작성하지 않고, 두 기능이 공유하는
+탐색 UI 정합성 보강을 `BANK-OM-008` 하나로 등록했다.
+
+등록부에는 `provenance`를 추가했다.
+
+- `source-snapshot`: 원본 `kb_openmetadata` snapshot에서 재구성한 001~007
+- `candidate-follow-up`: 재구성 후 현재 후보에서 추가한 008
+
+T25-R plan은 `source_snapshot_ids()`만 사용하므로 008이 과거 snapshot에
+있었다고 왜곡하지 않는다. 반면 T26/T30/T31과 runtime candidate lock은 active
+008을 포함한다. 현재 source gate 결과는 다음과 같다.
+
+```text
+T25 vendor ancestry              pass (candidate ddf0dd2e...)
+T26 customization survival       pass (8 IDs, 12 required paths)
+T60-I required implementations   pass (9 selectors)
+T30 commit invariants            pass
+T31 ID invariants                pass
+```
+
+로컬 작업 경로 주의:
+
+macOS Documents 아래 작업본이 저장 공간 최적화로 dataless placeholder가 되어
+Git read가 중단됐다. 유실 방지를 위해 이 세션은
+`/private/tmp/openmetadata-test-recovered-20260727`에서 계속했고, 정본은 매
+작업 묶음마다 원격 branch에 push한다. 다음 작업자는 Documents 복제본을 신뢰하기
+전에 `stat`/`git status`를 확인하고, 문제가 있으면 원격 branch를 새로 clone한다.
+
 ## 5. 테스트 결과
 
 전체 명령:
 
 ```bash
 OM_MIRROR_PATH=/private/tmp/om-ci-mirror-20260725 \
-OPENMETADATA_PRODUCT_REPO=/private/tmp/om-ci-validation-38bccf \
+OPENMETADATA_PRODUCT_REPO=/private/tmp/om-product-rebuild \
   ./harness/.venv/bin/python -m pytest harness/tests tests/bank/contracts -ra
 ```
 
@@ -1136,8 +1219,9 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 2. `openmetadata-runtime` environment의 secret/variable을 설정하고
    `Runtime contracts` workflow에서 API 4개와 browser 3개를 실행해 9개
    selector 전체의 T62 candidate-bound pass를 만든다.
-3. Node 22 환경에서 399개 UI typecheck diagnostic을 기준선 분류·수정하고,
-   제품 전체 Java/UI build와 source-level test를 candidate에 결속한다.
+3. Node 22에서 후보가 만든 3개 UI typecheck diagnostic은 수정 완료했다.
+   남은 upstream/unrelated 396개를 기준선 승인 또는 수정하고, 제품 전체
+   Java/UI build와 source-level test를 candidate에 결속한다.
 4. InstanceCode·QueryReport·Data Assertions 제거본을 각각 빌드·배포해 남은
    high 3개 runtime patch-kill을 실행한다.
 5. runtime workflow의 YAML 결과를 조직의 장기 증거 저장소에 보존한다.
@@ -1166,7 +1250,7 @@ OpenMetadata 테스트 스택에서 API 4개와 browser 3개를 실행한다. �
 | 질문 | 이 문서에서 확인할 곳 |
 |---|---|
 | 최종 목적은 무엇인가 | §1 |
-| 지금까지 무엇을 만들었는가 | §4.1~§4.23 |
+| 지금까지 무엇을 만들었는가 | §4.1~§4.24 |
 | 어떤 방식으로 만들었는가 | 각 구현 절의 파일·개발 방식 |
 | 무엇으로 검증했고 무엇이 미실행인가 | §5~§6 |
 | 다음에 무엇을 어떤 순서로 할 것인가 | §7과 첫 실행 명령 |
@@ -1175,7 +1259,8 @@ OpenMetadata 테스트 스택에서 API 4개와 browser 3개를 실행한다. �
 
 다음을 집중 검토한다.
 
-1. 113개 변경 경로가 7개 manifest의 allowed path에 누락 없이 귀속됐는가.
+1. 113개 원본 변경 경로가 7개 source-snapshot manifest의 allowed path에
+   누락 없이 귀속됐고, 008이 그 과거 재구성에 섞이지 않는가.
 2. required path가 각 기능의 최소 생존 상태를 대표하는가.
 3. contract invariant와 required test ID가 실제 업무 요구를 정확히 표현하는가.
 4. stale/malformed 증거가 어떤 경로에서도 pass나 approval로 약화되지 않는가.
@@ -1203,6 +1288,14 @@ OpenMetadata 테스트 스택에서 API 4개와 browser 3개를 실행한다. �
     만들 counterexample이 있는가. 있다면 ID 격리 재빌드를 필수화해야 하는가.
 18. counterfactual artifact digest와 deployment evidence digest만으로 실제 URL이
     그 바이트를 서비스했다는 결속이 충분한가.
+19. `provenance: candidate-follow-up`이 T25-R에서만 제외되고 T26/T30/T31·
+    runtime 결속에는 반드시 포함되는 경계가 우회 불가능한가.
+20. `BANK-OM-008` 하나가 InstanceCode와 QueryReport의 공유 UI 타입 보강을
+    표현하는 것이 단일 변경 목적 규칙에 맞는가, 아니면 더 나은 추적 모델이
+    필요한가.
+21. Node 22 typecheck의 남은 396건을 upstream 기준선으로 승인할 때
+    candidate-changed line 비교만으로 충분한지, 공식 upstream 동일 toolchain
+    전체 실행을 필수화해야 하는가.
 
 검토 결과는 `Blocking / Serious / Minor / Validated`로 나누고, 각 항목에 정확한
 파일·라인·재현 테스트를 제시해 달라. 문서의 완료 표시가 아니라 코드와

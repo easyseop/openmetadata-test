@@ -3,6 +3,7 @@
 > **목적**: 컨텍스트가 리셋돼도 이 문서 하나로 작업을 이어갈 수 있게 현재까지의
 > 모든 결정·산출물·다음 단계를 세세하게 기록한다. **작업 재개 시 이 문서를 먼저 읽는다.**
 > 최종 갱신: 2026-07-27 실제 7-ID 재구축, Tibero 후속 보강,
+> `BANK-OM-008` 후보 전용 UI 타입 정합성 보강,
 > T25-R/T25/T26/T60-I/T30/T31 통과, 비개발자용 사용 가이드,
 > T62 runtime 계약 실행기·Data Assertions/은행 컬럼/IME 실제 브라우저 계약·
 > 90일 증거 보존까지 반영.
@@ -20,11 +21,13 @@
 
 ## 0. 지금 어디인가 (한 줄)
 
-vendor merge 기본 / patch replay 선택 전략의 게이트 엔진과 실제 7개 등록부를
-구현했다. `easyseop/OpenMetadata`에 공식 `1.13.1-release` 기반 7-ID vendor
-checkpoint `e1ffc5a1...`를 재구축한 뒤 Tibero 타입·테스트를 보강해 현재
-candidate `38bccf90...`를 만들었다. T25-R은 checkpoint에서, T25/T26/T30/T31은
-현재 candidate에서 통과했다. T60-I도 9/9 selector 구현 존재를 확인했다.
+vendor merge 기본 / patch replay 선택 전략의 게이트 엔진과 7개 원본 기능,
+1개 후보 보강 등록부를 구현했다. `easyseop/OpenMetadata`에 공식
+`1.13.1-release` 기반 7-ID vendor checkpoint `e1ffc5a1...`를 재구축한 뒤
+Tibero 보강과 은행 탐색 UI 타입 정합성 보강을 적용해 현재 candidate
+`ddf0dd2e...`를 만들었다. T25-R은 원본 checkpoint에서, T25/T26/T30/T31은
+8개 active ID가 있는 현재 candidate에서 통과했다. T60-I도 9/9 selector 구현
+존재를 확인했다.
 계약 테스트는 소스 기반 3개가 통과했고 실제 API 4개·브라우저 3개는 skip이다.
 실제 upgrade 실행과 release artifact가 없으므로 첫 production release는 아직
 차단 상태다.
@@ -36,7 +39,7 @@ candidate `38bccf90...`를 만들었다. T25-R은 checkpoint에서, T25/T26/T30/
 - 제품 리포: `easyseop/OpenMetadata`
 - 제품 브랜치: `codex/bank-vendor-1.13.1-rebuild`
 - 제품 재구축 checkpoint: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
-- 제품 candidate: `38bccf90779a8afe4a4f0e9313e11706f6d940d4`
+- 제품 candidate: `ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d`
 - 커밋 작성자·도구 출처는 실제 작업 주체에 맞게 기록한다. 과거 세션이나 다른
   도구의 출처를 새 커밋에 복사하지 않는다.
 - 푸시: `git push -u origin claude/markdown-file-feedback-26933w`
@@ -206,7 +209,8 @@ harness/
 
 ### 현재 위치 (2026-07-27, 최신)
 
-**완료:** 기존 patch-replay M1~M4, vendor-merge T24~T29·T25-R, 실제 7개 등록부,
+**완료:** 기존 patch-replay M1~M4, vendor-merge T24~T29·T25-R, 실제 7개
+snapshot 등록과 1개 candidate-follow-up 등록부,
 T62/T71/T72/T80/T81/T90/T91/T92/T94의 Docker-free 판정 계약.
 현재 통합 테스트는 313개이며, 고정 upstream mirror와 sparse product checkout을
 연결한 CI-equivalent 환경에서 306개 통과, API 4개와 실제 브라우저 3개만
@@ -217,9 +221,12 @@ skip됐다.
   부채 게이트 `debt.py`.
 - **Docker 데몬 없음(이 세션)** → T90의 12단계 결과계약은 구현했으나 실제
   구·신 OM 스택, DB 복원/migration, 검색/ingestion 차등과 rollback은 미실행.
-- **제품 집중 검증**: Tibero `DatabaseServiceUtils.test.tsx` 13/13 pass,
-  변경 2경로 Prettier pass. Node 24·6GB heap의 전체 UI typecheck는 399개
-  diagnostic으로 fail했지만 두 변경 경로의 매칭 오류는 0개다.
+- **제품 집중 검증**: Tibero `DatabaseServiceUtils.test.tsx` 13/13 pass.
+  공식 Node 22.17.0·Yarn 1.22.22·6GB heap의 전체 UI typecheck에서 후보가
+  만든 오류 3건을 확인하고 `ddf0dd2e...`에서 전부 수정했다. 전체 진단은
+  399→396으로 줄었고 candidate-introduced 오류는 0개다. 남은 오류 중
+  candidate 변경 파일에 보이는 16건은 공식 upstream과 같은 소스 줄이다.
+  수정 2경로 Prettier도 pass다.
 - **T60-I/contract 구현**: catalog의 9 selector 모두 실제 파일·함수로 resolve.
   Sybase·Tibero 2개 required contract와 별도 IME source guard는 pass.
   OpenMetadata live URL이 필요한 InstanceCode·QueryReport·failed assertion·
@@ -228,7 +235,8 @@ skip됐다.
 - **T61 source patch-kill**: `patch-kill-plan.yaml`과
   `run_source_patch_kills.py`를 추가했다. Sybase 없는 `6e5b654f...`와 Tibero
   없는 `41b224ad...`에서 각 required test가 JUnit assertion failure를 내므로
-  두 source experiment는 pass다. candidate·governance `a2cbb52...`·plan
+  두 source experiment는 pass다. candidate `ddf0dd2e...`·governance
+  `5823eda...`·plan
   digest·selector·without-patch SHA가
   `source-patch-kill-evidence.yaml`에 결속됐다. API 기반 high ID 3개는
   제거본 runtime 미배포로 pending이므로 전체 T61 pass는 아니다.
@@ -267,7 +275,7 @@ skip됐다.
   최신 확인 run `30213348947`은 297 pass·7 skip, T60-I 9/9, source gate
   5개·patch-kill 2개 pass이며 artifact ID `8635093639`, digest
   `sha256:2cd41e38...aaeee1b`, 만료 `2026-10-24T17:48:17Z`다.
-- **현재 차단 조건**: 7개 owner 미배정, live API selector 4개와 browser 3개의
+- **현재 차단 조건**: 8개 owner 미배정, live API selector 4개와 browser 3개의
   candidate-bound T62 결과 없음, 제품 전체 Java build와 full UI
   suite/typecheck green, 실제 T90/T91/T94 증거 없음.
 
@@ -306,7 +314,7 @@ skip됐다.
 | T26 customization survival | ✅ | `acgh/survival.py` |
 | T27 merge conflict evidence | ✅ | `acgh/conflicts.py` |
 | T28 전략 라우팅 | ✅ | `acgh/routing.py` |
-| T29 실제 7개 등록 | ✅ 등록·⚠ 운영증거 | `acgh/registry.py` + `registrations/kb-openmetadata/` |
+| T29 실제 7개 snapshot + 1개 후보 보강 등록 | ✅ 등록·⚠ 운영증거 | `acgh/registry.py` + `registrations/kb-openmetadata/` |
 | T61 patch-kill | 🟡 source 2/5 증거·runtime 3/5 검사기 구현 | `acgh/patchkill.py` + source/runtime plan·workflow + `source-patch-kill-evidence.yaml` |
 | T62 test-run 결속·실행 경계 | ✅ 실행기·90일 증거 보존·⚠ 운영미실행 | `acgh/testruns.py` + `acgh/pytest_runs.py` + `runtime-contracts.yml` |
 | T71/T72 fast lane·break-glass | ✅ | `acgh/fastlane.py` + `acgh/breakglass.py` |
@@ -329,12 +337,12 @@ skip됐다.
 
 ### 다음 태스크 — 첫 실제 production-upgrade 증거
 
-1. 공식 `1.13.1-release`에서 vendor branch를 만들고 7개 기능을 ID series로
-   재구성한 뒤 T25-R과 T25 ancestry를 통과시킨다.
-2. 7개 owner/승인 라우팅을 배정한다.
-3. InstanceCode·QueryReport·Data Assertions 제거본을 실제 배포해 남은 T61
+1. 8개 active ID의 owner/승인 라우팅을 배정한다.
+2. InstanceCode·QueryReport·Data Assertions 제거본을 실제 배포해 남은 T61
    3건을 실행하고, API·DB·검색·권한·UI/IME 전체 T62 candidate-bound result를
    만든다.
+3. 남은 396개 upstream UI 진단을 공식 기준선으로 승인하거나 수정하고, 전체
+   Java/UI 테스트를 후보와 결속한다.
 4. Docker/운영 유사 데이터로 T90 12단계를 실행한다.
 5. T91 실제 artifact 승격과 T94 실제 오프라인 서명·내부망 재검증을 수행한다.
 

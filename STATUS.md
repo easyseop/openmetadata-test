@@ -2,7 +2,8 @@
 
 > Updated: 2026-07-27
 > Branch: `claude/markdown-file-feedback-26933w`
-> Last verified implementation commit: `1956b78`
+> Last verified implementation commit: `5823eda`
+> Product UI hardening commit: `ddf0dd2`
 > Rendered UI runtime-contract expansion commit: `093724f`
 > Runtime patch-kill gate implementation commit: `1956b78`
 > Nondeveloper guide and handoff implementation commit: `0f0904b`
@@ -30,9 +31,11 @@ registration, vendor/replay routing, required-test result binding, fast lanes,
 break-glass validation, advisory LLM memos, upgrade-run evidence, identical
 digest promotion, retirement, and signed air-gap verification.
 
-The real `kangdkdk/kb_openmetadata` snapshot is registered as seven
+The real `kangdkdk/kb_openmetadata` snapshot is registered as seven source
 customizations (`BANK-OM-001` through `BANK-OM-007`) against the official
-OpenMetadata `1.13.1-release` commit.
+OpenMetadata `1.13.1-release` commit. A separately identified
+candidate-follow-up, `BANK-OM-008`, records the UI type hardening added after
+the snapshot reconstruction without pretending it existed in that snapshot.
 
 T25-R now supplies the snapshot-to-vendor reconstruction planner and candidate
 gate. The 113 pinned source paths deterministically classify as 67
@@ -43,9 +46,10 @@ The actual vendor branch is now built and pushed:
 - repository: `easyseop/OpenMetadata`
 - branch: `codex/bank-vendor-1.13.1-rebuild`
 - reconstruction checkpoint: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
-- current candidate: `38bccf90779a8afe4a4f0e9313e11706f6d940d4`
+- current candidate: `ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d`
 - official parent: `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9`
-- seven reconstruction commits plus one consecutive `BANK-OM-007` follow-up
+- seven reconstruction commits, one consecutive `BANK-OM-007` follow-up, and
+  one registered `BANK-OM-008` candidate-hardening commit
 
 T25-R passes on the exact reconstruction checkpoint. T25 ancestry, T26
 survival, T30 commit invariants, and T31 ID invariants pass on the current
@@ -59,6 +63,14 @@ service schema and selector but absent from the generated common connection
 `ConfigType`, with no focused utility test. Commit `38bccf9077` adds that enum
 member and a Tibero schema-mapping unit test under the same consecutive
 `BANK-OM-007` series.
+
+The supported Node 22.17.0 typecheck then exposed three diagnostics introduced
+by the bank UI integration: both new list routes omitted the page title required
+by their layout wrapper, and the two new search indices were missing from
+`ExploreSearchIndex`. Product commit `ddf0dd2eba` fixes all three. The total
+diagnostic count fell from 399 to 396, and no candidate-introduced diagnostic
+remains. The remaining 16 diagnostics that happen to be in candidate-changed
+files are on source lines identical to official upstream 1.13.1.
 
 ## Verification
 
@@ -76,7 +88,7 @@ tests against fixed predecessor commits that do not contain the corresponding
 connector patch. Both tests fail as required, so their scoped patch-kill
 verdict is pass. The machine result is
 `harness/registrations/kb-openmetadata/source-patch-kill-evidence.yaml`, bound
-to candidate `38bccf90...`, governance implementation `7a2fb5f...`, the plan
+to candidate `ddf0dd2e...`, governance rebind `5823eda...`, the plan
 digest, both predecessor SHAs, and both exact selectors. This is a
 **source-capable 2/5 high-ID result**, not complete T61: InstanceCode,
 QueryReport, and Data Assertions still require deployed counterfactual stacks.
@@ -95,11 +107,11 @@ Actual source-candidate gates:
 
 ```text
 T25-R vendor-reconstructed-candidate  pass (checkpoint e1ffc5a1...)
-T25   vendor-ancestry                 pass (candidate 38bccf90...)
-T26   customization-survival          pass (candidate 38bccf90...; 7 IDs, 10 required paths)
+T25   vendor-ancestry                 pass (candidate ddf0dd2e...)
+T26   customization-survival          pass (candidate ddf0dd2e...; 8 IDs, 12 required paths)
 T60-I required-test-implementations   pass (9/9 selectors resolve)
-T30   commit-invariants               pass (candidate 38bccf90...)
-T31   id-invariants                   pass (candidate 38bccf90...)
+T30   commit-invariants               pass (candidate ddf0dd2e...)
+T31   id-invariants                   pass (candidate ddf0dd2e...)
 ```
 
 Focused product verification:
@@ -109,7 +121,7 @@ Prettier (2 changed paths)             pass
 DatabaseServiceUtils.test.tsx          pass (13/13; Tibero case pass)
 bank contract source suite             3 passed (Sybase, Tibero, IME source guard)
 required operational selectors         2 passed, 7 skipped (4 API, 3 browser)
-UI tsc --noEmit                        fail (399 diagnostics; changed paths 0)
+UI tsc --noEmit (Node 22.17.0)          fail (396 upstream/unrelated diagnostics; candidate-introduced 0)
 UI core Vite build                     exit 0 (2 declaration diagnostics on unchanged upstream paths)
 ```
 
@@ -124,14 +136,15 @@ with pinned `actions/upload-artifact` code as a non-overwritable, 90-day CI
 artifact whose ID, digest, and URL are written to the job summary. No real
 runtime workflow has been executed.
 
-The focused UI run used Yarn 1.22.22 and Node 24.15.0 with
-`--ignore-engines` because this environment has no Node 22 runtime. The
-candidate's own Tibero test passed, but the broad typecheck failure remains a
-release blocker rather than being reclassified as a test pass.
+The focused UI run used Yarn 1.22.22 and official Node 22.17.0, matching the
+product `.nvmrc`; the downloaded archive matched its published SHA-256
+`cc9cc294...e97914`. The candidate's own Tibero test passed and the three
+candidate-introduced type errors are fixed, but the remaining broad upstream
+baseline still blocks a clean product-wide typecheck.
 
 Source-candidate CI is defined in `.github/workflows/source-candidate.yml`.
 It pins all third-party actions by 40-hex SHA, pins product commit
-`38bccf9077...`, fetches the two historical upstream fixtures, runs the
+`ddf0dd2eba...`, fetches the two historical upstream fixtures, runs the
 combined test suite, runs T25/T26/T60-I/T30/T31, and runs the two source-capable
 T61 negative controls. Patch-kill evidence is kept as a non-overwritable
 90-day artifact. The workflow's exact
@@ -176,7 +189,7 @@ Node 24-uploaded artifact is `source-patch-kill-evidence-30212703620-1`, ID
 
 This is not yet evidence that the bank distribution is deployable:
 
-1. The seven owners are deliberately `UNASSIGNED`/`pending`.
+1. The eight registered owners are deliberately `UNASSIGNED`/`pending`.
 2. The two source-snapshot findings were intentionally excluded from the
    candidate: `.claude/settings.json` broadly auto-approves tools, and
    `docker/development/docker-compose.yml` pins ingestion image `1.9.6`.
@@ -200,10 +213,10 @@ This is not yet evidence that the bank distribution is deployable:
 6. The candidate lock currently binds the source Git tree identity. A complete
    Java/UI build, image/package digest, SBOM, signing, and promotion evidence
    still need to be produced.
-7. The focused Tibero Jest suite passes 13/13, but the product-wide UI
-   typecheck reports 399 diagnostics. Neither changed Tibero path appears in
-   those diagnostics; the broad baseline still must be repaired or
-   independently baselined on the supported Node 22 toolchain.
+7. The focused Tibero Jest suite passes 13/13. The supported Node 22 typecheck
+   confirms the three candidate-introduced diagnostics are fixed, but still
+   reports 396 upstream-identical or unrelated diagnostics. That broad
+   baseline must be repaired or formally baselined before release.
 
 Until those items are closed, the honest release state is **blocked**, not
 pass.

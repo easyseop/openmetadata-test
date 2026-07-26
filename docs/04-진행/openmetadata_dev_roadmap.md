@@ -299,11 +299,11 @@ T93·T42 · T50 · T70 최소.
 
 | 태스크 | 상태 | 산출물 | 검증 |
 |---|---|---|---|
-| T25-R snapshot→vendor 재구성 | ✅ 실제 branch·checkpoint 통과 | `acgh/vendor_rebuild.py` + `shared-path-owners.yaml` + `source-candidate-evidence.yaml` | 13 단위 테스트 + 실제 checkpoint `e1ffc5a1...`. 113경로=67 단독·44 공유·2 제외, target ancestry·snapshot commit 비포함·7 ID/path owner·JSON 의미/기타 content 동일성 통과. Tibero 타입·단위 테스트 후속 보강 candidate는 `38bccf90...`이며 T25/T26/T30/T31 통과 |
+| T25-R snapshot→vendor 재구성 | ✅ 실제 branch·checkpoint 통과 | `acgh/vendor_rebuild.py` + `shared-path-owners.yaml` + `source-candidate-evidence.yaml` | 13 단위 테스트 + 실제 checkpoint `e1ffc5a1...`. 113경로=67 단독·44 공유·2 제외, target ancestry·snapshot commit 비포함·7 ID/path owner·JSON 의미/기타 content 동일성 통과. Tibero 보강 뒤 Node 22 UI 타입 오류 3건을 후보 전용 `BANK-OM-008`로 수정한 current candidate `ddf0dd2e...`는 8개 active ID로 T25/T26/T30/T31 통과 |
 | T26 customization survival | ✅ 구현 | `acgh/survival.py` | 7 테스트. required path 존재·target 대비 순효과·registry/manifest/contract/effective test 생존, stale 객체=analysis_error |
 | T27 merge conflict evidence | ✅ 구현 | `acgh/conflicts.py` + schema | 5 테스트. `ls-files -u -z` stage 1/2/3, 해결 blob/rationale/승인/candidate-lock 결속 |
 | T28 통합전략 라우팅 | ✅ 구현 | `acgh/routing.py` | 4 테스트. vendor/replay gate 분리, 필수 gate 미구성=analysis_error |
-| T29 실제 7개 등록 | ✅ 등록·⚠ 운영미완 | `registrations/kb-openmetadata/` + `acgh/registry.py` + `tests/bank/contracts/` | 5 registry 테스트 + T60-I. 실제 113경로 전수목록, 111경로→7ID·7contract, 2개 비제품 변경 명시 차단. 9 selector 구현 존재 pass, Sybase/Tibero required pass·IME source guard pass·API 4/browser 3 skip. ancestry=false·owner pending·T62 전체 pass 미완 |
+| T29 실제 7개 snapshot + 1개 후보 보강 등록 | ✅ 등록·⚠ 운영미완 | `registrations/kb-openmetadata/` + `acgh/registry.py` + `tests/bank/contracts/` | 5 registry 테스트 + T60-I. 실제 113경로 전수목록, 111경로→7 source ID·7 contract, 2개 비제품 변경 명시 차단. `BANK-OM-008`은 provenance로 원본 재구성에서 제외하지만 현재 후보 생존 검사에는 포함. 9 selector 구현 존재 pass, Sybase/Tibero required pass·IME source guard pass·API 4/browser 3 skip. owner pending·T62 전체 pass 미완 |
 | T25 vendor ancestry gate | ✅ 완료 | `acgh/ancestry.py` + `gitprim.py` | 6 테스트. base/target 공통 조상, locked base·approved target의 candidate 포함 검증, topology 위반=block, 객체 누락·stale tree·모드 오라우팅=analysis_error |
 | T24 integration strategy·candidate-lock | ✅ 완료 | `acgh/candidate.py` + `schema/candidate-lock.schema.json` + `binding.py` | 9 테스트. 기본 `vendor-merge`, patch-replay lock 필수화, base/target/candidate commit·tree·artifact digest 고정, 결과 입력 결속·stale 무효화 |
 | T05 path-ownership·glob 정본 | ✅ 완료 | `policies/repository-layout.yaml` + **운영층** `acgh/layout.py` | 실제 OM 모듈 루트로 검증, `upstream_base_sha` 결속, 모든 게이트 공용 문법(부칙 A-3.1), pathspec factory=`gitignore` 고정 |

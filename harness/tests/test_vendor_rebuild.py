@@ -399,10 +399,20 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
     assert follow_ups
     assert evidence["candidate"]["commit_sha"] == follow_ups[-1]["sha"]
     assert all(
-        item["customization_id"] in plan.active_ids
+        item["customization_id"] in registry.active_ids()
         and item["touched_paths"] > 0
         for item in follow_ups
     )
+    candidate_only = {
+        entry.customization_id
+        for entry in registry.entries
+        if entry.provenance == "candidate-follow-up"
+    }
+    assert {
+        item["customization_id"]
+        for item in follow_ups
+        if item["customization_id"] not in plan.active_ids
+    } == candidate_only
     gates = evidence["gates"]
     assert (
         gates["t25_r_vendor_reconstructed_candidate"]["candidate"]
@@ -534,5 +544,19 @@ def test_real_source_candidate_evidence_closes_the_registered_series():
         runtime_patch_kill["local_no_runtime_validation"].values()
     ) == {V.ANALYSIS_ERROR}
     assert product["ui_typecheck"]["verdict"] == "fail"
-    assert product["ui_typecheck"]["error_lines"] > 0
-    assert product["ui_typecheck"]["changed_path_error_lines"] == 0
+    assert product["ui_typecheck"]["error_lines_before_candidate_fix"] == 399
+    assert product["ui_typecheck"]["error_lines_after_candidate_fix"] == 396
+    assert (
+        product["ui_typecheck"]["candidate_introduced_error_lines_after_fix"]
+        == 0
+    )
+    assert (
+        product["ui_typecheck"]["remaining_error_lines_in_candidate_changed_files"]
+        == 16
+    )
+    assert (
+        product["ui_typecheck"][
+            "remaining_changed_file_errors_match_upstream_source"
+        ]
+        is True
+    )

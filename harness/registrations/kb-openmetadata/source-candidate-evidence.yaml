@@ -1,6 +1,6 @@
 schema_version: 1
-generated_at: "2026-07-27T02:58:20+09:00"
-governance_evidence_commit: 1956b7880506674e37ad2428248a9fc69817dbc2
+generated_at: "2026-07-27T03:21:43+09:00"
+governance_evidence_commit: 5823eda35da4b0242aa59c00d6e19802c4a10afc
 repository: easyseop/OpenMetadata
 branch: codex/bank-vendor-1.13.1-rebuild
 upstream:
@@ -11,10 +11,10 @@ source_snapshot:
   repository: kangdkdk/kb_openmetadata
   sha: 2c2347043235aa2a4ecba4729774c770fcee5d67
 candidate:
-  commit_sha: 38bccf90779a8afe4a4f0e9313e11706f6d940d4
-  tree_sha: 3bfaf8b982c967af764cfbfdfe318b54f4ae9f28
-  source_tree_digest: sha256:d7efa79efcc700bf05aa8d54070c551954ae2b4a29aac40fb9df5c94a71bd907
-  candidate_lock_digest: sha256:9f2e3760b7b1ab44fa24fe8872c74b4003dcf29dbdc7282e403f2595b7ebeacd
+  commit_sha: ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d
+  tree_sha: efc8d61b968fba51c8b0532e99473c4f5558a2b1
+  source_tree_digest: sha256:f9523ed7cd865f785986ec24317c4c7dd7c1302d10236578e2baa8923a1dff67
+  candidate_lock_digest: sha256:4fa05d1d54334a4417e744fb641fbb346b34b3a3669c1f32ad1ddb0e8d7616a4
   note: source_tree_digest binds the Git tree identity; no binary or image release artifact has been built yet
 reconstruction:
   checkpoint_sha: e1ffc5a1eb270c3225736544bb309a0c85af6d2c
@@ -59,6 +59,11 @@ reconstruction:
       touched_paths: 2
       title: complete Tibero service connection coverage
       reason: add the missing generated ConfigType member and pin the Tibero UI schema mapping with a unit test
+    - customization_id: BANK-OM-008
+      sha: ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d
+      touched_paths: 2
+      title: fix bank explore UI type contracts
+      reason: supply required list-page titles and extend ExploreSearchIndex for the two bank search indices without rewriting the seven source-snapshot commits
 gates:
   t25_r_vendor_reconstructed_candidate:
     verdict: pass
@@ -67,15 +72,15 @@ gates:
     excluded_paths: 2
   t25_vendor_ancestry:
     verdict: pass
-    candidate: 38bccf90779a8afe4a4f0e9313e11706f6d940d4
+    candidate: ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d
     approved_target: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
   t26_customization_survival:
     verdict: pass
-    candidate: 38bccf90779a8afe4a4f0e9313e11706f6d940d4
-    active_ids: 7
-    required_paths: 10
-    contracts: 7
-    effective_test_ids: 9
+    candidate: ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d
+    active_ids: 8
+    required_paths: 12
+    contracts: 9
+    effective_test_ids: 11
   t60_i_required_test_implementations:
     verdict: pass
     implemented_required_tests: 9
@@ -84,6 +89,7 @@ gates:
     scope: source-capable-high-critical
     implementation_commit: a2cbb5221f50c10d11af26618d1d310ec8a73552
     infra_error_follow_up_commit: 7a2fb5f12af758805cc21abaabb4cb29f1f82dcb
+    candidate_rebind_commit: 5823eda35da4b0242aa59c00d6e19802c4a10afc
     evidence: source-patch-kill-evidence.yaml
     proven:
       - BANK-OM-006
@@ -95,10 +101,10 @@ gates:
     note: This scoped pass does not mean the complete high-critical T61 gate has passed.
   t30_commit_invariants:
     verdict: pass
-    candidate: 38bccf90779a8afe4a4f0e9313e11706f6d940d4
+    candidate: ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d
   t31_id_invariants:
     verdict: pass
-    candidate: 38bccf90779a8afe4a4f0e9313e11706f6d940d4
+    candidate: ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d
 product_verification:
   source_candidate_ci:
     workflow: .github/workflows/source-candidate.yml
@@ -195,9 +201,10 @@ product_verification:
         expires_at: "2026-10-24T17:48:17Z"
       url: https://github.com/easyseop/openmetadata-test/actions/runs/30213348947
   environment:
-    node: 24.15.0
+    node: 22.17.0
     yarn: 1.22.22
-    note: one dependency declares support only through Node 22, so installation used --ignore-engines
+    node_archive_sha256: cc9cc294eaf782dd93c8c51f460da610cc35753c6a9947411731524d16e97914
+    note: official darwin-arm64 Node archive matched the published checksum and satisfies the product .nvmrc without --ignore-engines
   prettier:
     verdict: pass
     checked_paths: 2
@@ -244,7 +251,7 @@ product_verification:
     local_no_runtime_simulation:
       simulation_only: true
       artifact_note: source tree identity used only to exercise the runner; this is not deployed artifact evidence
-      candidate_sha: 38bccf90779a8afe4a4f0e9313e11706f6d940d4
+      candidate_sha: ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d
       passed: 2
       skipped: 7
       verdict: block
@@ -299,8 +306,12 @@ product_verification:
   ui_typecheck:
     verdict: fail
     command: NODE_OPTIONS=--max-old-space-size=6144 yarn tsc:check
-    error_lines: 399
-    changed_path_error_lines: 0
+    runtime: Node 22.17.0 and Yarn 1.22.22
+    error_lines_before_candidate_fix: 399
+    error_lines_after_candidate_fix: 396
+    candidate_introduced_error_lines_after_fix: 0
+    remaining_error_lines_in_candidate_changed_files: 16
+    remaining_changed_file_errors_match_upstream_source: true
   ui_core_build:
     command_exit: 0
     declaration_diagnostics: 2
@@ -313,7 +324,7 @@ limitations:
   - The Korean IME source guard passes separately; three required Playwright selectors skip without authenticated page URLs and storage state.
   - The T62 runtime workflow and fail-closed producer are implemented, and the workflow retains its evidence artifact for 90 days, but no real runtime run or organization-owned long-term archive exists yet.
   - The source candidate is not a release artifact; image/package build, SBOM, signing, and promotion gates remain.
-  - The focused Tibero Jest suite passes, but the product-wide UI typecheck still fails with 399 pre-existing or unrelated diagnostics; Java and full UI suites remain unverified.
-  - The focused UI run used Node 24 with --ignore-engines because the available environment did not include the package-supported Node 22 runtime.
+  - The focused Tibero Jest suite passes, but the product-wide Node 22 UI typecheck still fails with 396 upstream-identical or unrelated diagnostics; all three candidate-introduced diagnostics were removed, while Java and the full UI test suite remain unverified.
+  - The official Node 22.17.0 runtime now matches the product .nvmrc; the earlier Node 24 --ignore-engines workaround is no longer used for the recorded typecheck.
   - The Node 24 action-pin workflow passed remotely; four live runtime contracts remain skipped because no deployed OpenMetadata URL is attached to the source-only job.
   - The runtime patch-kill workflow is implemented, but no separately built and deployed predecessor artifact has been executed through it.

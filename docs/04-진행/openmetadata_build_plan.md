@@ -105,8 +105,10 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
   `codex/bank-vendor-1.13.1-rebuild`에서 7개 논리 ID commit을 생성했다.
   reconstruction checkpoint `e1ffc5a1...`은 T25-R을 통과했다. 정적 검토에서
   발견한 Tibero 공통 connection `ConfigType`·단위 테스트 누락을 연속
-  `BANK-OM-007` commit으로 보강한 현재 candidate `38bccf90...`은
-  T25/T26/T30/T31을 통과했다.
+  `BANK-OM-007` commit으로 보강했다. 이어 지원 Node 22 typecheck가 발견한
+  은행 목록 route 제목 2건과 Explore search index 타입 1건을
+  candidate-follow-up `BANK-OM-008`로 수정했다. 현재 candidate
+  `ddf0dd2e...`은 8개 active ID로 T25/T26/T30/T31을 통과했다.
 - **T26 · customization survival gate (✅ 구현·단위검증 완료)** — ID별 required state·path·contract가
   merge candidate에 남아 있는지 검증.
 - **T27 · merge conflict evidence (✅ 구현·단위검증 완료)** — 충돌 파일·해결 결정·승인자를 구조화 기록.
@@ -121,7 +123,10 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
   T62 실행 증거는 남아 있다. 전체
   113개 diff 중 111개는 7개 manifest에 귀속했고, `.claude/settings.json`의
   자동승인 확대와 Docker Compose의 ingestion `1.9.6` 고정은 별도 blocking
-  finding으로 등록했다.
+  finding으로 등록했다. 원본 재구성 후 필요한 공통 UI 타입 보강은
+  `provenance: candidate-follow-up`인 `BANK-OM-008`로 따로 등록한다.
+  T25-R은 여전히 원본 7개만 재구성하고, T26/T30/T31은 현재 8개 ID 후보를
+  검사한다.
 
 ### MVP 2단계 (2차 검토 B-5 수용)
 

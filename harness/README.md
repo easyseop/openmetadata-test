@@ -4,7 +4,8 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 
 > **통합 전략:** 기본 운영은 vendor merge이며, 현재 구현된
 > `patchlock`·`reapply`·`resolve`·`replay`는 선택 patch-replay 모드다.
-> T24~T29 candidate/ancestry/survival/conflict/routing과 실제 7개 등록부까지
+> T24~T29 candidate/ancestry/survival/conflict/routing과 실제 7개 snapshot
+> 기능 + 1개 candidate-follow-up 등록부까지
 > 구현됐고 T25-R은 ancestry 없는 snapshot의 안전한 재구성 계획과 candidate를
 > 검증한다. 실제 7-ID vendor branch와 T62 runtime 실행 경계까지 구현했지만
 > 운영 contract 전체 pass와 release artifact 생성 전에는 release pass가 아니다.
@@ -36,7 +37,7 @@ Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
 | `candidate.py` | 통합 전략·candidate-lock·결과 입력 결속 | 11 / A2·A3 |
 | `ancestry.py` | vendor 공통 이력·승인 target 포함 검증 | 1 / A2 |
 | `vendor_rebuild.py` | root snapshot 재구성 계획·공유 hunk 소유·candidate 검증 | 1 / A1·A2 |
-| `survival.py`·`registry.py` | active ID 생존·실제 7개 등록 그래프 | 1·14·15 / A1·A2 |
+| `survival.py`·`registry.py` | active ID 생존·7개 snapshot + candidate-follow-up 등록 그래프 | 1·14·15 / A1·A2 |
 | `contracts.py` | contract 결속·required selector 파일/함수 구현 존재 | 14·15 / A6 |
 | `conflicts.py`·`routing.py` | merge 해결 증거·vendor/replay 명시 라우팅 | 1 / A2 |
 | `gitprim.py` | git 프리미티브(trailer·-z·tree) | — |
@@ -107,7 +108,13 @@ registered JSON의 최종 의미 값과 나머지 파일 내용은 snapshot과 �
 - product branch:
   `easyseop/OpenMetadata:codex/bank-vendor-1.13.1-rebuild`
 - reconstruction checkpoint: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
-- current candidate: `38bccf90779a8afe4a4f0e9313e11706f6d940d4`
+- current candidate: `ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d`
+
+`RegistryEntry.provenance`는 원본 snapshot에서 재구성한 ID와 그 뒤 후보에서
+추가한 안전 보강을 구분한다. `source-snapshot` 7개만 T25-R 재구성 계획에
+들어가고, `candidate-follow-up`인 `BANK-OM-008`도 T26/T30/T31과 runtime
+candidate lock에는 포함된다. 따라서 후속 수정을 과거 snapshot에 있었다고
+왜곡하지 않으면서 현재 후보의 필수 상태는 계속 fail-closed로 검사한다.
 
 ## T61 source patch-kill
 
@@ -187,7 +194,7 @@ GitHub workflow는 결과가 pass·block·approval·analysis_error 중 무엇이
 harness/
   acgh/            # 구현 모듈(위 표)
     schema/        # 모든 입력·결과·attestation·release/transfer JSON Schema
-  registrations/   # 실제 kb_openmetadata 7개 manifest·contract·registry
+  registrations/   # 실제 7개 snapshot + 1개 candidate-follow-up manifest·contract·registry
   policies/        # repository-layout.yaml · sensitive-zones.yaml
   fixtures/        # fetch_upstream.sh · upstream-lock.yaml
   tests/           # 모듈별 테스트(conftest.py가 실제 미러 제공)

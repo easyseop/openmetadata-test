@@ -22,7 +22,8 @@
 모드**로 유지한다. 이 결정의 정본은
 [`ADR-001`](docs/02-설계/ADR-001-vendor-merge-default.md)이다.
 
-> 현재 상태: T24~T29와 실제 7개 등록부, T25-R snapshot 재구성 검증기,
+> 현재 상태: T24~T29와 7개 source-snapshot 기능 + 1개 candidate-follow-up
+> 등록부, T25-R snapshot 재구성 검증기,
 > Docker-free 운영 게이트를 구현했다. 공식 `1.13.1-release`에서 시작한 실제
 > 7-ID vendor candidate도 `easyseop/OpenMetadata`에 만들었고 T25-R/T25/T26/
 > T60-I/T30/T31이 통과했다. 7개 업무 계약의 필수 selector 9개는 모두 실제 구현됐고
@@ -30,6 +31,9 @@
 > API 4개와 실제 브라우저 3개는 아직 skip이다. 별도 T62 runtime workflow와
 > 원자적 candidate-bound 결과 생성기는 구현했고, 생성된 증거 3종은 실행 결과와
 > 관계없이 덮어쓰기 불가 GitHub artifact로 90일 보존한다. 실제 운영 실행은 없다.
+> 지원 Node 22 typecheck에서 후보가 만든 오류 3건을 찾아 제품 commit
+> `ddf0dd2e...`로 모두 수정했고, 현재 candidate의 T25/T26/T30/T31도 다시
+> 통과했다. 남은 396개 UI 진단은 upstream-identical 또는 unrelated 기준선이다.
 > T61은 Sybase/Tibero 패치가 없는 고정 소스에서 두 계약이 실제 실패함을
 > 입증했지만, 배포된 제거본이 필요한 high ID 3개는 아직 미실행이다.
 > 실제 업그레이드 실행과 release artifact도 없으므로 현재 production release는
