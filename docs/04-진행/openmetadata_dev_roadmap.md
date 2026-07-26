@@ -302,11 +302,11 @@ T93·T42 · T50 · T70 최소.
 
 | 태스크 | 상태 | 산출물 | 검증 |
 |---|---|---|---|
-| T25-R snapshot→vendor 재구성 | ✅ 실제 branch·checkpoint 통과 | `acgh/vendor_rebuild.py` + `shared-path-owners.yaml` + `source-candidate-evidence.yaml` | 13 단위 테스트 + 실제 checkpoint `e1ffc5a1...`. 113경로=67 단독·44 공유·2 제외, target ancestry·snapshot commit 비포함·7 ID/path owner·JSON 의미/기타 content 동일성 통과. 후보 전용 `BANK-OM-008`이 Node 22 신규 오류 3건을 제거하고 `BANK-OM-009`가 공통 검색 타입을 보강한 current candidate `70d028a0...`는 9개 active ID로 T25/T26/T30/T31 통과 |
+| T25-R snapshot→vendor 재구성 | ✅ 실제 branch·checkpoint 통과 | `acgh/vendor_rebuild.py` + `shared-path-owners.yaml` + `source-candidate-evidence.yaml` | 13 단위 테스트 + 실제 checkpoint `e1ffc5a1...`. 113경로=67 단독·44 공유·2 제외, target ancestry·snapshot commit 비포함·7 ID/path owner·JSON 의미/기타 content 동일성 통과. 후보 전용 `BANK-OM-008/009/010`이 UI 타입·검색 결과·알림 ID fallback을 보강한 current candidate `b80d24d8...`는 10개 active ID로 T25/T26/T30/T31 통과 |
 | T26 customization survival | ✅ 구현 | `acgh/survival.py` | 7 테스트. required path 존재·target 대비 순효과·registry/manifest/contract/effective test 생존, stale 객체=analysis_error |
 | T27 merge conflict evidence | ✅ 구현 | `acgh/conflicts.py` + schema | 5 테스트. `ls-files -u -z` stage 1/2/3, 해결 blob/rationale/승인/candidate-lock 결속 |
 | T28 통합전략 라우팅 | ✅ 구현 | `acgh/routing.py` | 4 테스트. vendor/replay gate 분리, 필수 gate 미구성=analysis_error |
-| T29 실제 7개 snapshot + 2개 후보 보강 등록 | ✅ 등록·⚠ 운영미완 | `registrations/kb-openmetadata/` + `acgh/registry.py` + `tests/bank/contracts/` | 5 registry 테스트 + T60-I. 실제 113경로 전수목록, 111경로→7 source ID·7 contract, 2개 비제품 변경 명시 차단. `BANK-OM-008/009`는 provenance로 원본 재구성에서 제외하지만 현재 후보 생존 검사에는 포함. 9 selector 구현 존재 pass, Sybase/Tibero required pass·IME source guard pass·API 4/browser 3 skip. owner pending·T62 전체 pass 미완 |
+| T29 실제 7개 snapshot + 3개 후보 보강 등록 | ✅ 등록·⚠ 운영미완 | `registrations/kb-openmetadata/` + `acgh/registry.py` + `tests/bank/contracts/` | 5 registry 테스트 + T60-I. 실제 113경로 전수목록, 111경로→7 source ID·7 contract, 2개 비제품 변경 명시 차단. `BANK-OM-008/009/010`은 provenance로 원본 재구성에서 제외하지만 현재 후보 생존 검사에는 포함. 9 selector 구현 존재 pass, Sybase/Tibero required pass·IME source guard pass·API 4/browser 3 skip. owner pending·T62 전체 pass 미완 |
 | T25 vendor ancestry gate | ✅ 완료 | `acgh/ancestry.py` + `gitprim.py` | 6 테스트. base/target 공통 조상, locked base·approved target의 candidate 포함 검증, topology 위반=block, 객체 누락·stale tree·모드 오라우팅=analysis_error |
 | T24 integration strategy·candidate-lock | ✅ 완료 | `acgh/candidate.py` + `schema/candidate-lock.schema.json` + `binding.py` | 9 테스트. 기본 `vendor-merge`, patch-replay lock 필수화, base/target/candidate commit·tree·artifact digest 고정, 결과 입력 결속·stale 무효화 |
 | T05 path-ownership·glob 정본 | ✅ 완료 | `policies/repository-layout.yaml` + **운영층** `acgh/layout.py` | 실제 OM 모듈 루트로 검증, `upstream_base_sha` 결속, 모든 게이트 공용 문법(부칙 A-3.1), pathspec factory=`gitignore` 고정 |
@@ -336,7 +336,7 @@ T93·T42 · T50 · T70 최소.
 | T50 선언형 verifier | ✅ 완료 | `acgh/verifier.py` | 10 테스트. JSON Pointer·file_hash·module_present(비실행), 실행형 거부, `..` 경로이탈 차단(P0-8) |
 | T61 patch-kill | 🟡 source 2/5 증거·runtime 3/5 검사기 구현 | `acgh/patchkill.py` + source/runtime plan·runner·workflow | Sybase/Tibero 고정 predecessor에서 실제 failure 입증. InstanceCode/QueryReport/Data Assertions는 별도 승인 workflow, 전후 health probe, target 2회 실패, source/tree/artifact/deployment/suite 결속, 90일 증거 보존까지 구현. 제거본 빌드·배포·운영 실행은 필요 |
 | T62 test-result 결속·runtime 실행 | ✅ 구현·⚠ 운영미실행 | `acgh/testruns.py` + `acgh/pytest_runs.py` + schema + `runtime-contracts.yml` | selector별 격리 pytest/JUnit, atomic run-set/result, SHA/artifact/governance/suite 결속, 실제 exit 대조. Data Assertions·bank column도 API와 실제 화면을 함께 확인. 결과 3종을 overwrite 불가 artifact로 90일 보존. 로컬 무환경 시뮬레이션 `2 pass·7 skip→block`, exit 위조→analysis_error |
-| T63 UI typecheck 기준선 delta | ✅ 검사기·실증거·⚠ approval | `acgh/tsc_baseline.py` + CLI + evidence | 공식 1.13.1은 396 diagnostics·141 files, 후보는 357·135 files. 신규 path/code 0·제거 39, 메시지 변형 신규 5·제거 44. 비영 기준선은 pass가 아니라 approval; 메시지 의미는 full-log review 필요 |
+| T63 UI typecheck 기준선 delta | ✅ 검사기·실증거·⚠ approval | `acgh/tsc_baseline.py` + CLI + evidence | 공식 1.13.1은 396 diagnostics·141 files, 후보는 356·135 files. 신규 path/code 0·제거 40, 메시지 변형 신규 4·제거 44. 비영 기준선은 pass가 아니라 approval; 메시지 의미는 full-log review 필요 |
 | T71 fast lane | ✅ 구현 | `acgh/fastlane.py` | 5 테스트. 유형별 최소 gate, mixed=합집합, core=전체 전략 route |
 | T72 break-glass | ✅ 구현 | `acgh/breakglass.py` + schema | 8 테스트. 2인·만료·scope·사후검증·통계·timezone, 무결성 gate 비면제, verdict 불변 |
 | T80/T81 Impact Memo | ✅ 구현 | `acgh/impact_memo.py` + schema | 7 테스트. 사실/추론/미확인·근거·snapshot, verdict/command 금지, 품질지표 |
@@ -347,7 +347,7 @@ T93·T42 · T50 · T70 최소.
 
 > **게이트 엔진 구현 현황:** 현재 통합 테스트는 323개이며, 고정 mirror를
 > 연결한 CI-equivalent 실행에서 316개 통과·API 4개와 browser 3개 skip이다.
-> 7-ID snapshot 재구성과 2개 candidate-follow-up을 합친 현재 9-ID candidate,
+> 7-ID snapshot 재구성과 3개 candidate-follow-up을 합친 현재 10-ID candidate,
 > T60-I 9/9 구현 존재까지 완료했지만 contract 전체의
 > candidate-bound T62 결과와 T90 운영 증거가 생기기 전에는
 > **MVP2 달성 또는 배포 가능**으로 표현하지 않는다.

@@ -5,7 +5,7 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 > **통합 전략:** 기본 운영은 vendor merge이며, 현재 구현된
 > `patchlock`·`reapply`·`resolve`·`replay`는 선택 patch-replay 모드다.
 > T24~T29 candidate/ancestry/survival/conflict/routing과 실제 7개 snapshot
-> 기능 + 2개 candidate-follow-up 등록부까지
+> 기능 + 3개 candidate-follow-up 등록부까지
 > 구현됐고 T25-R은 ancestry 없는 snapshot의 안전한 재구성 계획과 candidate를
 > 검증한다. 실제 7-ID vendor branch와 T62 runtime 실행 경계까지 구현했지만
 > 운영 contract 전체 pass와 release artifact 생성 전에는 release pass가 아니다.
@@ -109,11 +109,12 @@ registered JSON의 최종 의미 값과 나머지 파일 내용은 snapshot과 �
 - product branch:
   `easyseop/OpenMetadata:codex/bank-vendor-1.13.1-rebuild`
 - reconstruction checkpoint: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
-- current candidate: `70d028a035bb1edb8af5a11f06c4c7dff4cd979b`
+- current candidate: `b80d24d83124435733d5af05d56515b3a855330e`
 
 `RegistryEntry.provenance`는 원본 snapshot에서 재구성한 ID와 그 뒤 후보에서
 추가한 안전 보강을 구분한다. `source-snapshot` 7개만 T25-R 재구성 계획에
-들어가고, `candidate-follow-up`인 `BANK-OM-008`·`BANK-OM-009`도
+들어가고, `candidate-follow-up`인 `BANK-OM-008`·`BANK-OM-009`·
+`BANK-OM-010`도
 T26/T30/T31과 runtime
 candidate lock에는 포함된다. 따라서 후속 수정을 과거 snapshot에 있었다고
 왜곡하지 않으면서 현재 후보의 필수 상태는 계속 fail-closed로 검사한다.
@@ -202,8 +203,8 @@ python harness/registrations/kb-openmetadata/compare_ui_typecheck.py \
 후보에 신규 진단이 있으면 `block`, 로그 형식이나 exit가 모순이면
 `analysis_error`, 둘 다 깨끗하면 `pass`다. 공식 원본과 후보가 같은 비영
 기준선을 가지면 `approval`이다. 현재 Node 22 증거는 upstream 396건·141파일,
-candidate 357건·135파일, 신규 path/code 0건·제거 39건이다. 메시지 multiset도
-별도 fingerprint해 신규 변형 5건·제거 변형 44건을 review 대상으로 남겼으며
+candidate 356건·135파일, 신규 path/code 0건·제거 40건이다. 메시지 multiset도
+별도 fingerprint해 신규 변형 4건·제거 변형 44건을 review 대상으로 남겼으며
 `ui-typecheck-baseline-evidence.yaml`에 고정했다. 메시지 내용만 같은
 경로·코드 안에서 바뀌는 경우도 이제 탐지하지만, TypeScript가 같은 union을
 다르게 출력할 수 있어 자동 block 대신 approval 근거로 남긴다. full log review
@@ -221,7 +222,7 @@ GitHub workflow는 결과가 pass·block·approval·analysis_error 중 무엇이
 harness/
   acgh/            # 구현 모듈(위 표)
     schema/        # 모든 입력·결과·attestation·release/transfer JSON Schema
-  registrations/   # 실제 7개 snapshot + 2개 candidate-follow-up manifest·contract·registry
+  registrations/   # 실제 7개 snapshot + 3개 candidate-follow-up manifest·contract·registry
   policies/        # repository-layout.yaml · sensitive-zones.yaml
   fixtures/        # fetch_upstream.sh · upstream-lock.yaml
   tests/           # 모듈별 테스트(conftest.py가 실제 미러 제공)
