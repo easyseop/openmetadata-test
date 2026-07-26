@@ -2,9 +2,11 @@
 
 > Updated: 2026-07-27
 > Branch: `claude/markdown-file-feedback-26933w`
-> Last verified implementation commit: `39294bf`
+> Last verified implementation commit: `4353f45`
 > UI typecheck baseline delta gate commit: `39294bf`
-> Product UI hardening commit: `ddf0dd2`
+> Product UI hardening commits: `ddf0dd2`, `70d028a`
+> BANK-OM-009 governance registration commit: `4353f45`
+> BANK-OM-009 evidence rebind commit: `89763f3`
 > Rendered UI runtime-contract expansion commit: `093724f`
 > Runtime patch-kill gate implementation commit: `1956b78`
 > Nondeveloper guide and handoff implementation commit: `0f0904b`
@@ -37,6 +39,8 @@ customizations (`BANK-OM-001` through `BANK-OM-007`) against the official
 OpenMetadata `1.13.1-release` commit. A separately identified
 candidate-follow-up, `BANK-OM-008`, records the UI type hardening added after
 the snapshot reconstruction without pretending it existed in that snapshot.
+A second candidate-follow-up, `BANK-OM-009`, closes the shared search result
+type mapping gap exposed by that integration.
 
 T25-R now supplies the snapshot-to-vendor reconstruction planner and candidate
 gate. The 113 pinned source paths deterministically classify as 67
@@ -47,10 +51,10 @@ The actual vendor branch is now built and pushed:
 - repository: `easyseop/OpenMetadata`
 - branch: `codex/bank-vendor-1.13.1-rebuild`
 - reconstruction checkpoint: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
-- current candidate: `ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d`
+- current candidate: `70d028a035bb1edb8af5a11f06c4c7dff4cd979b`
 - official parent: `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9`
 - seven reconstruction commits, one consecutive `BANK-OM-007` follow-up, and
-  one registered `BANK-OM-008` candidate-hardening commit
+  two registered candidate-hardening commits (`BANK-OM-008`, `BANK-OM-009`)
 
 T25-R passes on the exact reconstruction checkpoint. T25 ancestry, T26
 survival, T30 commit invariants, and T31 ID invariants pass on the current
@@ -73,19 +77,26 @@ diagnostic count fell from 399 to 396, and no candidate-introduced diagnostic
 remains. The remaining 16 diagnostics that happen to be in candidate-changed
 files are on source lines identical to official upstream 1.13.1.
 
-The full official `1.13.1-release` tree was then generated and typechecked with
+Full-log comparison then exposed an older OpenMetadata gap that became visible
+after adding the two bank indices: `SearchIndex.METADATA_SERVICE` existed in
+the enum but not in `SearchIndexSearchSourceMapping`. Product commit
+`70d028a035` adds the generated metadata-service search type, completes the
+common union, and narrows Curated Assets state to the `DATA_ASSET` result type.
+Its focused Jest suite passes 18/18 and the same full typecheck falls again
+from 396 to 357 diagnostics.
+
+The full official `1.13.1-release` tree was generated and typechecked with
 the same Node 22.17.0, Yarn 1.22.22, dependency tree, and command. It also
-produced 396 diagnostics across 141 files. The upstream and candidate
-path-plus-TypeScript-code multisets have the same
-`sha256:a4158616...e342fe8` fingerprint, with zero additions or removals. The
-new T63 comparator therefore returns **approval**, never pass, for this
-non-zero baseline; same-path/same-code message substitution still requires
-human log review or a clean repair.
+produced 396 diagnostics across 141 files. Candidate `70d028a` has 357
+diagnostics across 135 files: zero new path/code diagnostics and 39 removed.
+T63 also fingerprints messages and reports five new and 44 removed message
+variants for review. It therefore returns **approval**, never pass, for this
+non-zero baseline.
 
 ## Verification
 
 ```text
-315 passed, 7 skipped in 31.13s
+316 passed, 7 skipped in 40.04s
 ```
 
 This CI-equivalent local run used the two fixed historical mirror refs, so the
@@ -98,7 +109,7 @@ tests against fixed predecessor commits that do not contain the corresponding
 connector patch. Both tests fail as required, so their scoped patch-kill
 verdict is pass. The machine result is
 `harness/registrations/kb-openmetadata/source-patch-kill-evidence.yaml`, bound
-to candidate `ddf0dd2e...`, governance rebind `5823eda...`, the plan
+to candidate `70d028a0...`, governance rebind `4353f45...`, the plan
 digest, both predecessor SHAs, and both exact selectors. This is a
 **source-capable 2/5 high-ID result**, not complete T61: InstanceCode,
 QueryReport, and Data Assertions still require deployed counterfactual stacks.
@@ -117,11 +128,11 @@ Actual source-candidate gates:
 
 ```text
 T25-R vendor-reconstructed-candidate  pass (checkpoint e1ffc5a1...)
-T25   vendor-ancestry                 pass (candidate ddf0dd2e...)
-T26   customization-survival          pass (candidate ddf0dd2e...; 8 IDs, 12 required paths)
+T25   vendor-ancestry                 pass (candidate 70d028a0...)
+T26   customization-survival          pass (candidate 70d028a0...; 9 IDs, 14 required paths)
 T60-I required-test-implementations   pass (9/9 selectors resolve)
-T30   commit-invariants               pass (candidate ddf0dd2e...)
-T31   id-invariants                   pass (candidate ddf0dd2e...)
+T30   commit-invariants               pass (candidate 70d028a0...)
+T31   id-invariants                   pass (candidate 70d028a0...)
 ```
 
 Focused product verification:
@@ -129,9 +140,10 @@ Focused product verification:
 ```text
 Prettier (2 changed paths)             pass
 DatabaseServiceUtils.test.tsx          pass (13/13; Tibero case pass)
+CuratedAssetsWidget.test.tsx           pass (18/18; pre-existing act warnings remain)
 bank contract source suite             3 passed (Sybase, Tibero, IME source guard)
 required operational selectors         2 passed, 7 skipped (4 API, 3 browser)
-UI tsc --noEmit (Node 22.17.0)          approval (upstream 396 = candidate 396; new 0; non-zero baseline)
+UI tsc --noEmit (Node 22.17.0)          approval (upstream 396 > candidate 357; new 0, removed 39)
 UI core Vite build                     exit 0 (2 declaration diagnostics on unchanged upstream paths)
 ```
 
@@ -156,16 +168,17 @@ T63 is implemented in `harness/acgh/tsc_baseline.py` with a registration CLI
 and machine evidence. It counts a multiset rather than a set so duplicate
 diagnostics cannot disappear silently, rejects malformed paths and unexpected
 process exits as `analysis_error`, blocks any new candidate diagnostic, and
-keeps an unchanged non-zero baseline at `approval`.
+keeps a non-zero baseline at `approval`. A second message multiset now exposes
+same-path/code message substitutions instead of allowing them to remain hidden.
 
 Source-candidate CI is defined in `.github/workflows/source-candidate.yml`.
 It pins all third-party actions by 40-hex SHA, pins product commit
-`ddf0dd2eba...`, fetches the two historical upstream fixtures, runs the
+`70d028a035...`, fetches the two historical upstream fixtures, runs the
 combined test suite, runs T25/T26/T60-I/T30/T31, and runs the two source-capable
 T61 negative controls. Patch-kill evidence is kept as a non-overwritable
 90-day artifact. The workflow's exact
 product fetch, test, and gate commands pass in a clean
-local simulation (`315 passed, 7 operational skips`; five source gates and two
+local simulation (`316 passed, 7 operational skips`; five source gates and two
 source patch-kill experiments pass).
 Historical remote
 run `30160752510` also passed. GitHub emitted a Node 20 action deprecation
@@ -221,7 +234,7 @@ digest `sha256:231137d0...4c110b`, and expires
 
 This is not yet evidence that the bank distribution is deployable:
 
-1. The eight registered owners are deliberately `UNASSIGNED`/`pending`.
+1. The nine registered owners are deliberately `UNASSIGNED`/`pending`.
 2. The two source-snapshot findings were intentionally excluded from the
    candidate: `.claude/settings.json` broadly auto-approves tools, and
    `docker/development/docker-compose.yml` pins ingestion image `1.9.6`.
@@ -245,10 +258,12 @@ This is not yet evidence that the bank distribution is deployable:
 6. The candidate lock currently binds the source Git tree identity. A complete
    Java/UI build, image/package digest, SBOM, signing, and promotion evidence
    still need to be produced.
-7. The focused Tibero Jest suite passes 13/13. The supported Node 22 typecheck
+7. The focused Tibero and Curated Assets Jest suites pass 13/13 and 18/18.
+   The supported Node 22 typecheck
    confirms the three candidate-introduced diagnostics are fixed. Official
-   upstream and candidate both report 396 diagnostics in 141 files with the
-   same path/code multiset, so T63 reports `approval`, not `pass`. The broad
+   upstream reports 396 diagnostics while candidate reports 357; T63 finds
+   no new path/code diagnostic and 39 removals, plus five changed message
+   variants for review. It still reports `approval`, not `pass`. The broad
    baseline must be repaired or approved after full-log review before release.
 
 Until those items are closed, the honest release state is **blocked**, not

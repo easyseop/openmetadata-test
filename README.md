@@ -22,7 +22,7 @@
 모드**로 유지한다. 이 결정의 정본은
 [`ADR-001`](docs/02-설계/ADR-001-vendor-merge-default.md)이다.
 
-> 현재 상태: T24~T29와 7개 source-snapshot 기능 + 1개 candidate-follow-up
+> 현재 상태: T24~T29와 7개 source-snapshot 기능 + 2개 candidate-follow-up
 > 등록부, T25-R snapshot 재구성 검증기,
 > Docker-free 운영 게이트를 구현했다. 공식 `1.13.1-release`에서 시작한 실제
 > 7-ID vendor candidate도 `easyseop/OpenMetadata`에 만들었고 T25-R/T25/T26/
@@ -32,10 +32,12 @@
 > 원자적 candidate-bound 결과 생성기는 구현했고, 생성된 증거 3종은 실행 결과와
 > 관계없이 덮어쓰기 불가 GitHub artifact로 90일 보존한다. 실제 운영 실행은 없다.
 > 지원 Node 22 typecheck에서 후보가 만든 오류 3건을 찾아 제품 commit
-> `ddf0dd2e...`로 모두 수정했고, 현재 candidate의 T25/T26/T30/T31도 다시
-> 통과했다. 공식 upstream도 같은 Node 22 환경에서 396개 진단을 냈고 후보와
-> path+error-code multiset이 같았다. T63 기준선 게이트는 신규 오류 0을 확인했지만
-> 비어 있지 않은 기준선이므로 `pass`가 아니라 `approval`이다.
+> `ddf0dd2e...`로 모두 수정했고, 그 단계 candidate의 T25/T26/T30/T31도 다시
+> 통과했다. 이어 `BANK-OM-009` 제품 commit `70d028a...`가 누락된
+> metadataService 검색 타입 매핑과 Curated Assets의 과도하게 넓은 상태 타입을
+> 보강했다. 공식 upstream은 396개, 현재 후보는 357개 진단이며 T63은 신규
+> path/code 오류 0·제거 39와 메시지 변형 5건을 기록한다. 비어 있지 않은
+> 기준선이므로 `pass`가 아니라 `approval`이다.
 > T61은 Sybase/Tibero 패치가 없는 고정 소스에서 두 계약이 실제 실패함을
 > 입증했지만, 배포된 제거본이 필요한 high ID 3개는 아직 미실행이다.
 > 실제 업그레이드 실행과 release artifact도 없으므로 현재 production release는
@@ -155,7 +157,7 @@ E 깊은 의존·의미 붕괴 → 테스트만 (patch-kill·contract·차등 �
 | # | 검증기 | 무엇을 하나 · 한계 | 구현 방법론 (또는 계획) | 상태·태스크 |
 |---|---|---|---|---|
 | 22 | LLM Impact Memo | 애매한 의미 변경을 **후보로 좁혀줌** · pass 부여 불가·100% recall 아님 | 사실/추론/미확인·근거·snapshot을 strict schema로, verdict/command/action 금지, 품질지표 | ✅ T80/T81 |
-| 23 | UI 타입 기준선 비교 | 후보가 공식 원본보다 타입 오류를 늘려도 기존 오류에 묻힘 | 동일 Node/Yarn에서 전체 로그의 경로+TS 코드 multiset 비교, 신규·증가=block, 비어 있지 않은 동일 기준선=approval | ✅ T63 |
+| 23 | UI 타입 기준선 비교 | 후보가 공식 원본보다 타입 오류를 늘려도 기존 오류에 묻힘 | 동일 Node/Yarn에서 경로+TS 코드 multiset은 신규·증가를 block하고, 별도 메시지 multiset은 설명 변형을 review 근거로 남김; 비영 결과=approval | ✅ T63 |
 
 ---
 
@@ -244,7 +246,7 @@ M9 업그레이드 검증·릴리스 승격(digest 결속)·반입
 pip install jsonschema pathspec pyyaml pytest
 OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata \
   python -m pytest harness/tests tests/bank/contracts
-# 고정 mirror 연결 시 322개: 315 pass·7 operational skip
+# 고정 mirror 연결 시 323개: 316 pass·7 operational skip
 ```
 
 동일한 source 범위는

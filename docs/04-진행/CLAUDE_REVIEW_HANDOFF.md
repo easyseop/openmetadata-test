@@ -9,6 +9,11 @@
 > `39294bf38172f16528833640c03302aa83ade7b4`
 > 제품 UI 타입 보강 커밋:
 > `ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d`
+> 공통 검색 결과 타입 보강 제품 커밋:
+> `70d028a035bb1edb8af5a11f06c4c7dff4cd979b`
+> BANK-OM-009 거버넌스 등록 / evidence 재결속:
+> `4353f457ca93710f71b08f8c5c6365a33fb3f7d8` /
+> `89763f3952868da27af9f8bcc688a34e593da4da`
 > Data Assertions·bank column 실제 화면 계약 보강 커밋:
 > `093724faa499458eb4723511914a1376138ef014`
 > T61 deployed runtime patch-kill 게이트 구현 커밋:
@@ -575,7 +580,7 @@ Tibero 보강 직후 source candidate(현재 후보의 직전 조상):
 - candidate-lock digest:
   `sha256:9f2e3760b7b1ab44fa24fe8872c74b4003dcf29dbdc7282e403f2595b7ebeacd`
 
-현재 source candidate와 새 lock은 §4.24의 `ddf0dd2e...` 및
+현재 source candidate와 새 lock은 §4.26의 `70d028a...` 및
 `source-candidate-evidence.yaml`을 정본으로 사용한다.
 
 후속 candidate 검증:
@@ -684,7 +689,7 @@ Korean IME의 required selector는 이제 실제 browser test이며 source guard
 2. `harness[dev]` 잠금 범위 설치
 3. 고정 SHA의 1.12.13/1.13.0 mirror fixture fetch
 4. product branch를 blobless·depth 16·sparse 방식으로 checkout
-5. checkout HEAD가 `ddf0dd2ebaf...`와 정확히 같은지 확인
+5. checkout HEAD가 `70d028a035...`와 정확히 같은지 확인
 6. harness + 7개 업무 contract의 9 selector 실행
 7. T25/T26/T60-I/T30/T31 source-candidate runner 실행
 
@@ -698,9 +703,9 @@ workflow의 exact product fetch·mirror fetch·test·gate 명령을 빈 임시
 환경에서 실행한 결과는 다음과 같다.
 
 ```text
-product HEAD        ddf0dd2ebaf... (locked SHA match)
+product HEAD        70d028a035... (locked SHA match)
 upstream mirror     UPSTREAM_A/UPSTREAM_B SHA match
-tests               280 passed, 4 live-runtime skipped in 35.12s
+tests               316 passed, 7 live-runtime skipped in 40.04s
 source gates        T25/T26/T60-I/T30/T31 all pass
 ```
 
@@ -818,10 +823,10 @@ script에 직접 보간하지 않고 environment를 통해 전달한다.
 로컬 fail-closed 통합 시뮬레이션:
 
 ```text
-candidate_sha       ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d
-harness_version     025aa1e8c42eb84c5a67d5a5bc07ce057cbcc661
-suite_version       sha256:a17125422c654af08ddbc340e2c41c508b1ab869f10394b577ee685e214cb959
-test_run_set_digest sha256:6c5991093ff2c02560032308577299b004714056b4faeae9727bdf73cbb3730c
+candidate_sha       70d028a035bb1edb8af5a11f06c4c7dff4cd979b
+harness_version     4353f457ca93710f71b08f8c5c6365a33fb3f7d8
+suite_version       sha256:56f9e771d739b66a614c966cb52124536942aa1b9be8c19ac3f2a8a1ef0b7f46
+test_run_set_digest sha256:5aa51415109017cf7c86600a14c94d296c16b63fcd1f790bf84e2a4cbd7362d5
 outcomes            2 pass, 7 skipped
 verdict              block
 actual exit 1        result와 consistent
@@ -1204,11 +1209,11 @@ toolchain에서 비교해 이 착시를 차단한다.
 
 ```text
 official upstream SHA     afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
-candidate SHA             ddf0dd2ebaf50bc0aa97143a5e97312bc27bd91d
+candidate SHA             70d028a035bb1edb8af5a11f06c4c7dff4cd979b
 Node / Yarn                22.17.0 / 1.22.22
 Node archive SHA-256       cc9cc294eaf782dd93c8c51f460da610cc35753c6a9947411731524d16e97914
 upstream raw log SHA-256   6bca51ba43a80099f00336469504bdef7120df61c34658a685c7d50a97b18610
-candidate raw log SHA-256  768fe9f45465068c3815feb471f3c5a4dcd694e4dae3b3914ea6832bce9b0b76
+candidate raw log SHA-256  8d44e59e82f892fa0d3a8ffd9b66ab04ecddfe8e8b87634e728ef6991ffb148f
 ```
 
 ANTLR과 parsed schema를 양쪽 worktree에서 생성하고 동일 dependency tree와
@@ -1219,20 +1224,23 @@ ANTLR과 parsed schema를 양쪽 worktree에서 생성하고 동일 dependency t
 실제 판정:
 
 ```text
-upstream diagnostics      396
-candidate diagnostics     396
-unique files              141
-new / removed             0 / 0
-path+code fingerprint     sha256:a4158616c8921cc299679553b58ba388493a3aaaf5994314cb1a16f78e342fe8
+upstream diagnostics      396 (141 files)
+candidate diagnostics     357 (135 files)
+new / removed path+code   0 / 39
+upstream path+code fp     sha256:a4158616c8921cc299679553b58ba388493a3aaaf5994314cb1a16f78e342fe8
+candidate path+code fp    sha256:e26de34b7554d7d9e94df524c191550059454781268ba669a505a0c075d7521a
+new / removed messages    5 / 44
+upstream message fp       sha256:bb893ff886aecb68e57062e289d306c276a5541aad9bf2b2b5a9d56e025b1f4f
+candidate message fp      sha256:a1b4eb2c82ab5ec5ddad0f98556ac7e0414575db1c26b3d4f9f429b2b75c420f
 verdict / exit             approval / 2
-targeted tests             9 passed
+targeted gate tests        10 passed
 ```
 
-이 결과는 “후보가 새 path/code 진단을 추가하지 않았다”는 근거이지 제품 전체
-typecheck pass가 아니다. 특히 같은 path와 같은 TS code에서 메시지만 치환되는
-경우는 이 fingerprint가 잡지 못한다. Claude는 전체 로그 리뷰를 요구할지,
-message normalization까지 fingerprint에 넣을지, 혹은 396건을 전부 수정할지
-독립적으로 판단해야 한다.
+이 결과는 “후보가 새 path/code 진단을 추가하지 않았고 기존 39건을 제거했다”는
+근거이지 제품 전체 typecheck pass가 아니다. 같은 path/code 안의 메시지 치환도
+두 번째 fingerprint로 탐지한다. 다만 TypeScript가 동등한 union을 다른 순서나
+축약으로 출력할 수 있으므로 메시지 변형은 자동 block이 아니라 approval
+검토 근거다. Claude는 다섯 변형이 모두 설명 가능한지 독립 검토해야 한다.
 
 원격 source-candidate 재현:
 
@@ -1252,6 +1260,70 @@ artifact expiry             2026-10-24T18:50:55Z
 Run URL:
 `https://github.com/easyseop/openmetadata-test/actions/runs/30215596535`.
 
+위 원격 run은 `BANK-OM-009` 전의 `ddf0dd2e...` 후보를 검증한 역사적 증거다.
+현재 `70d028a...` 후보의 원격 run은 문서 batch push 뒤 새로 확인해야 한다.
+
+### 4.26 BANK-OM-009 — 공통 검색 결과 타입 정합성 보강
+
+제품 커밋:
+
+- `70d028a035bb1edb8af5a11f06c4c7dff4cd979b`
+- trailer: `Customization-ID: BANK-OM-009`
+
+거버넌스:
+
+- 등록 구현: `4353f457ca93710f71b08f8c5c6365a33fb3f7d8`
+- evidence 재결속: `89763f3952868da27af9f8bcc688a34e593da4da`
+- manifest:
+  `harness/registrations/kb-openmetadata/manifests/BANK-OM-009.yaml`
+- provenance: `candidate-follow-up`
+- depends_on: `BANK-OM-008`
+
+발견 경로:
+
+T63에 message multiset을 추가해 `396=396`의 내부를 비교하자 후보 메시지 일부에
+`Pick<unknown, never>`가 나타났다. 조사 결과 공식 1.13.1에도
+`SearchIndex.METADATA_SERVICE` enum은 있지만
+`SearchIndexSearchSourceMapping` 항목과 generated source interface가 없었다.
+새 InstanceCode/QueryReport 인덱스가 union에 들어오면서 기존 누락이 더 분명히
+드러난 것이다.
+
+제품 수정:
+
+1. `search.interface.ts`
+   - generated `MetadataService`를 import한다.
+   - `MetadataServiceSearchSource`를 정의한다.
+   - `METADATA_SERVICE`를 `SearchIndexSearchSourceMapping`에 연결한다.
+   - InstanceCode/QueryReport/MetadataService를 공통 search source union에
+     포함한다.
+2. `CuratedAssetsWidget.tsx`
+   - 모든 `SearchIndex` 결과를 받을 수 있다고 선언한 과도한 상태 타입을 실제
+     요청인 `SearchIndex.DATA_ASSET` 결과 타입으로 좁힌다.
+   - 매핑 보강 뒤 숨어 있던 `item.id` 진단 한 건을 제거한다.
+
+검증:
+
+```text
+Prettier                              pass (2 paths)
+CuratedAssetsWidget focused Jest      18/18 pass
+focused Jest warning                  기존 async state update act(...) 경고, test failure 아님
+Node 22 full tsc                       396 -> 357
+T63 new/removed path+code             0 / 39
+T25/T26/T60-I/T30/T31                 pass / 9 IDs / 14 required paths / 9 selectors
+runtime no-environment                2 pass, 7 skip -> block
+forged runtime exit                   analysis_error
+source patch-kill                     2 pass
+full governance suite                 316 pass, 7 operational skip
+```
+
+왜 새 ID인가:
+
+008은 route title과 `ExploreSearchIndex` 연결이라는 은행 탐색 화면 정합성을
+추적한다. 009는 공식 코드에도 있던 metadata-service mapping 누락과 Curated
+Assets 공통 타입을 수정해 범위와 검토 질문이 다르다. 008 이력을 재작성하거나
+series 허용으로 넓히지 않고 별도 candidate-follow-up으로 등록했다. T25-R은
+여전히 원본 7개만 재구성하고 T26/T30/T31/runtime lock은 009까지 포함한다.
+
 ## 5. 테스트 결과
 
 전체 명령:
@@ -1265,10 +1337,10 @@ OPENMETADATA_PRODUCT_REPO=/private/tmp/om-product-rebuild \
 결과:
 
 ```text
-315 passed, 7 skipped in 31.13s
+316 passed, 7 skipped in 40.04s
 ```
 
-초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 167개 passing test가
+초기 구현 기준은 148 passed, 35 skipped였다. 현재까지 168개 passing test가
 추가됐고, T25-R과 실제 candidate evidence 묶음은 14개다.
 
 고정 mirror를 연결해 기존 mirror 의존 35개도 모두 실행·통과했다. 남은 7개는
@@ -1298,7 +1370,8 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 | T60-I 구현 존재 | 완료 | 완료 | 9/9 selector resolve pass |
 | T61 patch-kill | source·runtime plan/runner/workflow 완료 | 단위·무환경 fail-closed 완료 | Sybase/Tibero 2/5 pass, runtime high 3개 제거본 배포·실행 없음 |
 | T62 test-result binding·runner | 완료 | 완료 | local fail-closed `2 required pass·7 skip→block`, 실제 runtime run 없음 |
-| T63 UI typecheck baseline delta | 완료 | 9개 완료 | 실제 원본/후보 비교 `396=396`, 신규 0, verdict `approval` |
+| T63 UI typecheck baseline delta | 완료 | 10개 완료 | 실제 원본 396/후보 357, 신규 path/code 0·제거 39, verdict `approval` |
+| BANK-OM-009 공통 검색 타입 | 완료 | focused Jest 18/18·T63 10개 완료 | 원본 396→후보 357, 신규 path/code 0·제거 39, 원격 candidate run 대기 |
 | T71/T72 운영 정책 | 완료 | 완료 | 조직 승인자·CI 연동 필요 |
 | T80/T81 LLM memo | 완료 | 완료 | 실제 release memo 평가 데이터 없음 |
 | T90 upgrade-run contract | 완료 | 완료 | Docker/DB/search/ingestion 실행 없음 |
@@ -1315,9 +1388,10 @@ corepack yarn test src/utils/DatabaseServiceUtils.test.tsx --runInBand
 2. `openmetadata-runtime` environment의 secret/variable을 설정하고
    `Runtime contracts` workflow에서 API 4개와 browser 3개를 실행해 9개
    selector 전체의 T62 candidate-bound pass를 만든다.
-3. Node 22에서 후보가 만든 3개 UI typecheck diagnostic은 수정 완료했고,
-   T63은 공식 원본과 후보가 각각 396건·141파일, 동일 path/code multiset임을
-   확인했다. 다만 verdict는 `approval`이다. full log를 검토해 조직 기준선으로
+3. Node 22에서 후보가 만든 3개 UI diagnostic과 공통 검색 타입 39건은 수정
+   완료했고, T63은 공식 원본 396건 대비 후보 357건, 신규 path/code 0을
+   확인했다. 메시지 변형 5건이 남아 verdict는 `approval`이다. full log를
+   검토해 조직 기준선으로
    승인하거나 오류를 수정하고, 제품 전체 Java/UI build와 source-level test를
    candidate에 결속한다.
 4. InstanceCode·QueryReport·Data Assertions 제거본을 각각 빌드·배포해 남은
@@ -1348,7 +1422,7 @@ OpenMetadata 테스트 스택에서 API 4개와 browser 3개를 실행한다. �
 | 질문 | 이 문서에서 확인할 곳 |
 |---|---|
 | 최종 목적은 무엇인가 | §1 |
-| 지금까지 무엇을 만들었는가 | §4.1~§4.25 |
+| 지금까지 무엇을 만들었는가 | §4.1~§4.26 |
 | 어떤 방식으로 만들었는가 | 각 구현 절의 파일·개발 방식 |
 | 무엇으로 검증했고 무엇이 미실행인가 | §5~§6 |
 | 다음에 무엇을 어떤 순서로 할 것인가 | §7과 첫 실행 명령 |
@@ -1391,11 +1465,13 @@ OpenMetadata 테스트 스택에서 API 4개와 browser 3개를 실행한다. �
 20. `BANK-OM-008` 하나가 InstanceCode와 QueryReport의 공유 UI 타입 보강을
     표현하는 것이 단일 변경 목적 규칙에 맞는가, 아니면 더 나은 추적 모델이
     필요한가.
-21. 공식 upstream 동일 toolchain 전체 실행은 완료됐고 후보와 같은 396건·
-    path/code fingerprint를 냈다. 이 근거가 기준선 승인에 충분한가.
-22. T63의 path+TS-code multiset granularity가 충분한가, 아니면 같은 path/code
-    안의 message substitution도 결정적으로 잡도록 정규화 메시지를 evidence에
-    포함해야 하는가.
+21. 공식 upstream 동일 toolchain 전체 실행은 396건, 후보는 357건이며 신규
+    path/code 0·제거 39다. 이 근거가 기준선 승인에 충분한가.
+22. T63은 message substitution도 fingerprint해 5개 신규 변형을 드러낸다.
+    이들을 approval 검토 근거로 두는 것이 맞는가, 자동 block해야 하는가.
+23. `BANK-OM-009`의 `METADATA_SERVICE` mapping과 Curated Assets
+    `DATA_ASSET` narrowing이 실제 검색 API의 heterogeneous 결과를 충분히
+    표현하는가, 별도 `DataAssetSearchSource` union이 필요한가.
 
 검토 결과는 `Blocking / Serious / Minor / Validated`로 나누고, 각 항목에 정확한
 파일·라인·재현 테스트를 제시해 달라. 문서의 완료 표시가 아니라 코드와

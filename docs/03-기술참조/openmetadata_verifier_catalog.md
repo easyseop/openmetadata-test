@@ -35,10 +35,10 @@
 
 ---
 
-## 0.1 구현 현황 (2026-07-27 · 게이트 엔진 및 실제 7개+후속 1개 등록)
+## 0.1 구현 현황 (2026-07-27 · 게이트 엔진 및 실제 7개+후속 2개 등록)
 
 > 아래 표는 **설계**이고, 실제 코드는 `harness/acgh/` 에 있다. 현재 소스에는
-> **322개 테스트**가 있다. 2026-07-27 기준 고정 mirror/product 연결 시 315개
+> **323개 테스트**가 있다. 2026-07-27 기준 고정 mirror/product 연결 시 316개
 > 통과, API 4개·browser 3개는 운영 환경 부재로 skip이다.
 > ✅=구현·테스트 완료, 🟡=핵심 구현(부분), ⬜=미착수.
 
@@ -70,7 +70,7 @@ manifest `manifest.py` · ✅ T14 감사카드 `evidence.py` · ✅ T15 결과�
 | 20 | digest 승격 | T91 | ✅ 엔진·실제 승격 미실행 | `release.py`·`airgap.py` |
 | 21 | verdict 엔진 | T13 | ✅ | `verdict.py` |
 | 22 | LLM Impact Memo | T80 | ✅ advisory schema·품질지표 | `impact.py`·`impact_memo.py` |
-| 23 | UI typecheck 기준선 delta | T63 | ✅ 원본/후보 실제 비교·비영 기준선 approval | `tsc_baseline.py` |
+| 23 | UI typecheck 기준선 delta | T63 | ✅ 원본 396/후보 357 실제 비교·비영 기준선 approval | `tsc_baseline.py` |
 
 게이트 엔진과 실제 7개 등록은 완료됐다. 그러나 원본
 `kangdkdk/kb_openmetadata`는 upstream ancestry 없는 root snapshot이다. 실제
@@ -227,12 +227,16 @@ vendor candidate는 별도 재구축했지만 API 4개·browser 3개의 T62 전�
 - **막는 사고**: 수백 건의 기존 오류에 후보가 만든 오류가 섞였는데 총건수나
   일부 파일만 보고 “원래 있던 오류”라고 승인하는 것.
 - **구현**: 전체 로그를 ANSI 제거 후 파싱하고 `(repo-relative path, TS code)`
-  multiset과 정규 fingerprint를 비교한다. 신규/증가=`block`, malformed·경로
-  이탈·exit 불일치=`analysis_error`, 둘 다 0=`pass`, 동일 비영 기준선=`approval`.
-- **현재 증거**: 공식 1.13.1과 후보 모두 396건·141파일, 신규/제거 0,
-  fingerprint `sha256:a4158616...e342fe8`.
-- **못 잡는 것**: 같은 경로·같은 TS 코드에서 메시지만 치환된 경우와 타입 오류가
-  아닌 빌드/런타임 결함. 따라서 비영 기준선은 자동 pass가 아니다.
+  multiset과 정규 fingerprint를 비교한다. 별도 `(path, code, message)`
+  multiset은 같은 오류 종류 안의 설명 변화도 검토 근거로 남긴다.
+  신규/증가=`block`, malformed·경로 이탈·exit 불일치=`analysis_error`,
+  둘 다 0=`pass`, 신규 없는 비영 기준선=`approval`.
+- **현재 증거**: 공식 1.13.1은 396건·141파일, 후보는 357건·135파일이며
+  신규 path/code 0·제거 39다. 메시지 multiset은 신규 변형 5·제거 44를
+  별도 fingerprint로 드러낸다.
+- **못 잡는 것**: 메시지 변화가 실제 의미 변화인지 TypeScript의 동등한 union
+  출력 변화인지 자동 판정하는 것과 타입 오류가 아닌 빌드/런타임 결함.
+  따라서 비영 기준선은 자동 pass가 아니다.
 
 ---
 
