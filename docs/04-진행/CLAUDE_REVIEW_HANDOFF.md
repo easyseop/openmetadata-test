@@ -1597,6 +1597,78 @@ runtime suite executed          no
 `origin/claude/markdown-file-feedback-26933w` ancestry에 함께 있는지로
 확인한다.
 
+### 4.31 실제 GitHub 캡처 기반 비개발자 시연 보강
+
+텍스트만으로는 업그레이드와 검사 순서를 이해하기 어렵다는 사용자 피드백을
+반영해, 실제 공개 GitHub 화면 10장과 vendor merge 전체 흐름을 시연 가이드에
+추가했다.
+
+```text
+branch                       claude/markdown-file-feedback-26933w
+screenshot guide commit      258bb8a27a148d0500531c98fefecd05013fc7ab
+screenshots                  10
+image dimensions             1280 x 720
+image format                 PNG
+product candidate            849ae756cd238f218b5e3a6c795a392305cb32ee
+recorded source run          30222439344
+runtime operational run      not executed
+```
+
+시연 가이드에 고정한 흐름:
+
+```text
+현재 OpenMetadata + 행내 커스터마이징
+→ 승인한 공식 버전/SHA 고정
+→ 공식 버전을 행내 vendor 브랜치에 merge
+→ 충돌 해결·필요 보강
+→ candidate 확정
+→ source gate
+→ 격리 테스트 환경 배포
+→ runtime API·connector·browser 9 selector
+→ T90/T91/T94
+→ 결과와 증거
+```
+
+이 순서는 “깨끗한 공식 새 버전에 customization을 매번 재복사”하는 것으로
+설명하지 않는다. 기존 customization vendor branch에 승인한 공식 target을
+merge하는 ADR-001 기본 전략을 비개발자 표현으로 유지한다.
+
+실제 캡처 범위:
+
+1. 제품 commit `849ae756`과 `Customization-ID: BANK-OM-011`
+2. customization registry의 `BANK-OM-011`, `UNASSIGNED`, `active`
+3. Source candidate Actions `Success`와 artifact 1개
+4. 316 pass·7 operational skip·11 active ID·9 selector 수치
+5. T25/T26 pass와 현재 candidate 결속
+6. runtime simulation `2 pass·7 skip→block`,
+   `operational_run_executed: false`
+7. `Runtime contracts`의 실제 `0 workflow runs`
+8. workflow input 5개와 고정 `PRODUCT_SHA`
+9. Actions artifact 다운로드 위치
+
+캡처는 공개 로그아웃 화면만 사용해 secret, token, password, 행내 URL을
+포함하지 않는다. 그 때문에 `Runtime contracts` 캡처에는 권한 사용자에게만
+보이는 `Run workflow` 버튼이 없음을 가이드에 명시했다.
+
+검증:
+
+```text
+git diff --cached --check       pass
+local Markdown links/images     pass
+PNG signatures                  10/10
+image dimensions                10/10 at 1280x720
+sensitive runtime values        not captured
+code or test behavior changed   no
+source suite rerun              no (documentation/image-only batch)
+runtime suite executed          no
+```
+
+source-only 성공과 deployment-ready의 경계, 11개 owner 미지정, API 4개·
+browser 3개 미실행, release artifact·T90·T91·T94 부재, 미보호 브랜치
+blocker는 그대로다. 원격 완료 여부는 이 절과 `258bb8a`가
+`origin/claude/markdown-file-feedback-26933w` ancestry에 함께 있는지로
+확인한다.
+
 ## 5. 테스트 결과
 
 전체 명령:

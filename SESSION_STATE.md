@@ -7,7 +7,8 @@
 > `BANK-OM-009` 공통 검색 결과 타입 보강,
 > `BANK-OM-010` 알림 엔터티 ID 검색 안전성 보강,
 > `BANK-OM-011` 검색 목록 변환 타입 계약,
-> T25-R/T25/T26/T60-I/T30/T31 통과, 비개발자용 사용·시연 가이드,
+> T25-R/T25/T26/T60-I/T30/T31 통과, 실제 GitHub 캡처 10장을 포함한
+> 비개발자용 사용·시연 가이드,
 > T62 runtime 계약 실행기·Data Assertions/은행 컬럼/IME 실제 브라우저 계약·
 > 90일 증거 보존, T63 공식 upstream UI typecheck 기준선 비교까지 반영.
 > **현재 상태 정본은 [`STATUS.md`](STATUS.md), Claude 검토용 상세는
@@ -38,9 +39,12 @@ T60-I도 9/9 selector 구현
 계약 테스트는 소스 기반 3개가 통과했고 실제 API 4개·브라우저 3개는 skip이다.
 실제 upgrade 실행과 release artifact가 없으므로 첫 production release는 아직
 차단 상태다.
-비개발자는 커밋 `f833f79`의 시연 가이드로 명령어 없이 현재 소스 증거를
-확인할 수 있고, 테스트 환경 준비 후 같은 문서의 `Runtime contracts` 절차로
-9개 실제 selector 실행과 증거 다운로드를 진행할 수 있다.
+비개발자는 커밋 `258bb8a`의 실제 GitHub 캡처 10장과 전체 흐름 설명으로
+명령어 없이 현재 소스 증거를 확인할 수 있고, 테스트 환경 준비 후 같은 문서의
+`Runtime contracts` 절차로 9개 실제 selector 실행과 증거 다운로드를 진행할 수
+있다. 운영 흐름은 “커스터마이징 포함 현재 버전 → 공식 버전 vendor merge →
+충돌 해결·필요 보강 → 후보 확정 → 소스 검사 → 테스트 환경 배포 → runtime
+검사 → T90/T91/T94 → 결과”로 안내한다.
 
 ## 1. 리포지토리·브랜치
 
