@@ -7,13 +7,15 @@
 > `BANK-OM-009` 공통 검색 결과 타입 보강,
 > `BANK-OM-010` 알림 엔터티 ID 검색 안전성 보강,
 > `BANK-OM-011` 검색 목록 변환 타입 계약,
-> T25-R/T25/T26/T60-I/T30/T31 통과, 비개발자용 사용 가이드,
+> T25-R/T25/T26/T60-I/T30/T31 통과, 비개발자용 사용·시연 가이드,
 > T62 runtime 계약 실행기·Data Assertions/은행 컬럼/IME 실제 브라우저 계약·
 > 90일 증거 보존, T63 공식 upstream UI typecheck 기준선 비교까지 반영.
 > **현재 상태 정본은 [`STATUS.md`](STATUS.md), Claude 검토용 상세는
 > [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)다.**
 > **비개발자 안내 정본은
 > [`docs/00-사용가이드/비개발자_사용_가이드.md`](docs/00-사용가이드/비개발자_사용_가이드.md)다.**
+> **직접 시연 절차는
+> [`docs/00-사용가이드/비개발자_시연_가이드.md`](docs/00-사용가이드/비개발자_시연_가이드.md)다.**
 > 개발 태스크가 끝날 때마다 상태표·인수인계서를 갱신하고, 작업 주체 변경 또는 컨텍스트
 > 소진 전에는 branch/commit, 정확한 테스트 결과, blocker, push 상태와 다음 실행
 > 단계를 남긴다. 사용자에게 보이는 상태·용어·절차가 바뀌면 비개발자 가이드도
@@ -36,6 +38,9 @@ T60-I도 9/9 selector 구현
 계약 테스트는 소스 기반 3개가 통과했고 실제 API 4개·브라우저 3개는 skip이다.
 실제 upgrade 실행과 release artifact가 없으므로 첫 production release는 아직
 차단 상태다.
+비개발자는 커밋 `f833f79`의 시연 가이드로 명령어 없이 현재 소스 증거를
+확인할 수 있고, 테스트 환경 준비 후 같은 문서의 `Runtime contracts` 절차로
+9개 실제 selector 실행과 증거 다운로드를 진행할 수 있다.
 
 ## 1. 리포지토리·브랜치
 
@@ -67,6 +72,7 @@ T60-I도 9/9 selector 구현
 |---|---|---|
 | `README.md` | 전체 개요·문서 지도·테스트 정책 | — |
 | `docs/00-사용가이드/비개발자_사용_가이드.md` | 비개발자용 상태 해석·요청 정보·운영 시나리오 | 사용자 안내 정본 |
+| `docs/00-사용가이드/비개발자_시연_가이드.md` | 명령어 없는 GitHub 확인·실제 runtime 시연·증거 체크표 | 비개발자 시연 절차 |
 > **경로 이동/정리(2026-07-23)**: 문서는 `docs/` 하위 4분류 — 01-보고용
 > (strategy_briefing)·02-설계(upstream_customization_design·governance_requirements)·
 > 03-기술참조(verifier_catalog)·04-진행(build_plan·dev_roadmap). **검토이력(05)은

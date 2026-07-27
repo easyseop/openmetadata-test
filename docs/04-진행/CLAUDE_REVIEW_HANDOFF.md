@@ -1548,6 +1548,55 @@ artifact expiry             2026-10-24T22:05:46Z
 Run URL:
 `https://github.com/easyseop/openmetadata-test/actions/runs/30222439344`.
 
+### 4.30 비개발자 시연·테스트 실행 가이드
+
+비개발자가 개발 도구나 명령어 없이 현재 후보의 증거를 직접 확인하고, 행내
+테스트 환경이 준비됐을 때 운영자와 실제 계약 검사를 실행할 수 있도록 별도
+runbook을 추가했다.
+
+```text
+branch                       claude/markdown-file-feedback-26933w
+guide implementation        f833f79fb2e85780b09b6966999be4341c5d1a91
+product candidate            849ae756cd238f218b5e3a6c795a392305cb32ee
+recorded source run          30222439344
+runtime operational run      not executed
+```
+
+변경 파일과 동작:
+
+- `docs/00-사용가이드/비개발자_시연_가이드.md`
+  - GitHub 화면만 사용하는 10분 source 시연
+  - 제품 커밋·11개 등록부·316 pass/7 operational skip·T25/T26/T30/T31
+    후보 결속 확인
+  - 발표자가 그대로 읽을 수 있는 설명문과 합격 체크표
+  - `openmetadata-runtime`의 secret 2개, variable 4개, workflow 입력 5개
+  - API 4개·connector 2개·browser 3개, 총 9 selector의 쉬운 기능 설명
+  - 결과 판정, 90일 artifact 다운로드, 보조 화면 시연, 장애 해결, 결과 기록지
+- `docs/00-사용가이드/비개발자_사용_가이드.md`, `README.md`
+  - 새 시연 가이드 진입 링크
+- `CLAUDE.md`
+  - 새 문서를 지속 갱신 handoff set과 검토 읽기 순서에 포함
+- `STATUS.md`, `SESSION_STATE.md`, 이 문서
+  - 구현 커밋과 비개발자 시연 절차를 인수인계 정본에 연결
+
+검증:
+
+```text
+git diff --cached --check       pass
+local linked file existence     pass
+candidate/run/workflow values   registration evidence and workflow YAML match
+code or test behavior changed   no
+source suite rerun              no (documentation-only batch)
+runtime suite executed          no
+```
+
+이 가이드는 source-only 성공을 deployment-ready로 바꾸지 않는다. 11개 owner
+미지정, 실제 API 4개·browser 3개 미실행, deployed high-ID patch-kill 3개
+미실행, release artifact·T90·T91·T94 증거 부재, 미보호 브랜치 blocker는
+그대로다. 원격 인수인계의 완료 여부는 이 절과 `f833f79`가
+`origin/claude/markdown-file-feedback-26933w` ancestry에 함께 있는지로
+확인한다.
+
 ## 5. 테스트 결과
 
 전체 명령:

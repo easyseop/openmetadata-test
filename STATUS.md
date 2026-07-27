@@ -20,12 +20,14 @@
 > Rendered UI runtime-contract expansion commit: `093724f`
 > Runtime patch-kill gate implementation commit: `1956b78`
 > Nondeveloper guide and handoff implementation commit: `0f0904b`
+> Nondeveloper demonstration runbook commit: `f833f79`
 > Runtime operations documentation commit: `a291f31`
 > Runtime evidence retention implementation commit: `502f42f`
 > Source patch-kill implementation commits: `a2cbb52`, `7a2fb5f`
 > Node 24 artifact action upgrade commit: `8ec6e28`
 > Detailed review handoff: [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)
 > Nondeveloper entry point: [`docs/00-사용가이드/비개발자_사용_가이드.md`](docs/00-사용가이드/비개발자_사용_가이드.md)
+> Nondeveloper demonstration runbook: [`docs/00-사용가이드/비개발자_시연_가이드.md`](docs/00-사용가이드/비개발자_시연_가이드.md)
 
 ## Handoff update policy
 
