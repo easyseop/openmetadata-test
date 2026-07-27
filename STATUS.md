@@ -22,6 +22,7 @@
 > Nondeveloper guide and handoff implementation commit: `0f0904b`
 > Nondeveloper demonstration runbook commit: `f833f79`
 > Actual GitHub screenshot demonstration commit: `258bb8a`
+> Friendly customization/verifier explanation commit: `705bb4f`
 > Runtime operations documentation commit: `a291f31`
 > Runtime evidence retention implementation commit: `502f42f`
 > Source patch-kill implementation commits: `a2cbb52`, `7a2fb5f`

@@ -8,7 +8,7 @@
 > `BANK-OM-010` 알림 엔터티 ID 검색 안전성 보강,
 > `BANK-OM-011` 검색 목록 변환 타입 계약,
 > T25-R/T25/T26/T60-I/T30/T31 통과, 실제 GitHub 캡처 10장을 포함한
-> 비개발자용 사용·시연 가이드,
+> 비개발자용 사용·시연 가이드와 커스터마이징 구성품·검사기별 쉬운 설명,
 > T62 runtime 계약 실행기·Data Assertions/은행 컬럼/IME 실제 브라우저 계약·
 > 90일 증거 보존, T63 공식 upstream UI typecheck 기준선 비교까지 반영.
 > **현재 상태 정본은 [`STATUS.md`](STATUS.md), Claude 검토용 상세는
@@ -45,6 +45,9 @@ T60-I도 9/9 selector 구현
 있다. 운영 흐름은 “커스터마이징 포함 현재 버전 → 공식 버전 vendor merge →
 충돌 해결·필요 보강 → 후보 확정 → 소스 검사 → 테스트 환경 배포 → runtime
 검사 → T90/T91/T94 → 결과”로 안내한다.
+커밋 `705bb4f`는 한 customization에 필요한 ID·owner·허용/필수/감시 경로·
+contract·test·series·commit trailer와 T24/T25/T26/T30/T31/T60-I/T61/T62/
+T63/T90/T91/T94의 쉬운 역할·현재 결과를 같은 가이드에 추가했다.
 
 ## 1. 리포지토리·브랜치
 

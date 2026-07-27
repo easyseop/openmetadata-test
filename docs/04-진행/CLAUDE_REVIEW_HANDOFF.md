@@ -1669,6 +1669,71 @@ blocker는 그대로다. 원격 완료 여부는 이 절과 `258bb8a`가
 `origin/claude/markdown-file-feedback-26933w` ancestry에 함께 있는지로
 확인한다.
 
+### 4.32 커스터마이징 구성품과 검사기 역할의 비개발자 설명
+
+사용자가 요구한 “커스터마이징에 무엇이 들어가야 하고, 병합 후 무엇으로
+들어간 것을 확인하며, 각 검사기는 무엇을 검사하는가”를 시연 가이드에
+비개발자 표현으로 추가했다.
+
+```text
+branch                       claude/markdown-file-feedback-26933w
+guide explanation commit     705bb4f93ec5605aa3ea018672e4b7f64cac7f09
+product candidate            849ae756cd238f218b5e3a6c795a392305cb32ee
+code/test behavior changed   no
+runtime operational run      not executed
+```
+
+가이드에 추가한 customization 필수 구성:
+
+- BANK-OM ID
+- title/status/kind
+- owner와 승인 경로
+- `allowed_changed_paths`
+- `required_changed_paths`
+- `upgrade_watch.paths`
+- 업무 contract와 필수 selector
+- series 허용 여부와 `depends_on`
+- 제품 commit의 `Customization-ID` trailer
+
+`BANK-OM-011` 실제 예시는 제품 commit `849ae756`, 필수·감시 경로 6개,
+InstanceCode·QueryReport contract, `depends_on: BANK-OM-010`, `active`,
+`owner: UNASSIGNED`를 함께 보여준다. 따라서 소스 등록 완료와 owner blocker를
+동시에 설명한다.
+
+쉬운 설명을 고정한 검사기:
+
+- 후보 잠금/T24 — 검사 대상을 정확한 SHA·tree·digest로 고정
+- T25 — 승인한 공식 target이 candidate에 병합됐는지 확인
+- T26 — active customization의 필수 파일·contract 생존 확인
+- T30 — 제품 commit의 BANK-OM trailer가 정확히 하나인지 확인
+- T31 — ID series·의존 순서·재사용·순환 확인
+- T60-I — 필수 selector가 실제 파일·함수로 존재하는지 확인
+- T61 — customization을 제거했을 때 테스트가 실패하는지 확인
+- T62 — 실제 결과를 candidate·artifact에 묶고 skip/stale/exit 불일치를 차단
+- T63 — 공식 원본 대비 신규 UI path/code 진단 증가 확인
+- T90 — 실제 데이터 업그레이드 12단계 확인
+- T91 — 검증한 동일 digest 산출물 승격 확인
+- T94 — 서명한 내부망 반입 payload 동일성 확인
+
+현재 상태 표현은 바뀌지 않는다. T25/T26/T30/T31과 T60-I 9/9는 pass,
+T61은 Sybase/Tibero source 범위만 입증, T62 runtime은 0회, T63은
+신규 path/code 0이지만 approval, T90/T91/T94는 미실행이다.
+
+검증:
+
+```text
+git diff --cached --check       pass
+local Markdown links/images     pass
+named verifier rows             12 present
+code or test behavior changed   no
+source suite rerun              no (documentation-only batch)
+runtime suite executed          no
+```
+
+원격 완료 여부는 이 절과 `705bb4f`가
+`origin/claude/markdown-file-feedback-26933w` ancestry에 함께 있는지로
+확인한다.
+
 ## 5. 테스트 결과
 
 전체 명령:
