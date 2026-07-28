@@ -6,8 +6,8 @@
 > [`docs/04-진행/CODEX_HANDOFF.md`](docs/04-진행/CODEX_HANDOFF.md)와
 > [`docs/04-진행/SHARING_ARTIFACT_REQUIREMENTS.md`](docs/04-진행/SHARING_ARTIFACT_REQUIREMENTS.md)를
 > 먼저 따른다. 아래 내용에는 과거 작업 브랜치와 장기 구현 기록이 포함돼 있다.
-> 이번 문서 개편 입력 head는 `9fea411bdc247273641c490e9593ac07fd9f222f`이며
-> 최신 원격 `Source candidate` run `30368605298`는 성공했다.
+> 이번 문서 개편 commit은 `dd45b578e189f9e6e3cc2beae5e5dc99184bd6d3`이며
+> 원격 `Source candidate` run `30371799025`는 성공했다.
 > 오늘 추가된 공유문서·OM_TEMP 시연·스킬과 다음 실행 순서는
 > `docs/04-진행/CODEX_HANDOFF.md` §10이 정본이다.
 > 현재 노트북 검증은 다섯 HTML의 1280px·390px 화면과 실제 이동 링크 통과,
@@ -19,7 +19,8 @@
 > 2차는 검사기 지도 → 검사기별 독립 상세보기 → 전체 입출력 상세보기 순서로
 > 재구성하고 T번호가 전체 개발계획의 안정적인 태스크 ID임을 명시했다. 관련
 > 집중 검사는 55 passed, 9 mirror skips이며 로컬 `file://` 브라우저 자동검수는
-> 보안 제한으로 실행하지 못했다.
+> 보안 제한으로 실행하지 못했다. 새 원격 증거 artifact ID는 `8693322667`,
+> SHA-256은 `504a5850834bd2d94f3966e6b30e4850a0cb39c041597a4c215bec251e6d0743`다.
 
 > **목적**: 컨텍스트가 리셋돼도 이 문서 하나로 작업을 이어갈 수 있게 현재까지의
 > 모든 결정·산출물·다음 단계를 세세하게 기록한다. **작업 재개 시 이 문서를 먼저 읽는다.**

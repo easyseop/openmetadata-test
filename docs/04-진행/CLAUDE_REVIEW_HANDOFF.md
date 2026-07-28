@@ -2128,6 +2128,11 @@ JUnit·TypeScript Jest·`direct_tests` 연결은 안전한 추가 개발 대상�
 - 관련 테스트: 55 passed, 9 mirror-dependent skipped
 - 선택 HTML 요소 여닫기 불일치: 0
 - `git diff --check`: 통과
+- 공유 HTML 개편 commit: `dd45b578e189f9e6e3cc2beae5e5dc99184bd6d3`
+- 원격 run `30371799025`: 성공, source gates와 source patch-kill 2건 통과
+- 증거 artifact: `source-patch-kill-evidence-30371799025-1`, ID
+  `8693322667`, SHA-256
+  `504a5850834bd2d94f3966e6b30e4850a0cb39c041597a4c215bec251e6d0743`
 - 이번 세션의 인앱 브라우저는 로컬 `file://` 접근이 보안 정책에 차단됐으므로
   새 viewport 시각 검수는 미완료다. 정적 구조 통과를 시각 통과로 해석하지
   말고, 실제 브라우저에서 1280px와 390px를 다시 확인해 달라.

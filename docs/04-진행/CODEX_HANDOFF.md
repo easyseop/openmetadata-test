@@ -3,10 +3,10 @@
 > 갱신 기준: 2026-07-29 00:05 KST
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
-> 이번 문서 개편 입력 head: `9fea411bdc247273641c490e9593ac07fd9f222f`
-> 최신 원격 검증: `9fea411...`의 `Source candidate` run
-> [`30368605298`](https://github.com/easyseop/openmetadata-test/actions/runs/30368605298)
-> 성공 (`348 passed, 7 operational skips`)
+> 이번 문서 개편 commit: `dd45b578e189f9e6e3cc2beae5e5dc99184bd6d3`
+> 최신 원격 검증: `dd45b57...`의 `Source candidate` run
+> [`30371799025`](https://github.com/easyseop/openmetadata-test/actions/runs/30371799025)
+> 성공 (source gates와 source patch-kill 2건 통과)
 > 문서 묶음 작성 전 기준 commit: `0a6d009107a18e69a2150388442adffb6332f08c`
 > 제품 코드 상태: `easyseop/OpenMetadata` commit
 > `849ae756cd238f218b5e3a6c795a392305cb32ee`
@@ -664,3 +664,8 @@ fragment 수정 후 두 preview를 다시 렌더링하고
 - 인앱 브라우저 자동검수: 로컬 `file://` URL이 브라우저 보안 정책에 차단돼
   이번 배치에서는 새 viewport 시각 통과를 주장하지 않는다. HTML은 생성됐으며
   사용자가 열어 최종 화면 확인을 이어갈 수 있다.
+- 원격 `Source candidate` run `30371799025`: 성공. 제품 candidate
+  `849ae756...`의 source gates와 source patch-kill 2건이 통과했다.
+- 90일 증거 artifact: `source-patch-kill-evidence-30371799025-1`, ID
+  `8693322667`, GitHub SHA-256
+  `504a5850834bd2d94f3966e6b30e4850a0cb39c041597a4c215bec251e6d0743`

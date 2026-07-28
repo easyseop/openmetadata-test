@@ -3,10 +3,10 @@
 > Updated: 2026-07-29 00:05 KST
 > Branch: `codex/strict-manifest-gates`
 > Latest remotely verified sharing/rehearsal head:
-> `9fea411bdc247273641c490e9593ac07fd9f222f`
+> `dd45b578e189f9e6e3cc2beae5e5dc99184bd6d3`
 > Latest sharing/rehearsal CI:
-> [`30368605298`](https://github.com/easyseop/openmetadata-test/actions/runs/30368605298)
-> (`Source candidate`, success, `348 passed / 7 operational skips`)
+> [`30371799025`](https://github.com/easyseop/openmetadata-test/actions/runs/30371799025)
+> (`Source candidate`, success; source gates and 2 source patch-kill experiments passed)
 > Last verified implementation commit: `5f54687`
 > Fixed-mirror CI compatibility fix: `f661796`
 > Strict-scope and stage 2·3 batch verified: 2026-07-28 10:18 KST
@@ -84,6 +84,9 @@ Focused manifest/scope/watch tests are **55 passed, 9 mirror-dependent
 skipped**. `git diff --check` passes. In-app browser automation could not open
 the local `file://` preview because that URL type is blocked by browser
 security policy, so this batch does not claim a new visual viewport pass.
+Remote run `30371799025` also succeeded. Its 90-day evidence artifact is
+`source-patch-kill-evidence-30371799025-1`, ID `8693322667`, GitHub SHA-256
+`504a5850834bd2d94f3966e6b30e4850a0cb39c041597a4c215bec251e6d0743`.
 
 ### 2026-07-28 sharing artifacts and OM_TEMP upgrade rehearsal
 
