@@ -1,11 +1,22 @@
-# OM_TEMP 커밋별 Manifest 등록 가이드
+# OM_TEMP 검사 전 사전환경 설정 가이드
 
 > 대상 코드: `easyseop/OM_TEMP`의 `custom/om-1.13.0`
-> Manifest 위치: `easyseop/openmetadata-test/harness/registrations/om-temp-1.13.0/manifests/`
+> 검사 설정 위치: `easyseop/openmetadata-test/harness/registrations/om-temp-1.13.0/`
 
 ## 이 자료가 필요한 이유
 
-OpenMetadata를 업그레이드한 뒤에도 각 커스터마이징이 빠지지 않았는지 검사하려면, 실제 코드 변경과 검사 기준을 BANK-OM 기능별로 연결해야 합니다. 이 자료는 실제 Git commit에서 확인한 변경 파일을 어떤 Manifest에 등록했는지 보여줍니다.
+검사기는 Git의 실제 코드만 읽는 것이 아니라, 어떤 BANK-OM을 검사하고 어떤 파일·동작을 정상으로 판단할지 정한 기준자료와 비교합니다. 이 자료는 검사 전에 준비할 Manifest와 검사 기준자료, 로컬 OM_TEMP 연결 방법을 실제 1.13.0 예시로 설명합니다.
+
+## 언제 만들고 언제 갱신하나
+
+| 구분 | 최초 커스터마이징 등록 | 공식 버전 업그레이드 | 매 검사 실행 |
+|---|---|---|---|
+| Manifest·Registry·Contract | 최초 작성 | 기존 자료를 복사해 새 코드 기준으로 검토·갱신 | 확정본을 읽음 |
+| 공용 파일 소유정보 | 실제 diff의 중복 경로를 계산해 작성 | 새 버전 diff로 다시 계산·검토 | 확정본을 읽음 |
+| 전체 변경 목록 | Git에서 생성 | 새 버전 branch 사이에서 다시 생성 | 실제 Git diff와 비교 |
+| Patch-lock | patch-replay를 쓸 때만 작성 | 재적용 커밋이 바뀌면 새 리비전 작성 | 선택한 전략에서만 읽음 |
+
+따라서 이 자료들은 검사 때마다 버리는 임시 파일이 아닙니다. 최초 등록자료는 계속 관리하고, 버전에 따라 달라지는 Git SHA·경로 목록만 새 버전 기준으로 다시 생성하거나 갱신합니다.
 
 ## 먼저 구분할 두 식별값
 
@@ -16,16 +27,17 @@ OpenMetadata를 업그레이드한 뒤에도 각 커스터마이징이 빠지지
 
 Manifest는 **BANK-OM ID마다 한 파일**을 만듭니다. 같은 기능을 후속 보완하면 BANK-OM-007처럼 Git commit SHA는 여러 개가 될 수 있지만 Manifest는 하나입니다.
 
-## 이 자료를 보는 순서
+## 사전환경 설정 순서
 
-1. 상위 펼치기에서 BANK-OM 기능을 선택합니다.
-2. 강조 캡처에서 Git commit SHA, 커밋 제목, Customization-ID를 확인합니다.
-3. 기능 단위로 묶은 이유를 읽습니다.
-4. 하위 펼치기에서 원본 캡처와 현재 생성된 Manifest 초안 전체를 확인합니다.
+1. **Manifest 등록** — 커밋별 실제 변경 파일을 BANK-OM ID에 연결합니다.
+2. **검사 기준자료 등록** — Registry·Contract·공용 파일·전체 변경 목록을 준비합니다.
+3. **로컬 검사 대상 연결** — 검사기가 읽을 OM_TEMP repository와 기준 SHA를 확인합니다.
 
 강조 캡처는 위치를 빠르게 찾기 위한 **설명용 사본**입니다. GitHub 화면 자체를 확인해야 할 때는 같은 항목의 **원본 캡처** 또는 GitHub commit 링크를 사용합니다.
 
-## 실제 커밋과 Manifest
+## 1. Manifest 등록
+
+각 BANK-OM 제목을 펼치면 실제 GitHub commit, 기능 단위로 묶은 이유, Manifest 초안 전체를 확인할 수 있습니다.
 
 <details>
 <summary><strong>BANK-OM-001 · 기준코드(InstanceCode)</strong></summary>
@@ -816,21 +828,166 @@ series:
 
 </details>
 
-## Manifest 네 목록을 읽는 기준
+### Manifest 네 목록을 읽는 기준
 
 | 항목 | 이 초안에 들어간 기준 | 검사에서 쓰는 방식 |
 |---|---|---|
-| `allowed_changed_paths` | 최초 BANK-OM 커밋이 실제 변경한 모든 파일 | 목록 밖 파일을 같은 ID로 변경하면 차단하고, 목록 안 파일이 최종 후보에서 실제로 달라지지 않으면 검토를 요구 |
+| `allowed_changed_paths` | 최초 BANK-OM 커밋이 실제 변경한 모든 파일 | 목록 밖 파일을 같은 ID로 변경하면 차단하고, 목록 안 파일이 검사 대상 custom branch의 최종 코드에서 실제로 달라지지 않으면 검토를 요구 |
 | `required_changed_paths` | 기능이 적용됐음을 판단하는 핵심 구현 파일 | 파일이 없거나 공식 원본과 같아지면 기능이 빠진 것으로 보고 차단 |
 | `candidate_additional_paths` | 같은 ID의 후속 커밋에서 처음 추가된 파일 | 사전 등록 없이 확장한 변경과 승인된 후속 변경을 구분 |
 | `upgrade_watch.paths` | 공식 버전 변경 비교 검사(T42)가 확인할 경로 | 공식 새 버전에서 해당 경로가 바뀌면 자동 통과하지 않고 재검토를 요구 |
 
 T42는 공식 OpenMetadata의 이전 버전과 새 버전에서 지정 경로가 바뀌었는지 확인하는 검사입니다. `upgrade_watch.paths`에는 현재 T42 구현에 맞춰 해당 ID의 변경 범위 전체와 직접 수정하지 않았지만 기능이 의존하는 공식 파일을 함께 넣었습니다. 따라서 watch에 있다고 해서 그 파일을 이 커밋이 반드시 수정했다는 뜻은 아닙니다.
 
+## 2. 검사 기준자료 등록
+
+아래 자료는 모두 `openmetadata-test`에 보관합니다. Git이 자동으로 만들 수 있는 값과 사람이 결정해야 하는 기준을 구분해 등록합니다. 아래 코드는 작성 형태를 보여주는 예시이며, OM_TEMP 1.13.0의 실제 기준자료 파일 생성은 다음 작업입니다.
+
+<details>
+<summary><strong>2-1. Registry · 검사할 BANK-OM 목록과 연결정보</strong></summary>
+
+**의미:** 어떤 BANK-OM이 활성 상태이고 어느 Manifest·Contract를 읽을지 검사기에 알려주는 목록입니다.
+
+**생성·갱신 시점:** 첫 BANK-OM 등록 때 만들고, ID 추가·폐기·중요도 변경 또는 검사 대상 버전과 SHA가 바뀔 때 갱신합니다. 임시 파일이 아닙니다.
+
+```yaml
+entries:
+  - customization_id: BANK-OM-005
+    title: 한글 입력 조합 보정
+    status: active
+    criticality: medium
+    manifest: manifests/BANK-OM-005.yaml
+    contracts: [CONTRACT-KOREAN-IME]
+```
+
+**실제 사용:** 검사기는 이 항목을 읽고 BANK-OM-005 Manifest와 CONTRACT-KOREAN-IME가 모두 존재하고 서로 같은 ID를 가리키는지 확인합니다. 연결 파일이 없거나 ID가 서로 다르면 입력 묶음을 읽을 수 없어 검사를 시작하지 않습니다.
+
+</details>
+
+<details>
+<summary><strong>2-2. Contracts · 기능이 정상이라는 동작 기준</strong></summary>
+
+**의미:** 파일이 남아 있다는 사실을 넘어 기능이 실제로 어떻게 동작해야 정상인지 정의합니다. Git만으로는 업무 정상 조건을 정할 수 없으므로 사람이 기능 담당자와 합의해 작성합니다.
+
+**생성·갱신 시점:** 최초 기능 등록 때 만들고, OpenMetadata 버전이 바뀌어도 업무 요구가 같으면 재사용합니다. 기능 기준이나 test가 바뀔 때만 갱신합니다.
+
+```yaml
+- id: CONTRACT-KOREAN-IME
+  invariant: 한글 입력 중 자모가 중복·역전·소실되지 않는다.
+  required_tests:
+    - tests/bank/contracts/test_korean_ime.py::test_hangul_composition_roundtrip
+  customization_ids: [BANK-OM-005]
+```
+
+**실제 사용:** T60-I는 등록된 test 파일과 함수가 존재하는지 확인합니다. 현재 구현은 Python pytest selector만 확인하며, Java JUnit·TypeScript test 확인은 추가 개발 대상입니다. 이후 실행 검사는 해당 test의 성공 여부를 확인합니다. test 연결이 없으면 소스 검사 통과로 처리하지 않습니다.
+
+</details>
+
+<details>
+<summary><strong>2-3. 공용 파일 소유정보 · 한 파일을 함께 변경한 ID</strong></summary>
+
+**의미:** 여러 BANK-OM이 같은 파일을 정상적으로 변경했다는 사실과 실제 소유 ID를 기록합니다.
+
+**생성·갱신 시점:** Manifest들의 실제 변경 경로를 비교해 중복 경로를 자동 제안한 뒤, 각 commit diff에서 ID별 코드가 실제로 있는지 사람이 확인합니다. 업그레이드 버전마다 다시 계산·검토합니다.
+
+```yaml
+openmetadata-service/src/main/java/org/openmetadata/service/Entity.java:
+  - BANK-OM-001  # INSTANCE_CODE
+  - BANK-OM-002  # QUERY_REPORT
+
+openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json:
+  - BANK-OM-006  # Sybase
+  - BANK-OM-007  # Tibero
+```
+
+**실제 사용:** 검사기는 공용 파일을 한 ID의 단독 소유로 잘못 판단하지 않고, 등록된 모든 ID가 해당 경로를 실제로 변경했는지 확인합니다. 등록되지 않은 중복 소유는 담당 ID를 결정할 수 없으므로 재구성 검사가 `ANALYSIS ERROR`로 중단됩니다.
+
+</details>
+
+<details>
+<summary><strong>2-4. 전체 변경 목록 · patch와 custom 사이의 111개 경로</strong></summary>
+
+**의미:** `patch/om-1.13.0`과 `custom/om-1.13.0` 사이에서 최종적으로 달라진 모든 파일 경로입니다.
+
+**생성·갱신 시점:** 검사 대상 commit이 확정된 뒤 Git으로 생성하며, 업그레이드 버전마다 다시 생성합니다. 사람이 111개를 직접 작성하지 않습니다.
+
+```bash
+git diff --name-only origin/patch/om-1.13.0..origin/custom/om-1.13.0 \
+  > source-diff-paths.txt
+```
+
+```text
+openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
+openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
+openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/tiberoConnection.json
+```
+
+**실제 사용:** 실제 전체 변경 111개와 모든 Manifest의 변경 범위를 양방향으로 비교합니다. 어느 Manifest에도 등록되지 않은 경로가 있으면 `BLOCK`, Manifest에만 있고 실제 최종 코드가 바뀌지 않은 경로는 `APPROVAL` 대상입니다.
+
+</details>
+
+<details>
+<summary><strong>2-5. Patch-lock · 커밋 재적용을 선택할 때만 사용하는 순서표</strong></summary>
+
+**의미:** patch-replay 방식으로 커스터마이징 커밋을 다시 적용할 때 사용할 정확한 SHA와 순서를 고정합니다.
+
+**생성·갱신 시점:** 모든 전략의 필수 사전자료가 아닙니다. vendor-merge 소스 검사에서는 선택사항이며, patch-replay·복구·재현 시연을 할 때 커밋 순서가 확정된 후 만듭니다.
+
+```yaml
+patch_series:
+  - id: BANK-OM-007
+    revision: 1
+    source_commits:
+      - 62e39da8be65c3ff259802c1cd35f4b0c8baa333
+      - 7d19c8952612e77467b0a80d6287170d814f1de1
+```
+
+**실제 사용:** 재적용 도구는 62e39da 다음에 7d19c89를 적용합니다. 잠금에 없는 SHA나 순서 변경은 동일한 재현으로 인정하지 않습니다. 설계상 OM_TEMP 첫 vendor-merge 소스 검사에서는 Patch-lock 부재만으로 차단하지 않습니다.
+
+</details>
+
+## 3. 로컬 검사 대상 연결
+
+<details>
+<summary><strong>3-1. OM_TEMP repository 준비와 branch 확인</strong></summary>
+
+**의미:** 검사기는 GitHub 화면을 원격으로 읽는 것이 아니라 로컬 Git repository의 commit·diff·파일을 직접 검사합니다.
+
+**최초 준비:** 다른 노트북에서는 한 번 clone합니다. 이미 받은 뒤에는 `git fetch`로 갱신합니다. 현재 노트북에는 `work/om-temp-1.13.0-custom`에 OM_TEMP 원격 branch도 fetch되어 있으므로 다시 clone하지 않습니다.
+
+```bash
+git clone https://github.com/easyseop/OM_TEMP.git
+cd OM_TEMP
+git fetch origin patch/om-1.13.0 custom/om-1.13.0
+git rev-parse origin/patch/om-1.13.0
+git rev-parse origin/custom/om-1.13.0
+```
+
+**검사 연결:** 검사 실행기의 `--repo`에 이 로컬 경로를 전달합니다. 검사기는 여기서 BANK-OM commit, Customization-ID, 111개 diff와 최종 파일 내용을 읽습니다.
+
+</details>
+
+<details>
+<summary><strong>3-2. 공식 1.13.0과 OM_TEMP patch 기준 연결 주의사항</strong></summary>
+
+OM_TEMP는 공식 OpenMetadata 전체 Git 이력을 복사하지 않고 공식 1.13.0 파일 상태를 독립 commit으로 가져왔습니다. 따라서 다음 세 값을 구분해야 합니다.
+
+```text
+공식 OpenMetadata 1.13.0 commit: f329dd4a...
+OM_TEMP patch/om-1.13.0 commit: 2f4f3560...
+두 commit의 동일한 Git tree: da56c24d...
+```
+
+현재 vendor 검사 실행기는 공식 commit이 로컬 이력의 조상이라고 가정하므로 기존 1.13.1 설정을 그대로 사용하면 T25가 잘못 실패할 수 있습니다. 실제 검사 전에는 공식 commit과 로컬 baseline commit을 별도 입력으로 구분하거나, 동일 tree를 인정하는 연결 검사를 추가해야 합니다. 이 보완이 끝나기 전에는 전체 검사 실행 준비 완료로 표시하지 않습니다.
+
+</details>
+
 ## 현재 상태
 
 - BANK-OM-001~007 Manifest 초안 7개 생성 완료
 - 실제 Git commit의 변경 파일 목록을 초안에 반영 완료
 - 현재 Manifest 스키마 및 기본 의미 검사 7개 통과
+- Registry·Contract·공용 파일·111개 목록의 생성 원칙과 예시 정리 완료
+- 실제 1.13.0 등록 파일 생성과 독립 snapshot 연결 보완은 다음 작업
 - OM_TEMP 전체 코드 build, 업무 동작 test, 1.13.1 업그레이드 비교는 아직 실행 전
 - 따라서 이 문서의 Manifest는 **코드 기준 초안**이며 배포 승인 결과가 아님

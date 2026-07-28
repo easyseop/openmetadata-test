@@ -1,14 +1,14 @@
 # Codex 작업 인수인계
 
-> 갱신 기준: 2026-07-29 07:56 KST
+> 갱신 기준: 2026-07-29 08:29 KST
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
 > 문서 묶음 작성 전 기준 commit: `0a6d009107a18e69a2150388442adffb6332f08c`
 > 제품 코드 상태: `easyseop/OpenMetadata` commit
 > `849ae756cd238f218b5e3a6c795a392305cb32ee`
 > 공유문서·스킬 최초 로컬 commit: `becb18e` (이후 보강은 현재 브랜치의 `git log`로 확인)
-> 원격 push: 거버넌스 저장소 push는 승인 확인 전까지 대기. 사용자가 만든
-> `easyseop/OM_TEMP`에는 1.13.0 시연용 제품 코드 두 브랜치를 push함
+> 원격 push: 거버넌스 저장소의 이전 작업은 `2e67f91`까지 push 완료. 사용자가
+> 만든 `easyseop/OM_TEMP`에는 1.13.0 시연용 제품 코드 두 브랜치를 push함
 
 이 문서는 다른 노트북이나 새 작업에서 바로 이어가기 위한 현재 정본이다.
 과거 Claude 작업의 상세 기록은
@@ -75,11 +75,22 @@ OM_TEMP patch tree가
 - 7개 Manifest의 스키마·기본 의미 검사와 실제 Git diff 일치 확인 통과
 - 각 commit의 실제 GitHub 캡처, 설명용 강조본, BANK-OM-005 전체 diff 캡처,
   Manifest 전체를 ID별 펼치기로 구성
+- 같은 미리보기에 `1. Manifest 등록 → 2. 검사 기준자료 등록 → 3. 로컬 검사
+  대상 연결`을 추가하고 화면 제목을 `OM_TEMP 검사 전 사전환경 설정 가이드`로
+  변경
+- Registry·Contracts·공용 파일 소유정보·111개 전체 변경 목록·선택
+  Patch-lock을 각각 `의미 → 만드는 시점 → 실제 사용 → 예시 → 검사 결과`로
+  설명
+- `.agents/skills/clarity-preflight-review/SKILL.md`에도 위 설명 순서를
+  필수 검토 기준으로 추가
 
 아직 다음 항목은 하지 않았다.
 
-- `customization-registry.yaml`, `contracts.yaml`, patch-lock 등 1.13.0 전체 등록
-  묶음 완성 및 검사 실행기 연결
+- `customization-registry.yaml`, `contracts.yaml`, 공용 파일 소유정보,
+  111개 전체 변경 목록의 실제 파일 생성과 검사 실행기 연결. Patch-lock은
+  patch-replay를 선택할 때만 생성
+- 원격 OM_TEMP 독립 snapshot을 현재 실행기가 잘못된 T25 실패 없이 처리하도록
+  공식 source SHA와 로컬 baseline SHA의 분리 또는 동일 tree 인정 방식 구현
 - OM_TEMP 전체 코드 build·업무 동작 test·1.13.1 업그레이드 비교
 - `verified/...` tag 생성과 배포 승인
 
@@ -257,16 +268,22 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
 2. 이 문서와 `SHARING_ARTIFACT_REQUIREMENTS.md`를 읽는다.
 3. `.agents/skills/clarity-preflight-review/SKILL.md`를 읽고 이후 모든 공유문서
    검토에 적용한다.
-4. `OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html`에서 BANK-OM-001~007
-   캡처와 Manifest 초안을 확인한다.
-5. `harness/registrations/om-temp-1.13.0/`에 registry, contracts, patch-lock,
-   공유 경로 소유자와 111개 전체 diff 목록을 추가해 검사 입력 묶음을 완성한다.
-6. OM_TEMP 1.13.0을 검사기에 연결하고 소스 gate와 실행 가능한 test를 수행한다.
-7. 2차·3차 HTML에 남은 사용자 피드백을 반영한다.
-8. 공식 1.13.1 upgrade 작업 branch에서 실제 충돌·재적용·재검사를 수행한다.
-9. 실제 Git 병합 전 대상·diff·병합·검사·결과 화면을 캡처해 4차 시연을 만든다.
-10. 1차·2차·3차·4차를 하나의 최종 공유문서로 합치고 중복과 용어를 다시 검토한다.
-11. 작업 완료 후 이 문서의 상태·검증·다음 단계를 갱신하고 같은 브랜치에
+4. `OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html`에서 검사 전 사전환경
+   설정 3단계를 확인한다. 파일명은 유지했지만 화면 제목은
+   `OM_TEMP 검사 전 사전환경 설정 가이드`다.
+5. `harness/registrations/om-temp-1.13.0/`에 Registry, Contracts, 공용 파일
+   소유정보와 111개 전체 변경 목록을 실제 파일로 생성한다. Patch-lock은
+   vendor-merge 소스 검사의 필수가 아니며 patch-replay·복구·재현 시연을
+   선택할 때만 만든다.
+6. 원격 OM_TEMP가 공식 commit과 동일한 tree를 독립 commit으로 가져온 점을
+   처리하도록, 공식 source SHA와 로컬 baseline SHA를 분리하거나 동일 tree
+   기준을 인정하도록 실행기를 보완한다.
+7. OM_TEMP 1.13.0을 검사기에 연결하고 소스 gate와 실행 가능한 test를 수행한다.
+8. 2차·3차 HTML에 남은 사용자 피드백을 반영한다.
+9. 공식 1.13.1 upgrade 작업 branch에서 실제 충돌·재적용·재검사를 수행한다.
+10. 실제 Git 병합 전 대상·diff·병합·검사·결과 화면을 캡처해 4차 시연을 만든다.
+11. 1차·2차·3차·4차를 하나의 최종 공유문서로 합치고 중복과 용어를 다시 검토한다.
+12. 작업 완료 후 이 문서의 상태·검증·다음 단계를 갱신하고 같은 브랜치에
    커밋·푸시한다.
 
 ## 8. 작업 시 주의

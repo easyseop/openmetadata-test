@@ -52,6 +52,25 @@ workflow step when it belongs inside that step.
 - State whether a finding causes pass, review, block, or no automated decision.
 - Use an actual example when a definition alone can be misread.
 
+### Evidence-backed explanation
+
+When introducing a configuration file, command, check, result field, or process term,
+do not stop at a dictionary-style definition. Explain it with this compact sequence:
+
+1. **Meaning** — what the item represents in this workflow.
+2. **Timing** — when it is first created, when it is updated, and whether it is
+   permanent, version-specific, or temporary.
+3. **Actual use** — which command, component, or person reads it and for what decision.
+4. **Concrete example** — show a real field, path, command, diff, or result from the
+   current repository whenever available.
+5. **Check and outcome** — state what is compared and whether mismatch causes pass,
+   review, block, or no automated decision.
+
+Separate information that Git or another tool can generate automatically from information
+that requires a human decision. For example, Git can generate a changed-path list, but it
+cannot decide the business invariant for a contract. If an item is optional only for a
+specific strategy, label the strategy and do not present it as a universal prerequisite.
+
 ### Accuracy
 
 - Separate implemented, tested, planned, and environment-pending behavior.
