@@ -1,12 +1,13 @@
 # Codex 작업 인수인계
 
-> 갱신 기준: 2026-07-29 00:05 KST
+> 갱신 기준: 2026-07-29 00:31 KST
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
-> 이번 문서 개편 commit: `dd45b578e189f9e6e3cc2beae5e5dc99184bd6d3`
-> 최신 원격 검증: `dd45b57...`의 `Source candidate` run
-> [`30371799025`](https://github.com/easyseop/openmetadata-test/actions/runs/30371799025)
-> 성공 (source gates와 source patch-kill 2건 통과)
+> 이번 문서 개편 commit: `20b8592bfb3ed7f4b84a4ff6dbda556780fd5f50`
+> 최신 원격 검증: `20b8592...`의 `Source candidate` run
+> [`30373496657`](https://github.com/easyseop/openmetadata-test/actions/runs/30373496657)
+> 성공 (`348 passed, 7 operational skips`, source gates와 source
+> patch-kill 2건 통과)
 > 문서 묶음 작성 전 기준 commit: `0a6d009107a18e69a2150388442adffb6332f08c`
 > 제품 코드 상태: `easyseop/OpenMetadata` commit
 > `849ae756cd238f218b5e3a6c795a392305cb32ee`
@@ -720,3 +721,8 @@ JUnit/Jest/direct_tests, 실행환경·로그 digest 등 운영 범위 보강이
 - skip 9개는 `/home/user/om-mirror`가 없는 로컬 환경의 policy-drift 5개와
   upgrade-watch 4개이며 PASS로 계산하지 않는다.
 - `git diff --check`: 통과
+- 원격 `Source candidate` run `30373496657`: 성공. `348 passed,
+  7 operational skips`, 고정 source gates와 source patch-kill 2건 통과
+- 90일 증거 artifact: `source-patch-kill-evidence-30373496657-1`, ID
+  `8693987394`, GitHub SHA-256
+  `3d089c30b3fcbc141674a964c8a803d1f51f2352cb9962af385e428a10dee29c`

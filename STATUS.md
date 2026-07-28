@@ -1,12 +1,13 @@
 # Current implementation status
 
-> Updated: 2026-07-29 00:05 KST
+> Updated: 2026-07-29 00:31 KST
 > Branch: `codex/strict-manifest-gates`
 > Latest remotely verified sharing/rehearsal head:
-> `dd45b578e189f9e6e3cc2beae5e5dc99184bd6d3`
+> `20b8592bfb3ed7f4b84a4ff6dbda556780fd5f50`
 > Latest sharing/rehearsal CI:
-> [`30371799025`](https://github.com/easyseop/openmetadata-test/actions/runs/30371799025)
-> (`Source candidate`, success; source gates and 2 source patch-kill experiments passed)
+> [`30373496657`](https://github.com/easyseop/openmetadata-test/actions/runs/30373496657)
+> (`Source candidate`, success; 348 passed, 7 operational skips, source gates
+> and 2 source patch-kill experiments passed)
 > Last verified implementation commit: `5f54687`
 > Fixed-mirror CI compatibility fix: `f661796`
 > Strict-scope and stage 2·3 batch verified: 2026-07-28 10:18 KST
@@ -73,6 +74,12 @@ The pre-production backlog now names those five unfinished-result verifiers,
 the exact implementation or external input still needed, and a concrete
 completion criterion. Separate hardening items cover T41, T42/T93, T60-I, and
 T63 without misclassifying their existing results as final operating proof.
+
+Remote run `30373496657` succeeded at `20b8592...`: `348 passed, 7 operational
+skips`, all locked source gates passed, and both source-capable patch-kill
+experiments passed. The 90-day artifact
+`source-patch-kill-evidence-30373496657-1` has ID `8693987394` and GitHub
+SHA-256 `3d089c30b3fcbc141674a964c8a803d1f51f2352cb9962af385e428a10dee29c`.
 
 ### 2026-07-29 phase 1·2 readability revision
 

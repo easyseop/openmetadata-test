@@ -2169,3 +2169,9 @@ Claude는 다음을 독립적으로 확인해 달라.
 로컬 검증은 상세보기 17개·초록 표시 12개·지도 카드 4개·범례 포함 체크 아이콘
 13개, 선택 HTML 요소 여닫기 불일치 0건, 관련 집중 테스트
 `55 passed, 9 mirror-dependent skipped`, `git diff --check` 통과다.
+원격 run `30373496657`도 `20b8592...`에서 `348 passed,
+7 operational skips`로 성공했고 source gates와 source patch-kill 2건을
+통과했다. 90일 증거 artifact는
+`source-patch-kill-evidence-30373496657-1`, ID `8693987394`, GitHub
+SHA-256
+`3d089c30b3fcbc141674a964c8a803d1f51f2352cb9962af385e428a10dee29c`다.
