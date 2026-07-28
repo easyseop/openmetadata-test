@@ -1,6 +1,6 @@
 # Codex 작업 인수인계
 
-> 갱신 기준: 2026-07-29 07:13 KST
+> 갱신 기준: 2026-07-29 07:56 KST
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
 > 문서 묶음 작성 전 기준 commit: `0a6d009107a18e69a2150388442adffb6332f08c`
@@ -65,12 +65,23 @@ OM_TEMP patch tree가
 007은 최초 적용과 후속 보완 두 commit이다. 008~011은 넣지 않았다. 두 브랜치
 사이 실제 변경 파일은 111개다.
 
-사용자 요청에 따라 아직 다음 항목은 하지 않았다.
+2026-07-29 KST에 실제 OM_TEMP commit을 기준으로 다음 작업을 추가했다.
 
-- BANK-OM Manifest 복사·신규 작성
-- 검사기 저장소와 OM_TEMP 연결
-- 빌드·단위 테스트·소스 gate 실행
-- `verified/...` tag 생성
+- `harness/registrations/om-temp-1.13.0/manifests/`에 BANK-OM-001~007
+  Manifest 초안 7개 생성
+- `generate_manifest_drafts.py`로 각 commit의 전체 변경 파일을 다시 추출할 수
+  있도록 자동화
+- BANK-OM-007의 최초 8개 경로와 후속 commit의 추가 2개 경로를 분리 등록
+- 7개 Manifest의 스키마·기본 의미 검사와 실제 Git diff 일치 확인 통과
+- 각 commit의 실제 GitHub 캡처, 설명용 강조본, BANK-OM-005 전체 diff 캡처,
+  Manifest 전체를 ID별 펼치기로 구성
+
+아직 다음 항목은 하지 않았다.
+
+- `customization-registry.yaml`, `contracts.yaml`, patch-lock 등 1.13.0 전체 등록
+  묶음 완성 및 검사 실행기 연결
+- OM_TEMP 전체 코드 build·업무 동작 test·1.13.1 업그레이드 비교
+- `verified/...` tag 생성과 배포 승인
 
 현재 수행한 확인은 해결되지 않은 Git 충돌 없음, `git diff --check` 통과, 변경
 JSON 문법 통과, 8개 commit의 `Customization-ID` 확인까지다. 다음 단계는 사용자가
@@ -80,11 +91,12 @@ OM_TEMP의 두 브랜치와 001~007 실제 diff를 확인한 뒤, Manifest를 �
 
 Manifest 작성 절차는
 [`OM_TEMP_Manifest_작성_단계별_가이드.md`](../00-사용가이드/OM_TEMP_Manifest_작성_단계별_가이드.md)에
-정리했다. 이 문서는 실제 OM_TEMP 원격 SHA와 8개 commit을 다시 확인한 뒤
-작성했으며, 아직 1.13.0 Manifest 파일 자체를 생성한 것은 아니다. 기존
-`harness/registrations/kb-openmetadata/`는 1.13.1 기준이므로 덮어쓰지 않고,
-실제 등록 시 `harness/registrations/om-temp-1.13.0/`을 별도 등록 묶음으로
-만드는 방향을 제안했다.
+정리했다. 각 commit 캡처와 실제 Manifest 초안 전체는
+[`OM_TEMP_커밋별_Manifest_등록_가이드.md`](../00-사용가이드/OM_TEMP_커밋별_Manifest_등록_가이드.md),
+화면 미리보기는
+[`OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html`](../00-사용가이드/OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html)에
+있다. 기존 `harness/registrations/kb-openmetadata/`는 1.13.1 기준이므로
+수정하지 않았고, 1.13.0 초안은 별도 등록 묶음으로 생성했다.
 
 향후 태그는 `patch/om-1.13.0` snapshot에
 `baseline/om-1.13.0`, 검사에 사용한 정확한 `custom/om-1.13.0` SHA에
@@ -245,12 +257,16 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
 2. 이 문서와 `SHARING_ARTIFACT_REQUIREMENTS.md`를 읽는다.
 3. `.agents/skills/clarity-preflight-review/SKILL.md`를 읽고 이후 모든 공유문서
    검토에 적용한다.
-4. 2차 HTML을 열어 사용자 피드백이 남았는지 확인한다.
-5. 2차가 승인되면 3차 검사 결과·책임자 판정 HTML을 확정한다.
-6. 4차에서 테스트할 공식 버전 구간을 정하고 upgrade branch를 별도로 만든다.
-7. 실제 Git 병합 전 대상·diff·병합·검사·결과 화면을 캡처해 4차 시연을 만든다.
-8. 1차·2차·3차·4차를 하나의 최종 공유문서로 합치고 중복과 용어를 다시 검토한다.
-9. 작업 완료 후 이 문서의 상태·검증·다음 단계를 갱신하고 같은 브랜치에
+4. `OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html`에서 BANK-OM-001~007
+   캡처와 Manifest 초안을 확인한다.
+5. `harness/registrations/om-temp-1.13.0/`에 registry, contracts, patch-lock,
+   공유 경로 소유자와 111개 전체 diff 목록을 추가해 검사 입력 묶음을 완성한다.
+6. OM_TEMP 1.13.0을 검사기에 연결하고 소스 gate와 실행 가능한 test를 수행한다.
+7. 2차·3차 HTML에 남은 사용자 피드백을 반영한다.
+8. 공식 1.13.1 upgrade 작업 branch에서 실제 충돌·재적용·재검사를 수행한다.
+9. 실제 Git 병합 전 대상·diff·병합·검사·결과 화면을 캡처해 4차 시연을 만든다.
+10. 1차·2차·3차·4차를 하나의 최종 공유문서로 합치고 중복과 용어를 다시 검토한다.
+11. 작업 완료 후 이 문서의 상태·검증·다음 단계를 갱신하고 같은 브랜치에
    커밋·푸시한다.
 
 ## 8. 작업 시 주의

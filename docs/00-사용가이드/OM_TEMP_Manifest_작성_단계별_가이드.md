@@ -139,6 +139,10 @@ BANK-OM ID에 서로 다른 Git commit SHA가 연결될 수 있습니다.
 목록에서 BANK-OM ID가 비어 있거나 하나의 commit에 ID가 여러 개 나오면
 Manifest를 작성하기 전에 commit 기록부터 수정해야 합니다.
 
+각 커밋의 실제 GitHub 캡처, 기능 단위 판단 근거, Manifest 전체는
+[OM_TEMP 커밋별 Manifest 등록 가이드](OM_TEMP_커밋별_Manifest_등록_가이드.md)에서
+ID별 펼치기로 확인할 수 있습니다.
+
 ## 6. 각 commit에서 실제 변경 파일 확인
 
 먼저 BANK-OM-001로 절차를 확인한 뒤 같은 방법을 002~007에 반복합니다.
@@ -328,16 +332,23 @@ commit SHA는 patch-lock에 두 개 모두 기록하고, 이 항목은 두 번�
 
 ### 9.1 자동 생성 도구 사용 여부
 
-현재 저장소에는 OM_TEMP 1.13.0 commit을 읽어 새 Manifest 초안을 자동으로
-만드는 스크립트가 없습니다.
+현재 저장소에는 OM_TEMP 1.13.0 commit을 읽어 Manifest 초안을 만드는
+`harness/registrations/om-temp-1.13.0/generate_manifest_drafts.py`가 있습니다.
+다음 명령을 실행하면 기록된 Git commit의 전체 변경 파일을 다시 추출해
+BANK-OM-001~007 Manifest 7개를 생성합니다.
+
+```bash
+./.venv/bin/python \
+  harness/registrations/om-temp-1.13.0/generate_manifest_drafts.py \
+  --repo <OM_TEMP가-있는-절대경로>
+```
+
+스크립트는 Git이 확정할 수 있는 전체 변경 파일과 BANK-OM-007의 후속 추가
+파일을 자동으로 만듭니다. `required`, 미수정 의존 파일, 계약은 기능 의미를
+판단해야 하므로 스크립트 안의 명시적인 검토값으로 관리합니다.
 
 `harness/registrations/kb-openmetadata/materialize_exact_scopes.py`는 기존
-1.13.1 snapshot과 기존 Manifest를 기준으로 과거의 넓은 폴더 패턴을 정확한
-파일 목록으로 바꾸는 전용 도구입니다. 이번 1.13.0 등록에 실행하면 안 됩니다.
-
-이번 단계에서는 6장의 Git 명령으로 파일 목록을 추출하고 담당자가
-`required`, `upgrade_watch`, 계약을 판단합니다. 자동화할 수 있는 파일 추출과
-업무 판단이 필요한 항목을 분리하기 위한 절차입니다.
+1.13.1 등록자료 전용이므로 이번 1.13.0 생성에는 사용하지 않습니다.
 
 ### 9.2 파일 위치
 
@@ -365,8 +376,10 @@ harness/registrations/om-temp-1.13.0/
     └── BANK-OM-007.yaml
 ```
 
-이 폴더는 아직 생성하지 않았습니다. 위 명령은 실제 Manifest 등록 작업을
-시작할 때 실행하고, 001부터 순서대로 작성해 검토합니다.
+현재 이 폴더와 BANK-OM-001~007 Manifest 초안은 생성되어 있습니다.
+Manifest 7개는 현재 스키마 및 기본 의미 검사를 통과했습니다. 다만 제품 build,
+업무 동작 test, 1.13.1 업그레이드 비교는 아직 실행 전이므로 배포 승인 상태는
+아닙니다.
 
 ### 9.3 BANK-OM-001 기본 형태
 
