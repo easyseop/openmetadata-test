@@ -39,6 +39,11 @@
       </li>
     </ol>
     <p class="p2-terms"><strong>Git commit SHA</strong>는 저장된 코드 버전을 식별하는 값입니다. <strong>SHA-256 digest</strong>는 파일 내용이 같은지 비교하기 위해 계산한 값입니다.</p>
+    <div class="p2-language">
+      <strong>프론트엔드와 백엔드에 같은 검사기를 쓸 수 있나?</strong>
+      <p><b>Git 커밋과 파일 변경을 확인하는 검사는 언어에 상관없이 그대로 사용할 수 있습니다.</b> T25-R·T25·T26·T30·T31·T40·T41·T42·T43·T93은 Java·TypeScript·Python·JSON·YAML·SQL 등 파일 종류와 관계없이 Git 이력, 각 커밋에서 바뀐 파일 경로와 공식 원본 대비 최종 파일 상태를 확인합니다. 따라서 프론트엔드와 백엔드 파일을 같은 방식으로 관리할 수 있습니다. 다만 이 공통 검사는 파일 내부 코드의 의미나 실행 동작까지 언어에 관계없이 이해하는 검사가 아닙니다.</p>
+      <p><b>테스트 코드 자체를 해석하거나 실행하는 검사는 언어·도구별 지원이 필요합니다.</b> 현재 T60-I는 Python pytest 코드만 확인하고, T63은 TypeScript 오류만 비교합니다. T61·T62도 Python pytest를 실행 도구로 사용하지만 그 테스트가 Java 백엔드 API와 TypeScript 프론트 화면을 호출하는 것은 가능합니다. Java JUnit이나 TypeScript Jest를 직접 등록·실행하려면 해당 도구용 확인 방식과 실행 연결을 추가해야 합니다.</p>
+    </div>
   </section>
 
   <section class="p2-section" aria-labelledby="p2-table-title">
@@ -77,9 +82,9 @@
           </tr>
           <tr>
             <td><strong>T60-I</strong><br><span>필수 테스트 코드 확인</span></td>
-            <td>변경관리표에 연결한 업무 테스트가 이름만 등록된 것이 아니라 실제 Python 테스트 코드로 존재하는지 확인합니다.</td>
-            <td><code>contracts.yaml</code>의 테스트 파일 경로와 함수 이름을 읽고, Python 코드 구조 분석(AST)으로 파일을 정상적으로 해석할 수 있는지와 해당 테스트 함수가 실제로 존재하는지 확인합니다.</td>
-            <td>커스터마이징 개발자가 기능과 테스트를 함께 작성하고, 변경관리 담당자가 업무 계약과 연결을 검토하는 절차가 필요합니다. 현재 검사는 작성자가 누구인지 강제하지 않으며, 함수가 존재한다는 사실만 확인하므로 테스트의 품질과 실행 성공 여부는 T61·T62에서 확인해야 합니다.</td>
+            <td>각 커스터마이징의 핵심 업무 동작을 확인하기로 등록한 테스트가 이름만 있는 것이 아니라 실제 코드로 존재하는지 확인합니다. 현재 등록된 9개는 InstanceCode API·검색, QueryReport 연결, Data Assertions API·화면, 은행 컬럼 API·화면, 한글 입력 화면, Sybase·Tibero 연결 스키마를 확인합니다.</td>
+            <td><code>contracts.yaml</code>에 적은 Python pytest 파일 경로와 함수 이름을 읽고, Python 코드 구조 분석(AST)으로 파일을 정상적으로 해석할 수 있는지와 해당 테스트 함수가 실제로 존재하는지 확인합니다. 이 단계에서는 테스트를 실행하지 않습니다.</td>
+            <td>현재 T60-I는 <code>.py</code> 파일만 허용하므로 Java JUnit이나 TypeScript Jest 테스트의 존재는 확인하지 않습니다. Python 테스트가 Java API와 TypeScript 화면을 실제로 호출할 수는 있지만, 다른 테스트 언어를 직접 등록하려면 검사기에 언어·프레임워크별 확인 방식을 추가해야 합니다. 또한 현재는 계약에서 파생된 테스트만 확인하므로 Manifest의 <code>direct_tests</code>도 같은 방식으로 확인하도록 보완해야 합니다.</td>
           </tr>
           <tr>
             <td><strong>T30</strong><br><span>커밋 메시지 형식</span></td>
@@ -178,6 +183,7 @@
       <li><strong>T41</strong><span>경로 비교에 정적 보안 분석과 보안 담당자 리뷰를 추가합니다.</span></li>
       <li><strong>T42·T93</strong><span>감시 파일 자동 제안과 민감 경로 규칙의 노후화 검사를 함께 실행합니다.</span></li>
       <li><strong>T43</strong><span>충돌률을 사람이 입력하지 않고 실제 업그레이드 재적용 결과에서 자동 계산합니다.</span></li>
+      <li><strong>T60-I</strong><span>Python 외에 Java JUnit·TypeScript Jest를 등록할 수 있게 하고 <code>direct_tests</code>의 실제 코드 존재도 확인합니다.</span></li>
       <li><strong>T61</strong><span>단순 실패가 아니라 커스터마이징 누락 때문에 발생한 실패인지 오류 종류와 메시지까지 확인합니다.</span></li>
       <li><strong>T62·T63</strong><span>DB·검색엔진·Node·Yarn·설정 등 실행 환경을 하나의 digest로 기록하고 결과에 연결합니다.</span></li>
       <li><strong>T90·T91</strong><span>각 단계의 실제 로그와 배포 digest를 신뢰할 수 있는 실행 시스템이 서명하고 보관하도록 합니다.</span></li>
@@ -259,6 +265,18 @@
 
     #om-phase2 .p2-terms {
       color: var(--muted-foreground);
+    }
+
+    #om-phase2 .p2-language {
+      display: grid;
+      gap: 8px;
+      padding: 12px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    #om-phase2 .p2-language p {
+      margin: 0;
     }
 
     #om-phase2 .p2-table {
