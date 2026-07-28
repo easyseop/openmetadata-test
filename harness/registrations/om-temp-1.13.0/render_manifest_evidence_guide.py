@@ -382,10 +382,17 @@ def render() -> str:
             "  customization_ids: [BANK-OM-005]",
             "```",
             "",
-            "**실제 사용:** T60-I는 등록된 test 파일과 함수가 존재하는지 확인합니다. "
-            "현재 구현은 Python pytest selector만 확인하며, Java JUnit·TypeScript test "
-            "확인은 추가 개발 대상입니다. 이후 실행 검사는 해당 test의 성공 여부를 "
-            "확인합니다. test 연결이 없으면 소스 검사 통과로 처리하지 않습니다.",
+            "**실제 사용:** 필수 테스트 코드 존재 검증은 `required_tests`에 적은 "
+            "`파일 경로::test 함수명`이 검사 저장소에 실제 Python pytest 코드로 "
+            "있는지 확인합니다. Java JUnit·TypeScript test 확인은 추가 개발 "
+            "대상입니다.",
+            "",
+            "**필수 여부와 검사 결과:** 현재 전체 소스 검사에서는 `active` 상태의 "
+            "BANK-OM마다 Contract가 하나 이상 있어야 하고, 각 Contract의 "
+            "`required_tests`에도 test가 하나 이상 있어야 합니다. 따라서 선택사항이 "
+            "아닙니다. Contract 연결, test 경로 또는 test 함수가 없으면 `BLOCK`입니다. "
+            "다만 이 검증의 `PASS`는 test 코드가 존재한다는 뜻일 뿐이며, test 실행 "
+            "성공은 후속 실행 검사에서 별도로 확인합니다.",
             "",
             "</details>",
             "",
@@ -626,8 +633,8 @@ def render_html() -> str:
           <div class="explain-grid">
             <p><b>의미</b>파일 존재만으로 알 수 없는 실제 업무 동작의 정상 조건입니다.</p>
             <p><b>만드는 시점</b>최초 기능 등록 때 담당자가 정하고, 정상 조건이나 test가 바뀔 때 갱신합니다.</p>
-            <p><b>실제 사용</b>T60-I가 연결된 test 코드의 파일과 test 이름이 실제로 있는지 확인합니다.</p>
-            <p><b>검사 결과</b>필수 test 연결이 사라지면 <em class="block">BLOCK</em>입니다. 현재는 Python pytest만 확인하며 Java·TypeScript test 확인은 추가 개발 대상입니다.</p>
+            <p><b>실제 사용</b>필수 테스트 코드 존재 검증은 <code>required_tests</code>의 <code>파일 경로::test 함수명</code>이 실제 Python pytest 코드로 있는지 확인합니다.</p>
+            <p><b>필수 여부와 결과</b><code>active</code> BANK-OM에는 Contract와 필수 test가 각각 하나 이상 필요합니다. 없으면 <em class="block">BLOCK</em>입니다. PASS는 test 코드 존재만 뜻하며 실행 성공은 후속 검사에서 확인합니다. Java·TypeScript test 확인은 추가 개발 대상입니다.</p>
           </div>
           <pre><code>- id: CONTRACT-KOREAN-IME
   invariant: 한글 입력 중 자모가 중복·역전·소실되지 않는다.

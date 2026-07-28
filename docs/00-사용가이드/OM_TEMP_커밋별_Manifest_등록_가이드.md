@@ -879,7 +879,9 @@ entries:
   customization_ids: [BANK-OM-005]
 ```
 
-**실제 사용:** T60-I는 등록된 test 파일과 함수가 존재하는지 확인합니다. 현재 구현은 Python pytest selector만 확인하며, Java JUnit·TypeScript test 확인은 추가 개발 대상입니다. 이후 실행 검사는 해당 test의 성공 여부를 확인합니다. test 연결이 없으면 소스 검사 통과로 처리하지 않습니다.
+**실제 사용:** 필수 테스트 코드 존재 검증은 `required_tests`에 적은 `파일 경로::test 함수명`이 검사 저장소에 실제 Python pytest 코드로 있는지 확인합니다. Java JUnit·TypeScript test 확인은 추가 개발 대상입니다.
+
+**필수 여부와 검사 결과:** 현재 전체 소스 검사에서는 `active` 상태의 BANK-OM마다 Contract가 하나 이상 있어야 하고, 각 Contract의 `required_tests`에도 test가 하나 이상 있어야 합니다. 따라서 선택사항이 아닙니다. Contract 연결, test 경로 또는 test 함수가 없으면 `BLOCK`입니다. 다만 이 검증의 `PASS`는 test 코드가 존재한다는 뜻일 뿐이며, test 실행 성공은 후속 실행 검사에서 별도로 확인합니다.
 
 </details>
 
