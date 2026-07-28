@@ -1,6 +1,6 @@
 # Codex 작업 인수인계
 
-> 갱신 기준: 2026-07-29 06:48 KST
+> 갱신 기준: 2026-07-29 07:13 KST
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
 > 문서 묶음 작성 전 기준 commit: `0a6d009107a18e69a2150388442adffb6332f08c`
@@ -77,6 +77,20 @@ JSON 문법 통과, 8개 commit의 `Customization-ID` 확인까지다. 다음 �
 OM_TEMP의 두 브랜치와 001~007 실제 diff를 확인한 뒤, Manifest를 순차 등록하고
 검사기를 연결하는 것이다. `candidate/...` branch는 다음 단계가 아니라 설계에서
 제외했다.
+
+Manifest 작성 절차는
+[`OM_TEMP_Manifest_작성_단계별_가이드.md`](../00-사용가이드/OM_TEMP_Manifest_작성_단계별_가이드.md)에
+정리했다. 이 문서는 실제 OM_TEMP 원격 SHA와 8개 commit을 다시 확인한 뒤
+작성했으며, 아직 1.13.0 Manifest 파일 자체를 생성한 것은 아니다. 기존
+`harness/registrations/kb-openmetadata/`는 1.13.1 기준이므로 덮어쓰지 않고,
+실제 등록 시 `harness/registrations/om-temp-1.13.0/`을 별도 등록 묶음으로
+만드는 방향을 제안했다.
+
+향후 태그는 `patch/om-1.13.0` snapshot에
+`baseline/om-1.13.0`, 검사에 사용한 정확한 `custom/om-1.13.0` SHA에
+`verified/om-1.13.0-bank.1` 형식으로 붙인다. 현재 두 태그는 아직 만들지
+않았다. 검증 태그는 Manifest·Git 범위·필수 test와 정해진 gate를 통과한 뒤에만
+만들며, 그 자체가 행내 운영 배포 완료를 뜻하지 않는다고 기록한다.
 
 검토본을 승인본이라고 표시하지 않는다. 사용자가 명시적으로 승인한 범위와 아직
 검토 중인 범위를 문서와 화면에서 구분한다.
