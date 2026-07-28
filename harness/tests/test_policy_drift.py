@@ -1,7 +1,8 @@
-"""T93 policy-staleness tests against the REAL 1.13.0 tree.
+"""T93 policy-staleness tests against the fixed upstream A→B mirror.
 
-The layout is pinned to 1.12.13, and 1.13.0 really adds new top-level modules
-(openmetadata-mcp, etc.), so this exercises a genuine policy-drift finding.
+The test compares the two pinned trees and checks only top-level directories
+that are genuinely new in B. Directories already present in A are not policy
+drift merely because the ownership layout does not classify them.
 """
 import subprocess
 from pathlib import Path
@@ -32,8 +33,7 @@ def test_empty_gun_pattern_detected(om_mirror):
 def test_new_toplevel_modules_are_unclassified(om_mirror):
     unclassified = PD.unclassified_toplevel_modules(
         str(om_mirror), "UPSTREAM_B", layout())
-    # 1.13.0 adds modules the 1.12.13-pinned layout has never seen.
-    assert "openmetadata-mcp" in unclassified
+    assert unclassified == [".devcontainer", "skills"]
 
 
 def test_check_policy_drift_fails_closed_on_new_module(om_mirror):
@@ -51,8 +51,13 @@ def test_stale_pattern_only_is_approval(om_mirror):
         upstream_roots=["**"], governance_roots=[], extension_roots=[],
         unknown_policy="analysis_error",
     )
-    r = PD.check_policy_drift(str(om_mirror), "UPSTREAM_B",
-                             ["nonexistent-module/**"], wide)
+    r = PD.check_policy_drift(
+        str(om_mirror),
+        "UPSTREAM_B",
+        ["nonexistent-module/**"],
+        wide,
+        baseline_ref="UPSTREAM_A",
+    )
     assert r.verdict == V.APPROVAL
 
 
