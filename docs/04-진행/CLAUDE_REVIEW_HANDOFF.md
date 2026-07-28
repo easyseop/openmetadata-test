@@ -1963,6 +1963,11 @@ git pull --ff-only
 ## 10. 2026-07-28 2·3차 검사기 보강
 
 - implementation commit: `5f54687`
+- fixed-mirror CI compatibility commit: `f661796`
+- remote verification:
+  [`30253003871`](https://github.com/easyseop/openmetadata-test/actions/runs/30253003871)
+  (`341 passed, 7 operational skips`, 8 source gates, 2 source patch-kill
+  experiments, evidence artifact `8647838013`)
 
 ### 구현한 코드
 

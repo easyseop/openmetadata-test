@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: "2026-07-28T10:07:10+09:00"
+generated_at: "2026-07-28T10:18:04+09:00"
 governance_evidence_commit: b1d3fa6d00b75c96d837587ea0730f3d6d9e5323
 repository: easyseop/OpenMetadata
 branch: codex/bank-vendor-1.13.1-rebuild
@@ -185,6 +185,19 @@ product_verification:
       tests_passed: 316
       tests_skipped_operational: 7
       source_gates_passed: 5
+    strict_scope_stage23_remote_run:
+      id: 30253003871
+      head_sha: f6617966582c5c3b3f28c7075b8dfa4d2ceabcca
+      conclusion: success
+      tests_passed: 341
+      tests_skipped_operational: 7
+      source_gates_passed: 8
+      source_patch_kill_experiments_passed: 2
+      evidence_artifact:
+        id: 8647838013
+        name: source-patch-kill-evidence-30253003871-1
+        digest: sha256:86c3dd7609b0489326797f3599b7274f60055df2bd4602c4f10884c4d0b84f53
+      url: https://github.com/easyseop/openmetadata-test/actions/runs/30253003871
     prior_remote_run:
       id: 30160752510
       head_sha: 73f9fc572ea1b68f77dcbeec59953986a7b76ab1

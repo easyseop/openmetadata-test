@@ -3,7 +3,9 @@
 > Updated: 2026-07-28 KST
 > Branch: `codex/strict-manifest-gates`
 > Last verified implementation commit: `5f54687`
-> Strict-scope and stage 2·3 batch verified: 2026-07-28 10:07 KST
+> Fixed-mirror CI compatibility fix: `f661796`
+> Strict-scope and stage 2·3 batch verified: 2026-07-28 10:18 KST
+> Remote fixed-mirror verification: [`30253003871`](https://github.com/easyseop/openmetadata-test/actions/runs/30253003871), 341 passed / 7 operational skips / 8 source gates
 > Current product candidate: `849ae756cd238f218b5e3a6c795a392305cb32ee`
 > Strict-scope progress: [`docs/04-진행/STRICT_SCOPE_IMPROVEMENT_PROGRESS.md`](docs/04-진행/STRICT_SCOPE_IMPROVEMENT_PROGRESS.md)
 > BANK-OM-011 governance registration / evidence rebind: `b1d3fa6` / `c246ae2`
@@ -174,6 +176,7 @@ still required.
 ```text
 Current local suite: 301 passed, 47 skipped in 19.09s
 Historical fixed-mirror suite: 316 passed, 7 skipped in 30.67s
+Current remote fixed-mirror suite: 341 passed, 7 operational skips in 217.49s
 ```
 
 The current 47 skips require the fixed historical mirror or live bank
