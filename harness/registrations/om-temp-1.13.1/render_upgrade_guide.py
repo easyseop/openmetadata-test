@@ -394,7 +394,7 @@ summary::-webkit-details-marker{{display:none}} summary::after{{content:"펼치�
 .title strong{{display:block;font-size:19px}} .title small{{display:block;margin-top:4px;color:var(--muted)}}
 .body{{padding:4px 21px 22px;border-top:1px solid var(--line);overflow-x:auto}} p{{line-height:1.75}}
 table{{width:100%;min-width:620px;border-collapse:collapse;margin:16px 0;font-size:14px}} th,td{{padding:11px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;line-height:1.5}} th{{background:#f8fafc}}
-code{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}} pre{{overflow:auto;padding:16px;border-radius:11px;color:#e6edf7;background:#101827;font-size:12px;line-height:1.6}}
+code{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}} p code,li code,td code,summary code{{overflow-wrap:anywhere;word-break:break-word}} pre{{overflow:auto;padding:16px;border-radius:11px;color:#e6edf7;background:#101827;font-size:12px;line-height:1.6}}
 .pass{{color:var(--green);font-weight:850}} .approval{{color:var(--amber);font-weight:850}} .note{{padding:13px 15px;border-radius:11px;background:#eef4ff}}
 .flow{{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}} .flow div{{padding:15px;border-radius:13px;background:#f5f7fb;line-height:1.55}} .flow b{{display:block;color:var(--blue);margin-bottom:5px}}
 .subhead{{margin:26px 0 8px;font-size:17px}} .warning{{padding:15px;border-left:4px solid var(--amber);border-radius:10px;background:#fff7ed;line-height:1.7}}

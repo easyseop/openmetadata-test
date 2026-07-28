@@ -6,10 +6,18 @@
 > [`docs/04-진행/CODEX_HANDOFF.md`](docs/04-진행/CODEX_HANDOFF.md)와
 > [`docs/04-진행/SHARING_ARTIFACT_REQUIREMENTS.md`](docs/04-진행/SHARING_ARTIFACT_REQUIREMENTS.md)를
 > 먼저 따른다. 아래 내용에는 과거 작업 브랜치와 장기 구현 기록이 포함돼 있다.
+> 이번 감사 입력 head는 `482788d19519d2d73faa222de6ea2e41ca53e231`이며 최신
+> `Source candidate` run `30350251032`는 2026-07-28 19:22 KST에 성공했다.
+> 오늘 추가된 공유문서·OM_TEMP 시연·스킬과 다음 실행 순서는
+> `docs/04-진행/CODEX_HANDOFF.md` §10이 정본이다.
+> 현재 노트북 검증은 다섯 HTML의 1280px·390px 화면과 실제 이동 링크 통과,
+> harness `308 passed, 37 mirror skips`, `git diff --check` 통과다.
 
 > **목적**: 컨텍스트가 리셋돼도 이 문서 하나로 작업을 이어갈 수 있게 현재까지의
 > 모든 결정·산출물·다음 단계를 세세하게 기록한다. **작업 재개 시 이 문서를 먼저 읽는다.**
-> 최종 갱신: 2026-07-27 실제 7-ID 재구축, Tibero 후속 보강,
+> 최종 갱신: 2026-07-28 공유문서 1~5번, OM_TEMP 1.13.0 등록과
+> 1.13.0→1.13.1 실제 충돌 연습, 저장소용 `clarity-preflight-review` 스킬,
+> 실제 7-ID 재구축, Tibero 후속 보강,
 > `BANK-OM-008` 후보 전용 UI 타입 정합성 보강,
 > `BANK-OM-009` 공통 검색 결과 타입 보강,
 > `BANK-OM-010` 알림 엔터티 ID 검색 안전성 보강,
@@ -59,7 +67,9 @@ T63/T90/T91/T94의 쉬운 역할·현재 결과를 같은 가이드에 추가했
 ## 1. 리포지토리·브랜치
 
 - 작업 리포: `easyseop/openmetadata-test` (docs + 앞으로의 harness 코드)
-- **작업 브랜치: `claude/markdown-file-feedback-26933w`** (여기에 계속 커밋·푸시)
+- **현재 작업 브랜치: `codex/strict-manifest-gates`**
+- 과거 `claude/markdown-file-feedback-26933w`는 구현 이력 보존용이며 새
+  공유문서·OM_TEMP 작업을 그 브랜치에 커밋하지 않는다.
 - 제품 리포: `easyseop/OpenMetadata`
 - 제품 브랜치: `codex/bank-vendor-1.13.1-rebuild`
 - 제품 재구축 checkpoint: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
@@ -70,7 +80,7 @@ T63/T90/T91/T94의 쉬운 역할·현재 결과를 같은 가이드에 추가했
   skip이다. 열린 PR·리뷰는 없으며 두 작업 브랜치는 아직 보호되지 않았다.
 - 커밋 작성자·도구 출처는 실제 작업 주체에 맞게 기록한다. 과거 세션이나 다른
   도구의 출처를 새 커밋에 복사하지 않는다.
-- 푸시: `git push -u origin claude/markdown-file-feedback-26933w`
+- 푸시: `git push -u origin codex/strict-manifest-gates`
 - PR은 사용자가 명시 요청 시에만 생성(아직 요청 없음).
 
 ## 2. 최종 목표 (변하지 않는 것)

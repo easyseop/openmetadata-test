@@ -1,8 +1,12 @@
 # Codex 작업 인수인계
 
-> 갱신 기준: 2026-07-29 10:49 KST
+> 갱신 기준: 2026-07-28 19:22 KST (GitHub 서버 수신 시각)
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
+> 이번 감사 입력 head: `482788d19519d2d73faa222de6ea2e41ca53e231`
+> 최신 원격 검증: `Source candidate` run
+> [`30350251032`](https://github.com/easyseop/openmetadata-test/actions/runs/30350251032)
+> 성공
 > 문서 묶음 작성 전 기준 commit: `0a6d009107a18e69a2150388442adffb6332f08c`
 > 제품 코드 상태: `easyseop/OpenMetadata` commit
 > `849ae756cd238f218b5e3a6c795a392305cb32ee`
@@ -10,6 +14,10 @@
 > 원격 push: `easyseop/openmetadata-test`의 `codex/strict-manifest-gates`
 > branch는 이번 공유문서·스킬·검사자료 배치까지 push 완료. 사용자가 만든
 > `easyseop/OM_TEMP`에는 1.13.0 시연용 제품 코드 두 branch를 push함
+
+다른 작업 노트북의 Git commit 작성 시각과 문서에는 `2026-07-29`가 기록됐지만,
+GitHub push와 Actions 수신 시각은 2026-07-28이다. 이 문서의 “오늘” 집계는
+GitHub 서버 시각을 기준으로 한다.
 
 이 문서는 다른 노트북이나 새 작업에서 바로 이어가기 위한 현재 정본이다.
 과거 Claude 작업의 상세 기록은
@@ -43,7 +51,7 @@
 ```
 
 `enable_guide_navigation.py`는 여러 번 실행해도 기존 바깥 이동 버튼을 지우고
-한 번만 다시 생성한다. 2026-07-29 KST에 브라우저에서
+한 번만 다시 생성한다. 2026-07-28 KST에 브라우저에서
 `1 → 2 → 3 → 4 → 5` 이동과 `5 → 4` 이전 이동을 실제 클릭해 확인했다.
 
 다섯 페이지의 일반 본문 폰트는 다음 하나의 규칙으로 통일했다. 코드 블록은
@@ -90,11 +98,11 @@ font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
 
 | 구분 | 저장소와 브랜치 | 의미 |
 |---|---|---|
-| 행내 배포용 OpenMetadata 소스 | `easyseop/OpenMetadata` 브랜치 `codex/bank-vendor-1.13.1-rebuild` | 공식 원본 위에 BANK-OM-001~011 코드가 적용된 검토 상태. 008~011 ID는 사용자 확정 전 |
+| 과거 구현 참고 소스 | `easyseop/OpenMetadata` 브랜치 `codex/bank-vendor-1.13.1-rebuild` | BANK-OM-001~011 코드의 이전 검사 후보. 현재 업그레이드·배포 대상은 아니며 008~011 ID는 사용자 확정 전 |
 | 현재 로컬 제품 검토 브랜치 | `codex/strict-gate-validation` | remote 이름이 `product`인 위 제품 브랜치를 추적하며 검사에 사용 |
 | 변경관리·검사 저장소 | `easyseop/openmetadata-test` 브랜치 `codex/strict-manifest-gates` | BANK-OM Manifest, 검사기, 테스트, 공유문서와 인수인계를 관리 |
 | 공식 원본 | `open-metadata/OpenMetadata` `1.13.1-release` commit `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9` | 현재 커스터마이징 적용 기준 |
-| 업그레이드 시연 제품 저장소 | `easyseop/OM_TEMP` | Manifest 없이 1.13.0 공식 코드와 001~007 재구현 코드까지만 준비 |
+| 업그레이드 시연 제품 저장소 | private `easyseop/OM_TEMP` | 원격에는 1.13.0 공식 코드와 001~007 재구현 코드, 다른 작업 노트북 로컬에는 1.13.1 재적용 결과가 있음 |
 
 `easyseop/OpenMetadata`의 기본 브랜치에 행내 커스터마이징이 보이지 않는 것은
 이상 상태가 아니다. 현재 커스터마이징은 위의 별도 제품 브랜치에 있으며,
@@ -110,7 +118,7 @@ BANK-OM Manifest와 검사기는 `easyseop/openmetadata-test`에 있다.
 | 4 · 검사 결과와 책임자 판단 | 기존 `easyseop/OpenMetadata` 후보 `849ae756...`의 검사 결과를 설명하는 현행본 | `docs/00-사용가이드/공유문서/openmetadata-phase3-demo-fragment.html`, `openmetadata-phase3-demo-preview.html` | OM_TEMP 결과와 구분 유지 |
 | 5 · 실제 업그레이드 | 실제 OM_TEMP `1.13.0 → 1.13.1` 적용·충돌·해결·검사 결과를 설명하는 현행본 | `docs/00-사용가이드/OM_TEMP_1.13.0_1.13.1_업그레이드_실행_가이드_미리보기.html` | 환경 test, 담당자 승인, 검증 tag와 배포 화면 추가 |
 
-2026-07-29 KST에 1차·2차 문서의 확정된 본문은 유지하고, 1.13.1 업그레이드
+2026-07-28 KST에 1차·2차 문서의 확정된 본문은 유지하고, 1.13.1 업그레이드
 가이드와 같은 파란색 헤더·흰색 카드·표·펼치기 디자인을 적용했다. 수정된
 fragment와 standalone preview를 함께 다시 생성했으며, 두 화면 모두 본문 폭
 1100px에서 가로 넘침이 없음을 확인했다.
@@ -126,7 +134,7 @@ fragment와 standalone preview를 함께 다시 생성했으며, 두 화면 모�
 
 ### OM_TEMP 현재 구성
 
-2026-07-29 KST에 다음 두 브랜치를 원격에 push했다.
+2026-07-28 KST에 다음 두 브랜치를 원격에 push했다.
 
 | 브랜치 | 원격 SHA | 내용 |
 |---|---|---|
@@ -144,7 +152,7 @@ OM_TEMP patch tree가
 007은 최초 적용과 후속 보완 두 commit이다. 008~011은 넣지 않았다. 두 브랜치
 사이 실제 변경 파일은 111개다.
 
-2026-07-29 KST에 실제 OM_TEMP commit을 기준으로 다음 작업을 추가했다.
+2026-07-28 KST에 실제 OM_TEMP commit을 기준으로 다음 작업을 추가했다.
 
 - `harness/registrations/om-temp-1.13.0/manifests/`에 BANK-OM-001~007
   Manifest 등록본 7개 생성
@@ -410,7 +418,7 @@ OpenMetadata 전체 build, Contract test 실행, 담당자 지정, 1.13.1 업그
 build, 환경이 필요한 Contract test 7개, 담당자 지정, 검증 tag와 배포 승인은
 남아 있다. SKIP은 PASS로 계산하지 않는다.
 
-2026-07-29 KST에 BANK-OM-001의 원래 1.13.0 commit `4df83b311f`를 공식
+2026-07-28 KST에 BANK-OM-001의 원래 1.13.0 commit `4df83b311f`를 공식
 1.13.1에 다시 적용해 충돌을 재현했다. Git에서 `Entity.java`와
 `CollectionDAO.java`는 자동 병합됐고 번역 JSON 18개는 `UU`로 중단되는 것을
 확인했다. 가이드에는 실제 Git 출력, `ko-kr.json`의 BANK-OM 추가 항목 9개,
@@ -468,7 +476,7 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
 다른 노트북에서 위 절대 경로가 다르면 설치된 `visualize` 스킬의
 `scripts/render.py` 경로를 찾아 바꾼다.
 
-### 2026-07-29 문서 현행화 및 시각 검수
+### 2026-07-28 문서 현행화 및 시각 검수
 
 - 1~5번 문서에서 과거 용어 `변경관리표`를 현재 정식 용어 `Manifest`로
   통일했다.
@@ -519,7 +527,7 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
   파일이다. 수정하거나 stage하지 않는다.
 - 비밀값, 인증 토큰, 행내 URL과 실제 데이터는 문서나 Git에 넣지 않는다.
 
-## 9. 2026-07-29 11:17 KST 긴급 원격 인수인계
+## 9. 2026-07-28 원격 인수인계
 
 사용자가 노트북을 종료하기 전에 현재 작업을 보존하도록 요청해 이 상태를
 커밋·푸시한다.
@@ -556,10 +564,45 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
 3. 5번 페이지의 충돌 전·해결 후 색상 구분과 전체 diff 펼치기를 화면 크기별로
    최종 확인한다.
 4. 관련 단위 테스트와 `git diff --check`를 다시 실행한다.
-- 공유문서 묶음은 로컬 commit으로 계속 저장한다. 최초 묶음은 `becb18e`이며
-  최신 보강 commit은 현재 브랜치의 `git log`로 확인한다. 원격
-  `https://github.com/easyseop/openmetadata-test.git`에 행내 커스터마이징 구조를
-  올려도 된다는 사용자의 명시적 확인을 받은 뒤 push한다.
-- GitHub CLI 인증이 없더라도 기존 Git credential로 push가 가능한 경우가 있다.
-  인증 오류가 나면 사용자가 해당 노트북에서 GitHub 로그인을 완료해야 한다.
+- 공유문서 묶음 최초 commit `becb18e`부터 최신 보강 commit `482788d`까지
+  `easyseop/openmetadata-test`의 `codex/strict-manifest-gates`에 push 완료했다.
+- 최신 push에 대한 `Source candidate` run `30350251032`는 성공했다.
 - PR은 사용자가 요청하지 않으면 만들지 않는다.
+
+## 10. 2026-07-28 현재 감사 결과와 다음 실행 순서
+
+### 이번 감사에서 확인·수정한 정합성
+
+- 오늘 GitHub 서버 기준 변경은 `18360e8` 이후 27개 commit, 149개 파일이다.
+- 저장소 전용 `clarity-preflight-review` 스킬은 형식 검증을 통과했다.
+- `bank_om_registration_policy.md`의 오래된 watch·owner 설명을 실제 구현과
+  맞췄다. 실제 변경 경로 자동 포함과 직접 참조 후보 제안은 구현 완료이고,
+  owner는 Manifest가 아니라 별도 Registry에 저장·검사한다.
+- “push 승인 대기” 문구를 실제 원격 push·CI 성공 상태로 정정했다.
+- 다섯 페이지를 1280×900과 390×844에서 검사했다. 전체 페이지 가로 넘침,
+  깨진 이미지와 잘린 일반 문장은 0건이다.
+- 5번 페이지에서 긴 Python 파일 경로가 390px 화면에서 잘리는 문제 1건을
+  발견해 생성기 CSS에 인라인 코드 줄바꿈 규칙을 추가하고 다시 렌더링했다.
+- `1 → 2 → 3 → 4 → 5`와 `5 → 4` 이동을 실제 클릭해 확인했다.
+- `candidate_additional_paths`의 첫 설명은 “같은 BANK-OM의 후속 commit에서
+  처음 추가된 파일”이라는 뜻을 바로 제시한다.
+- 전체 harness 단위 테스트는 `308 passed, 37 skipped`다. 37개 skip은 이
+  노트북에 `/home/user/om-mirror`가 없어서 실행하지 못한 실제 mirror 연동
+  항목이며 PASS로 계산하지 않는다. 관련 집중 테스트는 `14 passed, 5 skipped`,
+  `git diff --check`도 통과했다.
+
+### 다음 작업
+
+1. 다른 작업 노트북에만 있는 `patch/om-1.13.1`,
+   `custom/om-1.13.1`을 private `easyseop/OM_TEMP`에 push해 재현 가능한 원격
+   기준점을 만든다. 해당 로컬 branch가 없는 노트북에서 SHA를 추측해 만들지
+   않는다.
+2. Java Runtime·Maven·Yarn·UI 의존성이 준비된 환경에서 전체 build를 실행하고,
+   실제 URL·인증·fixture가 있는 행내 환경에서 남은 Contract test 7개를
+   실행한다.
+3. 담당 부서가 BANK-OM-001~007 Registry의 `UNASSIGNED`를 실제 owner로
+   배정한 뒤에만 검증 tag와 배포 승인 단계로 이동한다.
+4. JSON 충돌 보조 도구의 정식 운영 기능인 dry-run plan, 자동/수동 선택,
+   승인자·대상 SHA·결과 기록과 BLOCK 재검사 연결을 구현한다.
+5. T43 충돌률을 실제 재적용 증거에서 자동 계산하고, Java JUnit·TypeScript
+   Jest 및 Manifest `direct_tests` 연결을 추가한다.

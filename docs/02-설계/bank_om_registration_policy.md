@@ -11,11 +11,13 @@
 | BANK-OM 형식·Manifest 구조 검사 | 구현 완료 | `manifest.schema.json`, T10 |
 | 커밋의 `Customization-ID` 검사 | 구현 완료 | T30·T31 |
 | 변경 파일 범위·필수 파일 검사 | 구현 완료 | T26·T40·T93 |
-| 수동 `upgrade_watch.paths` 비교 | 구현 완료 | T42 |
-| `allowed`의 공식 파일을 T42에 자동 포함 | 추가 개발 예정 | 1차 공유문서 승인 후 구현 |
-| 담당자 `owner` 저장·검증 | 정책 미확정 | 현재 Manifest 스키마에는 `owner` 필드 없음 |
+| `upgrade_watch.paths` 비교 | 구현 완료 | T42 |
+| 실제 변경 경로의 `upgrade_watch.paths` 자동 포함 | 구현 완료 | OM_TEMP Manifest 생성기 |
+| 직접 참조된 공식 변경 파일의 watch 후보 제안 | 구현 완료·담당자 검토 필요 | `watch_suggest.py` |
+| 담당자 `owner` 저장·검증 | 구현 완료·실제 배정 대기 | 별도 `customization-registry.yaml`, T29 |
 
-“구현 완료”와 “추가 개발 예정”을 위키에서 섞어 설명하지 않는다.
+“구현 완료”, “담당자 확인 필요”, “행내 환경 대기”와 “추가 개발 예정”을
+위키에서 섞어 설명하지 않는다.
 
 ## 2. ID 발급 원칙
 
@@ -45,7 +47,7 @@
 | `allowed_changed_paths` | 최초 등록 시 실제로 변경한 파일 전체 | 명단 밖 변경은 block, 명단 안 누락은 approval |
 | `required_changed_paths` | 누락만으로 필수 기능 소실을 확정할 파일 | 누락·공식 원본과 동일하면 block |
 | `candidate_additional_paths` | 같은 ID의 후속 커밋이 새로 추가한 파일 | 현재 변경 범위에 포함, 최초 재구성에서는 제외 |
-| `upgrade_watch.paths` | 현재는 사용자가 수동 등록한 업그레이드 비교 파일 | 공식 A→B에서 바뀌면 approval |
+| `upgrade_watch.paths` | 실제 변경 경로와 담당자가 등록한 의존 경로 | 공식 A→B에서 바뀌면 approval |
 | `assurance` | 실제 동작을 확인할 계약·기술 테스트 | 테스트 연결이 없거나 실패하면 통과 금지 |
 | `series.depends_on` | 먼저 적용할 다른 BANK-OM | 순환·순서 위반 시 block |
 
@@ -57,21 +59,23 @@
 - 공용 파일은 파일 전체의 차이만으로 특정 코드 생존을 증명하기 어려우므로
   코드 내용 검사와 동작 검사를 함께 사용한다.
 
-### 현재 watch와 개선 예정 watch
+### 현재 watch 운영
 
-현재 T42는 `upgrade_watch.paths`에 사람이 적은 파일만 비교한다. 예를 들어
-BANK-OM-001은 `Entity.java`, `CollectionDAO.java`,
-`SearchIndexFactory.java`를 `allowed`와 `watch`에 중복 등록했다.
+현재 OM_TEMP Manifest 생성기는 각 BANK-OM commit의 실제 변경 경로를 Git에서
+읽고 `upgrade_watch.paths`에 자동으로 포함한다. 같은 ID의 후속 commit에서 처음
+추가된 `candidate_additional_paths`도 현재 변경 범위에 포함된다.
 
-추가 개발 후에는 다음 규칙을 적용할 예정이다.
+행내에서 직접 수정하지 않았지만 커스터마이징이 의존하는 경로는 담당자가
+`watch_dependencies`로 등록한다. 새 공식 버전에서 바뀐 파일 이름을
+커스터마이징 코드가 직접 참조하면 `watch_suggest.py`가 후보 경로와 참조한 파일을
+제시한다. 이 제안은 Manifest를 자동 수정하거나 승인하지 않으며 담당자가 확인한
+뒤 반영한다.
 
-1. `allowed` 중 공식 원본에도 존재했던 파일은 T42 비교 대상에 자동 포함한다.
-2. 수동 `watch`에는 우리가 수정하지 않았지만 행내 코드가 의존하는 파일만
-   기록한다.
-3. 공식 새 버전이 같은 파일을 바꿨다는 사실은 충돌 확정이 아니라 담당자
-   검토 요청이다.
-
-이 자동 포함 규칙은 아직 현재 검사기의 완료 기능으로 표시하지 않는다.
+T42는 이전 공식 버전과 새 공식 버전 사이의 Git 변경 경로를
+`upgrade_watch.paths`와 비교한다. 경로가 겹치면 충돌 확정이 아니라
+`approval`, 즉 재적용 전에 담당자가 영향을 확인해야 한다는 결과를 낸다. 간접
+호출이나 런타임 설정처럼 파일 이름의 직접 참조로 찾기 어려운 관계는 여전히
+담당자가 등록해야 한다.
 
 ## 4. 최초 등록 절차
 
@@ -79,10 +83,15 @@ BANK-OM-001은 `Entity.java`, `CollectionDAO.java`,
 2. 실제 커밋의 변경 파일을 확인해 `allowed_changed_paths`에 개별 파일로
    등록한다.
 3. 누락만으로 기능 소실을 확정할 파일을 `required_changed_paths`로 지정한다.
-4. 업무 계약과 실제 테스트를 `assurance`에 연결한다.
-5. 제품 커밋 메시지에 `Customization-ID: BANK-OM-NNN`을 넣는다.
-6. Git이 생성한 커밋 식별값(SHA)과 적용 순서를 patch-lock에 기록한다.
-7. T10·T25·T26·T30·T31·T40·T60-I·T93 검사를 실행한다.
+4. Manifest 생성기가 실제 변경 경로를 `upgrade_watch.paths`에 포함했는지
+   확인하고, 직접 수정하지 않은 의존 경로를 추가한다.
+5. 직접 참조 후보가 있으면 담당자가 근거를 검토해 반영 여부를 결정한다.
+6. 업무 계약과 실제 테스트를 `assurance`에 연결한다.
+7. 별도 Registry에 담당 조직과 상태를 기록한다.
+8. 제품 커밋 메시지에 `Customization-ID: BANK-OM-NNN`을 넣는다.
+9. patch-replay 전략을 사용할 때만 Git commit SHA와 적용 순서를 patch-lock에
+   기록한다.
+10. T10·T25·T26·T30·T31·T40·T42·T60-I·T93 검사를 실행한다.
 
 ## 5. 같은 ID의 후속 커밋 절차
 
@@ -108,15 +117,14 @@ Git 커밋 SHA만 추가하면 “어떤 변경이 생겼는가”는 알 수 �
 
 ## 6. 담당자 정보
 
-현재 Manifest 스키마는 `owner` 필드를 허용하지 않는다. 따라서 화면 예시에
-`owner`를 Manifest 필드처럼 넣어서는 안 된다.
+Manifest 스키마에는 `owner` 필드가 없다. 담당 조직과 배정 상태는 별도
+`customization-registry.yaml`의 `owner`, `owner_status`에 기록한다.
+T29 Registry 준비 검사는 active BANK-OM의 `owner_status`가 `assigned`가 아니면
+배포 준비를 `block`한다.
 
-다음 중 하나를 별도 결정해야 한다.
-
-1. 별도의 BANK-OM ID 대장에 담당 조직·승인자를 기록한다.
-2. Manifest 스키마에 `owner`를 추가하고 검사기로 필수값을 강제한다.
-
-결정 전까지 LLM 위키는 담당자 저장 위치를 확정된 기능처럼 설명하지 않는다.
+현재 OM_TEMP BANK-OM-001~007은 모두 `owner: UNASSIGNED`,
+`owner_status: pending`이다. 저장·검사 방식은 구현됐지만 실제 담당 조직과
+승인자는 외부 입력이 필요하므로 배정 완료로 표시하지 않는다.
 
 ## 7. LLM 위키 반영 규칙
 
@@ -128,7 +136,8 @@ LLM 위키는 이 문서를 원본으로 사용하고 다음 항목을 반드시
 4. 같은 ID 후속 변경과 새 ID 발급 판단표 포함
 5. `candidate_additional_paths`를 쓰는 이유와 예시 포함
 6. 파일 검사·코드 내용 검사·실제 동작 검사의 한계와 역할 구분
-7. `owner`처럼 미확정인 사항을 구현 완료로 서술하지 않음
+7. `owner`는 Manifest가 아니라 별도 Registry에 저장하며, `UNASSIGNED` 상태를
+   배정 완료로 서술하지 않음
 
 스키마나 운영정책이 바뀌면 이 문서를 먼저 갱신한 뒤 사용자 가이드와 LLM
 위키를 동기화한다.
@@ -137,13 +146,15 @@ LLM 위키는 이 문서를 원본으로 사용하고 다음 항목을 반드시
 
 | 위치 | 저장하는 것 | 현재 상태 |
 |---|---|---|
-| `easyseop/OpenMetadata` | 직원용 제품으로 배포할 실제 OpenMetadata 코드 | `codex/bank-vendor-1.13.1-rebuild`의 `849ae756…`가 현재 검사 후보 |
+| `easyseop/OpenMetadata` | 처음 분석한 커스터마이징 코드 보관·참고 | `849ae756…`는 과거 소스 검사 후보이며 현재 OM_TEMP 업그레이드 대상이 아님 |
+| `easyseop/OM_TEMP` | 1.13.0→1.13.1 업그레이드·검사 재현용 제품 코드 | private 저장소에 1.13.0 patch/custom branch가 있고 1.13.1 결과는 아직 다른 작업 노트북의 로컬에만 있음 |
 | `easyseop/openmetadata-test` | BANK-OM Manifest·검사기·검사 결과·운영규칙 | `codex/strict-manifest-gates`에서 관리 |
 
-`easyseop/OpenMetadata`의 기본 브랜치 화면만 보면 행내 코드가 보이지 않을 수
-있다. 현재 BANK-OM-001~011 코드는
-`codex/bank-vendor-1.13.1-rebuild` 브랜치에 있으며, 실제 코드 파일과 Git
-커밋 메시지의 `Customization-ID`로 추적한다.
+`easyseop/OpenMetadata`의 BANK-OM-001~011 코드는
+`codex/bank-vendor-1.13.1-rebuild` 브랜치에 보관돼 있다. 이 중 008~011은
+기술 보완용 임시 ID이며 사용자 확정 전에는 승인된 업무 커스터마이징으로
+표현하지 않는다. 현재 반복 업그레이드 시연은 BANK-OM-001~007만 사용한
+`easyseop/OM_TEMP`를 기준으로 한다.
 
 BANK-OM 변경관리표·검사 결과·인수인계 문서는 제품 저장소에 중복 보관하지
 않고 `easyseop/openmetadata-test`에서 관리한다. LLM 위키는 두 저장소를
@@ -155,5 +166,5 @@ BANK-OM 변경관리표·검사 결과·인수인계 문서는 제품 저장소�
 검사 저장소의 Manifest·테스트·결과
 ```
 
-`849ae756…`는 현재 코드 검사 후보이며, 행내 운영환경에 실제 배포됐다는
-증거가 나오기 전에는 “직원이 현재 사용하는 운영 제품”이라고 표현하지 않는다.
+`849ae756…`와 OM_TEMP 결과 모두 행내 운영환경에 실제 배포됐다는 증거가
+없다. 어느 쪽도 “직원이 현재 사용하는 운영 제품”이라고 표현하지 않는다.

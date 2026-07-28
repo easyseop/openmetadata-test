@@ -2,6 +2,11 @@
 
 > Updated: 2026-07-28 KST
 > Branch: `codex/strict-manifest-gates`
+> Latest remotely verified sharing/rehearsal head:
+> `482788d19519d2d73faa222de6ea2e41ca53e231`
+> Latest sharing/rehearsal CI:
+> [`30350251032`](https://github.com/easyseop/openmetadata-test/actions/runs/30350251032)
+> (`Source candidate`, success, completed 2026-07-28 19:22 KST)
 > Last verified implementation commit: `5f54687`
 > Fixed-mirror CI compatibility fix: `f661796`
 > Strict-scope and stage 2·3 batch verified: 2026-07-28 10:18 KST
@@ -50,6 +55,38 @@ When user-visible status, inputs, terminology, or operating steps change, the
 nondeveloper guide is updated in the same coherent batch.
 
 ## Outcome
+
+### 2026-07-28 sharing artifacts and OM_TEMP upgrade rehearsal
+
+GitHub server time records 27 commits after `18360e87...`: 149 files changed,
+21,947 lines added, and 267 lines removed. The batch adds the phased sharing
+HTML, OM_TEMP 1.13.0 registration bundle, actual 1.13.0→1.13.1 conflict
+rehearsal evidence, nondeveloper setup/upgrade guides, and the repository-local
+`clarity-preflight-review` skill. The skill passes the skill-creator structural
+validator.
+
+Private `easyseop/OM_TEMP` now contains remote `patch/om-1.13.0`
+`2f4f3560...` and `custom/om-1.13.0` `7d19c895...`. The 1.13.1 patch/custom
+branches and final rehearsal commit `dee330eb...` remain only on the other
+workstation and must not be reconstructed by guessing. Governance head
+`482788d...` passed remote `Source candidate` run `30350251032`.
+
+The five pages were checked at 1280×900 and 390×844 with no page-level
+horizontal overflow, broken image, or clipped ordinary text after one fix.
+The upgrade guide renderer now permits long inline code paths to wrap on a
+narrow screen. Actual navigation clicks passed for 1→2→3→4→5 and 5→4.
+The complete local harness result is **308 passed, 37 skipped**; all 37 skips
+require the absent `/home/user/om-mirror` and are not counted as passes.
+Focused rehearsal/watch/conflict tests are **14 passed, 5 mirror skips**, and
+`git diff --check` passes.
+
+The next reproducibility step is to push the other workstation's local
+OM_TEMP 1.13.1 patch/custom branches to the private repository. Full build,
+seven environment-dependent Contract tests, owner assignment, verified tags,
+and deployment approval remain blocked on external environment or
+organizational input. Safe checker development can continue with the formal
+JSON conflict approval flow, measured T43 conflict rate, and non-Python test
+adapters.
 
 ### 2026-07-27 strict-scope hardening
 

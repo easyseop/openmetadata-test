@@ -2038,9 +2038,45 @@ ID 발급·후속 변경·Manifest 항목의 사용법이 코드와 여러 문�
 - [`bank_om_registration_policy.md`](../02-설계/bank_om_registration_policy.md)
 
 후속 작업자는 사용자 가이드나 LLM 위키를 갱신할 때 이 문서를 원본으로
-사용한다. 특히 다음 상태를 혼동하지 않는다.
+사용한다. 특히 다음 현행 상태를 혼동하지 않는다.
 
-- T42 수동 `upgrade_watch.paths` 비교는 구현·테스트 완료
-- `allowed`의 공식 파일을 T42에 자동 포함하는 개선은 아직 미구현
-- `owner`는 현재 Manifest 스키마에 없으며 저장 위치·강제 방식 미확정
+- T42 `upgrade_watch.paths` 비교는 구현·테스트 완료
+- OM_TEMP Manifest 생성기는 BANK-OM commit의 실제 변경 경로와
+  `candidate_additional_paths`를 watch에 자동 포함
+- `watch_suggest.py`는 새 공식 변경 파일의 직접 참조 후보와 근거를 제시하지만
+  자동 등록·승인하지 않음
+- `owner`는 Manifest가 아니라 별도 `customization-registry.yaml`에 저장하며
+  T29가 미배정 상태를 block
 - 같은 ID 후속 파일은 Git SHA와 `candidate_additional_paths`를 모두 갱신
+
+## 12. 2026-07-28 공유문서·OM_TEMP·스킬 인수인계
+
+- 현재 작업 브랜치: `codex/strict-manifest-gates`
+- 이번 감사 입력 head: `482788d19519d2d73faa222de6ea2e41ca53e231`
+- 최신 원격 검증:
+  [`30350251032`](https://github.com/easyseop/openmetadata-test/actions/runs/30350251032)
+  (`Source candidate`, success)
+- 오늘 GitHub 서버 기준 변경: `18360e8` 이후 27개 commit, 149개 파일
+- 공유문서 진행: 목적/브랜치 → 검사기 원리 → 사전환경 설정 → 결과/책임자
+  판단 → 실제 OM_TEMP 1.13.0→1.13.1 업그레이드의 다섯 페이지
+- 저장소용 검토 스킬:
+  `.agents/skills/clarity-preflight-review/SKILL.md`; 구조 검증 통과
+- private `easyseop/OM_TEMP` 원격: `patch/om-1.13.0` `2f4f3560...`,
+  `custom/om-1.13.0` `7d19c895...`
+- 1.13.1 patch/custom branch와 `dee330eb...` 결과는 다른 작업 노트북
+  로컬에만 있으므로 해당 branch를 private OM_TEMP에 push하기 전에는 다른
+  노트북에서 추측해 재구성하지 않는다.
+
+다음 작업의 정본 순서는
+[`CODEX_HANDOFF.md`](CODEX_HANDOFF.md) §10이다. 다섯 HTML은 1280×900과
+390×844에서 페이지 넘침·깨진 이미지·일반 문장 잘림 0건을 확인했고,
+1→2→3→4→5와 5→4 이동을 실제 클릭했다. 5번 페이지의 긴 Python 경로
+잘림 1건은 생성기 CSS를 고쳐 다시 렌더링했다. 전체 harness 결과는
+`308 passed, 37 mirror skips`, 관련 집중 결과는 `14 passed, 5 mirror skips`,
+`git diff --check`는 통과다.
+
+다음 재현성 작업은 다른 노트북에만 있는 OM_TEMP 1.13.1 patch/custom branch를
+private 원격에 push하는 것이다. 전체 build, 환경 의존 Contract test 7개,
+owner 배정, 검증 tag, 배포 승인은 외부 환경·조직 입력이 있어야 진행한다.
+그 전에도 JSON 충돌 승인 흐름, 실제 증거 기반 T43 충돌률 계산과 Java
+JUnit·TypeScript Jest·`direct_tests` 연결은 안전한 추가 개발 대상으로 남아 있다.
