@@ -247,6 +247,50 @@ Java JUnit·TypeScript Jest를 직접 등록하고 실행하려면 언어·도�
 
 관련 단위 테스트는 통과했으며, 환경이 필요한 테스트는 skip으로 남았다.
 
+### OM_TEMP 1.13.0 등록 및 소스 검사
+
+2026-07-28 기준으로 다음 실제 등록자료를
+`harness/registrations/om-temp-1.13.0/`에 생성했다.
+
+- `customization-registry.yaml`: BANK-OM-001~007 7개, 담당자 상태는 `pending`
+- `contracts.yaml`: Contract 7개, 필수 Python pytest selector 9개
+- `shared-path-owners.yaml`: 여러 ID가 함께 변경한 경로 37개
+- `source-diff-paths.txt`: 공식 1.13.0 대비 전체 변경 경로 111개
+- `repository-layout.yaml`, `sensitive-zones.yaml`: 공식 1.13.0 SHA에 고정한 경로 정책
+- `registration-validation-results.json`: 사전자료 검증 5개 PASS
+- `source-gate-results.json`: 소스 검사 8개 PASS
+
+원격 OM_TEMP는 공식 1.13.0 파일 tree를 독립 commit으로 가져와 공식 계보가
+없다. 검사에는 공식 `f329dd4a7e...`에서 시작해 같은 BANK-OM 변경을 순서대로
+적용한 로컬 `custom/om-1.13.0` commit `63820f88eb...`을 사용했다. 이 로컬
+후보와 원격 custom commit `7d19c89526...`의 최종 tree는
+`9495a31c99...`로 같다.
+
+사전자료 검증:
+
+```bash
+./.venv/bin/python \
+  harness/registrations/om-temp-1.13.0/validate_registration_bundle.py \
+  --repo ../om-temp-1.13.0-custom \
+  --output harness/registrations/om-temp-1.13.0/registration-validation-results.json
+```
+
+소스 검사:
+
+```bash
+./.venv/bin/python harness/run_source_candidate_gates.py \
+  --repo ../om-temp-1.13.0-custom \
+  --harness harness \
+  --registration harness/registrations/om-temp-1.13.0 \
+  --layout harness/registrations/om-temp-1.13.0/repository-layout.yaml \
+  --sensitive-zones harness/registrations/om-temp-1.13.0/sensitive-zones.yaml \
+  --output harness/registrations/om-temp-1.13.0/source-gate-results.json
+```
+
+소스 검사 PASS는 코드 구조와 변경 이력이 등록자료와 일치한다는 뜻이다.
+OpenMetadata 전체 build, Contract test 실행, 담당자 지정, 1.13.1 업그레이드,
+운영 배포 승인은 아직 수행하지 않았다.
+
 HTML 다시 생성:
 
 ```bash
@@ -268,22 +312,18 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
 2. 이 문서와 `SHARING_ARTIFACT_REQUIREMENTS.md`를 읽는다.
 3. `.agents/skills/clarity-preflight-review/SKILL.md`를 읽고 이후 모든 공유문서
    검토에 적용한다.
-4. `OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html`에서 검사 전 사전환경
-   설정 3단계를 확인한다. 파일명은 유지했지만 화면 제목은
+4. `OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html`에서 Manifest 등록,
+   기준자료 생성, 로컬 연결, 실제 소스 검사 4단계를 확인한다. 파일명은 유지했지만 화면 제목은
    `OM_TEMP 검사 전 사전환경 설정 가이드`다.
-5. `harness/registrations/om-temp-1.13.0/`에 Registry, Contracts, 공용 파일
-   소유정보와 111개 전체 변경 목록을 실제 파일로 생성한다. Patch-lock은
-   vendor-merge 소스 검사의 필수가 아니며 patch-replay·복구·재현 시연을
-   선택할 때만 만든다.
-6. 원격 OM_TEMP가 공식 commit과 동일한 tree를 독립 commit으로 가져온 점을
-   처리하도록, 공식 source SHA와 로컬 baseline SHA를 분리하거나 동일 tree
-   기준을 인정하도록 실행기를 보완한다.
-7. OM_TEMP 1.13.0을 검사기에 연결하고 소스 gate와 실행 가능한 test를 수행한다.
-8. 2차·3차 HTML에 남은 사용자 피드백을 반영한다.
-9. 공식 1.13.1 upgrade 작업 branch에서 실제 충돌·재적용·재검사를 수행한다.
-10. 실제 Git 병합 전 대상·diff·병합·검사·결과 화면을 캡처해 4차 시연을 만든다.
-11. 1차·2차·3차·4차를 하나의 최종 공유문서로 합치고 중복과 용어를 다시 검토한다.
-12. 작업 완료 후 이 문서의 상태·검증·다음 단계를 갱신하고 같은 브랜치에
+5. 담당 부서가 Registry의 `UNASSIGNED` 7개를 실제 담당자로 바꾸기 전에는
+   배포 준비 완료로 표시하지 않는다.
+6. Patch-lock은 vendor-merge 소스 검사의 필수가 아니다. patch-replay·복구·
+   재현 시연을 선택할 때만 만든다.
+7. 2차·3차 HTML에 남은 사용자 피드백을 반영한다.
+8. 공식 1.13.1 upgrade 작업 branch에서 실제 충돌·재적용·재검사를 수행한다.
+9. 실제 Git 병합 전 대상·diff·병합·검사·결과 화면을 캡처해 4차 시연을 만든다.
+10. 1차·2차·3차·4차를 하나의 최종 공유문서로 합치고 중복과 용어를 다시 검토한다.
+11. 작업 완료 후 이 문서의 상태·검증·다음 단계를 갱신하고 같은 브랜치에
    커밋·푸시한다.
 
 ## 8. 작업 시 주의

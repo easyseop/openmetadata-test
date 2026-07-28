@@ -1,0 +1,13 @@
+# OM_TEMP 1.13.0 source-gate sensitive paths.
+schema_version: 1
+upstream_base_sha: f329dd4a7e47134a2bd5a06af6181b0ee527ddd9
+
+zones:
+  frozen:
+    - "openmetadata-service/src/main/java/org/openmetadata/service/security/**"
+  protected:
+    - "openmetadata-spec/src/main/resources/json/schema/auth/**"
+    - "conf/**"
+  watched:
+    - "bootstrap/sql/**"
+    - "ingestion/src/metadata/ingestion/**"

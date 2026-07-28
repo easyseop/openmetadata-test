@@ -20,6 +20,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--registration", type=Path, required=True)
     parser.add_argument("--layout", type=Path, required=True)
     parser.add_argument("--sensitive-zones", type=Path, required=True)
+    parser.add_argument(
+        "--output",
+        type=Path,
+        help="선택: 화면에 표시한 JSON 결과를 같은 내용으로 저장할 파일",
+    )
     return parser.parse_args()
 
 
@@ -62,7 +67,7 @@ def main() -> int:
         upstream_repository=registry.source["upstream_repository"],
         upstream_base_sha=target,
         upstream_target_sha=target,
-        candidate_repository="easyseop/OpenMetadata",
+        candidate_repository=registry.source["repository"],
         artifact_digest=source_digest,
         upstream_base_tag=registry.source["upstream_tag"],
         upstream_target_tag=registry.source["upstream_tag"],
@@ -123,7 +128,10 @@ def main() -> int:
         ),
         "gates": [gate_json(result) for result in gates],
     }
-    print(json.dumps(output, ensure_ascii=False, indent=2, sort_keys=True))
+    rendered = json.dumps(output, ensure_ascii=False, indent=2, sort_keys=True)
+    print(rendered)
+    if args.output:
+        args.output.write_text(rendered + "\n", encoding="utf-8")
     return 0 if all(result.verdict == "pass" for result in gates) else 1
 
 

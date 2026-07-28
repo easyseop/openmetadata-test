@@ -835,13 +835,13 @@ series:
 | `allowed_changed_paths` | 최초 BANK-OM 커밋이 실제 변경한 모든 파일 | 목록 밖 파일을 같은 ID로 변경하면 차단하고, 목록 안 파일이 검사 대상 custom branch의 최종 코드에서 실제로 달라지지 않으면 검토를 요구 |
 | `required_changed_paths` | 기능이 적용됐음을 판단하는 핵심 구현 파일 | 파일이 없거나 공식 원본과 같아지면 기능이 빠진 것으로 보고 차단 |
 | `candidate_additional_paths` | 같은 ID의 후속 커밋에서 처음 추가된 파일 | 사전 등록 없이 확장한 변경과 승인된 후속 변경을 구분 |
-| `upgrade_watch.paths` | 공식 버전 변경 비교 검사(T42)가 확인할 경로 | 공식 새 버전에서 해당 경로가 바뀌면 자동 통과하지 않고 재검토를 요구 |
+| `upgrade_watch.paths` | 공식 버전 변경 비교 검사가 확인할 경로 | 공식 새 버전에서 해당 경로가 바뀌면 자동 통과하지 않고 재검토를 요구 |
 
-T42는 공식 OpenMetadata의 이전 버전과 새 버전에서 지정 경로가 바뀌었는지 확인하는 검사입니다. `upgrade_watch.paths`에는 현재 T42 구현에 맞춰 해당 ID의 변경 범위 전체와 직접 수정하지 않았지만 기능이 의존하는 공식 파일을 함께 넣었습니다. 따라서 watch에 있다고 해서 그 파일을 이 커밋이 반드시 수정했다는 뜻은 아닙니다.
+공식 버전 변경 비교 검사(검사기 내부 이름 `T42`)는 이전 버전과 새 버전의 OpenMetadata에서 지정 경로가 바뀌었는지 확인하는 검사입니다. `upgrade_watch.paths`에는 현재 T42 구현에 맞춰 해당 ID의 변경 범위 전체와 직접 수정하지 않았지만 기능이 의존하는 공식 파일을 함께 넣었습니다. 따라서 watch에 있다고 해서 그 파일을 이 커밋이 반드시 수정했다는 뜻은 아닙니다.
 
 ## 2. 검사 기준자료 등록
 
-아래 자료는 모두 `openmetadata-test`에 보관합니다. Git이 자동으로 만들 수 있는 값과 사람이 결정해야 하는 기준을 구분해 등록합니다. 아래 코드는 작성 형태를 보여주는 예시이며, OM_TEMP 1.13.0의 실제 기준자료 파일 생성은 다음 작업입니다.
+아래 자료는 모두 `openmetadata-test`에 보관합니다. Git이 자동으로 만들 수 있는 값과 사람이 결정해야 하는 기준을 구분해 등록합니다. OM_TEMP 1.13.0의 실제 자료를 이미 생성했으며, 아래에는 각 자료의 역할과 실제 등록 결과를 함께 표시합니다.
 
 <details>
 <summary><strong>2-1. Registry · 검사할 BANK-OM 목록과 연결정보</strong></summary>
@@ -849,6 +849,8 @@ T42는 공식 OpenMetadata의 이전 버전과 새 버전에서 지정 경로가
 **의미:** 어떤 BANK-OM이 활성 상태이고 어느 Manifest·Contract를 읽을지 검사기에 알려주는 목록입니다.
 
 **생성·갱신 시점:** 첫 BANK-OM 등록 때 만들고, ID 추가·폐기·중요도 변경 또는 검사 대상 버전과 SHA가 바뀔 때 갱신합니다. 임시 파일이 아닙니다.
+
+**이번 등록 결과:** `customization-registry.yaml`에 BANK-OM-001~007 7개를 등록했습니다. 기능 담당자는 아직 정하지 않았으므로 `owner_status: pending`이며, 이 상태는 배포 승인 전 반드시 보완해야 합니다.
 
 ```yaml
 entries:
@@ -871,6 +873,8 @@ entries:
 
 **생성·갱신 시점:** 최초 기능 등록 때 만들고, OpenMetadata 버전이 바뀌어도 업무 요구가 같으면 재사용합니다. 기능 기준이나 test가 바뀔 때만 갱신합니다.
 
+**이번 등록 결과:** `contracts.yaml`에 Contract 7개와 필수 Python pytest 9개를 연결했습니다.
+
 ```yaml
 - id: CONTRACT-KOREAN-IME
   invariant: 한글 입력 중 자모가 중복·역전·소실되지 않는다.
@@ -891,6 +895,8 @@ entries:
 **의미:** 여러 BANK-OM이 같은 파일을 정상적으로 변경했다는 사실과 실제 소유 ID를 기록합니다.
 
 **생성·갱신 시점:** Manifest들의 실제 변경 경로를 비교해 중복 경로를 자동 제안한 뒤, 각 commit diff에서 ID별 코드가 실제로 있는지 사람이 확인합니다. 업그레이드 버전마다 다시 계산·검토합니다.
+
+**이번 등록 결과:** `shared-path-owners.yaml`에 37개 공용 경로를 등록했습니다.
 
 ```yaml
 openmetadata-service/src/main/java/org/openmetadata/service/Entity.java:
@@ -913,10 +919,7 @@ openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService
 
 **생성·갱신 시점:** 검사 대상 commit이 확정된 뒤 Git으로 생성하며, 업그레이드 버전마다 다시 생성합니다. 사람이 111개를 직접 작성하지 않습니다.
 
-```bash
-git diff --name-only origin/patch/om-1.13.0..origin/custom/om-1.13.0 \
-  > source-diff-paths.txt
-```
+**이번 등록 결과:** 공식 1.13.0과 BANK-OM-007 최초 커밋까지의 diff를 기준으로 `source-diff-paths.txt`에 111개 경로를 생성했습니다. BANK-OM-007 후속 커밋은 이미 목록에 있던 두 공용 파일을 다시 수정했으므로 최종 경로 수도 111개입니다.
 
 ```text
 openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
@@ -924,7 +927,7 @@ openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/Schem
 openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/tiberoConnection.json
 ```
 
-**실제 사용:** 실제 전체 변경 111개와 모든 Manifest의 변경 범위를 양방향으로 비교합니다. 어느 Manifest에도 등록되지 않은 경로가 있으면 `BLOCK`, Manifest에만 있고 실제 최종 코드가 바뀌지 않은 경로는 `APPROVAL` 대상입니다.
+**실제 사용:** 실제 전체 변경 111개와 모든 Manifest의 변경 범위를 양방향으로 비교합니다. 어느 Manifest에도 등록되지 않은 실제 변경이나, Manifest에만 있고 실제 diff에는 없는 경로가 있으면 등록자료 검증이 실패합니다.
 
 </details>
 
@@ -945,6 +948,34 @@ patch_series:
 ```
 
 **실제 사용:** 재적용 도구는 62e39da 다음에 7d19c89를 적용합니다. 잠금에 없는 SHA나 순서 변경은 동일한 재현으로 인정하지 않습니다. 설계상 OM_TEMP 첫 vendor-merge 소스 검사에서는 Patch-lock 부재만으로 차단하지 않습니다.
+
+</details>
+
+<details>
+<summary><strong>2-6. 실제 생성 명령과 사전검증 결과</strong></summary>
+
+첫 명령은 Git diff에서 자동 계산할 수 있는 Registry 뼈대, 공용 경로와 111개 목록을 만듭니다. Contract의 정상 조건과 담당자는 사람이 검토해야 하므로 자동 생성값을 그대로 배포 승인으로 사용하지 않습니다.
+
+```bash
+./.venv/bin/python \
+  harness/registrations/om-temp-1.13.0/generate_registration_bundle.py \
+  --repo ../om-temp-1.13.0-custom
+
+./.venv/bin/python \
+  harness/registrations/om-temp-1.13.0/validate_registration_bundle.py \
+  --repo ../om-temp-1.13.0-custom \
+  --output harness/registrations/om-temp-1.13.0/registration-validation-results.json
+```
+
+| 확인 항목 | 실제 결과 | 무엇을 확인했나 |
+|---|---|---|
+| Manifest 구조와 작성 규칙 | PASS · 7개 | 필수 항목과 경로 규칙이 맞는지 |
+| Registry·Manifest·Contract 연결 | PASS · 7개 ID | 세 자료가 같은 BANK-OM을 가리키는지 |
+| Git 전체 변경 목록 | PASS · 111개 경로 | 저장한 목록과 실제 Git diff가 같은지 |
+| 공용 파일 소유정보 | PASS · 37개 경로 | 중복 경로의 모든 BANK-OM이 등록됐는지 |
+| 필수 테스트 코드 존재 | PASS · 9개 | 등록한 Python test 파일과 함수가 실제로 있는지 |
+
+이 PASS는 **검사 입력자료가 서로 일치한다**는 뜻입니다. 아직 test 실행 성공이나 배포 승인을 뜻하지 않습니다.
 
 </details>
 
@@ -980,16 +1011,43 @@ OM_TEMP patch/om-1.13.0 commit: 2f4f3560...
 두 commit의 동일한 Git tree: da56c24d...
 ```
 
-현재 vendor 검사 실행기는 공식 commit이 로컬 이력의 조상이라고 가정하므로 기존 1.13.1 설정을 그대로 사용하면 T25가 잘못 실패할 수 있습니다. 실제 검사 전에는 공식 commit과 로컬 baseline commit을 별도 입력으로 구분하거나, 동일 tree를 인정하는 연결 검사를 추가해야 합니다. 이 보완이 끝나기 전에는 전체 검사 실행 준비 완료로 표시하지 않습니다.
+원격 OM_TEMP commit은 공식 commit과 계보가 연결되지 않아 그대로는 이력 검사를 통과할 수 없습니다. 그래서 공식 `f329dd4a...`에서 시작해 같은 BANK-OM 변경을 순서대로 적용한 로컬 검사 branch를 만들었습니다. 로컬 검사 대상 commit `63820f88...`의 최종 tree는 원격 custom `7d19c895...`의 tree와 같으므로, 코드 내용은 유지하면서 공식 이력과 연결된 상태로 검사합니다.
 
 </details>
+
+## 4. 실제 소스 검사 실행
+
+```bash
+./.venv/bin/python harness/run_source_candidate_gates.py \
+  --repo ../om-temp-1.13.0-custom \
+  --harness harness \
+  --registration harness/registrations/om-temp-1.13.0 \
+  --layout harness/registrations/om-temp-1.13.0/repository-layout.yaml \
+  --sensitive-zones harness/registrations/om-temp-1.13.0/sensitive-zones.yaml \
+  --output harness/registrations/om-temp-1.13.0/source-gate-results.json
+```
+
+| 검사명 | 무엇을 확인했나 | 실제 결과 |
+|---|---|---|
+| 공식 기준 이력 포함 | 공식 1.13.0에서 시작한 후보인지 | PASS |
+| 커스터마이징 생존 | 7개 BANK-OM의 핵심 파일과 Contract 연결이 남았는지 | PASS |
+| 필수 테스트 코드 존재 | 9개 Python test 파일·함수가 실제로 있는지 | PASS |
+| 커밋 작성 규칙 | 각 공식 코드 변경 커밋에 BANK-OM ID가 하나씩 있는지 | PASS |
+| ID 연결 규칙 | 미등록 ID나 잘못 나뉜 후속 커밋이 없는지 | PASS |
+| 변경 범위 | 각 커밋이 자기 Manifest에 등록된 파일만 바꿨는지 | PASS |
+| 민감 경로 | 보안·설정·DB 변경 경로의 별도 정책을 위반하지 않았는지 | PASS |
+| 커밋별 실제 경로 일치 | ID별 실제 변경 파일과 Manifest 목록이 정확히 같은지 | PASS |
+
+이번 결과는 **1.13.0 코드 구조와 변경 이력에 대한 소스 검사 PASS**입니다. OpenMetadata 전체 build, Contract test 실제 실행, 담당자 지정, 1.13.1 업그레이드와 운영 배포 승인은 아직 별도 단계입니다.
 
 ## 현재 상태
 
 - BANK-OM-001~007 Manifest 초안 7개 생성 완료
 - 실제 Git commit의 변경 파일 목록을 초안에 반영 완료
 - 현재 Manifest 스키마 및 기본 의미 검사 7개 통과
-- Registry·Contract·공용 파일·111개 목록의 생성 원칙과 예시 정리 완료
-- 실제 1.13.0 등록 파일 생성과 독립 snapshot 연결 보완은 다음 작업
+- Registry 7개, Contract 7개·필수 test 9개, 공용 경로 37개, 전체 경로 111개 생성 완료
+- 공식 1.13.0 이력을 보존한 로컬 검사 branch 구성 완료
+- 소스 검사 8종 PASS 및 JSON 결과 저장 완료
+- 기능 담당자(owner)는 아직 미지정이므로 배포 준비 상태는 완료가 아님
 - OM_TEMP 전체 코드 build, 업무 동작 test, 1.13.1 업그레이드 비교는 아직 실행 전
-- 따라서 이 문서의 Manifest는 **코드 기준 초안**이며 배포 승인 결과가 아님
+- 따라서 현재 결과는 **소스 검사 통과**이며 배포 승인 결과가 아님
