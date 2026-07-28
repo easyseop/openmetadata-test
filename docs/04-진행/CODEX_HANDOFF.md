@@ -1,11 +1,11 @@
 # Codex 작업 인수인계
 
-> 갱신 기준: 2026-07-28 19:22 KST (GitHub 서버 수신 시각)
+> 갱신 기준: 2026-07-29 00:05 KST
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
-> 이번 감사 입력 head: `482788d19519d2d73faa222de6ea2e41ca53e231`
-> 최신 원격 검증: `0b0f7797...`의 `Source candidate` run
-> [`30368181793`](https://github.com/easyseop/openmetadata-test/actions/runs/30368181793)
+> 이번 문서 개편 입력 head: `9fea411bdc247273641c490e9593ac07fd9f222f`
+> 최신 원격 검증: `9fea411...`의 `Source candidate` run
+> [`30368605298`](https://github.com/easyseop/openmetadata-test/actions/runs/30368605298)
 > 성공 (`348 passed, 7 operational skips`)
 > 문서 묶음 작성 전 기준 commit: `0a6d009107a18e69a2150388442adffb6332f08c`
 > 제품 코드 상태: `easyseop/OpenMetadata` commit
@@ -612,3 +612,55 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
    승인자·대상 SHA·결과 기록과 BLOCK 재검사 연결을 구현한다.
 5. T43 충돌률을 실제 재적용 증거에서 자동 계산하고, Java JUnit·TypeScript
    Jest 및 Manifest `direct_tests` 연결을 추가한다.
+
+## 11. 2026-07-29 1차·2차 가독성 개편
+
+### 사용자 피드백과 반영
+
+1. 1차 저장소 역할에서 현재 흐름에 필요 없는 `easyseop/OpenMetadata` 과거
+   보관본 카드를 제거했다. 첫 화면은 현재 제품 재현 저장소 `easyseop/OM_TEMP`와
+   검사 기준 저장소 `easyseop/openmetadata-test`만 보여준다. 과거 실제
+   BANK-OM-001 diff의 출처 링크는 증거 provenance이므로 코드 증거 상세에만
+   유지했다.
+2. `candidate_additional_paths`는 실제 BANK-OM-007 사례로 바꿨다.
+   `allowed_changed_paths`의 최초 8개는 과거 등록 시점을 보존하고, 후속
+   commit에서 처음 생긴 2개는 `candidate_additional_paths`에 둔다.
+   T25-R은 최초 8개, 현재 후보의 T26·T40·T93은 합계 10개를 검사한다.
+   필수 파일이면 `required_changed_paths`에도 넣고, 같은 ID 후속 commit을
+   쓰려면 `series.allowed: true`가 필요하다.
+3. 2차 첫 화면에 네 묶음의 `검사기 지도`를 추가했다. 긴 본문은 검사기별
+   독립 상세보기 17개로 바꾸고, 펼친 안에서도 `무엇을 확인하나 / 실제 검사 /
+   예외·보완`으로 나눴다. T93은 변경범위와 감시규칙 두 역할이 있어 상세보기
+   두 개다. 전체 입력·출력 표는 내용 삭제 없이 맨 뒤 상세보기로 이동했다.
+4. T번호는 이 화면의 순번이 아니라 `openmetadata_build_plan.md`의 안정적인
+   태스크 ID다. T01~T24에는 조사·정책·Manifest 스키마·Git 기반·선택 재적용
+   도구가 있고, 2차가 책임자 판정용 검사기만 보여주므로 T25-R·T25부터
+   시작한다.
+5. 공유문서 요구사항에 `검사 결과와 책임자 판단`은 기존 증거의
+   판정·보고 단계, `실제 업그레이드`는 새 버전 위에서 commit을 재적용하고
+   충돌을 해결해 새 후보와 증거를 만드는 실행 단계라고 구분했다.
+
+### 수정한 정본과 생성물
+
+- `docs/00-사용가이드/공유문서/openmetadata-phase1-sharing-fragment.html`
+- `docs/00-사용가이드/공유문서/openmetadata-phase1-sharing-preview.html`
+- `docs/00-사용가이드/공유문서/openmetadata-phase2-verifier-table-fragment.html`
+- `docs/00-사용가이드/공유문서/openmetadata-phase2-verifier-table-preview.html`
+- `docs/02-설계/bank_om_registration_policy.md`
+- `docs/04-진행/SHARING_ARTIFACT_REQUIREMENTS.md`
+
+fragment 수정 후 두 preview를 다시 렌더링하고
+`harness/tools/enable_guide_navigation.py`를 실행했다.
+
+### 검증과 제한
+
+- HTML 구조 검사: phase1·phase2의 div/section/details/summary/table/tr 등
+  선택 요소 여닫기 불일치 0건
+- phase2 상세보기: 17개, 검사기 지도 카드: 4개
+- 관련 집중 테스트: 64개 수집, `55 passed, 9 skipped`
+- skip 9개: 이 노트북에 `/home/user/om-mirror`가 없어 실행하지 못한
+  policy-drift 5개와 upgrade-watch 4개이며 PASS로 계산하지 않는다.
+- `git diff --check`: 통과
+- 인앱 브라우저 자동검수: 로컬 `file://` URL이 브라우저 보안 정책에 차단돼
+  이번 배치에서는 새 viewport 시각 통과를 주장하지 않는다. HTML은 생성됐으며
+  사용자가 열어 최종 화면 확인을 이어갈 수 있다.

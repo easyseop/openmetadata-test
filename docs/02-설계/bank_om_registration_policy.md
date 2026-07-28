@@ -95,25 +95,32 @@ T42는 이전 공식 버전과 새 공식 버전 사이의 Git 변경 경로를
 
 ## 5. 같은 ID의 후속 커밋 절차
 
-예: 최초 BANK-OM-001이 48개 파일을 변경한 뒤
-`InstanceCodeValidator.java`를 새로 추가하는 경우.
+실제 예: BANK-OM-007은 최초 커밋에서 8개 파일을 변경한 뒤 후속 커밋에서
+`serviceConnection.ts`와 `DatabaseServiceUtils.test.tsx`를 새로 추가했다.
 
-1. 후속 커밋에도 `Customization-ID: BANK-OM-001`을 넣는다.
-2. 새 Git 커밋 식별값(SHA)과 적용 순서를 patch-lock에 추가한다.
+1. Manifest의 `series.allowed`가 `true`인지 확인한다.
+2. 후속 커밋에도 `Customization-ID: BANK-OM-007`을 넣는다.
 3. 새 파일을 `candidate_additional_paths`에 추가한다.
 4. 파일이 필수 구성요소이면 `required_changed_paths`에도 추가한다.
-5. 관련 계약·테스트를 갱신하고 전체 소스 검사를 다시 실행한다.
+5. patch-replay 전략을 사용할 때만 새 Git commit SHA와 적용 순서를
+   patch-lock에 추가한다.
+6. 관련 계약·테스트를 갱신하고 전체 소스 검사를 다시 실행한다.
 
 ```yaml
 implementation:
   candidate_additional_paths:
-    - .../InstanceCodeValidator.java
+    - .../connections/serviceConnection.ts
+    - .../DatabaseServiceUtils.test.tsx
+series:
+  allowed: true
 ```
 
 Git 커밋 SHA만 추가하면 “어떤 변경이 생겼는가”는 알 수 있지만, 새 파일이
 해당 BANK-OM의 승인 범위인지는 알 수 없다. 반대로 최초
 `allowed_changed_paths`를 직접 고치면 과거 최초 스냅샷의 기록이 달라진다.
-따라서 최초 범위는 보존하고 후속 파일을 별도로 기록한다.
+따라서 최초 8개 범위는 보존하고 후속 2개 파일을 별도로 기록한다. 최초
+재구성 T25-R은 8개만 보고, 현재 후보를 보는 T26·T40·T93은 8개와 후속 2개를
+합친 10개를 검사한다.
 
 ## 6. 담당자 정보
 

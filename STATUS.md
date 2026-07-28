@@ -1,11 +1,11 @@
 # Current implementation status
 
-> Updated: 2026-07-28 KST
+> Updated: 2026-07-29 00:05 KST
 > Branch: `codex/strict-manifest-gates`
 > Latest remotely verified sharing/rehearsal head:
-> `0b0f7797ad24f68fbfc0b882b594018e2db04f18`
+> `9fea411bdc247273641c490e9593ac07fd9f222f`
 > Latest sharing/rehearsal CI:
-> [`30368181793`](https://github.com/easyseop/openmetadata-test/actions/runs/30368181793)
+> [`30368605298`](https://github.com/easyseop/openmetadata-test/actions/runs/30368605298)
 > (`Source candidate`, success, `348 passed / 7 operational skips`)
 > Last verified implementation commit: `5f54687`
 > Fixed-mirror CI compatibility fix: `f661796`
@@ -55,6 +55,35 @@ When user-visible status, inputs, terminology, or operating steps change, the
 nondeveloper guide is updated in the same coherent batch.
 
 ## Outcome
+
+### 2026-07-29 phase 1·2 readability revision
+
+The phase 1 shared HTML no longer presents the legacy
+`easyseop/OpenMetadata` archive as a current repository-role card. Its main
+flow now shows only the current OM_TEMP product rehearsal repository and the
+governance/checker repository. Historical source links that substantiate an
+actual old diff remain where evidence provenance is required.
+
+The `candidate_additional_paths` explanation now uses the real BANK-OM-007
+case: eight initial paths remain in `allowed_changed_paths`, and two paths
+first added by its follow-up commit are recorded separately. T25-R checks the
+original eight-path snapshot; current-candidate T26/T40/T93 use the ten-path
+union. The operating policy now records the same example and states that
+patch-lock is updated only in patch-replay mode.
+
+The phase 2 shared HTML now starts with a four-group verifier map. It explains
+that T-numbers are stable task IDs from the full build plan rather than page
+sequence numbers. Sixteen detailed verifiers are independent accordions, and
+each expanded view separates purpose, actual check, and exception/remediation.
+The full input/output matrix is retained as a final collapsed detail.
+
+Both fragments and standalone previews were regenerated. A stack-based HTML
+structure check found no unbalanced relevant elements; phase 2 contains 17
+verifier detail entries because T93 has separate scope and policy-drift views.
+Focused manifest/scope/watch tests are **55 passed, 9 mirror-dependent
+skipped**. `git diff --check` passes. In-app browser automation could not open
+the local `file://` preview because that URL type is blocked by browser
+security policy, so this batch does not claim a new visual viewport pass.
 
 ### 2026-07-28 sharing artifacts and OM_TEMP upgrade rehearsal
 

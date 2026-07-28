@@ -992,15 +992,6 @@ html&gt;body{padding:0}&lt;/style&gt;
 
     &lt;div class=&quot;om-repo-role&quot;&gt;
       &lt;div&gt;
-        &lt;span&gt;과거 커스터마이징 코드 보관본 · 현재 실습 대상 아님&lt;/span&gt;
-        &lt;strong&gt;easyseop/OpenMetadata&lt;/strong&gt;
-        &lt;p&gt;처음 분석할 때 참고한 기존 커스터마이징 코드가 들어 있습니다. 어떤 코드를 바꿨는지 확인하는 참고 자료이며, 지금 업그레이드하고 검사하는 저장소는 아닙니다.&lt;/p&gt;
-        &lt;details class=&quot;om-role-detail&quot;&gt;
-          &lt;summary&gt;기술 정보 보기&lt;/summary&gt;
-          &lt;p&gt;참고한 위치는 &lt;code&gt;codex/bank-vendor-1.13.1-rebuild&lt;/code&gt; 브랜치의 Git commit &lt;code&gt;849ae756…&lt;/code&gt;입니다. BANK-OM-001~007은 업무 커스터마이징이고, BANK-OM-008~011은 기술 보완 과정에서 만든 ID입니다. 따라서 이 코드를 “운영 배포가 끝난 11개 업무 기능”이라고 표현하지 않습니다.&lt;/p&gt;
-        &lt;/details&gt;
-      &lt;/div&gt;
-      &lt;div&gt;
         &lt;span&gt;현재 업그레이드·검사를 진행하는 코드 저장소&lt;/span&gt;
         &lt;strong&gt;easyseop/OM_TEMP&lt;/strong&gt;
         &lt;p&gt;공식 1.13.0 코드에 BANK-OM-001~007을 다시 적용하고, 공식 1.13.1로 올리면서 충돌·해결·검사를 실제로 재현합니다. 지금 단계별 가이드가 따라가는 코드가 이 저장소에 있습니다.&lt;/p&gt;
@@ -1012,13 +1003,12 @@ html&gt;body{padding:0}&lt;/style&gt;
       &lt;/div&gt;
     &lt;/div&gt;
     &lt;details class=&quot;om-watch-guide&quot;&gt;
-      &lt;summary&gt;세 저장소를 어떻게 함께 보나?&lt;/summary&gt;
+      &lt;summary&gt;두 저장소를 어떻게 함께 보나?&lt;/summary&gt;
       &lt;ol&gt;
-        &lt;li&gt;&lt;b&gt;과거 구현 참고:&lt;/b&gt; &lt;code&gt;easyseop/OpenMetadata&lt;/code&gt;의 지정 브랜치에서 기존 커스터마이징 코드와 Git commit 이력을 확인합니다.&lt;/li&gt;
         &lt;li&gt;&lt;b&gt;현재 업그레이드 재현:&lt;/b&gt; &lt;code&gt;easyseop/OM_TEMP&lt;/code&gt;에서 공식 버전을 올리고 BANK-OM 변경을 다시 적용해 충돌과 검사 결과를 확인합니다.&lt;/li&gt;
         &lt;li&gt;&lt;b&gt;검사 기준 확인:&lt;/b&gt; &lt;code&gt;easyseop/openmetadata-test&lt;/code&gt;에서 각 BANK-OM Manifest와 검사 결과를 확인합니다.&lt;/li&gt;
       &lt;/ol&gt;
-      &lt;p&gt;실제 코드, 업그레이드 연습, 검사 기준을 한 저장소에 섞지 않고 역할별로 분리한 구조입니다.&lt;/p&gt;
+      &lt;p&gt;업그레이드할 제품 코드와 검사 기준·결과를 한 저장소에 섞지 않고 역할별로 분리한 구조입니다.&lt;/p&gt;
     &lt;/details&gt;
   &lt;/section&gt;
 
@@ -1429,22 +1419,24 @@ Customization-ID: BANK-OM-001&lt;/code&gt;&lt;/pre&gt;
 
     &lt;details class=&quot;om-watch-guide&quot;&gt;
       &lt;summary&gt;Q5. 기존 BANK-OM에 나중에 새 파일을 추가하면?&lt;/summary&gt;
-      &lt;p&gt;최초 BANK-OM-001의 48개 파일 기록은 그대로 두고, 후속 커밋에서 새로 추가한 파일만 &lt;code&gt;candidate_additional_paths&lt;/code&gt;에 기록합니다.&lt;/p&gt;
+      &lt;p&gt;&lt;code&gt;candidate_additional_paths&lt;/code&gt;는 &lt;b&gt;같은 BANK-OM ID의 후속 커밋에서 처음 생긴 파일&lt;/b&gt;만 적는 항목입니다. 실제 BANK-OM-007은 최초 커밋에서 8개 파일을 변경했고, 후속 커밋에서 아래 2개 파일을 새로 추가했습니다.&lt;/p&gt;
       &lt;pre&gt;&lt;code&gt;candidate_additional_paths:
-  - .../InstanceCodeValidator.java&lt;/code&gt;&lt;/pre&gt;
+  - .../connections/serviceConnection.ts
+  - .../DatabaseServiceUtils.test.tsx&lt;/code&gt;&lt;/pre&gt;
       &lt;div class=&quot;table-responsive&quot;&gt;
         &lt;table class=&quot;table table-sm&quot;&gt;
           &lt;thead&gt;
-            &lt;tr&gt;&lt;th&gt;기록&lt;/th&gt;&lt;th&gt;검사기에 알려주는 내용&lt;/th&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;th&gt;항목&lt;/th&gt;&lt;th&gt;BANK-OM-007 실제 사용&lt;/th&gt;&lt;th&gt;검사기에 알려주는 내용&lt;/th&gt;&lt;/tr&gt;
           &lt;/thead&gt;
           &lt;tbody&gt;
-            &lt;tr&gt;&lt;td&gt;새 Git 커밋 식별값(SHA)&lt;/td&gt;&lt;td&gt;어떤 코드 변경을 어떤 순서로 추가했는가&lt;/td&gt;&lt;/tr&gt;
-            &lt;tr&gt;&lt;td&gt;&lt;code&gt;candidate_additional_paths&lt;/code&gt;&lt;/td&gt;&lt;td&gt;새 파일을 BANK-OM-001의 변경 범위로 승인했는가&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;&lt;code&gt;allowed_changed_paths&lt;/code&gt;&lt;/td&gt;&lt;td&gt;최초 커밋의 8개 파일&lt;/td&gt;&lt;td&gt;최초 등록 시점의 실제 변경 범위&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;&lt;code&gt;candidate_additional_paths&lt;/code&gt;&lt;/td&gt;&lt;td&gt;후속 커밋의 새 파일 2개&lt;/td&gt;&lt;td&gt;현재 검사 대상에 추가로 허용할 범위&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;&lt;code&gt;series.allowed: true&lt;/code&gt;&lt;/td&gt;&lt;td&gt;같은 ID의 후속 커밋 허용&lt;/td&gt;&lt;td&gt;여러 커밋이 실수가 아니라 계획된 이력임을 확인&lt;/td&gt;&lt;/tr&gt;
           &lt;/tbody&gt;
         &lt;/table&gt;
       &lt;/div&gt;
-      &lt;p&gt;&lt;b&gt;Git 커밋 식별값(SHA)만 추가하면 새 파일은 등록 범위 밖 변경으로 판단됩니다.&lt;/b&gt; 반대로 최초 48개 명단을 49개로 고치면 과거 최초 커밋에도 새 파일이 있었던 것처럼 기록이 바뀝니다. 따라서 최초 기록은 보존하고 후속 파일만 별도로 추가합니다.&lt;/p&gt;
-      &lt;p&gt;최초 설정에는 필요하지 않으며, 같은 BANK-OM ID로 후속 파일을 추가할 때만 사용합니다. 별도 기능이라면 새 BANK-OM ID를 발급합니다.&lt;/p&gt;
+      &lt;p&gt;&lt;b&gt;왜 기존 &lt;code&gt;allowed_changed_paths&lt;/code&gt;에 바로 더하지 않나?&lt;/b&gt; 최초 8개 명단을 10개로 고치면 최초 커밋에도 나중 파일 2개가 있었던 것처럼 과거 기록이 바뀝니다. 그러면 T25-R이 “최초 커밋을 정확히 재구성했는가”를 검사할 수 없습니다. 최초 범위 8개는 보존하고, 현재 후보의 T26·T40·T93은 8개와 추가 2개를 합친 10개를 검사합니다.&lt;/p&gt;
+      &lt;p&gt;새 파일이 기능 유지에 반드시 필요하다면 &lt;code&gt;required_changed_paths&lt;/code&gt;에도 추가합니다. 최초 설정에는 이 항목이 필요 없고, 같은 BANK-OM ID의 목적을 이어가는 후속 커밋에만 사용합니다. 별도 기능이면 새 BANK-OM ID를 발급합니다.&lt;/p&gt;
     &lt;/details&gt;
   &lt;/section&gt;
 
@@ -1686,7 +1678,7 @@ Customization-ID: BANK-OM-001&lt;/code&gt;&lt;/pre&gt;
         &lt;strong&gt;현재 완료&lt;/strong&gt;
         &lt;ol&gt;
           &lt;li&gt;&lt;span&gt;1&lt;/span&gt;&lt;div&gt;&lt;b&gt;BANK-OM 등록 체계&lt;/b&gt;&lt;p&gt;등록된 BANK-OM 전체의 Manifest·계약·커밋 라벨 구성&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;
-          &lt;li&gt;&lt;span&gt;2&lt;/span&gt;&lt;div&gt;&lt;b&gt;커스터마이징 코드 확인과 업그레이드 재현&lt;/b&gt;&lt;p&gt;기존 코드는 &lt;code&gt;easyseop/OpenMetadata&lt;/code&gt;에서 확인하고, 1.13.0→1.13.1 재적용은 &lt;code&gt;easyseop/OM_TEMP&lt;/code&gt;에서 수행&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;span&gt;2&lt;/span&gt;&lt;div&gt;&lt;b&gt;커스터마이징 코드 확인과 업그레이드 재현&lt;/b&gt;&lt;p&gt;&lt;code&gt;easyseop/OM_TEMP&lt;/code&gt;에서 1.13.0 BANK-OM 코드와 1.13.1 재적용 결과를 같은 흐름으로 확인&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;
           &lt;li&gt;&lt;span&gt;3&lt;/span&gt;&lt;div&gt;&lt;b&gt;정확 경로 검사기 1차&lt;/b&gt;&lt;p&gt;T25-R·T26·T40·T70 강화 · 39개 단위 테스트 통과&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;
           &lt;li&gt;&lt;span&gt;4&lt;/span&gt;&lt;div&gt;&lt;b&gt;위험 검사기 2차&lt;/b&gt;&lt;p&gt;T41·T42·T43·T93·T50·T51 보강과 실제 코드 연결&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;
           &lt;li&gt;&lt;span&gt;5&lt;/span&gt;&lt;div&gt;&lt;b&gt;운영 실행기 3차&lt;/b&gt;&lt;p&gt;환경 사전검사·T62 결과 결속·90일 증거 보존&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;
@@ -2382,7 +2374,7 @@ Customization-ID: BANK-OM-001&lt;/code&gt;&lt;/pre&gt;
 
   #om-guide-v3 .om-repo-role {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1px;
     margin-top: 14px;
     background: var(--border);

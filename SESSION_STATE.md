@@ -1,19 +1,25 @@
 # 세션 상태 / 인수인계 (SESSION_STATE)
 
-> **2026-07-28 현재 공유문서 작업 정본:** 작업 브랜치는
+> **2026-07-29 현재 공유문서 작업 정본:** 작업 브랜치는
 > `codex/strict-manifest-gates`다. 1차·2차 HTML, 3차 시연 요구사항, 검사기별
 > 예외 검토와 다른 노트북 재개 절차는
 > [`docs/04-진행/CODEX_HANDOFF.md`](docs/04-진행/CODEX_HANDOFF.md)와
 > [`docs/04-진행/SHARING_ARTIFACT_REQUIREMENTS.md`](docs/04-진행/SHARING_ARTIFACT_REQUIREMENTS.md)를
 > 먼저 따른다. 아래 내용에는 과거 작업 브랜치와 장기 구현 기록이 포함돼 있다.
-> 이번 감사 입력 head는 `482788d19519d2d73faa222de6ea2e41ca53e231`이며 최신
-> `Source candidate` run `30350251032`는 2026-07-28 19:22 KST에 성공했다.
+> 이번 문서 개편 입력 head는 `9fea411bdc247273641c490e9593ac07fd9f222f`이며
+> 최신 원격 `Source candidate` run `30368605298`는 성공했다.
 > 오늘 추가된 공유문서·OM_TEMP 시연·스킬과 다음 실행 순서는
 > `docs/04-진행/CODEX_HANDOFF.md` §10이 정본이다.
 > 현재 노트북 검증은 다섯 HTML의 1280px·390px 화면과 실제 이동 링크 통과,
 > harness `308 passed, 37 mirror skips`, `git diff --check` 통과다.
 > 원격 `0b0f7797...` 검증 run `30368181793`도 `348 passed, 7 operational
 > skips`로 성공했고 source patch-kill 증거 artifact ID는 `8691825442`다.
+> 2026-07-29 개편에서는 1차의 과거 저장소 역할 카드를 제거하고, 실제
+> BANK-OM-007의 최초 8개·후속 2개로 `candidate_additional_paths`를 설명했다.
+> 2차는 검사기 지도 → 검사기별 독립 상세보기 → 전체 입출력 상세보기 순서로
+> 재구성하고 T번호가 전체 개발계획의 안정적인 태스크 ID임을 명시했다. 관련
+> 집중 검사는 55 passed, 9 mirror skips이며 로컬 `file://` 브라우저 자동검수는
+> 보안 제한으로 실행하지 못했다.
 
 > **목적**: 컨텍스트가 리셋돼도 이 문서 하나로 작업을 이어갈 수 있게 현재까지의
 > 모든 결정·산출물·다음 단계를 세세하게 기록한다. **작업 재개 시 이 문서를 먼저 읽는다.**
