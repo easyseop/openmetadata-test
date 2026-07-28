@@ -1,13 +1,14 @@
 # Codex 작업 인수인계
 
-> 갱신 기준: 2026-07-28 11:41 KST
+> 갱신 기준: 2026-07-29 06:48 KST
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
 > 문서 묶음 작성 전 기준 commit: `0a6d009107a18e69a2150388442adffb6332f08c`
 > 제품 코드 상태: `easyseop/OpenMetadata` commit
 > `849ae756cd238f218b5e3a6c795a392305cb32ee`
 > 공유문서·스킬 최초 로컬 commit: `becb18e` (이후 보강은 현재 브랜치의 `git log`로 확인)
-> 원격 push: 행내 커스터마이징 정보의 외부 GitHub 전송 승인 확인 전까지 대기
+> 원격 push: 거버넌스 저장소 push는 승인 확인 전까지 대기. 사용자가 만든
+> `easyseop/OM_TEMP`에는 1.13.0 시연용 제품 코드 두 브랜치를 push함
 
 이 문서는 다른 노트북이나 새 작업에서 바로 이어가기 위한 현재 정본이다.
 과거 Claude 작업의 상세 기록은
@@ -20,10 +21,11 @@
 
 | 구분 | 저장소와 브랜치 | 의미 |
 |---|---|---|
-| 행내 배포용 OpenMetadata 소스 | `easyseop/OpenMetadata` 브랜치 `codex/bank-vendor-1.13.1-rebuild` | 공식 원본 위에 승인된 BANK-OM 커스터마이징을 적용한 코드 상태 |
-| 현재 로컬 제품 검토 브랜치 | `codex/strict-gate-validation` | remote 이름이 `candidate`인 위 제품 브랜치를 추적하며 검사에 사용 |
+| 행내 배포용 OpenMetadata 소스 | `easyseop/OpenMetadata` 브랜치 `codex/bank-vendor-1.13.1-rebuild` | 공식 원본 위에 BANK-OM-001~011 코드가 적용된 검토 상태. 008~011 ID는 사용자 확정 전 |
+| 현재 로컬 제품 검토 브랜치 | `codex/strict-gate-validation` | remote 이름이 `product`인 위 제품 브랜치를 추적하며 검사에 사용 |
 | 변경관리·검사 저장소 | `easyseop/openmetadata-test` 브랜치 `codex/strict-manifest-gates` | BANK-OM 변경관리표, 검사기, 테스트, 공유문서와 인수인계를 관리 |
 | 공식 원본 | `open-metadata/OpenMetadata` `1.13.1-release` commit `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9` | 현재 커스터마이징 적용 기준 |
+| 업그레이드 시연 제품 저장소 | `easyseop/OM_TEMP` | Manifest 없이 1.13.0 공식 코드와 001~007 재구현 코드까지만 준비 |
 
 `easyseop/OpenMetadata`의 기본 브랜치에 행내 커스터마이징이 보이지 않는 것은
 이상 상태가 아니다. 현재 커스터마이징은 위의 별도 제품 브랜치에 있으며,
@@ -38,11 +40,43 @@ BANK-OM 변경관리 정보와 검사기는 `easyseop/openmetadata-test`에 있�
 | 3차 | 실제 제품 코드·BANK-OM-001 Manifest·Git 기록·소스 검사 결과와 책임자 판정표를 연결한 HTML 초안을 만들었다. 실제 Git 화면 시연 문서는 아니다. | `docs/00-사용가이드/공유문서/openmetadata-phase3-demo-fragment.html`, `openmetadata-phase3-demo-preview.html` | 사용자 검토를 반영해 검사 결과와 판정 구조를 먼저 확정 |
 | 4차 | 아직 만들지 않았다. 실제 Git 화면으로 병합 전 대상 확인, 공식·행내 diff, 병합·재적용, 검사 실행, 병합 결과와 검사 라벨을 순서대로 보여준다. | `docs/04-진행/SHARING_ARTIFACT_REQUIREMENTS.md` | 3차 확정 후 테스트할 공식 버전 구간을 정하고 실제 Git 작업·검사 화면 캡처 |
 
-4차 업그레이드 반복 테스트의 우선 검토 조합은
-`1.12.7→1.12.8`, `1.12.8→1.13.0`, `1.13.0→1.13.1`이다. 공식 버전
-3개가 아니라 4개를 사용해야 업그레이드 구간 3개가 나온다. 현재 BANK-OM
-커스터마이징은 1.13.1 기준으로 재구성했으므로, 과거 구간의 결과는 실제 과거
-운영 이력이 아니라 브랜치 전략과 검사기의 반복 검증으로 표시한다.
+4차 업그레이드 시연 범위는 `1.13.0→1.13.1` 한 구간으로 좁혔다. 먼저 공식
+1.13.0 구조에 맞춰 BANK-OM-001~007을 재구현하고 검사한 뒤, 그 commit을 공식
+1.13.1 기준에 다시 적용해 충돌·보완·재검사 과정을 보여준다. 1.12.x 구간은
+1.13.1 기준 commit의 역방향 적용으로 충돌이 과장되므로 이번 시연에서 제외한다.
+
+### OM_TEMP 현재 구성
+
+2026-07-29 KST에 다음 두 브랜치를 원격에 push했다.
+
+| 브랜치 | 원격 SHA | 내용 |
+|---|---|---|
+| `patch/om-1.13.0` | `2f4f3560e7a8437e2f4f7fcafd00d32ea2d91a50` | 공식 `1.13.0-release` commit `f329dd4…`의 코드 트리와 동일한 독립 스냅샷 |
+| `custom/om-1.13.0` | `7d19c8952612e77467b0a80d6287170d814f1de1` | 공식 1.13.0 전체 코드에 1.13.0 구조로 재구성한 BANK-OM-001~007과 007 후속 commit을 순서대로 적용 |
+
+OM_TEMP는 전체 OpenMetadata 과거 Git 이력을 복사하지 않았다. 첫 push에서 전체
+이력 전송이 GitHub HTTP 500으로 실패해, 공식 1.13.0 시점의 파일 전체를 독립
+기준 commit으로 만들고 원본 tag·commit·Git tree 값을 commit 본문에 기록했다.
+Git tree는 해당 commit의 전체 파일 내용을 식별하는 값이다. 공식 1.13.0 tree와
+OM_TEMP patch tree가
+`da56c24d61a98dc4ed1001800c80866a13bc1645`로 동일한 것을 확인했다.
+
+`custom/om-1.13.0`에는 BANK-OM 커밋 8개가 있다. 001~006은 각각 한 commit이고,
+007은 최초 적용과 후속 보완 두 commit이다. 008~011은 넣지 않았다. 두 브랜치
+사이 실제 변경 파일은 111개다.
+
+사용자 요청에 따라 아직 다음 항목은 하지 않았다.
+
+- BANK-OM Manifest 복사·신규 작성
+- 검사기 저장소와 OM_TEMP 연결
+- 빌드·단위 테스트·소스 gate 실행
+- `verified/...` tag 생성
+
+현재 수행한 확인은 해결되지 않은 Git 충돌 없음, `git diff --check` 통과, 변경
+JSON 문법 통과, 8개 commit의 `Customization-ID` 확인까지다. 다음 단계는 사용자가
+OM_TEMP의 두 브랜치와 001~007 실제 diff를 확인한 뒤, Manifest를 순차 등록하고
+검사기를 연결하는 것이다. `candidate/...` branch는 다음 단계가 아니라 설계에서
+제외했다.
 
 검토본을 승인본이라고 표시하지 않는다. 사용자가 명시적으로 승인한 범위와 아직
 검토 중인 범위를 문서와 화면에서 구분한다.
@@ -51,6 +85,14 @@ BANK-OM 변경관리 정보와 검사기는 `easyseop/openmetadata-test`에 있�
 
 - 공식 OpenMetadata 저장소의 새 버전은 패치 브랜치로 가져온다.
 - 행내 커스터마이징 브랜치는 BANK-OM ID별 커밋을 유지한다.
+- 버전별 장기 작업 브랜치는 `patch/om-<version>`과
+  `custom/om-<version>` 두 개만 사용한다.
+- 별도의 장기 `candidate/...` 브랜치는 만들지 않는다. 검사 대상은
+  `custom/...` 브랜치의 Git commit SHA와 digest로 고정하고, 통과한 상태는
+  `verified/om-<version>-bank.<revision>` tag로 보존한다.
+- 4차 시연의 임시 upgrade branch는 충돌 재현을 위한 작업 공간이며 결과와
+  검증 tag를 보존한 뒤 삭제할 수 있다. 검사기 코드에서 `candidate`는 Git
+  브랜치 이름이 아니라 검사 대상 코드 상태를 뜻한다.
 - 새 공식 버전에 커스터마이징을 적용한 뒤 검사기를 실행하고, 필수 검사가 끝난
   경우에만 배포 검토로 넘어간다.
 - BANK-OM ID는 사람이 정해진 양식으로 발급한다. LLM이 임의로 번호를 결정하지
@@ -112,7 +154,9 @@ Java JUnit·TypeScript Jest를 직접 등록하고 실행하려면 언어·도�
 
 - 현재 제품 코드 commit: `849ae756cd238f218b5e3a6c795a392305cb32ee`
 - 공식 원본 commit: `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9`
-- 활성 커스터마이징: `BANK-OM-001`부터 `BANK-OM-011`까지 11개
+- 현재 제품 코드에는 `BANK-OM-001`부터 `BANK-OM-011`까지의 commit이 있다.
+  008~011은 이전 Codex 작업에서 기술 보완용으로 추가한 임시 ID이므로 사용자가
+  정식 커스터마이징 ID로 확정하기 전에는 승인된 11개라고 표현하지 않는다.
 - 소스 검사: T25·T26·T60-I·T30·T31·T40·T41·T93 통과
 - T60-I: 등록한 필수 Python 테스트 함수 9개 확인
 - T42: 같은 버전을 양쪽에 넣은 연결 확인만 했으며 실제 다음 공식 버전

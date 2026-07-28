@@ -1,0 +1,38 @@
+schema_version: 1
+mode: synthetic-backtest
+historical_claim: not-production-history
+
+source_reference:
+  repository: easyseop/OpenMetadata
+  branch: codex/bank-vendor-1.13.1-rebuild
+  commit_sha: 849ae756cd238f218b5e3a6c795a392305cb32ee
+  evidence_file: source-candidate-evidence.yaml
+
+execution:
+  isolation: disposable-worktree
+  product_branch_mutation: false
+  persistent_candidate_branch: false
+  branch_prefix: codex/upgrade-rehearsal
+  result_directory: results/upgrade-rehearsals
+
+stages:
+  - identify-refs
+  - upstream-diff
+  - bank-diff
+  - prepare-disposable-upgrade-branch
+  - reapply-detect
+  - source-gates
+  - upgrade-risk-gates
+  - result-labels
+
+runs:
+  - id: om-1-13-0-to-1-13-1
+    order: 1
+    upstream_base:
+      tag: 1.13.0-release
+      sha: f329dd4a7e47134a2bd5a06af6181b0ee527ddd9
+    upstream_target:
+      tag: 1.13.1-release
+      sha: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
+    expected_git_relation: ancestor
+    result_file: results/upgrade-rehearsals/01-1.13.0-to-1.13.1.json
