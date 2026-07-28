@@ -32,6 +32,10 @@
 > `348 passed, 7 operational skips`로 성공했다. 90일 증거 artifact ID는
 > `8693987394`, GitHub SHA-256은
 > `3d089c30b3fcbc141674a964c8a803d1f51f2352cb9962af385e428a10dee29c`다.
+> Claude 검토 반영 commit `10f8647...`의 원격 run `30376209792`도
+> `348 passed, 7 operational skips`로 성공했다. 90일 증거 artifact ID는
+> `8695135853`, GitHub SHA-256은
+> `465b509049c81782de6100d499411e845b33bac4b0b9a4afccf431f0a7ffde3c`다.
 
 > **목적**: 컨텍스트가 리셋돼도 이 문서 하나로 작업을 이어갈 수 있게 현재까지의
 > 모든 결정·산출물·다음 단계를 세세하게 기록한다. **작업 재개 시 이 문서를 먼저 읽는다.**

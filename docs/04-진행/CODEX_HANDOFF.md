@@ -1,11 +1,11 @@
 # Codex 작업 인수인계
 
-> 갱신 기준: 2026-07-29 00:31 KST
+> 갱신 기준: 2026-07-29 01:05 KST
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
-> 이번 문서 개편 commit: `20b8592bfb3ed7f4b84a4ff6dbda556780fd5f50`
-> 최신 원격 검증: `20b8592...`의 `Source candidate` run
-> [`30373496657`](https://github.com/easyseop/openmetadata-test/actions/runs/30373496657)
+> 이번 문서 개편 commit: `10f864750173fccf22ef94d61d5f5e9f726dfaf5`
+> 최신 원격 검증: `10f8647...`의 `Source candidate` run
+> [`30376209792`](https://github.com/easyseop/openmetadata-test/actions/runs/30376209792)
 > 성공 (`348 passed, 7 operational skips`, source gates와 source
 > patch-kill 2건 통과)
 > 문서 묶음 작성 전 기준 commit: `0a6d009107a18e69a2150388442adffb6332f08c`
@@ -736,3 +736,24 @@ JUnit/Jest/direct_tests 등 운영 범위 보강이 남아 별도 목록으로 �
 - 90일 증거 artifact: `source-patch-kill-evidence-30373496657-1`, ID
   `8693987394`, GitHub SHA-256
   `3d089c30b3fcbc141674a964c8a803d1f51f2352cb9962af385e428a10dee29c`
+- Claude 검토 반영 원격 run `30376209792`: 성공. `348 passed,
+  7 operational skips`, 고정 source gates 8개와 source patch-kill 2건 통과
+- 새 90일 증거 artifact: `source-patch-kill-evidence-30376209792-1`, ID
+  `8695135853`, GitHub SHA-256
+  `465b509049c81782de6100d499411e845b33bac4b0b9a4afccf431f0a7ffde3c`
+
+### 다른 기기에서 재개
+
+기존 clone이 있으면 다음 순서로 최신 원격 상태를 받는다.
+
+```bash
+git fetch origin
+git switch codex/strict-manifest-gates
+git pull --ff-only origin codex/strict-manifest-gates
+git rev-parse HEAD
+```
+
+마지막 출력이 이 문서 상단의 최신 원격 commit과 같은지 확인하고,
+`docs/04-진행/CODEX_HANDOFF.md` §12와
+`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md` §15부터 읽는다. 새 clone이면
+`easyseop/openmetadata-test`를 clone한 뒤 같은 branch로 switch한다.

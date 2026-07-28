@@ -1,11 +1,11 @@
 # Current implementation status
 
-> Updated: 2026-07-29 00:31 KST
+> Updated: 2026-07-29 01:05 KST
 > Branch: `codex/strict-manifest-gates`
 > Latest remotely verified sharing/rehearsal head:
-> `20b8592bfb3ed7f4b84a4ff6dbda556780fd5f50`
+> `10f864750173fccf22ef94d61d5f5e9f726dfaf5`
 > Latest sharing/rehearsal CI:
-> [`30373496657`](https://github.com/easyseop/openmetadata-test/actions/runs/30373496657)
+> [`30376209792`](https://github.com/easyseop/openmetadata-test/actions/runs/30376209792)
 > (`Source candidate`, success; 348 passed, 7 operational skips, source gates
 > and 2 source patch-kill experiments passed)
 > Last verified implementation commit: `5f54687`
@@ -80,6 +80,12 @@ The pre-production backlog now separates not-applicable, other-candidate
 partial evidence, current-candidate not-run work, and hardening for checks that
 already have OM_TEMP results. It includes explicit OM_TEMP execution criteria
 for T63 and policy-drift T93.
+
+Remote run `30376209792` succeeded at `10f8647...`: `348 passed,
+7 operational skips`, all eight locked source gates passed, and both
+source-capable patch-kill experiments passed. The 90-day artifact
+`source-patch-kill-evidence-30376209792-1` has ID `8695135853` and GitHub
+SHA-256 `465b509049c81782de6100d499411e845b33bac4b0b9a4afccf431f0a7ffde3c`.
 
 Remote run `30373496657` succeeded at `20b8592...`: `348 passed, 7 operational
 skips`, all locked source gates passed, and both source-capable patch-kill

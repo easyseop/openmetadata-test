@@ -2224,5 +2224,9 @@ runner-wiring 스모크, 다른 후보의 PASS·APPROVAL은 검사기 구현 근
 수정본 구조 검사는 상세보기 17개, 초록 표시 9개, 지도 카드 4개, 범례 포함
 체크 아이콘 10개, 후보 상태 pill 4개, 선택 HTML 요소 여닫기 불일치 0건이다.
 관련 집중 테스트는 `55 passed, 9 mirror-dependent skipped`,
-`git diff --check`는 통과했다. 원격 CI는 다음 커밋 완료 후 이 절과
-`CODEX_HANDOFF.md` §12에 추가한다.
+`git diff --check`는 통과했다. 원격 run `30376209792`는
+`10f8647...`에서 `348 passed, 7 operational skips`로 성공했고 고정 source
+gates 8개와 source patch-kill 2건을 통과했다. 90일 증거 artifact는
+`source-patch-kill-evidence-30376209792-1`, ID `8695135853`, GitHub
+SHA-256
+`465b509049c81782de6100d499411e845b33bac4b0b9a4afccf431f0a7ffde3c`다.
