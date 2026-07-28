@@ -2139,6 +2139,9 @@ JUnit·TypeScript Jest·`direct_tests` 연결은 안전한 추가 개발 대상�
 
 ## 14. 2026-07-29 검사기 상태 표시 독립 검토 요청
 
+> 이 절은 검토 전 요청 기록이다. Claude 검토 결과와 반영 내용은 §15가
+> 최신 정본이다.
+
 2차 HTML의 제목과 상태 표기를 다음 기준으로 바꿨다.
 
 - 제목은 구현 함수명이 아니라 책임자가 확인할 질문·결과를 드러낸다.
@@ -2175,3 +2178,51 @@ Claude는 다음을 독립적으로 확인해 달라.
 `source-patch-kill-evidence-30373496657-1`, ID `8693987394`, GitHub
 SHA-256
 `3d089c30b3fcbc141674a964c8a803d1f51f2352cb9962af385e428a10dee29c`다.
+
+## 15. 2026-07-29 Claude 검사기 상태 검토 반영
+
+### 수용한 핵심 지적
+
+초록 체크 12개가 서로 다른 검사 대상의 증거를 섞었다는 지적을 수용했다.
+
+- 현행 표시 기준: `easyseop/OM_TEMP` commit
+  `dee330ebd5abfe33e1ac61e1ca31879746a1b423`
+- 현행 결과 경로: `harness/registrations/om-temp-1.13.1/`
+- 다른 후보: `easyseop/OpenMetadata`의 kb-openmetadata 후보
+  `849ae756...` 및 snapshot 재구성 checkpoint `e1ffc5a...`
+
+초록 체크는 현행 OM_TEMP commit에 결속된 실제 결과만 인정한다. 단위 테스트,
+runner-wiring 스모크, 다른 후보의 PASS·APPROVAL은 검사기 구현 근거로는
+유효하지만 현재 OM_TEMP 결과 표시에는 사용하지 않는다.
+
+### 수정한 분류
+
+- A 7개: T25, T26, T30, T31, T40, T41, T93 exact-scope
+- B 1개: T42
+- C 1개: T60-I
+- D 0개
+
+총 9개다.
+
+- T25-R: 현재 OM_TEMP ancestry 방식에는 `해당 없음`
+- T61: kb-openmetadata의 BANK-OM-006·007만 `별도 후보 2건 확인`
+- T63: APPROVAL은 kb-openmetadata `849ae756...` 결과이므로
+  `현재 후보 미실행`
+- T93 policy-drift: kb-openmetadata runner-wiring 스모크뿐이므로
+  `현재 후보 미실행`
+
+### 함께 반영한 보완
+
+- 2차 상단에 현재 검사 대상 commit과 결과 디렉터리를 명시했다.
+- 범례에서 현재 OM_TEMP 실제 업그레이드 결과로 바로 이동하게 했다.
+- `운영 적용 전에 우선 보완할 항목`을 해당 없음, 다른 후보 부분 결과,
+  현재 후보 미실행, 현재 결과의 운영 보강으로 구분했다.
+- T63과 T93 policy-drift의 OM_TEMP 실행·결속 완료 기준을 추가했다.
+- `om-temp-1.13.0/registration-validation-results.json`의 낡은 로컬 절대경로를
+  저장소 상대경로로 바꿨다.
+
+수정본 구조 검사는 상세보기 17개, 초록 표시 9개, 지도 카드 4개, 범례 포함
+체크 아이콘 10개, 후보 상태 pill 4개, 선택 HTML 요소 여닫기 불일치 0건이다.
+관련 집중 테스트는 `55 passed, 9 mirror-dependent skipped`,
+`git diff --check`는 통과했다. 원격 CI는 다음 커밋 완료 후 이 절과
+`CODEX_HANDOFF.md` §12에 추가한다.

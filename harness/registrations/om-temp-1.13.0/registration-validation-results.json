@@ -27,6 +27,6 @@
     }
   ],
   "reconstruction_plan_digest": "sha256:5164ac8c2967e19dfdb9de3e14941d78b1cb28df5158bc6bf1309900eb9947ac",
-  "registration": "/Users/seop/Documents/Codex/2026-07-24/sites-plugin-sites-openai-bundled/work/review-openmetadata-test/harness/registrations/om-temp-1.13.0",
+  "registration": "harness/registrations/om-temp-1.13.0",
   "release_note": "이 결과는 검사 입력자료가 서로 일치한다는 뜻이다. 코드 build, test 실행, 담당자 지정, 배포 승인은 별도 단계다."
 }

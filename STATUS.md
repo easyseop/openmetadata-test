@@ -64,16 +64,22 @@ A is usable, B is limited, C is partially executable, and D has not been run
 operationally. T60-I moved from the A details to C so the map and detail
 classification agree.
 
-Twelve verifier details have a green gradient check and light green tint
-because both the implementation and a currently inspectable result exist:
-eight in A, two in B, and two in C. The legend explicitly says this is not a
-PASS label; the result may still require approval. T43, T61, T62, T90, and T91
-remain unmarked.
+Claude's independent review found that the first twelve-check classification
+mixed evidence from the OM_TEMP `dee330e...` candidate, the separate
+kb-openmetadata candidate, and a runner-wiring smoke input. The corrected
+green criterion is now candidate-bound: only results stored for the current
+OM_TEMP commit qualify.
 
-The pre-production backlog now names those five unfinished-result verifiers,
-the exact implementation or external input still needed, and a concrete
-completion criterion. Separate hardening items cover T41, T42/T93, T60-I, and
-T63 without misclassifying their existing results as final operating proof.
+Nine verifier details now have a green gradient check and light green tint:
+seven in A, one in B, and one in C. T25-R is marked not applicable to the
+ancestry-based OM_TEMP candidate; T61 identifies two partial results from the
+separate kb candidate; T63 and policy-drift T93 are marked not run for the
+current candidate. The legend links directly to the OM_TEMP upgrade result.
+
+The pre-production backlog now separates not-applicable, other-candidate
+partial evidence, current-candidate not-run work, and hardening for checks that
+already have OM_TEMP results. It includes explicit OM_TEMP execution criteria
+for T63 and policy-drift T93.
 
 Remote run `30373496657` succeeded at `20b8592...`: `348 passed, 7 operational
 skips`, all locked source gates passed, and both source-capable patch-kill
