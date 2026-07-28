@@ -6,6 +6,8 @@
 > 문서 묶음 작성 전 기준 commit: `0a6d009107a18e69a2150388442adffb6332f08c`
 > 제품 코드 상태: `easyseop/OpenMetadata` commit
 > `849ae756cd238f218b5e3a6c795a392305cb32ee`
+> 공유문서·스킬 로컬 commit: `becb18e`
+> 원격 push: 행내 커스터마이징 정보의 외부 GitHub 전송 승인 확인 전까지 대기
 
 이 문서는 다른 노트북이나 새 작업에서 바로 이어가기 위한 현재 정본이다.
 과거 Claude 작업의 상세 기록은
@@ -172,6 +174,9 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
 - `docs/00-사용가이드/.비개발자_시연_가이드.md.swp`는 사용자의 편집기 임시
   파일이다. 수정하거나 stage하지 않는다.
 - 비밀값, 인증 토큰, 행내 URL과 실제 데이터는 문서나 Git에 넣지 않는다.
+- 현재 공유문서 묶음은 로컬 commit `becb18e`까지 저장됐다. 원격
+  `https://github.com/easyseop/openmetadata-test.git`에 행내 커스터마이징 구조를
+  올려도 된다는 사용자의 명시적 확인을 받은 뒤 push한다.
 - GitHub CLI 인증이 없더라도 기존 Git credential로 push가 가능한 경우가 있다.
   인증 오류가 나면 사용자가 해당 노트북에서 GitHub 로그인을 완료해야 한다.
 - PR은 사용자가 요청하지 않으면 만들지 않는다.
