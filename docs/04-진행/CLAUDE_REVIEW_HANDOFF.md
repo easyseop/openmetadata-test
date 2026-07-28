@@ -2023,3 +2023,18 @@ T42도 A==B smoke이므로 새 upstream target을 입력하기 전에는 “영�
 
 코드 구현과 fail-closed workflow는 완료했지만 위 입력이 없는 실제 T61/T62/T90
 실행은 pass로 기록하지 않는다.
+
+## 11. BANK-OM 운영규칙과 향후 LLM 위키
+
+ID 발급·후속 변경·Manifest 항목의 사용법이 코드와 여러 문서에 흩어져 있어
+다음 문서를 단일 운영 기준으로 추가했다.
+
+- [`bank_om_registration_policy.md`](../02-설계/bank_om_registration_policy.md)
+
+후속 작업자는 사용자 가이드나 LLM 위키를 갱신할 때 이 문서를 원본으로
+사용한다. 특히 다음 상태를 혼동하지 않는다.
+
+- T42 수동 `upgrade_watch.paths` 비교는 구현·테스트 완료
+- `allowed`의 공식 파일을 T42에 자동 포함하는 개선은 아직 미구현
+- `owner`는 현재 Manifest 스키마에 없으며 저장 위치·강제 방식 미확정
+- 같은 ID 후속 파일은 Git SHA와 `candidate_additional_paths`를 모두 갱신

@@ -11,6 +11,9 @@ Treat the following files as one handoff set:
   workflow, result meanings, and current deployment-readiness statement.
 - `docs/00-사용가이드/비개발자_시연_가이드.md` — command-free source
   demonstration, runtime workflow walkthrough, and evidence checklist.
+- `docs/02-설계/bank_om_registration_policy.md` — single source for BANK-OM
+  issuance, Manifest fields, follow-up commits, repository roles, and future
+  LLM-wiki synchronization.
 - `STATUS.md` — short, current implementation snapshot.
 - `docs/04-진행/CLAUDE_REVIEW_HANDOFF.md` — detailed implementation,
   verification, blockers, and continuation guide.
@@ -45,9 +48,10 @@ Read in this order:
 2. [`STATUS.md`](STATUS.md)
 3. [`docs/00-사용가이드/비개발자_사용_가이드.md`](docs/00-사용가이드/비개발자_사용_가이드.md)
 4. [`docs/00-사용가이드/비개발자_시연_가이드.md`](docs/00-사용가이드/비개발자_시연_가이드.md)
-5. [`docs/02-설계/ADR-001-vendor-merge-default.md`](docs/02-설계/ADR-001-vendor-merge-default.md)
-6. [`docs/04-진행/openmetadata_build_plan.md`](docs/04-진행/openmetadata_build_plan.md)
-7. schemas and modules under `harness/acgh/`
+5. [`docs/02-설계/bank_om_registration_policy.md`](docs/02-설계/bank_om_registration_policy.md)
+6. [`docs/02-설계/ADR-001-vendor-merge-default.md`](docs/02-설계/ADR-001-vendor-merge-default.md)
+7. [`docs/04-진행/openmetadata_build_plan.md`](docs/04-진행/openmetadata_build_plan.md)
+8. schemas and modules under `harness/acgh/`
 
 Do not infer deployment readiness from unit-test success. In particular,
 confirm that the root-snapshot ancestry blocker, unassigned owners, two

@@ -197,3 +197,16 @@ git pull --ff-only
 설명용 HTML도 저장소에 함께 보관한다.
 
 - [`openmetadata-demo-walkthrough-standalone.html`](../00-사용가이드/openmetadata-demo-walkthrough-standalone.html)
+
+## BANK-OM 운영규칙·LLM 위키 원본
+
+사람용 가이드와 향후 LLM 위키가 검사기 내부 용어를 임의로 해석하지 않도록
+단일 기준 문서를 추가한다.
+
+- [`bank_om_registration_policy.md`](../02-설계/bank_om_registration_policy.md)
+
+이 문서는 ID 발급, 같은 ID 후속 변경과 새 ID 구분,
+`allowed`·`required`·`candidate_additional`·`watch`, Git 커밋 SHA,
+현재 구현과 향후 개선, 미확정 `owner` 정책, 제품·검사 저장소의 역할을
+구분한다. LLM 위키는 이 문서를 원본으로 사용하고 검사기 스키마와 불일치하면
+스키마를 먼저 확인해야 한다.
