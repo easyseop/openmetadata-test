@@ -330,6 +330,56 @@ def test_plan_rejects_uncovered_source_path(tmp_path):
         raise AssertionError("uncovered source path must fail closed")
 
 
+def test_plan_rejects_source_scope_globs(tmp_path):
+    _, target, snapshot = _source(tmp_path)
+    manifests = _manifests()
+    manifests["BANK-OM-001"]["implementation"]["allowed_changed_paths"] = [
+        "*.txt"
+    ]
+    try:
+        VR.build_reconstruction_plan(
+            _registry(target, snapshot),
+            manifests,
+            ["a.txt", "b.txt", "shared.txt", "blocked.txt"],
+        )
+    except VR.ReconstructionError as exc:
+        assert "must be literal files" in str(exc)
+    else:
+        raise AssertionError("source snapshot globs must fail closed")
+
+
+def test_plan_rejects_allowed_path_absent_from_source_inventory(tmp_path):
+    _, target, snapshot = _source(tmp_path)
+    manifests = _manifests()
+    manifests["BANK-OM-001"]["implementation"]["allowed_changed_paths"].append(
+        "not-in-source.txt"
+    )
+    try:
+        VR.build_reconstruction_plan(
+            _registry(target, snapshot),
+            manifests,
+            ["a.txt", "b.txt", "shared.txt", "blocked.txt"],
+        )
+    except VR.ReconstructionError as exc:
+        assert "absent from the pinned source inventory" in str(exc)
+    else:
+        raise AssertionError("extra allowed source paths must fail closed")
+
+
+def test_shared_owner_resolution_must_equal_manifest_owners(tmp_path):
+    repo, target, snapshot = _source(tmp_path)
+    candidate = _candidate(repo, target)
+    result = VR.check_reconstructed_candidate(
+        str(repo),
+        _plan(target, snapshot),
+        _manifests(),
+        candidate,
+        shared_path_owners={"shared.txt": ["BANK-OM-001"]},
+    )
+    assert result.verdict == V.ANALYSIS_ERROR
+    assert "extra_manifest_owners=['BANK-OM-002']" in result.reasons[0]
+
+
 def test_real_shared_owner_template_tracks_every_ambiguous_path():
     reg, manifests, inventory = VR.load_registration_bundle(_REGISTRATION)
     plan = VR.build_reconstruction_plan(reg, manifests, inventory)

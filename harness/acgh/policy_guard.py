@@ -20,7 +20,15 @@ DEFAULT_POLICY_GLOBS = (
     ".bank/**",
     "docs/bank/**",
     ".github/workflows/**",
+    "harness/acgh/**",
     "harness/policies/**",
+    "harness/registrations/**",
+    "harness/tests/**",
+    "docs/02-설계/**",
+    "docs/03-기술참조/**",
+    "docs/04-진행/**",
+    "STATUS.md",
+    "CLAUDE.md",
 )
 
 

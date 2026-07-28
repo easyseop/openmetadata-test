@@ -112,17 +112,30 @@ def build_reconstruction_plan(
             f"active manifest set mismatch: missing={missing}, extra={extra}"
         )
 
+    inventory_set = set(paths)
+    exact_scopes: dict[str, frozenset[str]] = {}
     try:
-        specs = {
-            customization_id: layout.make_spec(
-                manifests_by_id[customization_id]["implementation"][
-                    "allowed_changed_paths"
-                ]
-            )
-            for customization_id in active_ids
-        }
+        for customization_id in active_ids:
+            raw_scope = manifests_by_id[customization_id]["implementation"][
+                "allowed_changed_paths"
+            ]
+            literals = tuple(layout.ensure_literal(item) for item in raw_scope)
+            if len(literals) != len(set(literals)):
+                raise ReconstructionError(
+                    f"{customization_id}: duplicate allowed source path"
+                )
+            extra = sorted(set(literals) - inventory_set)
+            if extra:
+                raise ReconstructionError(
+                    f"{customization_id}: allowed source paths are absent from "
+                    f"the pinned source inventory: {extra}"
+                )
+            exact_scopes[customization_id] = frozenset(literals)
     except (KeyError, TypeError, layout.LayoutError) as exc:
-        raise ReconstructionError(f"invalid manifest path policy: {exc}") from exc
+        raise ReconstructionError(
+            "source-snapshot allowed_changed_paths must be literal files: "
+            f"{exc}"
+        ) from exc
 
     try:
         findings = {
@@ -148,7 +161,7 @@ def build_reconstruction_plan(
         hits = tuple(
             customization_id
             for customization_id in active_ids
-            if specs[customization_id].match_file(path)
+            if path in exact_scopes[customization_id]
         )
         if path in findings:
             if hits:
@@ -352,6 +365,12 @@ def _normalize_shared_owners(
             invalid_config.append(
                 f"shared path has invalid owners: {path} invalid={invalid} "
                 f"candidates={list(allowed)}"
+            )
+        missing = sorted(set(allowed) - set(owners))
+        if missing:
+            invalid_config.append(
+                f"shared path manifest owners are broader than the resolved "
+                f"owners: {path} extra_manifest_owners={missing}"
             )
         normalized[path] = owners
     return normalized, blocking, invalid_config

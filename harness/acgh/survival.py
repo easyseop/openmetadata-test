@@ -9,6 +9,9 @@ For every active BANK-OM id it proves, from the exact T24 candidate lock:
 * a validated manifest exists;
 * every required path exists in the candidate tree;
 * every required path is still different from the approved upstream target;
+* every literal allowed path is treated as the original expected file
+  inventory: non-required removals or upstream-identical states require review
+  rather than disappearing silently;
 * at least one contract is declared and exists in the contract catalog;
 * the catalog binds that contract back to the same customization id; and
 * the contract resolves to at least one required test.
@@ -34,11 +37,13 @@ class SurvivalFinding:
     customization_id: str
     code: str
     detail: str
+    verdict: str = verdict.BLOCK
 
 
 @dataclass(frozen=True)
 class CustomizationSurvival:
     customization_id: str
+    expected_paths: int
     required_paths: int
     contracts: int
     effective_tests: int
@@ -119,6 +124,22 @@ def inspect_survival(
                 "required_changed_paths", []
             )
         ]
+        raw_expected_paths = manifest.get("implementation", {}).get(
+            "allowed_changed_paths", []
+        )
+        expected_paths: list[str] = []
+        for path in raw_expected_paths:
+            try:
+                expected_paths.append(L.ensure_literal(path))
+            except L.LayoutError as exc:
+                findings.append(
+                    SurvivalFinding(
+                        customization_id,
+                        "expected_scope_not_literal",
+                        f"{path}: {exc}",
+                        verdict.ANALYSIS_ERROR,
+                    )
+                )
         if not required_paths:
             findings.append(
                 SurvivalFinding(
@@ -127,6 +148,28 @@ def inspect_survival(
                     "manifest declares no required_changed_paths",
                 )
             )
+        required_set = set(required_paths)
+        for path in expected_paths:
+            if path in required_set:
+                continue
+            if path not in candidate_paths:
+                findings.append(
+                    SurvivalFinding(
+                        customization_id,
+                        "expected_path_missing",
+                        path,
+                        verdict.APPROVAL,
+                    )
+                )
+            elif path not in changed_from_target:
+                findings.append(
+                    SurvivalFinding(
+                        customization_id,
+                        "expected_state_not_distinct",
+                        f"{path} is identical to approved upstream target",
+                        verdict.APPROVAL,
+                    )
+                )
         for path in required_paths:
             if path not in candidate_paths:
                 findings.append(
@@ -192,6 +235,7 @@ def inspect_survival(
             survived.append(
                 CustomizationSurvival(
                     customization_id=customization_id,
+                    expected_paths=len(expected_paths),
                     required_paths=len(required_paths),
                     contracts=len(contract_ids),
                     effective_tests=len(effective),
@@ -225,11 +269,13 @@ def check_customization_survival(
         )
 
     if findings:
+        states = [item.verdict for item in findings]
         return verdict.GateResult(
             name,
-            verdict.BLOCK,
+            verdict.aggregate(states),
             tuple(
-                f"{item.customization_id} {item.code}: {item.detail}"
+                f"{item.customization_id} {item.code}: {item.detail} "
+                f"-> {item.verdict}"
                 for item in findings
             ),
         )
@@ -238,7 +284,8 @@ def check_customization_survival(
         name,
         verdict.PASS,
         tuple(
-            f"{item.customization_id}: required_paths={item.required_paths}, "
+            f"{item.customization_id}: expected_paths={item.expected_paths}, "
+            f"required_paths={item.required_paths}, "
             f"contracts={item.contracts}, effective_tests={item.effective_tests}"
             for item in survived
         ),

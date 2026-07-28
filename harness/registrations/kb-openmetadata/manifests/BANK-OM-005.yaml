@@ -5,15 +5,16 @@ kind: core-patch
 title: 한글 IME 보정
 implementation:
   allowed_changed_paths:
-    - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
+  - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
   required_changed_paths:
-    - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
+  - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
 upgrade_watch:
   paths:
-    - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
-    - openmetadata-ui/src/main/resources/ui/package.json
+  - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
+  - openmetadata-ui/src/main/resources/ui/package.json
 assurance:
-  contracts: [CONTRACT-KOREAN-IME]
+  contracts:
+  - CONTRACT-KOREAN-IME
   direct_tests: []
 series:
   allowed: false

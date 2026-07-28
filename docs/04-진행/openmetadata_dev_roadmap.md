@@ -302,8 +302,8 @@ T93·T42 · T50 · T70 최소.
 
 | 태스크 | 상태 | 산출물 | 검증 |
 |---|---|---|---|
-| T25-R snapshot→vendor 재구성 | ✅ 실제 branch·checkpoint 통과 | `acgh/vendor_rebuild.py` + `shared-path-owners.yaml` + `source-candidate-evidence.yaml` | 13 단위 테스트 + 실제 checkpoint `e1ffc5a1...`. 113경로=67 단독·44 공유·2 제외, target ancestry·snapshot commit 비포함·7 ID/path owner·JSON 의미/기타 content 동일성 통과. 후보 전용 `BANK-OM-008/009/010/011`이 UI 타입·검색 결과·알림 ID fallback·목록 변환 계약을 보강한 current candidate `849ae756...`는 11개 active ID로 T25/T26/T30/T31 통과 |
-| T26 customization survival | ✅ 구현 | `acgh/survival.py` | 7 테스트. required path 존재·target 대비 순효과·registry/manifest/contract/effective test 생존, stale 객체=analysis_error |
+| T25-R snapshot→vendor 재구성 | ✅ 실제 branch·checkpoint 통과·정확 경로 강화 | `acgh/vendor_rebuild.py` + `shared-path-owners.yaml` + `source-candidate-evidence.yaml` | 17 단위 테스트 + 실제 checkpoint `e1ffc5a1...`. 113경로=74 단독·37 공유·2 제외. source manifest glob·미확인 파일·소유자 불일치를 analysis_error로 거부하고 target ancestry·snapshot commit 비포함·7 ID/path owner·JSON 의미/기타 content 동일성 통과. 후보 전용 `BANK-OM-008/009/010/011`을 포함한 current candidate `849ae756...`는 T25/T26/T30/T31 통과 |
+| T26 customization survival | ✅ 정확 경로 강화 | `acgh/survival.py` | 10 테스트. 등록한 원본 파일 전체를 확인하며 required 누락·원본화=block, 나머지 등록 파일 누락·원본화=approval, 비정확 glob·stale 객체=analysis_error. registry/manifest/contract/effective test 생존 확인 |
 | T27 merge conflict evidence | ✅ 구현 | `acgh/conflicts.py` + schema | 5 테스트. `ls-files -u -z` stage 1/2/3, 해결 blob/rationale/승인/candidate-lock 결속 |
 | T28 통합전략 라우팅 | ✅ 구현 | `acgh/routing.py` | 4 테스트. vendor/replay gate 분리, 필수 gate 미구성=analysis_error |
 | T29 실제 7개 snapshot + 4개 후보 보강 등록 | ✅ 등록·⚠ 운영미완 | `registrations/kb-openmetadata/` + `acgh/registry.py` + `tests/bank/contracts/` | 5 registry 테스트 + T60-I. 실제 113경로 전수목록, 111경로→7 source ID·7 contract, 2개 비제품 변경 명시 차단. `BANK-OM-008/009/010/011`은 provenance로 원본 재구성에서 제외하지만 현재 후보 생존 검사에는 포함. 9 selector 구현 존재 pass, Sybase/Tibero required pass·IME source guard pass·API 4/browser 3 skip. owner pending·T62 전체 pass 미완 |
@@ -325,7 +325,7 @@ T93·T42 · T50 · T70 최소.
 | T21 재적용 담당자 해결 모드 | ✅ 완료 | `acgh/resolve.py` | 3 테스트(실제 OM conflict). 충돌 worktree 유지·해결, 모든 적용 커밋에 Source-Commit/Patch-Revision/Application-Record/Resolution-Record trailer 각인(A-2.2), 무충돌=동일 revision·해결=revision 증가(A-2.3), application lock 결속 |
 | T22 clean-room replay | ✅ 완료 | `acgh/replay.py` | 4 테스트(실제 OM). 재생 tree==candidate tree=pass, 불일치=block+경로 리포트, 재생불가=analysis_error, 3회 동일 해시(content-addressed), 추적 tree만(A-3.8) |
 | T23 단일 integrator CAS | ✅ 완료 | `acgh/integrator.py` | 6 테스트. logical(digest)+physical(update-ref old-OID) 2중 CAS, 동일 base 동시 갱신 stale 거부, malformed 사전 차단(A-2.5) |
-| T40 drift(touched/net) | ✅ 완료 | `acgh/drift.py`(+`gitprim.net_changed_paths`) | 4 테스트(실제 OM). 상한(touched⊆allowed)·하한(required∈net), net-zero도 차단(P0-6·A-3.7) |
+| T40 drift(touched/net) | ✅ 전체 경로 강화 | `acgh/drift.py`(+`gitprim.net_changed_paths`) | 5 테스트(실제 OM). 제품 코드뿐 아니라 검사기·등록부·문서 등 모든 변경에 상한(touched⊆allowed) 적용, 하한(required∈net), net-zero도 차단(P0-6·A-3.7) |
 | T62 SHA 결속 | ✅ 완료 | `acgh/binding.py` | 7 테스트. ref→고정 SHA pin(실제 미러), repository-qualified inputs 봉인, 비-SHA 거부(§10.1) |
 | T32 최종상태 불변식 | ✅ 완료 | `acgh/finalstate.py`(+`replay.replay_tree`) | 5 테스트. counterfactual 기여도(inert=block·inconclusive=analysis_error), candidate==replay, 승인 무효화(P0-5·A-3.7) |
 | T33 게이트 명칭·보장범위 | ✅ 완료 | `acgh/scope.py`(evidence 카드 결합) | 3 테스트. 보장/미보장 표를 게이트 출력에 결속(기능 보장 아님 명시, P0-5·P0-7) |

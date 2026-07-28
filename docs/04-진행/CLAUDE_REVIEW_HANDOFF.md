@@ -1905,3 +1905,56 @@ OpenMetadata 테스트 스택에서 API 4개와 browser 3개를 실행한다. �
 검토 결과는 `Blocking / Serious / Minor / Validated`로 나누고, 각 항목에 정확한
 파일·라인·재현 테스트를 제시해 달라. 문서의 완료 표시가 아니라 코드와
 counterexample을 기준으로 판단해야 한다.
+
+## 9. 2026-07-27 정확 경로 검사기 개선
+
+### 현재 작업 위치
+
+- governance repository: `easyseop/openmetadata-test`
+- branch: `codex/strict-manifest-gates`
+- product validation repository: `easyseop/OpenMetadata`
+- unchanged product candidate: `849ae756cd238f218b5e3a6c795a392305cb32ee`
+- 상세 진척도:
+  [`STRICT_SCOPE_IMPROVEMENT_PROGRESS.md`](STRICT_SCOPE_IMPROVEMENT_PROGRESS.md)
+
+### 이번에 구현한 내용
+
+1. `materialize_exact_scopes.py`를 추가해 고정 snapshot inventory와 shared
+   hunk owner map으로 BANK-OM-001~007의 source scope를 실제 파일 목록으로
+   변환했다.
+2. T25-R은 source-snapshot manifest의 glob, 중복, inventory 밖 파일, 실제
+   공유 소유자와 manifest 소유자의 불일치를 `analysis_error`로 거부한다.
+3. T26은 `required` 몇 개만 보지 않고 source manifest에 등록된 원본 파일
+   전체를 확인한다. required 소실은 block, 나머지 등록 파일 소실은
+   approval이다.
+4. T40은 upstream 제품 영역뿐 아니라 검사기·등록부·문서를 포함한 모든 변경
+   경로에 상한 범위를 적용한다.
+5. T70 보호 범위를 checker, registration, test, 설계·기술·진행 문서,
+   `STATUS.md`, `CLAUDE.md`까지 확대했다.
+
+### 숫자와 검증
+
+```text
+113 source paths = 74 single-owner + 37 shared + 2 excluded
+focused tests     = 39 passed
+T25-R checkpoint  = pass (e1ffc5a1...)
+source candidate  = T25/T26/T60-I/T30/T31 all pass (849ae756...)
+plan digest       = sha256:05e653a8d91f49f7a4b73c0d14c27c0bd82a2d02714c7e19cee4b6914a07de98
+```
+
+### 다음 순서
+
+1. T42를 설정·의존성 변화까지 확장하고 watch 후보와 연결 근거를 자동 제안
+2. T41의 watched/intent 판정과 T43 임계값을 정책으로 명확화
+3. T93으로 너무 넓은 범위와 새 변경 파일 누락을 별도 탐지
+4. T50/T51의 빈 선언·scalar/list 형태 차이 보강
+5. 설명용 HTML의 검사기 표·실제 diff·결과·향후 단계를 같은 정의로 동기화
+6. 행내 환경에서 T61/T62/T90 계열 운영 증거 생성
+
+다음 작업자는 과거 브랜치가 아니라 아래 명령으로 이어서 작업한다.
+
+```bash
+git fetch origin
+git switch codex/strict-manifest-gates
+git pull --ff-only
+```

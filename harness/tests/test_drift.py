@@ -88,6 +88,23 @@ def test_out_of_scope_upstream_change_blocks(repo):
     assert D.to_gate_result(vs).verdict == V.BLOCK
 
 
+def test_out_of_scope_governance_change_is_not_skipped(repo):
+    base = _base(repo)
+    governance = ".bank/policies/relaxed.yaml"
+    _write(repo, _AUTH, "line1\nBANK\nline2\n")
+    _write(repo, governance, "allow_everything: true\n")
+    _commit(repo, "hook + hidden policy\n\nCustomization-ID: BANK-OM-001")
+    vs = D.check_drift(
+        str(repo),
+        base,
+        "HEAD",
+        _manifest([_AUTH], [_AUTH]),
+        layout(),
+    )
+    assert D.OUT_OF_SCOPE in [v.code for v in vs]
+    assert any(governance in v.detail for v in vs)
+
+
 def test_required_not_in_net_blocks(repo):
     base = _base(repo)
     _write(repo, _AUTH, "line1\nBANK\nline2\n")

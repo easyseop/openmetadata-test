@@ -1,9 +1,10 @@
 # Current implementation status
 
 > Updated: 2026-07-27
-> Branch: `claude/markdown-file-feedback-26933w`
-> Last verified implementation commit: `b1d3fa6`
+> Branch: `codex/strict-manifest-gates`
+> Last verified implementation commit: pending this coherent batch
 > Current product candidate: `849ae756cd238f218b5e3a6c795a392305cb32ee`
+> Strict-scope progress: [`docs/04-진행/STRICT_SCOPE_IMPROVEMENT_PROGRESS.md`](docs/04-진행/STRICT_SCOPE_IMPROVEMENT_PROGRESS.md)
 > BANK-OM-011 governance registration / evidence rebind: `b1d3fa6` / `c246ae2`
 > Recorded BANK-OM-011 evidence run: [`30222439344`](https://github.com/easyseop/openmetadata-test/actions/runs/30222439344)
 > UI typecheck baseline delta gate commit: `39294bf`
@@ -43,6 +44,22 @@ nondeveloper guide is updated in the same coherent batch.
 
 ## Outcome
 
+### 2026-07-27 strict-scope hardening
+
+The first improvement batch is implemented and locally verified. Source
+manifests `BANK-OM-001` through `BANK-OM-007` now list the exact files observed
+in the pinned snapshot instead of authorizing directories with globs. T25-R
+rejects non-literal, unknown, duplicate, or incorrectly owned source paths.
+T26 checks the complete registered source inventory as well as the smaller
+hard-block `required` subset. T40 checks every changed ownership zone, and T70
+protects checker, registration, test, design, technical-reference, progress,
+and status files.
+
+Focused result: **39 passed**. The actual product candidate `849ae756...`
+passes T25/T26/T60-I/T30/T31, and reconstruction checkpoint `e1ffc5a1...`
+passes strict T25-R. The remaining work is T42/watch suggestion, T41/T43
+policy calibration, broader omission checks, and live runtime evidence.
+
 The deterministic governance engine is implemented through candidate
 registration, vendor/replay routing, required-test result binding, fast lanes,
 break-glass validation, advisory LLM memos, upgrade-run evidence, identical
@@ -62,8 +79,8 @@ caller to provide an index-specific response transform instead of assigning a
 search-source union to an arbitrary entity type.
 
 T25-R now supplies the snapshot-to-vendor reconstruction planner and candidate
-gate. The 113 pinned source paths deterministically classify as 67
-single-owner paths, 44 shared paths, and 2 excluded non-product paths.
+gate. The 113 pinned source paths deterministically classify as 74
+single-owner paths, 37 shared paths, and 2 excluded non-product paths.
 
 The actual vendor branch is now built and pushed:
 
@@ -135,10 +152,11 @@ still required.
 316 passed, 7 skipped in 30.67s
 ```
 
-This CI-equivalent local run used the two fixed historical mirror refs, so the
+This historical CI-equivalent local run used the two fixed historical mirror refs, so the
 previous 35 mirror skips all executed and passed. Four remaining skips require
 a live OpenMetadata URL and three require real authenticated browser pages;
-none are counted as passes. All 14 T25-R tests pass.
+none are counted as passes. The current strict-scope focused suite is
+39 passed: T25-R 17, T40 5, T26 10, and T70 7.
 
 T61 source negative controls now run the external Sybase and Tibero contract
 tests against fixed predecessor commits that do not contain the corresponding
@@ -165,7 +183,7 @@ Actual source-candidate gates:
 ```text
 T25-R vendor-reconstructed-candidate  pass (checkpoint e1ffc5a1...)
 T25   vendor-ancestry                 pass (candidate 849ae756...)
-T26   customization-survival          pass (candidate 849ae756...; 11 IDs, 22 required paths)
+T26   customization-survival          pass (candidate 849ae756...; 11 IDs, exact registered inventory + 22 required paths)
 T60-I required-test-implementations   pass (9/9 selectors resolve)
 T30   commit-invariants               pass (candidate 849ae756...)
 T31   id-invariants                   pass (candidate 849ae756...)

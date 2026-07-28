@@ -1,10 +1,10 @@
-# T25-R hunk-level ownership for the 44 paths matched by more than one active
+# T25-R hunk-level ownership for the 37 paths owned by more than one active
 # customization manifest.
 #
 # Resolved 2026-07-25 from the pinned upstream/snapshot Git objects:
 # upstream afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
 # snapshot 2c2347043235aa2a4ecba4729774c770fcee5d67
-# plan sha256:ceaea84c3feb370e638d24322c9a2747b69dbfeef789eeeaba8e73b7aaf96699
+# plan sha256:05e653a8d91f49f7a4b73c0d14c27c0bd82a2d02714c7e19cee4b6914a07de98
 #
 # Values list every BANK-OM ID with an actual added symbol, JSON key, route,
 # schema member, or SQL block in that path. For locale JSON, owners come from
@@ -27,12 +27,7 @@ openmetadata-ui/src/main/resources/ui/src/enums/Explore.enum.ts: [BANK-OM-001, B
 openmetadata-ui/src/main/resources/ui/src/enums/entity.enum.ts: [BANK-OM-001, BANK-OM-002] # instanceCode, queryReport
 openmetadata-ui/src/main/resources/ui/src/enums/search.enum.ts: [BANK-OM-001, BANK-OM-002] # instanceCode, queryReport
 openmetadata-ui/src/main/resources/ui/src/generated/api/services/createDatabaseService.ts: [BANK-OM-006, BANK-OM-007] # Sybase and Tibero types
-openmetadata-ui/src/main/resources/ui/src/generated/api/services/ingestionPipelines/createIngestionPipeline.ts: [BANK-OM-006] # Sybase only
-openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts: [BANK-OM-006] # Sybase only
 openmetadata-ui/src/main/resources/ui/src/generated/entity/services/databaseService.ts: [BANK-OM-006, BANK-OM-007] # Sybase and Tibero types
-openmetadata-ui/src/main/resources/ui/src/generated/entity/services/ingestionPipelines/ingestionPipeline.ts: [BANK-OM-006] # Sybase only
-openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/testSuitePipeline.ts: [BANK-OM-006] # Sybase only
-openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/workflow.ts: [BANK-OM-006] # Sybase only
 openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json: [BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004] # semantic key additions
 openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json: [BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004] # semantic key additions
 openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json: [BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004] # semantic key additions
@@ -52,8 +47,6 @@ openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json: [BANK-OM-
 openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json: [BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004] # semantic key additions
 openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json: [BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004] # semantic key additions
 openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json: [BANK-OM-001, BANK-OM-002, BANK-OM-003, BANK-OM-004] # semantic key additions
-openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx: [BANK-OM-006] # Sybase test only
 openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx: [BANK-OM-006, BANK-OM-007] # Sybase and Tibero schema cases
 openmetadata-ui/src/main/resources/ui/src/utils/RouterUtils.ts: [BANK-OM-001, BANK-OM-002] # instance code and query report paths
 openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts: [BANK-OM-006, BANK-OM-007] # sybaseIcon, tiberoIcon
-openmetadata-ui/src/main/resources/ui/src/utils/ServiceUtils.tsx: [BANK-OM-006] # Sybase exclusion only

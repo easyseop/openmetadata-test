@@ -2,11 +2,11 @@
 
 Two-sided check with the touched/net split A-3.7 requires:
 
-- UPPER BOUND (touched paths): every upstream-owned path a candidate commit
-  touches must fall within its customization's ``allowed_changed_paths``. An
-  upstream file changed outside the declared scope is drift -> block. (Registration
+- UPPER BOUND (touched paths): every path a candidate commit touches must fall
+  within its customization's ``allowed_changed_paths``.  Scope control applies
+  equally to upstream, extension, and governance ownership zones.  Registration
   of the change itself — is there an ID at all — is T30's job; drift assumes a
-  registered commit and checks its scope.)
+  registered commit and checks its declared scope.
 
 - LOWER BOUND (net paths): every ``required_changed_paths`` entry of a
   customization present in the candidate must actually appear in the NET diff
@@ -24,7 +24,7 @@ from acgh import layout as L
 from acgh import verdict
 from acgh.invariants import Violation
 
-OUT_OF_SCOPE = "out_of_scope_upstream_change"
+OUT_OF_SCOPE = "out_of_scope_change"
 REQUIRED_NET_MISSING = "required_net_missing"
 
 
@@ -32,7 +32,7 @@ def check_drift(repo, base, head, manifests_by_id, layout: L.Layout) -> list[Vio
     violations: list[Violation] = []
     commits = gitprim.commits(repo, base, head)
 
-    # --- upper bound: touched upstream paths must be in-scope ---------------
+    # --- upper bound: every touched path must be in-scope -------------------
     present_ids: set[str] = set()
     for c in commits:
         if len(c.customization_ids) != 1:
@@ -44,8 +44,6 @@ def check_drift(repo, base, head, manifests_by_id, layout: L.Layout) -> list[Vio
             continue  # unregistered ID is T31's concern
         allowed = L.make_spec(manifest["implementation"]["allowed_changed_paths"])
         for p in gitprim.changed_paths(repo, c.sha):
-            if layout.classify(p) != L.UPSTREAM:
-                continue  # drift only governs upstream-owned files
             if not allowed.match_file(L.normalize_path(p)):
                 violations.append(Violation(
                     c.sha, OUT_OF_SCOPE,

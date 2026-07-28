@@ -1,5 +1,5 @@
 schema_version: 1
-generated_at: "2026-07-27T07:08:55+09:00"
+generated_at: "2026-07-28T09:41:08+09:00"
 governance_evidence_commit: b1d3fa6d00b75c96d837587ea0730f3d6d9e5323
 repository: easyseop/OpenMetadata
 branch: codex/bank-vendor-1.13.1-rebuild
@@ -18,7 +18,12 @@ candidate:
   note: source_tree_digest binds the Git tree identity; no binary or image release artifact has been built yet
 reconstruction:
   checkpoint_sha: e1ffc5a1eb270c3225736544bb309a0c85af6d2c
-  plan_digest: sha256:ceaea84c3feb370e638d24322c9a2747b69dbfeef789eeeaba8e73b7aaf96699
+  plan_digest: sha256:05e653a8d91f49f7a4b73c0d14c27c0bd82a2d02714c7e19cee4b6914a07de98
+  strict_scope_local_verification:
+    executed_at: "2026-07-28T09:41:08+09:00"
+    governance_branch: codex/strict-manifest-gates
+    verdict: pass
+    note: local verification; no new remote CI evidence is claimed
   inventory_paths: 113
   registered_paths: 111
   excluded_paths:

@@ -100,7 +100,7 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
   upstream/snapshot 고정 tree의 diff inventory를 재확인하고, 모든 제품 경로를
   manifest에 결속한다. 공유 파일은 hunk owner를 명시해야 하며, unrelated
   snapshot commit merge, 무ID·다중ID commit, 제외 경로 변경, 최종 content
-  불일치는 차단한다. 실제 고정 객체에서 113경로 plan과 44개 shared owner
+  불일치는 차단한다. 실제 고정 객체에서 113경로 plan과 37개 shared owner
   분석을 완료했고, `easyseop/OpenMetadata`의
   `codex/bank-vendor-1.13.1-rebuild`에서 7개 논리 ID commit을 생성했다.
   reconstruction checkpoint `e1ffc5a1...`은 T25-R을 통과했다. 정적 검토에서
@@ -113,8 +113,10 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
   없는 union member를 hit `_id`로 안전하게 보완한다. `BANK-OM-011`은
   제네릭 목록 검색의 임의 기본 변환을 없애고 인덱스별 명시 변환을 요구한다.
   현재 candidate `849ae756...`는 11개 active ID로 T25/T26/T30/T31을 통과했다.
-- **T26 · customization survival gate (✅ 구현·단위검증 완료)** — ID별 required state·path·contract가
-  merge candidate에 남아 있는지 검증.
+- **T26 · customization survival gate (✅ 정확 경로 강화 완료)** — ID별
+  원본 등록 파일 전체와 hard-block `required` 경로, contract, 실행 테스트가
+  merge candidate에 남아 있는지 검증. required 누락·원본화는 block, 나머지
+  등록 파일 누락·원본화는 approval, 비정확 glob은 analysis_error다.
 - **T27 · merge conflict evidence (✅ 구현·단위검증 완료)** — 충돌 파일·해결 결정·승인자를 구조화 기록.
 - **T28 · replay optional routing (✅ 구현·단위검증 완료)** — T20~T23을 선택 진단 모드로 라우팅.
 - **T29 · 실제 커스터마이징 등록 (✅ 등록 완료·운영 증거 미완)** — `kb_openmetadata`의 InstanceCode,
@@ -319,7 +321,9 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 ### T40. 구현 범위 drift 검사 (방향 C)
 - **목적**: 실제 변경 파일 vs 선언(allowed/required) 정합(P0-6).
 - **충족**: P0-6 / REQ-CG-03.
-- **구현**: CI가 `observed_changed_paths` 생성 → required 미변경/allowed 밖 변경 검출.
+- **구현**: CI가 `observed_changed_paths` 생성 → 제품 코드·검사기·등록부·문서를
+  포함한 모든 변경에서 required 미변경/allowed 밖 변경 검출. 원본 7개
+  manifest의 allowed는 고정 스냅샷에서 확인한 실제 파일 목록만 허용한다.
   **upgrade_watch는 drift 대상 아님**(편집 안 하므로).
 - **수용**: allowed 밖 변경·required 미변경 검출, upgrade_watch 경로는 오탐 없음.
 - **선행**: T10·T12.

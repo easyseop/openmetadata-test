@@ -73,7 +73,9 @@ def _manifest():
         "customization_id": "BANK-OM-001",
         "kind": "core-patch",
         "implementation": {
-            "allowed_changed_paths": ["openmetadata-service/bank/**"],
+            "allowed_changed_paths": [
+                "openmetadata-service/bank/feature.txt"
+            ],
             "required_changed_paths": [
                 "openmetadata-service/bank/feature.txt"
             ],
@@ -132,6 +134,51 @@ def test_required_path_identical_to_upstream_blocks(tmp_path):
     assert result.verdict == V.BLOCK
     assert any(
         "required_state_not_distinct" in reason for reason in result.reasons
+    )
+
+
+def test_non_required_expected_path_missing_requires_approval(tmp_path):
+    repo, lock = _topology(tmp_path)
+    manifest = _manifest()
+    manifest["implementation"]["allowed_changed_paths"].append(
+        "openmetadata-service/bank/optional.txt"
+    )
+    result = S.check_customization_survival(
+        str(repo), lock, {"BANK-OM-001": manifest}, _catalog()
+    )
+    assert result.verdict == V.APPROVAL
+    assert any("expected_path_missing" in reason for reason in result.reasons)
+
+
+def test_non_required_expected_path_absorbed_by_upstream_requires_approval(
+    tmp_path,
+):
+    repo, lock = _topology(tmp_path)
+    manifest = _manifest()
+    manifest["implementation"]["allowed_changed_paths"].append(
+        "openmetadata-service/upstream.txt"
+    )
+    result = S.check_customization_survival(
+        str(repo), lock, {"BANK-OM-001": manifest}, _catalog()
+    )
+    assert result.verdict == V.APPROVAL
+    assert any(
+        "expected_state_not_distinct" in reason for reason in result.reasons
+    )
+
+
+def test_non_literal_expected_scope_is_analysis_error(tmp_path):
+    repo, lock = _topology(tmp_path)
+    manifest = _manifest()
+    manifest["implementation"]["allowed_changed_paths"] = [
+        "openmetadata-service/bank/**"
+    ]
+    result = S.check_customization_survival(
+        str(repo), lock, {"BANK-OM-001": manifest}, _catalog()
+    )
+    assert result.verdict == V.ANALYSIS_ERROR
+    assert any(
+        "expected_scope_not_literal" in reason for reason in result.reasons
     )
 
 

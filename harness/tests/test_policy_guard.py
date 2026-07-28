@@ -31,3 +31,24 @@ def test_workflow_change_is_policy():
     r = PG.check_self_approval([".github/workflows/ci.yml"],
                                used_policy_ref="cand", base_ref="base")
     assert r.verdict == V.BLOCK
+
+
+def test_checker_and_schema_changes_are_policy():
+    paths = [
+        "harness/acgh/drift.py",
+        "harness/acgh/schema/manifest.schema.json",
+        "harness/tests/test_drift.py",
+    ]
+    assert set(PG.touched_policy_paths(paths)) == set(paths)
+
+
+def test_registration_and_governance_docs_are_policy():
+    paths = [
+        "harness/registrations/kb-openmetadata/manifests/BANK-OM-001.yaml",
+        "docs/02-설계/openmetadata_governance_requirements.md",
+        "docs/03-기술참조/openmetadata_verifier_catalog.md",
+        "docs/04-진행/openmetadata_build_plan.md",
+        "STATUS.md",
+        "CLAUDE.md",
+    ]
+    assert set(PG.touched_policy_paths(paths)) == set(paths)
