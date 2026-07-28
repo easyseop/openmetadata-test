@@ -5,7 +5,7 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 > **통합 전략:** 기본 운영은 vendor merge이며, 현재 구현된
 > `patchlock`·`reapply`·`resolve`·`replay`는 선택 patch-replay 모드다.
 > T24~T29 candidate/ancestry/survival/conflict/routing과 실제 7개 snapshot
-> 기능 + 3개 candidate-follow-up 등록부까지
+> 기능 + 4개 candidate-follow-up 등록부까지
 > 구현됐고 T25-R은 ancestry 없는 snapshot의 안전한 재구성 계획과 candidate를
 > 검증한다. 실제 7-ID vendor branch와 T62 runtime 실행 경계까지 구현했지만
 > 운영 contract 전체 pass와 release artifact 생성 전에는 release pass가 아니다.
@@ -109,12 +109,12 @@ registered JSON의 최종 의미 값과 나머지 파일 내용은 snapshot과 �
 - product branch:
   `easyseop/OpenMetadata:codex/bank-vendor-1.13.1-rebuild`
 - reconstruction checkpoint: `e1ffc5a1eb270c3225736544bb309a0c85af6d2c`
-- current candidate: `b80d24d83124435733d5af05d56515b3a855330e`
+- current candidate: `849ae756cd238f218b5e3a6c795a392305cb32ee`
 
 `RegistryEntry.provenance`는 원본 snapshot에서 재구성한 ID와 그 뒤 후보에서
 추가한 안전 보강을 구분한다. `source-snapshot` 7개만 T25-R 재구성 계획에
 들어가고, `candidate-follow-up`인 `BANK-OM-008`·`BANK-OM-009`·
-`BANK-OM-010`도
+`BANK-OM-010`·`BANK-OM-011`도
 T26/T30/T31과 runtime
 candidate lock에는 포함된다. 따라서 후속 수정을 과거 snapshot에 있었다고
 왜곡하지 않으면서 현재 후보의 필수 상태는 계속 fail-closed로 검사한다.
@@ -173,7 +173,7 @@ python harness/registrations/kb-openmetadata/run_runtime_contracts.py \
   --output-dir /safe/evidence/path
 ```
 
-필수 환경은 `OPENMETADATA_BASE_URL`, 선택 auth token,
+이 행내 workflow의 필수 환경은 `OPENMETADATA_BASE_URL`, auth token,
 `BANK_CONTRACT_QUERY_ID`, `BANK_FAILED_ASSERTION_FQN`,
 `BANK_COLUMN_TABLE_FQN`, `BANK_COLUMN_NAME`, `BANK_IME_EDITOR_URL`,
 `BANK_DATA_ASSERTIONS_URL`, `BANK_COLUMN_UI_URL`이다.

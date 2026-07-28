@@ -28,6 +28,17 @@ def test_identical_is_empty():
     assert SD.structural_diff(doc, doc).is_empty
 
 
+def test_same_type_scalar_and_list_content_changes_are_visible():
+    old = {"enabled": False, "name": "old", "items": ["a", "b"]}
+    new = {"enabled": True, "name": "new", "items": ["a", "c"]}
+    diff = SD.structural_diff(old, new)
+    assert diff.scalar_changed == ("/enabled", "/name")
+    assert diff.list_changed == ("/items",)
+    assert not diff.is_empty
+    assert "~scalar:2" in diff.summary()
+    assert "~list:1" in diff.summary()
+
+
 def test_real_om_schema_gained_datacontract(om_mirror):
     path = "openmetadata-spec/src/main/resources/json/schema/entity/data/table.json"
     d = SD.diff_file(str(om_mirror), "UPSTREAM_A", "UPSTREAM_B", path)

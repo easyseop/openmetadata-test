@@ -13,6 +13,9 @@ implementation:
   - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/databaseService.ts
   - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx
   - openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts
+  candidate_additional_paths:
+  - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts
+  - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx
   required_changed_paths:
   - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/tiberoConnection.json
 upgrade_watch:

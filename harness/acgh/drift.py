@@ -42,7 +42,11 @@ def check_drift(repo, base, head, manifests_by_id, layout: L.Layout) -> list[Vio
         manifest = manifests_by_id.get(cid)
         if manifest is None:
             continue  # unregistered ID is T31's concern
-        allowed = L.make_spec(manifest["implementation"]["allowed_changed_paths"])
+        implementation = manifest["implementation"]
+        allowed = L.make_spec([
+            *implementation["allowed_changed_paths"],
+            *implementation.get("candidate_additional_paths", []),
+        ])
         for p in gitprim.changed_paths(repo, c.sha):
             if not allowed.match_file(L.normalize_path(p)):
                 violations.append(Violation(

@@ -102,3 +102,12 @@ def test_run_verifiers_aggregates(tmp_path):
 def test_no_verifiers_passes(tmp_path):
     gate, results = VF.run_verifiers([], str(tmp_path))
     assert gate.verdict == V.PASS and results == []
+
+
+def test_required_empty_verifier_set_fails_closed(tmp_path):
+    gate, results = VF.run_verifiers(
+        [], str(tmp_path), require_declared=True
+    )
+    assert gate.verdict == V.ANALYSIS_ERROR
+    assert results == []
+    assert "empty" in gate.reasons[0]

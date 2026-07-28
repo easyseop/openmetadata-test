@@ -24,6 +24,8 @@ class ImpactItem:
     configuration_keys: tuple[str, ...]
     dependencies: tuple[str, ...]
     contracts: tuple[str, ...]
+    changed_configuration_keys: tuple[str, ...] = ()
+    changed_dependencies: tuple[str, ...] = ()
 
 
 def build_impact_surface(findings, manifests_by_id) -> list[ImpactItem]:
@@ -39,6 +41,10 @@ def build_impact_surface(findings, manifests_by_id) -> list[ImpactItem]:
             configuration_keys=tuple(watch.get("configuration_keys", [])),
             dependencies=tuple(watch.get("dependencies", [])),
             contracts=tuple(assurance.get("contracts", [])),
+            changed_configuration_keys=tuple(
+                f.changed_configuration_keys
+            ),
+            changed_dependencies=tuple(f.changed_dependencies),
         ))
     return items
 
@@ -48,6 +54,20 @@ def to_llm_suggestions(items: list[ImpactItem], gate: str = "upgrade-watch") -> 
     out: list[dict] = []
     for it in items:
         ctx = []
+        observed = []
+        if it.changed_watch_paths:
+            observed.append(
+                f"paths={len(it.changed_watch_paths)} "
+                f"(e.g. {it.changed_watch_paths[0]})"
+            )
+        if it.changed_configuration_keys:
+            observed.append(
+                f"changed_config={list(it.changed_configuration_keys)}"
+            )
+        if it.changed_dependencies:
+            observed.append(
+                f"changed_deps={list(it.changed_dependencies)}"
+            )
         if it.dependencies:
             ctx.append(f"deps={list(it.dependencies)}")
         if it.configuration_keys:
@@ -55,8 +75,8 @@ def to_llm_suggestions(items: list[ImpactItem], gate: str = "upgrade-watch") -> 
         if it.contracts:
             ctx.append(f"contracts={list(it.contracts)}")
         memo = (
-            f"upstream A->B changed {len(it.changed_watch_paths)} watched "
-            f"path(s) for {it.customization_id} (e.g. {it.changed_watch_paths[0]}). "
+            f"upstream A->B changed declared impact signals for "
+            f"{it.customization_id}: {', '.join(observed)}. "
             f"Review whether the depended-on behavior still holds"
             + (f"; {'; '.join(ctx)}" if ctx else "")
             + "."
@@ -76,6 +96,10 @@ def review_packet(items: list[ImpactItem]) -> dict:
                 "configuration_keys": list(it.configuration_keys),
                 "dependencies": list(it.dependencies),
                 "contracts": list(it.contracts),
+                "changed_configuration_keys": list(
+                    it.changed_configuration_keys
+                ),
+                "changed_dependencies": list(it.changed_dependencies),
             }
             for it in items
         ],

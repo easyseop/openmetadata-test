@@ -146,18 +146,23 @@ vendor candidate는 별도 재구축했지만 API 4개·browser 3개의 T62 전�
 - **뭘 잡나**: 우리가 **의존한다고 선언한** 파일·설정키·의존성이 업스트림에서 바뀜(케이스 D).
 - **막는 사고**: 우리가 편집 안 한 의존 대상(예: `UserContext`의 tenant 추가) 변경을 놓침.
 - **못 잡는 것**: 선언 안 한 깊은 전이 의존(→ 테스트), 그 변경이 실제 깨는지의 판단(→ 테스트).
-- **구현됨**(`upgrade_watch.py`·`impact.py`): manifest `upgrade_watch.paths` ∩
-  실제 업그레이드 net diff(`net_changed_paths(mirror, A, B)`) → 걸린 ID를
+- **구현됨**(`upgrade_watch.py`·`impact.py`·`watch_suggest.py`): manifest
+  `upgrade_watch.paths` ∩ 실제 업그레이드 net diff뿐 아니라 등록된 설정키와
+  dependency descriptor 변화도 감지해 걸린 ID를
   approval(차단 아님 — 무해할 수 있으니 리뷰 유발). *실제로* 1.12.13→1.13.0에서
   4789개 변경 중 security 디렉터리·`conf/`가 바뀌어 해당 ID를 플래그함을 검증.
   `impact.py`가 걸린 ID를 의존성·설정키·contract 맥락과 함께 리뷰 표면으로
   정리하고, **판정 권한 없는** LLM Impact-Memo를 감사카드 `llm_suggestions`로만
-  붙임(§7 — memo에 verdict 필드 자체가 스키마상 금지).
+  붙임(§7 — memo에 verdict 필드 자체가 스키마상 금지). 실제 변경된 upstream
+  파일을 커스터마이징 구현이 직접 참조하면 파일·참조 근거를 후보로 제안하지만,
+  자동 등록하지 않고 code owner 검토를 요구한다.
 
 ### 10. 부채 게이트 (T43)
 - **뭘 잡나**: 코어 수정 개수·변경량·반복 충돌률·hotspot 겹침 등이 상한 초과.
 - **막는 사고**: 코어 수정이 서서히 쌓여 **업그레이드 불가능한 포크**로 붕괴.
 - **못 잡는 것**: 개별 패치의 옳고 그름(양적 지표일 뿐).
+- **구현됨**: current candidate에서 core ID 수·변경 라인·입력 conflict rate·
+  hotspot 겹침을 측정하고 versioned `debt-thresholds.yaml`로 판정한다.
 
 ### 11. patch-lock 일치 (T11)
 - **뭘 잡나**: 재적용 소스가 **고정 SHA**(patch-lock) 기준인지, 동적 "최신 브랜치" 조회를 하지 않는지.
@@ -178,12 +183,15 @@ vendor candidate는 별도 재구축했지만 API 4개·browser 3개의 T62 전�
   succeeds`·스크립트·컨테이너)은 **거부→analysis_error**(sandbox 러너 필요, A-3.5).
   단언 성립=pass, 거짓=block, 실행불가(파일 없음·포인터 미해결·`..` 경로 이탈)
   =analysis_error(fail-closed). manifest 스키마가 이미 `verification.command`를
-  구조적으로 차단하므로 임의 실행 홀 자체가 없음.
+  구조적으로 차단하므로 임의 실행 홀 자체가 없음. 해당 유형에서 verifier가
+  필수인데 빈 목록이면 `require_declared`가 analysis_error를 낸다.
 
 ### 13. 구조화 diff providers (T51 / T52)
 - **뭘 잡나**: API/JSON Schema, Helm·설정키, 의존성·SBOM, DB migration·schema, 검색 mapping의 **구조 변화 사실**.
 - **막는 사고**: 반환 구조·설정 기본값·스키마 변경 같은 의미 변경의 **근거를 사람·LLM보다 먼저 결정적으로** 확보하지 못함.
 - **못 잡는 것**: 그 구조 변화가 우리 업무를 깨는지의 **판단**(→ 사람·테스트).
+- **구현 보강**: 키·타입뿐 아니라 같은 타입의 scalar 값 변경과 list 내용
+  변경도 해당 문서 경로로 구조화한다.
 
 ---
 

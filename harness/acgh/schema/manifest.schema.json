@@ -28,6 +28,11 @@
         "required_changed_paths": {
           "type": "array",
           "items": {"type": "string", "minLength": 1}
+        },
+        "candidate_additional_paths": {
+          "description": "Literal files added by a registered follow-up commit after the pinned source snapshot; excluded from T25-R snapshot reconstruction but included in current-candidate scope and survival gates.",
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
         }
       }
     },

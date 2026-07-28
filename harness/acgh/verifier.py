@@ -148,12 +148,28 @@ def run_verifier(spec: dict, root: str) -> VerifierResult:
         return VerifierResult(t, verdict.ANALYSIS_ERROR, str(e))
 
 
-def run_verifiers(specs, root: str, name: str = "declarative-verifiers"):
+def run_verifiers(
+    specs,
+    root: str,
+    name: str = "declarative-verifiers",
+    *,
+    require_declared: bool = False,
+):
     """Run all verifiers; return (GateResult, [VerifierResult]).
 
     No verifiers declared -> pass (nothing to assert here; test completeness is
     a separate gate), not the aggregate's empty-set analysis_error.
     """
+    specs = list(specs)
+    if require_declared and not specs:
+        return (
+            verdict.GateResult(
+                name,
+                verdict.ANALYSIS_ERROR,
+                ("declarative verifier set is empty but required",),
+            ),
+            [],
+        )
     results = [run_verifier(s, root) for s in specs]
     v = verdict.aggregate([r.verdict for r in results]) if results else verdict.PASS
     reasons = tuple(f"{r.type}: {r.verdict} ({r.reason})" for r in results)

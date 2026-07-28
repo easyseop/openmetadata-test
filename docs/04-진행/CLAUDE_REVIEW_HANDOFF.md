@@ -688,7 +688,7 @@ Node 22 환경에서 focused Jest 재현과 전체 typecheck baseline 분류를 
 Korean IME의 required selector는 이제 실제 browser test이며 source guard는
 보조 테스트일 뿐이다. skip은 pass로 승격하지 않는다. 실제 스택에서 필요한
 추가 환경 변수는
-`OPENMETADATA_BASE_URL`, 선택 auth token,
+`OPENMETADATA_BASE_URL`, auth token,
 `BANK_CONTRACT_QUERY_ID`, `BANK_FAILED_ASSERTION_FQN`,
 `BANK_COLUMN_TABLE_FQN`, `BANK_COLUMN_NAME`, `BANK_IME_EDITOR_URL`,
 `BANK_DATA_ASSERTIONS_URL`, `BANK_COLUMN_UI_URL`, 선택
@@ -1959,3 +1959,60 @@ git fetch origin
 git switch codex/strict-manifest-gates
 git pull --ff-only
 ```
+
+## 10. 2026-07-28 2·3차 검사기 보강
+
+### 구현한 코드
+
+- `acgh/upgrade_watch.py`: watch 경로 외에 configuration key와 dependency
+  descriptor 변화 감지
+- `acgh/watch_suggest.py`: 실제 upstream 변경 파일과 커스터마이징 직접 참조를
+  근거로 watch 후보 제안, 자동 등록 금지
+- `acgh/zones.py`: 빈 intent allowed fail-closed, watched를 visibility-only
+  pass로 명시
+- `acgh/debt.py`, `policies/debt-thresholds.yaml`: 실제 candidate 지표 측정과
+  외부 임계값 정책
+- `acgh/policy_drift.py`: ID별 실제 commit path와 manifest exact scope 비교
+- `acgh/verifier.py`: verifier 필수 유형의 빈 선언 analysis_error
+- `acgh/structdiff.py`: same-type scalar/list 변경 경로 출력
+- `run_upgrade_risk_gates.py`: T41/T42/T43/T93과 impact/watch/structured diff를
+  한 JSON review packet으로 실행
+- `runtime_preflight.py`: 내부 URL·토큰·테스트 데이터·browser state·artifact
+  digest 사전검사, secret 값 미출력
+
+### 통합 중 발견해 수정한 등록 결함
+
+1. BANK-OM-007의 원본 snapshot scope는 8개지만 같은 ID의 등록된 follow-up
+   commit이 2개 파일을 추가로 변경했다. `candidate_additional_paths`를 도입해
+   T25-R은 원본 8개, current T26/T40/T93은 합계 10개를 검사한다.
+2. BANK-OM-011의 후보 전용 `useDataFetching.test.tsx`가 upstream watch에도
+   들어 있었다. implementation/required에는 유지하고 watch에서만 제거했다.
+
+### 실제 current candidate 통합 결과
+
+```text
+candidate                         849ae756...
+T25/T26/T60-I/T30/T31            pass
+T40 changed scope                pass
+T41 sensitive zone / intent      pass
+T43 debt baseline smoke          pass
+T93 exact per-ID scope history   pass
+T42 same-target smoke            pass (upstream A==B, impact 0)
+```
+
+T43 smoke의 `conflict_rate=0`은 runner 연결 확인용 입력이며 실제 다음 upgrade의
+충돌률 증거가 아니다. 다음 target에서 실제 reapply 건수로 다시 입력해야 한다.
+T42도 A==B smoke이므로 새 upstream target을 입력하기 전에는 “영향 없음”이라는
+운영 증거로 사용하지 않는다.
+
+### 남은 외부 입력
+
+- 다음 공식 upstream target SHA
+- 실제 reapply conflict count/rate
+- 행내 OpenMetadata URL·인증·fixture 식별값
+- 인증된 browser storage state
+- 배포 image/package sha256 digest
+- 제거본 runtime deployment
+
+코드 구현과 fail-closed workflow는 완료했지만 위 입력이 없는 실제 T61/T62/T90
+실행은 pass로 기록하지 않는다.

@@ -57,6 +57,28 @@ def test_review_packet_shape():
     assert pkt["impacted"][0]["customization_id"] == "BANK-OM-002"
 
 
+def test_review_packet_includes_observed_config_and_dependency_hits():
+    finding = UW.WatchFinding(
+        "BANK-OM-001",
+        (),
+        ("authenticationConfiguration.provider",),
+        ("org.openmetadata:security",),
+    )
+    items = IM.build_impact_surface(
+        [finding], {"BANK-OM-001": _manifest("BANK-OM-001")}
+    )
+    packet = IM.review_packet(items)["impacted"][0]
+    assert packet["changed_configuration_keys"] == [
+        "authenticationConfiguration.provider"
+    ]
+    assert packet["changed_dependencies"] == [
+        "org.openmetadata:security"
+    ]
+    memo = IM.to_llm_suggestions(items)[0]["memo"]
+    assert "changed_config" in memo
+    assert "changed_deps" in memo
+
+
 def test_impact_from_real_mirror_findings(om_mirror):
     findings = UW.evaluate_upgrade_watch(
         str(om_mirror), "UPSTREAM_A", "UPSTREAM_B",

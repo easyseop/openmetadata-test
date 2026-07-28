@@ -124,9 +124,11 @@ def inspect_survival(
                 "required_changed_paths", []
             )
         ]
-        raw_expected_paths = manifest.get("implementation", {}).get(
-            "allowed_changed_paths", []
-        )
+        implementation = manifest.get("implementation", {})
+        raw_expected_paths = [
+            *implementation.get("allowed_changed_paths", []),
+            *implementation.get("candidate_additional_paths", []),
+        ]
         expected_paths: list[str] = []
         for path in raw_expected_paths:
             try:

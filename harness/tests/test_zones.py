@@ -35,6 +35,7 @@ def test_watched_zone_passes_but_noted():
     r = Z.check_sensitive_zones([_SQL], zones(), _wide_intent())
     assert r.verdict == V.PASS
     assert any("watched" in x for x in r.reasons)
+    assert any("visibility_only" in x for x in r.reasons)
 
 
 def test_plain_in_scope_file_passes():
@@ -45,6 +46,14 @@ def test_plain_in_scope_file_passes():
 def test_missing_intent_is_fail_closed():
     r = Z.check_sensitive_zones([_PLAIN], zones(), None)
     assert r.verdict == V.ANALYSIS_ERROR
+
+
+def test_empty_allowed_intent_is_fail_closed():
+    r = Z.check_sensitive_zones(
+        [_PLAIN], zones(), {"allowed": [], "forbidden": []}
+    )
+    assert r.verdict == V.ANALYSIS_ERROR
+    assert "empty" in r.reasons[0]
 
 
 def test_forbidden_intent_blocks():

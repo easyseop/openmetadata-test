@@ -23,7 +23,6 @@ upgrade_watch:
     - openmetadata-ui/src/main/resources/ui/src/components/DataProduct/hooks/useDataProductListingData.tsx
     - openmetadata-ui/src/main/resources/ui/src/components/common/atoms/compositions/useListingData.test.tsx
     - openmetadata-ui/src/main/resources/ui/src/components/common/atoms/compositions/useListingData.tsx
-    - openmetadata-ui/src/main/resources/ui/src/components/common/atoms/data/useDataFetching.test.tsx
     - openmetadata-ui/src/main/resources/ui/src/components/common/atoms/data/useDataFetching.tsx
     - openmetadata-ui/src/main/resources/ui/src/components/common/atoms/domain/compositions/useDomainListing.tsx
 assurance:

@@ -73,22 +73,51 @@ def check_sensitive_zones(changed_paths, zones: Zones, change_intent) -> verdict
             "sensitive-zones", verdict.ANALYSIS_ERROR,
             ("change-intent 부재 — fail-closed",),
         )
-    allowed = L.make_spec(change_intent.get("allowed", []))
-    forbidden = L.make_spec(change_intent.get("forbidden", []))
-    has_allowed = bool(change_intent.get("allowed"))
+    if not isinstance(change_intent, dict):
+        return verdict.GateResult(
+            "sensitive-zones", verdict.ANALYSIS_ERROR,
+            ("change-intent must be a mapping",),
+        )
+    raw_allowed = change_intent.get("allowed")
+    if not isinstance(raw_allowed, list) or not raw_allowed:
+        return verdict.GateResult(
+            "sensitive-zones", verdict.ANALYSIS_ERROR,
+            ("change-intent.allowed is empty — no approved change scope",),
+        )
+    raw_forbidden = change_intent.get("forbidden", [])
+    if not isinstance(raw_forbidden, list):
+        return verdict.GateResult(
+            "sensitive-zones", verdict.ANALYSIS_ERROR,
+            ("change-intent.forbidden must be a list",),
+        )
+    try:
+        allowed = L.make_spec(raw_allowed)
+        forbidden = L.make_spec(raw_forbidden)
+    except L.LayoutError as exc:
+        return verdict.GateResult(
+            "sensitive-zones", verdict.ANALYSIS_ERROR,
+            (f"invalid change-intent path policy: {exc}",),
+        )
 
     findings: list[Finding] = []
-    for p in changed_paths:
+    for p in sorted(set(changed_paths)):
         s = L.normalize_path(p)
         # zone judgment
         zone = zones.zone_of(s)
         if zone is not None:
-            findings.append(Finding(s, _ZONE_VERDICT[zone], f"zone={zone}"))
+            reason = (
+                "zone=watched visibility_only"
+                if zone == WATCHED else f"zone={zone}"
+            )
+            findings.append(Finding(s, _ZONE_VERDICT[zone], reason))
         # intent judgment
         if forbidden.match_file(s):
             findings.append(Finding(s, verdict.BLOCK, "in change-intent forbidden"))
-        elif has_allowed and not allowed.match_file(s):
-            findings.append(Finding(s, verdict.APPROVAL, "outside change-intent allowed"))
+        elif not allowed.match_file(s):
+            findings.append(Finding(
+                s, verdict.APPROVAL,
+                "outside change-intent allowed — explicit owner review required",
+            ))
 
     v = verdict.aggregate([f.verdict for f in findings]) if findings else verdict.PASS
     reasons = tuple(f"{f.path}: {f.reason} -> {f.verdict}" for f in findings)

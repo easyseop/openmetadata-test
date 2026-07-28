@@ -50,6 +50,25 @@ def test_valid_core_patch_passes():
     M.validate_manifest(good_core_patch(), layout())
 
 
+def test_candidate_follow_up_paths_are_literal_disjoint_and_owned():
+    m = good_core_patch()
+    m["implementation"]["candidate_additional_paths"] = [
+        "openmetadata-service/src/main/java/org/openmetadata/service/Entity.java"
+    ]
+    M.validate_manifest(m, layout())
+
+    m["implementation"]["candidate_additional_paths"] = [_AUTH]
+    with pytest.raises(M.ManifestError, match="overlaps"):
+        M.validate_manifest(m, layout())
+
+    m = good_core_patch()
+    m["implementation"]["candidate_additional_paths"] = [
+        "openmetadata-service/**"
+    ]
+    with pytest.raises(M.ManifestError, match="literal"):
+        M.validate_manifest(m, layout())
+
+
 def test_required_not_subset_of_allowed_fails():
     m = good_core_patch()
     m["implementation"]["allowed_changed_paths"] = ["ingestion/**"]

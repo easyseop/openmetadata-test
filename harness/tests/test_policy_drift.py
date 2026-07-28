@@ -3,6 +3,7 @@
 The layout is pinned to 1.12.13, and 1.13.0 really adds new top-level modules
 (openmetadata-mcp, etc.), so this exercises a genuine policy-drift finding.
 """
+import subprocess
 from pathlib import Path
 
 from acgh import layout as L
@@ -53,3 +54,94 @@ def test_stale_pattern_only_is_approval(om_mirror):
     r = PD.check_policy_drift(str(om_mirror), "UPSTREAM_B",
                              ["nonexistent-module/**"], wide)
     assert r.verdict == V.APPROVAL
+
+
+def _git(repo, *args):
+    return subprocess.run(
+        ["git", "-C", str(repo), *args], check=True,
+        capture_output=True, text=True,
+    ).stdout.strip()
+
+
+def _commit(repo, message, customization_id=None):
+    _git(repo, "add", ".")
+    args = ["commit", "-m", message]
+    if customization_id:
+        args += ["-m", f"Customization-ID: {customization_id}"]
+    _git(repo, *args)
+    return _git(repo, "rev-parse", "HEAD")
+
+
+def _history_repo(tmp_path):
+    _git(tmp_path, "init", "-q")
+    _git(tmp_path, "config", "user.name", "t")
+    _git(tmp_path, "config", "user.email", "t@example.com")
+    (tmp_path / "a.txt").write_text("a\n")
+    (tmp_path / "b.txt").write_text("b\n")
+    base = _commit(tmp_path, "base")
+    (tmp_path / "a.txt").write_text("a2\n")
+    head = _commit(tmp_path, "custom", "BANK-OM-001")
+    return base, head
+
+
+def test_exact_scope_history_passes_on_exact_equality(tmp_path):
+    base, head = _history_repo(tmp_path)
+    manifests = {
+        "BANK-OM-001": {
+            "implementation": {"allowed_changed_paths": ["a.txt"]}
+        }
+    }
+    result = PD.check_exact_scope_history(
+        str(tmp_path), base, head, manifests
+    )
+    assert result.verdict == V.PASS
+
+
+def test_exact_scope_history_blocks_omission(tmp_path):
+    base, head = _history_repo(tmp_path)
+    manifests = {
+        "BANK-OM-001": {
+            "implementation": {"allowed_changed_paths": ["b.txt"]}
+        }
+    }
+    result = PD.check_exact_scope_history(
+        str(tmp_path), base, head, manifests
+    )
+    assert result.verdict == V.BLOCK
+    assert any("observed_path_outside_exact_scope" in r for r in result.reasons)
+
+
+def test_exact_scope_history_flags_overbroad_declaration(tmp_path):
+    base, head = _history_repo(tmp_path)
+    manifests = {
+        "BANK-OM-001": {
+            "implementation": {
+                "allowed_changed_paths": ["a.txt", "b.txt"]
+            }
+        }
+    }
+    result = PD.check_exact_scope_history(
+        str(tmp_path), base, head, manifests
+    )
+    assert result.verdict == V.APPROVAL
+    assert any("declared_path_not_observed" in r for r in result.reasons)
+
+
+def test_exact_scope_history_flags_registered_id_with_no_commit(tmp_path):
+    base, head = _history_repo(tmp_path)
+    manifests = {
+        "BANK-OM-001": {
+            "implementation": {"allowed_changed_paths": ["a.txt"]}
+        },
+        "BANK-OM-002": {
+            "implementation": {"allowed_changed_paths": ["b.txt"]}
+        },
+    }
+    result = PD.check_exact_scope_history(
+        str(tmp_path), base, head, manifests
+    )
+    assert result.verdict == V.APPROVAL
+    assert any(
+        "BANK-OM-002 declared_path_not_observed" in reason
+        for reason in result.reasons
+    )

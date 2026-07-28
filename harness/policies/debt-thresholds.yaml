@@ -1,0 +1,20 @@
+# T43 customization debt policy.
+# Calibrated from candidate 849ae756 (2026-07-28 KST):
+# core_patch_count=11, changed_lines=12488, hotspot_overlap=4.
+# The thresholds allow measured headroom above that adopted baseline; they are
+# review controls, not claims that the product is correct. conflict_rate has no
+# adopted value and must be supplied by each upgrade run.
+schema_version: 1
+thresholds:
+  core_patch_count:
+    soft: 14
+    hard: 19
+  changed_lines:
+    soft: 14000
+    hard: 18000
+  conflict_rate:
+    soft: 0.15
+    hard: 0.35
+  hotspot_overlap:
+    soft: 4
+    hard: 8

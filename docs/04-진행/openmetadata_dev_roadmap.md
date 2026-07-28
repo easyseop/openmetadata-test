@@ -329,13 +329,15 @@ T93·T42 · T50 · T70 최소.
 | T62 SHA 결속 | ✅ 완료 | `acgh/binding.py` | 7 테스트. ref→고정 SHA pin(실제 미러), repository-qualified inputs 봉인, 비-SHA 거부(§10.1) |
 | T32 최종상태 불변식 | ✅ 완료 | `acgh/finalstate.py`(+`replay.replay_tree`) | 5 테스트. counterfactual 기여도(inert=block·inconclusive=analysis_error), candidate==replay, 승인 무효화(P0-5·A-3.7) |
 | T33 게이트 명칭·보장범위 | ✅ 완료 | `acgh/scope.py`(evidence 카드 결합) | 3 테스트. 보장/미보장 표를 게이트 출력에 결속(기능 보장 아님 명시, P0-5·P0-7) |
-| T41 민감영역·의도 게이트 | ✅ 완료 | `acgh/zones.py` + `policies/sensitive-zones.yaml` | 8 테스트(실제 OM zone). frozen=block/protected=approval/watched=pass, intent 부재=fail-closed(REQ-GZ-01/02) |
+| T41 민감영역·의도 게이트 | ✅ 판정 보강 | `acgh/zones.py` + `policies/sensitive-zones.yaml` | 빈 allowed·잘못된 구조=analysis_error, frozen=block/protected=approval/watched=visibility-only pass, 범위 밖=owner approval |
 
-| T42 upgrade_watch(케이스 D) | ✅ 완료 | `acgh/upgrade_watch.py`+`impact.py` | 8 테스트(실제 A→B diff 4789변경). watch∩net→approval, 영향표면+판정없는 LLM memo(§7) |
-| T93 정책 노후화 drift | ✅ 완료 | `acgh/policy_drift.py` | 5 테스트. 0-매칭 패턴(빈 총)=approval, 신규 미분류 모듈(실제 openmetadata-mcp 등)=analysis_error |
-| T50 선언형 verifier | ✅ 완료 | `acgh/verifier.py` | 10 테스트. JSON Pointer·file_hash·module_present(비실행), 실행형 거부, `..` 경로이탈 차단(P0-8) |
+| T42 upgrade_watch(케이스 D) | ✅ 실제 기능 보강 | `acgh/upgrade_watch.py`+`impact.py`+`watch_suggest.py` | watch 경로뿐 아니라 설정키·dependency diff 감지. 실제 변경 파일을 커스텀 코드가 직접 참조하면 watch 후보와 근거를 제안하되 자동 등록하지 않음 |
+| T43 부채 정책 | ✅ 외부 정책·측정기 구현 | `acgh/debt.py` + `policies/debt-thresholds.yaml` | candidate에서 core ID 수·변경 라인·hotspot·입력 conflict rate 측정. 임계값은 현재 후보 11/12488/4 기준선에서 보정하고 잘못된 정책·미등록 지표는 analysis_error |
+| T93 정책·정확범위 drift | ✅ 누락·과다 보강 | `acgh/policy_drift.py` | 0-매칭 watch=approval, 기준 버전 뒤 신규 미분류 모듈=analysis_error, ID별 실제 커밋 경로 누락=block·과다 선언=approval. 현재 후보 exact history pass |
+| T50 선언형 verifier | ✅ 빈 필수 선언 보강 | `acgh/verifier.py` | JSON Pointer·file_hash·module_present(비실행), 실행형 거부, `..` 경로이탈 차단. 필수 실행에서 빈 verifier set=analysis_error |
+| T51 구조화 diff | ✅ scalar/list 보강 | `acgh/structdiff.py` | 키 추가·삭제·타입 변경과 같은 타입 scalar 값 변경·list 내용 변경을 경로 단위로 출력 |
 | T61 patch-kill | 🟡 source 2/5 증거·runtime 3/5 검사기 구현 | `acgh/patchkill.py` + source/runtime plan·runner·workflow | Sybase/Tibero 고정 predecessor에서 실제 failure 입증. InstanceCode/QueryReport/Data Assertions는 별도 승인 workflow, 전후 health probe, target 2회 실패, source/tree/artifact/deployment/suite 결속, 90일 증거 보존까지 구현. 제거본 빌드·배포·운영 실행은 필요 |
-| T62 test-result 결속·runtime 실행 | ✅ 구현·⚠ 운영미실행 | `acgh/testruns.py` + `acgh/pytest_runs.py` + schema + `runtime-contracts.yml` | selector별 격리 pytest/JUnit, atomic run-set/result, SHA/artifact/governance/suite 결속, 실제 exit 대조. Data Assertions·bank column도 API와 실제 화면을 함께 확인. 결과 3종을 overwrite 불가 artifact로 90일 보존. 로컬 무환경 시뮬레이션 `2 pass·7 skip→block`, exit 위조→analysis_error |
+| T62 test-result 결속·runtime 실행 | ✅ 실행기·사전검사 구현·⚠ 행내 실행 대기 | `acgh/testruns.py` + `acgh/pytest_runs.py` + `runtime_preflight.py` + `runtime-contracts.yml` | URL·토큰·테스트 식별값·브라우저 로그인 상태·배포 digest가 없거나 잘못되면 설치 전 exit 3. selector별 pytest/JUnit과 SHA/artifact/governance/suite 결속, 90일 증거 보존. 실제 행내 실행은 환경 필요 |
 | T63 UI typecheck 기준선 delta | ✅ 검사기·실증거·⚠ approval | `acgh/tsc_baseline.py` + CLI + evidence | 공식 1.13.1은 396 diagnostics·141 files, 후보는 355·133 files. 신규 path/code 0·제거 41, clean-cache 메시지 변형 신규 10·제거 51. 비영 기준선은 pass가 아니라 approval; 메시지 의미는 full-log review 필요 |
 | T71 fast lane | ✅ 구현 | `acgh/fastlane.py` | 5 테스트. 유형별 최소 gate, mixed=합집합, core=전체 전략 route |
 | T72 break-glass | ✅ 구현 | `acgh/breakglass.py` + schema | 8 테스트. 2인·만료·scope·사후검증·통계·timezone, 무결성 gate 비면제, verdict 불변 |

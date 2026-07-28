@@ -8,7 +8,10 @@ Two layers, because JSON Schema alone cannot express the invariants that matter
    arbitrary shell can never enter through the manifest (P0-8); verification is
    declarative only (T50).
 2. SEMANTICS — code rules this module enforces:
-   - ``required_changed_paths`` are literal and ⊆ ``allowed_changed_paths``.
+   - ``required_changed_paths`` are literal and covered by the combined current
+     scope (source ``allowed`` + registered follow-up ``candidate_additional``).
+   - ``candidate_additional_paths`` are literal, disjoint from source allowed,
+     and preserve the T25-R source-snapshot boundary.
    - ``kind: core-patch`` must declare at least one required path.
    - each required path's ownership (via T05 layout) matches ``kind``.
    - ``assurance.contracts`` / ``assurance.direct_tests`` are unique & disjoint.
@@ -76,6 +79,7 @@ def _semantic(data: dict, layout: L.Layout) -> None:
     role = _KIND_ROLE[kind]
     impl = data["implementation"]
     allowed = impl["allowed_changed_paths"]
+    candidate_additional = impl.get("candidate_additional_paths", [])
     required = impl.get("required_changed_paths", [])
 
     # allowed patterns: valid grammar, no negation (checked while building spec).
@@ -83,6 +87,22 @@ def _semantic(data: dict, layout: L.Layout) -> None:
         allowed_spec = L.make_spec(allowed)
     except L.LayoutError as e:
         raise ManifestError(f"allowed_changed_paths: {e}") from e
+    try:
+        additional = [L.ensure_literal(path) for path in candidate_additional]
+    except L.LayoutError as e:
+        raise ManifestError(f"candidate_additional_paths: {e}") from e
+    if len(additional) != len(set(additional)):
+        raise ManifestError("candidate_additional_paths has duplicate entries")
+    overlap = {
+        path for path in additional
+        if allowed_spec.match_file(path)
+    }
+    if overlap:
+        raise ManifestError(
+            "candidate_additional_paths overlaps source allowed scope: "
+            f"{sorted(overlap)}"
+        )
+    current_spec = L.make_spec([*allowed, *additional])
 
     # core-patch must pin down at least one file it is required to change.
     if kind == "core-patch" and not required:
@@ -97,15 +117,22 @@ def _semantic(data: dict, layout: L.Layout) -> None:
         except L.LayoutError as e:
             raise ManifestError(f"required_changed_paths: {e}") from e
         # required ⊆ allowed
-        if not allowed_spec.match_file(lit):
+        if not current_spec.match_file(lit):
             raise ManifestError(
-                f"required path not covered by allowed_changed_paths: {lit!r}"
+                f"required path not covered by allowed current candidate scope: {lit!r}"
             )
         # ownership must match kind
         owner = layout.classify(lit)
         if owner != role:
             raise ManifestError(
                 f"required path {lit!r} is owned by {owner!r}, "
+                f"but kind {kind!r} requires {role!r}"
+            )
+    for lit in additional:
+        owner = layout.classify(lit)
+        if owner != role:
+            raise ManifestError(
+                f"candidate additional path {lit!r} is owned by {owner!r}, "
                 f"but kind {kind!r} requires {role!r}"
             )
 

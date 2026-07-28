@@ -35,6 +35,7 @@ def test_source_candidate_workflow_is_read_only_and_candidate_locked():
 
 def test_source_candidate_workflow_pins_actions_and_runs_all_source_gates():
     workflow = _load(_WORKFLOW)
+    assert "codex/strict-manifest-gates" in workflow["on"]["push"]["branches"]
     steps = workflow["jobs"]["governance"]["steps"]
     action_uses = [step["uses"] for step in steps if "uses" in step]
 
@@ -46,6 +47,7 @@ def test_source_candidate_workflow_pins_actions_and_runs_all_source_gates():
     commands = "\n".join(step.get("run", "") for step in steps)
     assert "pytest harness/tests tests/bank/contracts -ra" in commands
     assert "run_source_candidate_gates.py" in commands
+    assert "--sensitive-zones" in commands
     assert "run_source_patch_kills.py" in commands
     assert '--run-id "${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"' in commands
     assert "--filter=blob:none" in commands

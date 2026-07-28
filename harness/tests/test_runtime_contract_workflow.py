@@ -47,6 +47,7 @@ def test_runtime_workflow_requires_identity_and_live_inputs():
         for item in action_uses
     )
     commands = "\n".join(step.get("run", "") for step in steps)
+    assert "runtime_preflight.py" in commands
     assert "run_runtime_contracts.py" in commands
     assert "--artifact-digest" in commands
     assert "${{ inputs.artifact_digest }}" not in commands

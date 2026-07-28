@@ -331,24 +331,28 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 ### T41. 민감 영역·의도 게이트
 - **목적**: 민감 경로 접촉·범위 이탈 판정.
 - **충족**: 원천 억제·보완책 2 / REQ-GZ-01·02.
-- **구현**: 변경파일 × zones glob(`pathspec`) → frozen=block/protected=approval/watched=경고.
-  change-intent allowed 밖=approval, forbidden 안=block, intent 부재=fail-closed.
+- **구현**: 변경파일 × zones glob(`pathspec`) → frozen=block/protected=approval/
+  watched=visibility-only pass. change-intent allowed 밖=approval, forbidden 안=block,
+  intent 부재·빈 allowed·잘못된 자료형=fail-closed.
 - **수용**: 각 레벨 판정 픽스처 통과.
 - **선행**: T13·T03.
 
 ### T42. 업그레이드 영향 분석 (upgrade_watch 기반)
 - **목적**: 업스트림 변경 ∩ 감시 범위 → 검토 플래그(케이스 D).
 - **충족**: P1·케이스 D / REQ-CG 신규.
-- **구현**: `git diff --name-only OLD NEW` ∩ (`allowed`∪`upgrade_watch.paths`) + 설정키·의존성 diff 대조 →
-  영향 ID·필수 테스트·contract 목록 산출(감사카드에).
+- **구현**: `git diff --name-only OLD NEW` ∩ `upgrade_watch.paths`와 변경 문서의
+  configuration key, dependency descriptor를 대조해 영향 ID·contract를 산출한다.
+  실제 변경 파일을 커스텀 구현이 직접 참조하면 watch 후보·근거를 제안하되
+  코드 책임자 승인 전에는 manifest를 자동 수정하지 않는다.
 - **수용**: 편집 안 한 감시 파일 변경도 해당 ID를 플래그(tenant 케이스), 무관 파일은 제외.
 - **선행**: T10·T12·T14·**T93**(유효한 감시 경로 확보 후 영향분석).
 
 ### T43. 부채 게이트 (Gate 4) — 단계적 임계치
 - **목적**: 코어 수정 과다 억제, 단계적 도입(§9).
 - **충족**: Gate 4 / REQ-GD.
-- **구현**: 지표 수집(자동적용률·수동해결시간·반복충돌률·hotspot 겹침·의존수·유지기간·제거율).
-  라인은 보조 지표. 임계치는 경고→승인→(데이터 후)차단 단계.
+- **구현**: core ID 수·changed lines·reapply conflict rate·hotspot 겹침을
+  candidate에서 측정한다. 임계치는 코드가 아니라 versioned
+  `debt-thresholds.yaml`에 두고 현재 후보 기준선과 후속 upgrade 기록으로 보정한다.
 - **수용**: 즉시 차단 항목(미등록·담당없음·테스트없음·우회·재현실패·SHA불일치)만 초기 차단.
 - **선행**: T13·T30.
 
@@ -369,7 +373,8 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **목적**: LLM보다 먼저 도는 결정적 증거(§6 보강3·§8).
 - **충족**: 케이스 ②·D / 신규 REQ.
 - **구현**: OpenAPI·JSON Schema diff, 공개 인터페이스 diff → 구조화 JSON(감사카드 입력).
-- **수용**: 스키마 필드·enum 추가/삭제/변경을 구조화 출력.
+- **수용**: 스키마 필드·enum 추가/삭제/타입 변경뿐 아니라 같은 타입 scalar
+  값과 list 내용 변경도 경로 단위로 구조화 출력.
 - **선행**: T14.
 
 ### T52. 구조화 Evidence Provider — Helm/config·dependency/DB·search

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - claude/markdown-file-feedback-26933w
+      - codex/strict-manifest-gates
   pull_request:
   workflow_dispatch:
 
@@ -84,7 +85,8 @@ jobs:
             --repo product \
             --harness harness \
             --registration harness/registrations/kb-openmetadata \
-            --layout harness/policies/repository-layout.yaml
+            --layout harness/policies/repository-layout.yaml \
+            --sensitive-zones harness/policies/sensitive-zones.yaml
 
       - name: Run source-capable patch-kill experiments
         run: |

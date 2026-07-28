@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run source-candidate T25/T26/T30/T31 gates for the rebuilt vendor branch.
+"""Run source-candidate gates for the rebuilt vendor branch.
 
 The source artifact digest binds the candidate Git tree identity.  Release
 image/package digests remain a later build-and-promotion concern.
@@ -19,6 +19,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--harness", type=Path, required=True)
     parser.add_argument("--registration", type=Path, required=True)
     parser.add_argument("--layout", type=Path, required=True)
+    parser.add_argument("--sensitive-zones", type=Path, required=True)
     return parser.parse_args()
 
 
@@ -37,11 +38,14 @@ def main() -> int:
     from acgh import ancestry
     from acgh import candidate
     from acgh import contracts
+    from acgh import drift
     from acgh import gitprim
     from acgh import invariants
     from acgh import layout
+    from acgh import policy_drift
     from acgh import survival
     from acgh import vendor_rebuild
+    from acgh import zones
 
     registry, manifests, inventory = vendor_rebuild.load_registration_bundle(
         args.registration
@@ -85,7 +89,31 @@ def main() -> int:
     commits = gitprim.commits(args.repo, target, head)
     t31_violations = invariants.check_id_invariants(commits, manifests)
     t31 = invariants.to_gate_result("id-invariants", t31_violations)
-    gates = [t25, t26, t60_i, t30, t31]
+    t40_violations = drift.check_drift(
+        args.repo, target, head, manifests, repository_layout
+    )
+    t40 = drift.to_gate_result(t40_violations)
+    current_scope = sorted({
+        path
+        for customization_id in registry.active_ids()
+        for path in [
+            *manifests[customization_id]["implementation"].get(
+                "allowed_changed_paths", []
+            ),
+            *manifests[customization_id]["implementation"].get(
+                "candidate_additional_paths", []
+            ),
+        ]
+    })
+    t41 = zones.check_sensitive_zones(
+        gitprim.net_changed_paths(args.repo, target, head),
+        zones.load_zones(args.sensitive_zones),
+        {"allowed": current_scope, "forbidden": []},
+    )
+    t93 = policy_drift.check_exact_scope_history(
+        args.repo, target, head, manifests
+    )
+    gates = [t25, t26, t60_i, t30, t31, t40, t41, t93]
     output = {
         "candidate_lock": lock.canonical(),
         "candidate_lock_digest": lock.digest(),

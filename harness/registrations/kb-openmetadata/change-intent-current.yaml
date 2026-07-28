@@ -1,0 +1,7 @@
+# Current candidate intent. The runner expands this to the validated, exact
+# active-manifest scopes; it does not grant a repository-wide wildcard.
+schema_version: 1
+allowed_from_active_manifests: true
+forbidden:
+  - .github/**
+  - harness/**

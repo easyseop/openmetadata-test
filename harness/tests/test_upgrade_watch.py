@@ -4,6 +4,7 @@ This is the most authentic case-D test we can write: real upstream churn.
 """
 from acgh import upgrade_watch as UW
 from acgh import verdict as V
+import subprocess
 
 # Verified against the mirror: unchanged A->B / changed A->B.
 _UNCHANGED = ("openmetadata-service/src/main/java/org/openmetadata/service/"
@@ -56,3 +57,48 @@ def test_only_watching_manifests_are_considered(om_mirror):
         str(om_mirror), "UPSTREAM_A", "UPSTREAM_B", manifests)
     # Only 003 (watching a changed path) fires; 001 unchanged, 002 no watch.
     assert [f.customization_id for f in findings] == ["BANK-OM-003"]
+
+
+def _git(repo, *args):
+    return subprocess.run(
+        ["git", "-C", str(repo), *args], check=True,
+        capture_output=True, text=True,
+    ).stdout.strip()
+
+
+def _commit(repo, message):
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", message)
+    return _git(repo, "rev-parse", "HEAD")
+
+
+def test_configuration_key_and_dependency_changes_are_detected(tmp_path):
+    _git(tmp_path, "init", "-q")
+    _git(tmp_path, "config", "user.name", "t")
+    _git(tmp_path, "config", "user.email", "t@example.com")
+    (tmp_path / "conf.yaml").write_text("auth:\n  provider: basic\n")
+    (tmp_path / "package.json").write_text('{"dependencies":{"react":"1"}}')
+    base = _commit(tmp_path, "base")
+    (tmp_path / "conf.yaml").write_text("auth:\n  provider: saml\n")
+    (tmp_path / "package.json").write_text('{"dependencies":{"react":"2"}}')
+    head = _commit(tmp_path, "upgrade")
+    manifests = {
+        "BANK-OM-001": {
+            "upgrade_watch": {
+                "paths": [],
+                "configuration_keys": ["auth.provider"],
+                "dependencies": ["react"],
+            }
+        }
+    }
+
+    findings = UW.evaluate_upgrade_watch(
+        str(tmp_path), base, head, manifests
+    )
+    assert findings[0].changed_watch_paths == ()
+    assert findings[0].changed_configuration_keys == ("auth.provider",)
+    assert findings[0].changed_dependencies == ("react",)
+    result = UW.to_gate_result(findings)
+    assert result.verdict == V.APPROVAL
+    assert "configuration_keys" in result.reasons[0]
+    assert "dependencies" in result.reasons[0]

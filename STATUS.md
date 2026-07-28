@@ -2,8 +2,8 @@
 
 > Updated: 2026-07-28 KST
 > Branch: `codex/strict-manifest-gates`
-> Last verified implementation commit: `291c6f2`
-> Strict-scope batch recorded: 2026-07-28 09:41 KST
+> Last verified implementation commit: `291c6f2` (2·3차 batch pending commit)
+> Strict-scope and stage 2·3 batch verified: 2026-07-28 10:07 KST
 > Current product candidate: `849ae756cd238f218b5e3a6c795a392305cb32ee`
 > Strict-scope progress: [`docs/04-진행/STRICT_SCOPE_IMPROVEMENT_PROGRESS.md`](docs/04-진행/STRICT_SCOPE_IMPROVEMENT_PROGRESS.md)
 > BANK-OM-011 governance registration / evidence rebind: `b1d3fa6` / `c246ae2`
@@ -56,10 +56,32 @@ hard-block `required` subset. T40 checks every changed ownership zone, and T70
 protects checker, registration, test, design, technical-reference, progress,
 and status files.
 
-Focused result: **39 passed**. The actual product candidate `849ae756...`
+Initial focused result: **39 passed**. The actual product candidate `849ae756...`
 passes T25/T26/T60-I/T30/T31, and reconstruction checkpoint `e1ffc5a1...`
-passes strict T25-R. The remaining work is T42/watch suggestion, T41/T43
-policy calibration, broader omission checks, and live runtime evidence.
+passes strict T25-R.
+
+### 2026-07-28 stage 2·3 implementation
+
+Stage 2 is implemented and connected to executable runners. T42 now detects
+changed watched paths, declared configuration keys, and dependency identifiers;
+`watch_suggest.py` proposes directly referenced upstream files but requires code
+owner review before registration. T41 rejects empty intent, T43 loads a
+versioned external debt policy and measures the candidate, T93 compares exact
+per-ID commit history with manifest scope, T50 can require non-empty declarative
+checks, and T51 reports same-type scalar/list content changes.
+
+Integration found and fixed two registration defects: BANK-OM-007 now separates
+the eight pinned snapshot paths from two registered follow-up paths, and the
+candidate-only `useDataFetching.test.tsx` is no longer incorrectly treated as
+an upstream watch path. Current candidate `849ae756...` passes T40, T41, T43,
+and exact-scope T93 in addition to the previous source gates.
+
+Stage 3 execution support is implemented. `runtime_preflight.py` validates all
+required internal URLs, identifiers, authentication/storage-state presence,
+and the deployed sha256 artifact digest without echoing secrets. The runtime
+workflow now fails before installation if the environment is incomplete.
+Actual API/UI/runtime and counterfactual deployment evidence still requires
+the bank environment; it is not reported as executed or passed.
 
 The deterministic governance engine is implemented through candidate
 registration, vendor/replay routing, required-test result binding, fast lanes,
@@ -150,14 +172,22 @@ still required.
 ## Verification
 
 ```text
-316 passed, 7 skipped in 30.67s
+Current local suite: 301 passed, 47 skipped in 19.09s
+Historical fixed-mirror suite: 316 passed, 7 skipped in 30.67s
 ```
 
-This historical CI-equivalent local run used the two fixed historical mirror refs, so the
+The current 47 skips require the fixed historical mirror or live bank
+API/browser/runtime inputs and are not counted as passes. The historical
+CI-equivalent local run used the two fixed historical mirror refs, so the
 previous 35 mirror skips all executed and passed. Four remaining skips require
 a live OpenMetadata URL and three require real authenticated browser pages;
-none are counted as passes. The current strict-scope focused suite is
-39 passed: T25-R 17, T40 5, T26 10, and T70 7.
+none are counted as passes.
+
+The current product candidate passes T25, T26, T60-I, T30, T31, T40, T41, and
+exact-scope T93. The upgrade-risk runner also passes T43 and policy T93. T42
+was exercised only as an A-equals-B wiring smoke, so it is not evidence that a
+future official OpenMetadata upgrade is safe. The T43 conflict-rate input was
+also zero for runner wiring, not a measured upgrade conflict rate.
 
 T61 source negative controls now run the external Sybase and Tibero contract
 tests against fixed predecessor commits that do not contain the corresponding
