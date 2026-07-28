@@ -4,9 +4,9 @@
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
 > 이번 감사 입력 head: `482788d19519d2d73faa222de6ea2e41ca53e231`
-> 최신 원격 검증: `Source candidate` run
-> [`30350251032`](https://github.com/easyseop/openmetadata-test/actions/runs/30350251032)
-> 성공
+> 최신 원격 검증: `0b0f7797...`의 `Source candidate` run
+> [`30368181793`](https://github.com/easyseop/openmetadata-test/actions/runs/30368181793)
+> 성공 (`348 passed, 7 operational skips`)
 > 문서 묶음 작성 전 기준 commit: `0a6d009107a18e69a2150388442adffb6332f08c`
 > 제품 코드 상태: `easyseop/OpenMetadata` commit
 > `849ae756cd238f218b5e3a6c795a392305cb32ee`
@@ -590,6 +590,12 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
   노트북에 `/home/user/om-mirror`가 없어서 실행하지 못한 실제 mirror 연동
   항목이며 PASS로 계산하지 않는다. 관련 집중 테스트는 `14 passed, 5 skipped`,
   `git diff --check`도 통과했다.
+- 위 변경 commit `0b0f7797...`의 원격 고정 mirror 검사는
+  `348 passed, 7 operational skips`로 성공했다. 소스 gate와 source
+  patch-kill 2건은 통과했고 BANK-OM-001~003 runtime 실험은 환경 대기다.
+- 90일 증거 artifact:
+  `source-patch-kill-evidence-30368181793-1`, ID `8691825442`, GitHub
+  SHA-256 `a70e4a8a6b3944a5e2228c1185dfb1fa3142ce58027c514c13e7e8c060e8277d`
 
 ### 다음 작업
 

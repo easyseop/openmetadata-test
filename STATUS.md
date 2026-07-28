@@ -3,10 +3,10 @@
 > Updated: 2026-07-28 KST
 > Branch: `codex/strict-manifest-gates`
 > Latest remotely verified sharing/rehearsal head:
-> `482788d19519d2d73faa222de6ea2e41ca53e231`
+> `0b0f7797ad24f68fbfc0b882b594018e2db04f18`
 > Latest sharing/rehearsal CI:
-> [`30350251032`](https://github.com/easyseop/openmetadata-test/actions/runs/30350251032)
-> (`Source candidate`, success, completed 2026-07-28 19:22 KST)
+> [`30368181793`](https://github.com/easyseop/openmetadata-test/actions/runs/30368181793)
+> (`Source candidate`, success, `348 passed / 7 operational skips`)
 > Last verified implementation commit: `5f54687`
 > Fixed-mirror CI compatibility fix: `f661796`
 > Strict-scope and stage 2·3 batch verified: 2026-07-28 10:18 KST
@@ -79,6 +79,13 @@ The complete local harness result is **308 passed, 37 skipped**; all 37 skips
 require the absent `/home/user/om-mirror` and are not counted as passes.
 Focused rehearsal/watch/conflict tests are **14 passed, 5 mirror skips**, and
 `git diff --check` passes.
+
+Remote fixed-mirror verification at governance `0b0f7797...` is
+**348 passed, 7 operational skips**. Source gates and two source-capable
+patch-kill experiments pass; BANK-OM-001~003 runtime experiments remain
+pending. Artifact `source-patch-kill-evidence-30368181793-1` has ID
+`8691825442` and GitHub SHA-256
+`a70e4a8a6b3944a5e2228c1185dfb1fa3142ce58027c514c13e7e8c060e8277d`.
 
 The next reproducibility step is to push the other workstation's local
 OM_TEMP 1.13.1 patch/custom branches to the private repository. Full build,

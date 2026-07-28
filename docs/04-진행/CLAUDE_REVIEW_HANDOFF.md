@@ -2054,8 +2054,8 @@ ID 발급·후속 변경·Manifest 항목의 사용법이 코드와 여러 문�
 - 현재 작업 브랜치: `codex/strict-manifest-gates`
 - 이번 감사 입력 head: `482788d19519d2d73faa222de6ea2e41ca53e231`
 - 최신 원격 검증:
-  [`30350251032`](https://github.com/easyseop/openmetadata-test/actions/runs/30350251032)
-  (`Source candidate`, success)
+  [`30368181793`](https://github.com/easyseop/openmetadata-test/actions/runs/30368181793)
+  (`0b0f7797...`, `Source candidate`, `348 passed, 7 operational skips`)
 - 오늘 GitHub 서버 기준 변경: `18360e8` 이후 27개 commit, 149개 파일
 - 공유문서 진행: 목적/브랜치 → 검사기 원리 → 사전환경 설정 → 결과/책임자
   판단 → 실제 OM_TEMP 1.13.0→1.13.1 업그레이드의 다섯 페이지
@@ -2074,6 +2074,12 @@ ID 발급·후속 변경·Manifest 항목의 사용법이 코드와 여러 문�
 잘림 1건은 생성기 CSS를 고쳐 다시 렌더링했다. 전체 harness 결과는
 `308 passed, 37 mirror skips`, 관련 집중 결과는 `14 passed, 5 mirror skips`,
 `git diff --check`는 통과다.
+
+원격에서는 소스 gate와 source patch-kill 2건이 통과했다.
+BANK-OM-001~003 runtime patch-kill은 실제 배포환경 대기다. 90일 보존 증거는
+`source-patch-kill-evidence-30368181793-1`, artifact ID `8691825442`,
+GitHub SHA-256
+`a70e4a8a6b3944a5e2228c1185dfb1fa3142ce58027c514c13e7e8c060e8277d`다.
 
 다음 재현성 작업은 다른 노트북에만 있는 OM_TEMP 1.13.1 patch/custom branch를
 private 원격에 push하는 것이다. 전체 build, 환경 의존 Contract test 7개,
