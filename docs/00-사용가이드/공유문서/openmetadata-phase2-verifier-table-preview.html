@@ -1,0 +1,1468 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Openmetadata Phase2 Verifier Table Fragment</title>
+<style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
+</head>
+<body>
+<iframe sandbox="allow-scripts" referrerpolicy="no-referrer" title="Openmetadata Phase2 Verifier Table Fragment" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &#x27;none&#x27;; script-src &#x27;unsafe-inline&#x27; &#x27;unsafe-eval&#x27; &#x27;wasm-unsafe-eval&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src &#x27;unsafe-inline&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src &#x27;none&#x27;; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;&quot;&gt;
+&lt;title&gt;Openmetadata Phase2 Verifier Table Fragment&lt;/title&gt;
+&lt;style&gt;:root {
+  color-scheme: light dark;
+  background-color: var(
+    --background,
+    var(--color-background-primary, light-dark(rgb(255 255 255), rgb(24 24 24)))
+  ) !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --color-background-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --card: color-mix(in oklab, var(--foreground) 5%, transparent);
+  --card-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --popover: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255), rgb(45 45 45))
+  );
+  --popover-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --primary: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --primary-foreground: var(
+    --color-text-inverse,
+    light-dark(rgb(255 255 255), rgb(13 13 13))
+  );
+  --secondary: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%))
+  );
+  --secondary-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: var(
+    --color-text-secondary,
+    light-dark(rgb(26 28 31 / 49.4%), rgb(255 255 255 / 49.8%))
+  );
+  --accent: var(
+    --color-background-info,
+    light-dark(rgb(229 242 255), rgb(13 39 63))
+  );
+  --accent-foreground: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --destructive: var(
+    --color-text-warning,
+    light-dark(rgb(226 85 7), rgb(255 133 73))
+  );
+  --border: var(
+    --color-border-secondary,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+  --input: var(
+    --color-border-primary,
+    light-dark(
+      rgb(26 28 31 / 11.8%),
+      color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+    )
+  );
+  --ring: var(
+    --color-ring-primary,
+    light-dark(rgb(51 156 255), rgb(131 195 255 / 76%))
+  );
+  --font-size-base: var(--font-text-md-size, 14px);
+  --red: light-dark(rgb(186 38 35), rgb(250 66 62));
+  --green: light-dark(rgb(0 162 64), rgb(64 201 119));
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(rgb(243 136 59), rgb(245 154 86));
+  --viz-series-3: light-dark(rgb(93 201 119), rgb(116 213 139));
+  --viz-series-4: light-dark(rgb(235 119 177), rgb(240 143 192));
+  --viz-series-5: light-dark(rgb(155 121 236), rgb(170 145 239));
+  --viz-series-6: light-dark(rgb(58 185 177), rgb(90 203 194));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, &quot;Segoe UI&quot;, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;,
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --radius: var(--border-radius-lg, 12.5px);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 17 17&#x27;%3E%3Cpath d=&#x27;M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z&#x27;/%3E%3C/svg%3E&quot;);
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+}
+
+:root[data-theme=&quot;light&quot;] {
+  color-scheme: light;
+}
+
+:root[data-theme=&quot;dark&quot;] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html &gt; body {
+  /* Preserve MCP aliases for older inline renderers without creating :root cycles. */
+  --color-background-primary: var(
+    --background,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --color-text-primary: var(
+    --foreground,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --color-border-secondary: var(
+    --border,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+
+  margin: 0;
+  padding: 5px;
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium, 500);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table-responsive &gt; .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead th {
+  padding-block: 8px;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 6px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align=&quot;right&quot;]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align=&quot;center&quot;]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  corner-shape: superellipse(1.5);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget &gt; :not(.card) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls &gt; .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls &gt; .form-label &gt; :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: padding-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(in srgb, var(--primary-foreground) 50%, transparent);
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type=&quot;file&quot;] {
+  padding: 0;
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control[type=&quot;file&quot;]::file-selector-button {
+  min-height: 26px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+}
+
+.form-control[type=&quot;file&quot;]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type=&quot;color&quot;] {
+  width: 40px;
+  height: 28px;
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  corner-shape: superellipse(1.5);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: &quot;&quot;;
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type=&quot;radio&quot;] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type=&quot;radio&quot;]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: &quot;&quot;;
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+    [aria-pressed=&quot;true&quot;],
+    [aria-selected=&quot;true&quot;],
+    .is-selected
+  ) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed=&quot;true&quot;], [aria-selected=&quot;true&quot;], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget &gt; svg {
+  width: 100%;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+
+html&gt;body{padding:0}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id=&quot;om-phase2&quot; data-artifact-status=&quot;review-draft&quot;&gt;
+  &lt;header class=&quot;p2-hero&quot;&gt;
+    &lt;span class=&quot;viz-badge&quot;&gt;2차 공유문서 검토본&lt;/span&gt;
+    &lt;h1&gt;각 검사기는 무엇을 읽고, 어떻게 판단하는가&lt;/h1&gt;
+    &lt;p&gt;이 문서는 검사 결과가 아니라 검사 방법을 설명합니다. PASS·BLOCK 같은 실제 결과 라벨은 3차 시연 문서에서 실행 화면과 함께 보여줍니다.&lt;/p&gt;
+    &lt;div class=&quot;p2-decision&quot; role=&quot;status&quot;&gt;
+      &lt;strong&gt;검토 결론&lt;/strong&gt;
+      &lt;span&gt;현재 검사기는 소스 변경을 관리하는 데는 유효하지만, 경로 기반 검사와 외부 입력에 의존하는 부분이 있어 행내 동작·보안·배포 검사를 함께 사용해야 합니다.&lt;/span&gt;
+    &lt;/div&gt;
+  &lt;/header&gt;
+
+  &lt;section class=&quot;p2-section&quot; aria-labelledby=&quot;p2-flow-title&quot;&gt;
+    &lt;h2 id=&quot;p2-flow-title&quot;&gt;검사기가 사용하는 정보와 검사 순서&lt;/h2&gt;
+    &lt;ol class=&quot;p2-flow&quot;&gt;
+      &lt;li&gt;
+        &lt;span&gt;1&lt;/span&gt;
+        &lt;strong&gt;코드 버전 지정&lt;/strong&gt;
+        &lt;p&gt;공식 원본과 행내 배포용 OpenMetadata의 Git commit SHA를 지정합니다.&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;span&gt;2&lt;/span&gt;
+        &lt;strong&gt;변경관리표 입력&lt;/strong&gt;
+        &lt;p&gt;활성 BANK-OM ID별 파일 범위, 필수 파일, 감시 파일과 테스트를 읽습니다.&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;span&gt;3&lt;/span&gt;
+        &lt;strong&gt;Git 기록 비교&lt;/strong&gt;
+        &lt;p&gt;공식 원본 이후의 모든 커밋과 각 커밋이 변경한 파일을 확인합니다.&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;span&gt;4&lt;/span&gt;
+        &lt;strong&gt;업그레이드·동작 검사&lt;/strong&gt;
+        &lt;p&gt;다음 공식 버전의 변경과 행내 API·화면·DB 테스트 결과를 확인합니다.&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;span&gt;5&lt;/span&gt;
+        &lt;strong&gt;배포 파일 일치 확인&lt;/strong&gt;
+        &lt;p&gt;검사한 코드와 이미지·설정 파일이 실제 배포 대상과 같은지 확인합니다.&lt;/p&gt;
+      &lt;/li&gt;
+    &lt;/ol&gt;
+    &lt;p class=&quot;p2-terms&quot;&gt;&lt;strong&gt;Git commit SHA&lt;/strong&gt;는 저장된 코드 버전을 식별하는 값입니다. &lt;strong&gt;SHA-256 digest&lt;/strong&gt;는 파일 내용이 같은지 비교하기 위해 계산한 값입니다.&lt;/p&gt;
+  &lt;/section&gt;
+
+  &lt;section class=&quot;p2-section&quot; aria-labelledby=&quot;p2-table-title&quot;&gt;
+    &lt;h2 id=&quot;p2-table-title&quot;&gt;검사기별 실제 검사 방법과 예외 가능성&lt;/h2&gt;
+    &lt;div class=&quot;table-responsive&quot;&gt;
+      &lt;table class=&quot;table table-sm p2-table&quot;&gt;
+        &lt;thead&gt;
+          &lt;tr&gt;
+            &lt;th&gt;검사명&lt;/th&gt;
+            &lt;th&gt;무엇을 확인하나&lt;/th&gt;
+            &lt;th&gt;실제로 어떻게 검사하나&lt;/th&gt;
+            &lt;th&gt;예외 가능성과 보완 방법&lt;/th&gt;
+          &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+          &lt;tr class=&quot;p2-group&quot;&gt;
+            &lt;th colspan=&quot;4&quot;&gt;A. 공식 원본과 행내 커스터마이징 소스 확인&lt;/th&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;T25-R&lt;/strong&gt;&lt;br&gt;&lt;span&gt;과거 행내 변경 재현&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;과거 행내 소스에서 등록한 파일을 공식 원본 위에 다시 적용했을 때 같은 내용이 만들어지는지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;공식 원본과 과거 행내 소스의 변경 파일 목록을 먼저 고정한 뒤, 재구성한 브랜치의 파일을 비교합니다. JSON은 공백과 키 순서를 제외한 실제 값을 비교하고, Java·TypeScript 등 나머지 파일은 Git에서 차이가 없어야 합니다.&lt;/td&gt;
+            &lt;td&gt;Java 파일에 빈 줄 하나만 달라도 차이로 판단해 중단합니다. 의미는 같지만 서식만 다른 경우에도 중단될 수 있으므로, 자동 통과시키기보다 서식 차이만 따로 보여주고 담당자가 확인하도록 보완하는 편이 안전합니다.&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;T25&lt;/strong&gt;&lt;br&gt;&lt;span&gt;공식 원본 포함&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;행내 배포용 OpenMetadata가 승인된 공식 버전의 코드를 실제 Git 이력에 포함하는지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;Git의 공통 조상과 포함 관계를 조회해 공식 버전의 commit SHA가 행내 코드의 조상인지 확인합니다. 동시에 검사 대상 commit SHA와 전체 파일 상태가 사전에 기록한 검사 대상과 같은지도 확인합니다.&lt;/td&gt;
+            &lt;td&gt;공식 코드가 이력에 포함됐다는 사실만 증명하며, 충돌을 올바르게 해결했는지 또는 기능이 정상인지까지 증명하지는 않습니다. 그래서 T26·T40과 행내 동작 검사가 함께 필요합니다.&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;T26&lt;/strong&gt;&lt;br&gt;&lt;span&gt;활성 커스터마이징 확인&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;변경관리표에서 상태가 &lt;code&gt;active&lt;/code&gt;인 모든 BANK-OM ID의 커스터마이징이 검사 대상 코드에 남아 있는지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;각 활성 BANK-OM ID의 필수 파일이 존재하고 공식 원본과 실제로 다른지 확인합니다. 전체 등록 파일 중 필수가 아닌 파일이 없어졌거나 공식 원본과 같아지면 담당자 확인 대상으로 분류하며, 업무 계약과 연결된 테스트 목록도 함께 확인합니다.&lt;/td&gt;
+            &lt;td&gt;파일이 존재하고 공식 원본과 다르더라도 기능이 올바르게 동작한다고 단정할 수는 없습니다. 실제 테스트 코드의 존재는 T60-I가, 실제 실행 결과는 T62가 따로 확인합니다.&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;T60-I&lt;/strong&gt;&lt;br&gt;&lt;span&gt;필수 테스트 코드 확인&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;변경관리표에 연결한 업무 테스트가 이름만 등록된 것이 아니라 실제 Python 테스트 코드로 존재하는지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;&lt;code&gt;contracts.yaml&lt;/code&gt;의 테스트 파일 경로와 함수 이름을 읽고, Python 코드 구조 분석(AST)으로 파일을 정상적으로 해석할 수 있는지와 해당 테스트 함수가 실제로 존재하는지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;커스터마이징 개발자가 기능과 테스트를 함께 작성하고, 변경관리 담당자가 업무 계약과 연결을 검토하는 절차가 필요합니다. 현재 검사는 작성자가 누구인지 강제하지 않으며, 함수가 존재한다는 사실만 확인하므로 테스트의 품질과 실행 성공 여부는 T61·T62에서 확인해야 합니다.&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;T30&lt;/strong&gt;&lt;br&gt;&lt;span&gt;커밋 메시지 형식&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;공식 원본 이후의 각 커밋이 어떤 BANK-OM 변경인지 빠짐없이 구분되는지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;검사기는 공식 원본부터 검사 대상 commit SHA까지의 모든 커밋을 Git에서 순서대로 가져옵니다. 각 커밋 메시지의 &lt;code&gt;Customization-ID:&lt;/code&gt; 항목과 그 커밋이 변경한 파일을 읽어, 행내 소스를 바꾼 커밋에 BANK-OM ID가 정확히 하나 있는지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;하나의 BANK-OM ID 안에 서로 다른 목적의 변경을 섞어도 파일 범위가 같으면 이 검사만으로는 구분하기 어렵습니다. 커밋 목적을 작게 유지하고 T40·T93 변경범위 검사로 실제 변경 파일까지 함께 비교해야 합니다.&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;T31&lt;/strong&gt;&lt;br&gt;&lt;span&gt;커밋 순서와 ID 사용&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;같은 BANK-OM ID를 여러 커밋에 사용할 수 있는지, 커밋이 연속되어 있는지, ID 간 선행 관계가 순환하지 않는지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;Git 커밋을 오래된 순서부터 나열한 뒤 같은 ID의 위치를 비교합니다. 여러 커밋 사용이 변경관리표에서 허용됐는지, 다른 ID가 중간에 끼지 않았는지, 폐기한 ID를 다시 쓰지 않았는지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;선행 관계 자체를 빠뜨린 경우에는 검사기가 업무 관계를 새로 추론하지 못합니다. 커스터마이징 설계자가 선행 BANK-OM ID를 변경관리표에 등록하고 리뷰하는 절차가 필요합니다.&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;T40&lt;/strong&gt;&lt;br&gt;&lt;span&gt;변경 파일 범위&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;각 BANK-OM 커밋이 사전에 등록한 파일만 변경했고, 반드시 반영돼야 할 파일이 최종 코드에서 실제로 변경됐는지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;첫째, 각 커밋이 변경한 모든 파일을 &lt;code&gt;allowed_changed_paths&lt;/code&gt;와 비교합니다. 둘째, 공식 원본과 최종 코드의 전체 차이를 구해 &lt;code&gt;required_changed_paths&lt;/code&gt;가 실제 차이에 포함되는지 확인합니다. 잠깐 수정했다가 원상 복구한 필수 파일도 이 단계에서 잡힙니다.&lt;/td&gt;
+            &lt;td&gt;변경 범위를 통제하는 핵심 검사지만 파일 단위로만 판단합니다. 허용된 파일 안에서 잘못된 줄을 수정한 경우까지는 알 수 없고, 여러 BANK-OM ID가 같은 파일을 수정할 때의 줄 단위 소유 관계는 T25-R의 공유 파일 설정과 코드 리뷰가 보완해야 합니다.&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;T41&lt;/strong&gt;&lt;br&gt;&lt;span&gt;민감 파일 확인&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;보안·인증·설정·DB 경로를 위험도 단계로 나누고, 실제 변경 파일이 어느 단계에 해당하는지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;AST로 코드 내용을 분석하는 검사가 아닙니다. &lt;code&gt;sensitive-zones.yaml&lt;/code&gt;의 경로 규칙과 실제 변경 파일을 비교합니다. 현재 보안 서비스 경로는 변경 시 중단하고, 인증 스키마와 설정 경로는 담당자 승인을 요구하며, DB 변경과 수집 경로는 결과에 표시만 합니다.&lt;/td&gt;
+            &lt;td&gt;새 보안 코드가 기존 경로 규칙 밖에 추가되면 놓칠 수 있습니다. 경로 규칙 점검 외에 정적 보안 분석, 보안 담당자 리뷰와 새 모듈 탐지를 함께 사용해야 합니다.&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;T93 · 변경범위&lt;/strong&gt;&lt;br&gt;&lt;span&gt;등록 파일과 실제 이력 일치&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;각 BANK-OM ID가 실제로 변경한 파일 목록과 변경관리표에 등록한 정확한 파일 목록이 같은지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;Git 커밋 이력을 BANK-OM ID별로 다시 모아 실제 변경 파일 목록을 만듭니다. 실제로 변경했지만 등록하지 않은 파일은 중단하고, 등록했지만 해당 ID가 변경하지 않은 파일은 담당자 확인 대상으로 분류합니다.&lt;/td&gt;
+            &lt;td&gt;파일 목록이 같아도 파일 안의 어떤 줄을 누가 변경했는지는 알 수 없습니다. 공유 파일은 별도 소유 관계와 코드 리뷰가 필요하며, 폴더 전체 같은 넓은 패턴은 정확 비교가 불가능하므로 현재 검사는 개별 파일 경로만 허용합니다.&lt;/td&gt;
+          &lt;/tr&gt;
+
+          &lt;tr class=&quot;p2-group&quot;&gt;
+            &lt;th colspan=&quot;4&quot;&gt;B. 다음 공식 OpenMetadata 버전의 영향 확인&lt;/th&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;T42&lt;/strong&gt;&lt;br&gt;&lt;span&gt;감시 파일 변경 확인&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;행내에서 직접 수정하지 않았지만 커스터마이징이 의존하는 공식 파일·설정·라이브러리가 새 공식 버전에서 바뀌었는지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;기존 공식 버전과 새 공식 버전의 Git 차이를 구하고, 각 BANK-OM 변경관리표의 &lt;code&gt;upgrade_watch&lt;/code&gt;에 등록한 경로·설정 키·라이브러리 이름과 비교합니다. 하나라도 일치하면 자동 통과하지 않고 담당자 확인을 요구합니다.&lt;/td&gt;
+            &lt;td&gt;질문하신 감시 파일의 실제 검사 기능이 T42입니다. 다만 감시 대상을 누락하면 변경이 있어도 통과할 수 있으므로 자동 제안 기능과 담당자 검토가 필요합니다.&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;T43&lt;/strong&gt;&lt;br&gt;&lt;span&gt;관리 부담 증가&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;공식 공용 코드의 커스터마이징 규모가 커져 다음 업그레이드를 감당하기 어려운 수준인지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;종류(&lt;code&gt;kind&lt;/code&gt;)가 &lt;code&gt;core-patch&lt;/code&gt;인 활성 BANK-OM ID 수, 공식 원본 대비 추가·삭제한 줄 수, 여러 BANK-OM ID가 함께 수정한 파일의 최대 ID 수와 재적용 충돌 비율을 정책 한도와 비교합니다. 현재 각 수치가 14/19개, 14,000/18,000줄, 4/8개, 충돌률 15%/35%를 초과하면 각각 담당자 승인 또는 중단이 필요합니다.&lt;/td&gt;
+            &lt;td&gt;충돌률은 검사기가 직접 재현하지 않고 실행 명령의 입력값으로 받습니다. 실제 업그레이드 재적용 결과에서 자동 계산하고 근거 파일과 함께 저장하도록 보완하지 않으면 잘못된 숫자를 넣을 위험이 있습니다. 또한 수정량이 작아도 설계가 복잡할 수 있으므로 수치만으로 품질을 판단하면 안 됩니다.&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;T93 · 감시규칙&lt;/strong&gt;&lt;br&gt;&lt;span&gt;감시 규칙 유효성&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;공식 버전의 파일 이동이나 모듈 추가 때문에 기존 감시 규칙이 더 이상 유효하지 않은지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;새 공식 버전의 전체 파일 목록에서 각 감시 경로가 최소 한 파일과 일치하는지 확인합니다. 이전에는 없던 최상위 폴더가 추가됐는데 소유 구분 규칙에 없으면 검사 불가로 처리합니다.&lt;/td&gt;
+            &lt;td&gt;경로가 다른 파일과 우연히 일치하면 잘못 통과할 수 있습니다. 또한 현재 통합 실행기는 감시 파일 패턴만 넘기며 민감 경로 패턴의 노후화는 함께 검사하지 않으므로, T41의 민감 경로도 같은 방식으로 검사하도록 보완해야 합니다.&lt;/td&gt;
+          &lt;/tr&gt;
+
+          &lt;tr class=&quot;p2-group&quot;&gt;
+            &lt;th colspan=&quot;4&quot;&gt;C. 행내 테스트·배포 환경에서 확인&lt;/th&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;T61&lt;/strong&gt;&lt;br&gt;&lt;span&gt;기능 누락 탐지 시험&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;커스터마이징을 제거했는데도 테스트가 통과하는 형식적인 테스트인지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;해당 BANK-OM 변경이 없는 코드 버전을 별도로 만들고 같은 필수 테스트를 실행합니다. 이 버전에서 테스트가 명확한 실패로 끝나야 커스터마이징 누락을 잡는 테스트라고 판단합니다. 행내 환경에서는 API와 화면이 정상이라는 별도 확인을 전후에 실행하고 대상 테스트를 두 번 반복합니다.&lt;/td&gt;
+            &lt;td&gt;테스트가 커스터마이징 누락이 아닌 다른 이유로 실패해도 현재 소스 검사는 성공으로 오인할 수 있습니다. 기대한 오류 종류와 핵심 메시지까지 확인하고, 커스터마이징이 있는 버전에서는 같은 테스트가 통과하는지 함께 비교해야 합니다.&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;T62&lt;/strong&gt;&lt;br&gt;&lt;span&gt;결과와 코드 연결&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;테스트 결과가 정확히 어떤 소스 코드와 배포 파일, 어떤 검사기와 테스트 코드에서 나온 것인지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;테스트 결과에 행내 배포용 OpenMetadata commit SHA, 배포 파일의 SHA-256 digest, 검사기 버전, 테스트 묶음 버전을 함께 저장합니다. 필수 테스트가 빠졌거나 마지막 실행이 실패하면 중단하고, 중요 테스트가 재실행 후에만 통과하면 담당자 승인을 요구합니다.&lt;/td&gt;
+            &lt;td&gt;현재 결과 형식에는 실행 환경의 설정과 버전을 식별하는 값이 없습니다. 같은 코드라도 DB·검색엔진·설정이 다르면 결과가 달라질 수 있으므로 환경 정보의 digest와 신뢰할 수 있는 실행 시스템의 서명을 추가해야 합니다.&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;T63&lt;/strong&gt;&lt;br&gt;&lt;span&gt;화면 코드 오류 비교&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;행내 커스터마이징 때문에 공식 원본보다 새로운 TypeScript 오류가 생겼는지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;공식 원본과 행내 코드에서 같은 TypeScript 검사를 실행한 뒤, 파일 경로와 오류 코드별 발생 횟수를 비교합니다. 행내 코드에만 생긴 오류는 중단하며, 공식 원본부터 있던 오류가 남아 있으면 자동 통과하지 않습니다.&lt;/td&gt;
+            &lt;td&gt;파일 이동은 같은 오류도 새 오류처럼 보이게 할 수 있고, 오류 메시지만 바뀐 경우에는 담당자 판단이 필요합니다. 현재 비교 함수는 Node·Yarn 버전이 같은지 직접 강제하지 않으므로 실행 환경과 전체 로그의 digest를 검사 입력에 연결해야 합니다.&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;T90&lt;/strong&gt;&lt;br&gt;&lt;span&gt;구·신 버전 동작 비교&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;실제 데이터와 행내 환경에서 업그레이드, DB·검색·권한·API·수집·복구가 모두 정상인지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;운영 스냅샷 복원부터 롤백 연습까지 정해진 12단계의 결과가 모두 통과인지 확인하고, 결과 문서를 행내 배포용 OpenMetadata commit SHA·배포 파일 digest·T62 결과와 연결합니다.&lt;/td&gt;
+            &lt;td&gt;현재 T90 코드는 12단계 결과 문서의 형식과 상태만 판단하며 각 단계를 직접 실행하거나 증거 파일의 내용을 검증하지 않습니다. 신뢰할 수 있는 실행 시스템이 각 단계의 실제 로그를 보관하고 서명하도록 보완해야 합니다.&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;&lt;strong&gt;T91&lt;/strong&gt;&lt;br&gt;&lt;span&gt;검사본과 배포본 일치&lt;/span&gt;&lt;/td&gt;
+            &lt;td&gt;검사를 마친 소스와 이미지·Helm 설정을 다시 만들지 않고 그대로 배포하는지 확인합니다.&lt;/td&gt;
+            &lt;td&gt;승인 시점에 행내 배포용 OpenMetadata commit SHA, 컨테이너 이미지 digest, Helm 파일 digest, 검사 결과 digest를 고정합니다. 배포 시 관측한 값이 하나라도 다르거나 중간에 다시 빌드했으면 중단합니다.&lt;/td&gt;
+            &lt;td&gt;digest를 어디에서 읽었는지가 신뢰할 수 있어야 합니다. T91만으로는 외부망에서 내부망으로 옮기는 과정의 서명이나 내부망 재검증까지 보장하지 않으므로 별도의 반입 검증이 필요합니다.&lt;/td&gt;
+          &lt;/tr&gt;
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+
+  &lt;section class=&quot;p2-section&quot; aria-labelledby=&quot;p2-reinforce-title&quot;&gt;
+    &lt;h2 id=&quot;p2-reinforce-title&quot;&gt;운영 적용 전에 우선 보완할 항목&lt;/h2&gt;
+    &lt;ol class=&quot;p2-reinforce&quot;&gt;
+      &lt;li&gt;&lt;strong&gt;T41&lt;/strong&gt;&lt;span&gt;경로 비교에 정적 보안 분석과 보안 담당자 리뷰를 추가합니다.&lt;/span&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;strong&gt;T42·T93&lt;/strong&gt;&lt;span&gt;감시 파일 자동 제안과 민감 경로 규칙의 노후화 검사를 함께 실행합니다.&lt;/span&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;strong&gt;T43&lt;/strong&gt;&lt;span&gt;충돌률을 사람이 입력하지 않고 실제 업그레이드 재적용 결과에서 자동 계산합니다.&lt;/span&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;strong&gt;T61&lt;/strong&gt;&lt;span&gt;단순 실패가 아니라 커스터마이징 누락 때문에 발생한 실패인지 오류 종류와 메시지까지 확인합니다.&lt;/span&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;strong&gt;T62·T63&lt;/strong&gt;&lt;span&gt;DB·검색엔진·Node·Yarn·설정 등 실행 환경을 하나의 digest로 기록하고 결과에 연결합니다.&lt;/span&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;strong&gt;T90·T91&lt;/strong&gt;&lt;span&gt;각 단계의 실제 로그와 배포 digest를 신뢰할 수 있는 실행 시스템이 서명하고 보관하도록 합니다.&lt;/span&gt;&lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/section&gt;
+
+  &lt;details class=&quot;p2-details&quot;&gt;
+    &lt;summary&gt;검사기 코드 검토 범위&lt;/summary&gt;
+    &lt;p&gt;T25-R·T25·T26·T60-I·T30·T31·T40·T41·T42·T43·T61·T62·T63·T90·T91·T93의 구현 코드와 관련 단위 테스트를 확인했습니다. 관련 단위 테스트는 통과했지만, 단위 테스트 통과가 위의 운영 환경 예외까지 없다는 의미는 아닙니다.&lt;/p&gt;
+  &lt;/details&gt;
+
+  &lt;style&gt;
+    #om-phase2 {
+      color: var(--foreground);
+    }
+
+    #om-phase2 .p2-hero {
+      display: grid;
+      gap: 9px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #om-phase2 .p2-hero h1,
+    #om-phase2 .p2-hero p,
+    #om-phase2 .p2-section h2,
+    #om-phase2 .p2-terms,
+    #om-phase2 .p2-details p {
+      margin: 0;
+    }
+
+    #om-phase2 .p2-decision {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 10px;
+      margin-top: 5px;
+      padding: 12px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    #om-phase2 .p2-section {
+      display: grid;
+      gap: 12px;
+      padding: 20px 0 4px;
+    }
+
+    #om-phase2 .p2-flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 1px;
+      margin: 0;
+      padding: 0;
+      background: var(--border);
+      list-style: none;
+    }
+
+    #om-phase2 .p2-flow li {
+      display: grid;
+      align-content: start;
+      gap: 6px;
+      padding: 11px;
+      background: var(--background);
+    }
+
+    #om-phase2 .p2-flow li &gt; span {
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    #om-phase2 .p2-flow p {
+      margin: 0;
+      color: var(--muted-foreground);
+    }
+
+    #om-phase2 .p2-terms {
+      color: var(--muted-foreground);
+    }
+
+    #om-phase2 .p2-table {
+      min-width: 1120px;
+      table-layout: fixed;
+    }
+
+    #om-phase2 .p2-table th:first-child,
+    #om-phase2 .p2-table td:first-child {
+      width: 13%;
+    }
+
+    #om-phase2 .p2-table th:nth-child(2),
+    #om-phase2 .p2-table td:nth-child(2) {
+      width: 22%;
+    }
+
+    #om-phase2 .p2-table th:nth-child(3),
+    #om-phase2 .p2-table td:nth-child(3) {
+      width: 31%;
+    }
+
+    #om-phase2 .p2-table th:nth-child(4),
+    #om-phase2 .p2-table td:nth-child(4) {
+      width: 34%;
+    }
+
+    #om-phase2 .p2-table td {
+      vertical-align: top;
+    }
+
+    #om-phase2 .p2-table td:first-child span {
+      color: var(--muted-foreground);
+    }
+
+    #om-phase2 .p2-group th {
+      padding-top: 20px;
+      color: var(--muted-foreground);
+      text-align: left;
+    }
+
+    #om-phase2 .p2-reinforce {
+      display: grid;
+      gap: 0;
+      margin: 0;
+      padding-left: 24px;
+    }
+
+    #om-phase2 .p2-reinforce li {
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr);
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #om-phase2 .p2-details {
+      margin-top: 18px;
+      padding: 12px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    #om-phase2 .p2-details summary {
+      font-weight: 500;
+    }
+
+    #om-phase2 .p2-details p {
+      padding-top: 10px;
+    }
+
+    @media (max-width: 560px) {
+      #om-phase2 .p2-decision {
+        grid-template-columns: 1fr;
+      }
+
+      #om-phase2 .p2-flow {
+        grid-template-columns: 1fr;
+      }
+
+      #om-phase2 .p2-reinforce li {
+        grid-template-columns: 1fr;
+      }
+    }
+  &lt;/style&gt;
+&lt;/div&gt;
+
+&lt;script src=&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set([&quot;top&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;left&quot;]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+
+  const getTrigger = (target) =&gt;
+    target?.nodeType === Node.ELEMENT_NODE
+      ? target.closest(&quot;[data-tooltip]&quot;)
+      : null;
+  const containsTarget = (trigger, target) =&gt;
+    target?.nodeType != null &amp;&amp; trigger.contains(target);
+  const getContent = (trigger) =&gt;
+    trigger.getAttribute(&quot;data-tooltip&quot;)?.trim() ?? &quot;&quot;;
+  const getPlacement = (trigger) =&gt; {
+    const placement = trigger.getAttribute(&quot;data-tooltip-placement&quot;);
+    return tooltipPlacements.has(placement) ? placement : &quot;top&quot;;
+  };
+  const getTooltip = () =&gt; {
+    if (tooltip == null) {
+      tooltip = document.createElement(&quot;div&quot;);
+      tooltip.id = tooltipId;
+      tooltip.className = &quot;tooltip&quot;;
+      tooltip.setAttribute(&quot;role&quot;, &quot;tooltip&quot;);
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) =&gt; {
+    const ids = new Set(
+      (trigger.getAttribute(&quot;aria-describedby&quot;) ?? &quot;&quot;)
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute(&quot;aria-describedby&quot;);
+    } else {
+      trigger.setAttribute(&quot;aria-describedby&quot;, [...ids].join(&quot; &quot;));
+    }
+  };
+  const clearOpenTimeout = () =&gt; {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) =&gt; {
+    clearOpenTimeout();
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) =&gt; {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-width&quot;,
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-height&quot;,
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: &quot;fixed&quot;,
+    })
+      .then(({ x, y }) =&gt; {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = &quot;visible&quot;;
+      })
+      .catch(() =&gt; {
+        if (activeTrigger === trigger &amp;&amp; request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) =&gt; {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = &quot;hidden&quot;;
+    floating.style.transform = &quot;translate(0, 0)&quot;;
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () =&gt; {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) =&gt; {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() &lt; skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() =&gt; {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) =&gt; {
+    if (event.pointerType === &quot;touch&quot;) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handleLeave = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger?.matches(&quot;:focus-visible&quot;)) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) =&gt; {
+    if (event.key === &quot;Escape&quot;) {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const destroy = () =&gt; {
+    closeTooltip(false);
+    document.removeEventListener(&quot;pointerover&quot;, handlePointerOpen);
+    document.removeEventListener(&quot;pointerout&quot;, handleLeave);
+    document.removeEventListener(&quot;focusin&quot;, handleFocusIn);
+    document.removeEventListener(&quot;focusout&quot;, handleLeave);
+    document.removeEventListener(&quot;keydown&quot;, handleKeyDown);
+    document.removeEventListener(&quot;contextmenu&quot;, handleContextMenu);
+    tooltip = null;
+  };
+
+  document.addEventListener(&quot;pointerover&quot;, handlePointerOpen);
+  document.addEventListener(&quot;pointerout&quot;, handleLeave);
+  document.addEventListener(&quot;focusin&quot;, handleFocusIn);
+  document.addEventListener(&quot;focusout&quot;, handleLeave);
+  document.addEventListener(&quot;keydown&quot;, handleKeyDown);
+  document.addEventListener(&quot;contextmenu&quot;, handleContextMenu);
+  window.addEventListener(&quot;pagehide&quot;, destroy, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-lucide&quot; async src=&quot;https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  const initialize = () =&gt; {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById(&quot;codex-visualization-lucide&quot;)
+    ?.addEventListener(&quot;load&quot;, initialize, { once: true });
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</body>
+</html>

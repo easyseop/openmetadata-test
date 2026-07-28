@@ -9,6 +9,9 @@
 > Current product candidate: `849ae756cd238f218b5e3a6c795a392305cb32ee`
 > Strict-scope progress: [`docs/04-진행/STRICT_SCOPE_IMPROVEMENT_PROGRESS.md`](docs/04-진행/STRICT_SCOPE_IMPROVEMENT_PROGRESS.md)
 > BANK-OM single operating-policy source: [`docs/02-설계/bank_om_registration_policy.md`](docs/02-설계/bank_om_registration_policy.md)
+> Current Codex handoff: [`docs/04-진행/CODEX_HANDOFF.md`](docs/04-진행/CODEX_HANDOFF.md)
+> Phase 1·2·3 sharing requirements: [`docs/04-진행/SHARING_ARTIFACT_REQUIREMENTS.md`](docs/04-진행/SHARING_ARTIFACT_REQUIREMENTS.md)
+> Portable readability review skill: [`.agents/skills/clarity-preflight-review/SKILL.md`](.agents/skills/clarity-preflight-review/SKILL.md)
 > BANK-OM-011 governance registration / evidence rebind: `b1d3fa6` / `c246ae2`
 > Recorded BANK-OM-011 evidence run: [`30222439344`](https://github.com/easyseop/openmetadata-test/actions/runs/30222439344)
 > UI typecheck baseline delta gate commit: `39294bf`

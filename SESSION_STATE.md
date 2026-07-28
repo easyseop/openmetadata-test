@@ -1,5 +1,12 @@
 # 세션 상태 / 인수인계 (SESSION_STATE)
 
+> **2026-07-28 현재 공유문서 작업 정본:** 작업 브랜치는
+> `codex/strict-manifest-gates`다. 1차·2차 HTML, 3차 시연 요구사항, 검사기별
+> 예외 검토와 다른 노트북 재개 절차는
+> [`docs/04-진행/CODEX_HANDOFF.md`](docs/04-진행/CODEX_HANDOFF.md)와
+> [`docs/04-진행/SHARING_ARTIFACT_REQUIREMENTS.md`](docs/04-진행/SHARING_ARTIFACT_REQUIREMENTS.md)를
+> 먼저 따른다. 아래 내용에는 과거 작업 브랜치와 장기 구현 기록이 포함돼 있다.
+
 > **목적**: 컨텍스트가 리셋돼도 이 문서 하나로 작업을 이어갈 수 있게 현재까지의
 > 모든 결정·산출물·다음 단계를 세세하게 기록한다. **작업 재개 시 이 문서를 먼저 읽는다.**
 > 최종 갱신: 2026-07-27 실제 7-ID 재구축, Tibero 후속 보강,

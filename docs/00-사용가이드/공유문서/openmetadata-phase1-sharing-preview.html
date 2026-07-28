@@ -1,0 +1,2637 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Openmetadata Phase1 Sharing Fragment</title>
+<style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
+</head>
+<body>
+<iframe sandbox="allow-scripts" referrerpolicy="no-referrer" title="Openmetadata Phase1 Sharing Fragment" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &#x27;none&#x27;; script-src &#x27;unsafe-inline&#x27; &#x27;unsafe-eval&#x27; &#x27;wasm-unsafe-eval&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src &#x27;unsafe-inline&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src &#x27;none&#x27;; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;&quot;&gt;
+&lt;title&gt;Openmetadata Phase1 Sharing Fragment&lt;/title&gt;
+&lt;style&gt;:root {
+  color-scheme: light dark;
+  background-color: var(
+    --background,
+    var(--color-background-primary, light-dark(rgb(255 255 255), rgb(24 24 24)))
+  ) !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --color-background-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --card: color-mix(in oklab, var(--foreground) 5%, transparent);
+  --card-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --popover: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255), rgb(45 45 45))
+  );
+  --popover-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --primary: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --primary-foreground: var(
+    --color-text-inverse,
+    light-dark(rgb(255 255 255), rgb(13 13 13))
+  );
+  --secondary: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%))
+  );
+  --secondary-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: var(
+    --color-text-secondary,
+    light-dark(rgb(26 28 31 / 49.4%), rgb(255 255 255 / 49.8%))
+  );
+  --accent: var(
+    --color-background-info,
+    light-dark(rgb(229 242 255), rgb(13 39 63))
+  );
+  --accent-foreground: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --destructive: var(
+    --color-text-warning,
+    light-dark(rgb(226 85 7), rgb(255 133 73))
+  );
+  --border: var(
+    --color-border-secondary,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+  --input: var(
+    --color-border-primary,
+    light-dark(
+      rgb(26 28 31 / 11.8%),
+      color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+    )
+  );
+  --ring: var(
+    --color-ring-primary,
+    light-dark(rgb(51 156 255), rgb(131 195 255 / 76%))
+  );
+  --font-size-base: var(--font-text-md-size, 14px);
+  --red: light-dark(rgb(186 38 35), rgb(250 66 62));
+  --green: light-dark(rgb(0 162 64), rgb(64 201 119));
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(rgb(243 136 59), rgb(245 154 86));
+  --viz-series-3: light-dark(rgb(93 201 119), rgb(116 213 139));
+  --viz-series-4: light-dark(rgb(235 119 177), rgb(240 143 192));
+  --viz-series-5: light-dark(rgb(155 121 236), rgb(170 145 239));
+  --viz-series-6: light-dark(rgb(58 185 177), rgb(90 203 194));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, &quot;Segoe UI&quot;, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;,
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --radius: var(--border-radius-lg, 12.5px);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 17 17&#x27;%3E%3Cpath d=&#x27;M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z&#x27;/%3E%3C/svg%3E&quot;);
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+}
+
+:root[data-theme=&quot;light&quot;] {
+  color-scheme: light;
+}
+
+:root[data-theme=&quot;dark&quot;] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html &gt; body {
+  /* Preserve MCP aliases for older inline renderers without creating :root cycles. */
+  --color-background-primary: var(
+    --background,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --color-text-primary: var(
+    --foreground,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --color-border-secondary: var(
+    --border,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+
+  margin: 0;
+  padding: 5px;
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium, 500);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table-responsive &gt; .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead th {
+  padding-block: 8px;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 6px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align=&quot;right&quot;]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align=&quot;center&quot;]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  corner-shape: superellipse(1.5);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget &gt; :not(.card) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls &gt; .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls &gt; .form-label &gt; :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: padding-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(in srgb, var(--primary-foreground) 50%, transparent);
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type=&quot;file&quot;] {
+  padding: 0;
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control[type=&quot;file&quot;]::file-selector-button {
+  min-height: 26px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+}
+
+.form-control[type=&quot;file&quot;]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type=&quot;color&quot;] {
+  width: 40px;
+  height: 28px;
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  corner-shape: superellipse(1.5);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: &quot;&quot;;
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type=&quot;radio&quot;] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type=&quot;radio&quot;]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: &quot;&quot;;
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+    [aria-pressed=&quot;true&quot;],
+    [aria-selected=&quot;true&quot;],
+    .is-selected
+  ) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed=&quot;true&quot;], [aria-selected=&quot;true&quot;], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget &gt; svg {
+  width: 100%;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+
+html&gt;body{padding:0}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id=&quot;om-guide-v3&quot; data-artifact-status=&quot;review-draft&quot;&gt;
+  &lt;header class=&quot;om-hero&quot;&gt;
+    &lt;span class=&quot;viz-badge&quot;&gt;1차 공유문서 검토본&lt;/span&gt;
+    &lt;h1&gt;공식 업그레이드 뒤에도 행내 기능을 잃지 않는 방법&lt;/h1&gt;
+    &lt;p&gt;공식 원본 위에 BANK-OM 변경을 다시 적용하고, 검사기로 누락·혼합·동작 여부를 단계별 확인합니다.&lt;/p&gt;
+    &lt;div class=&quot;om-now&quot; role=&quot;status&quot;&gt;
+      &lt;span&gt;&lt;strong&gt;이번 검토 범위&lt;/strong&gt; 목적 · 사전 설정 · 브랜치 전략&lt;/span&gt;
+      &lt;span&gt;&lt;strong&gt;대표 사례&lt;/strong&gt; BANK-OM-001 · InstanceCode&lt;/span&gt;
+      &lt;span class=&quot;text-destructive&quot;&gt;&lt;strong&gt;T42 검사기 완료&lt;/strong&gt; 수동 watch 비교는 동작 중 · allowed 공식 파일 자동 포함만 개선 예정&lt;/span&gt;
+    &lt;/div&gt;
+  &lt;/header&gt;
+
+  &lt;section class=&quot;om-progress om-phase1-progress&quot; aria-label=&quot;1차 공유문서 구성&quot;&gt;
+    &lt;article class=&quot;om-progress-done&quot;&gt;
+      &lt;span&gt;1차 · 검토 중&lt;/span&gt;
+      &lt;strong&gt;왜 필요한가&lt;/strong&gt;
+      &lt;p&gt;자체 제품 개발이 아니라 공식 OpenMetadata와 행내 기능을 함께 유지하는 목적을 설명합니다.&lt;/p&gt;
+    &lt;/article&gt;
+    &lt;article&gt;
+      &lt;span&gt;1차 · 검토 중&lt;/span&gt;
+      &lt;strong&gt;무엇을 미리 등록하나&lt;/strong&gt;
+      &lt;p&gt;BANK-OM ID, 변경 파일 명단, 실제 코드와 커밋 메시지를 하나로 연결합니다.&lt;/p&gt;
+    &lt;/article&gt;
+    &lt;article&gt;
+      &lt;span&gt;1차 · 검토 중&lt;/span&gt;
+      &lt;strong&gt;어떻게 업그레이드하나&lt;/strong&gt;
+      &lt;p&gt;공식 원본에서 제품 작업 브랜치, 검사 후보, 승인·행내 반영까지의 흐름을 도식으로 봅니다.&lt;/p&gt;
+    &lt;/article&gt;
+  &lt;/section&gt;
+
+  &lt;nav class=&quot;viz-controls om-toc&quot; aria-label=&quot;가이드 목차&quot;&gt;
+    &lt;a class=&quot;btn&quot; href=&quot;#purpose&quot;&gt;1. 우리의 목적&lt;/a&gt;
+    &lt;a class=&quot;btn&quot; href=&quot;#branch&quot;&gt;2. 사전 설정과 브랜치 전략&lt;/a&gt;
+    &lt;a class=&quot;btn&quot; href=&quot;#appendix&quot;&gt;부록 · 가장 많이 묻는 질문&lt;/a&gt;
+  &lt;/nav&gt;
+
+  &lt;section id=&quot;purpose&quot; class=&quot;om-section&quot;&gt;
+    &lt;div class=&quot;om-section-title&quot;&gt;
+      &lt;span&gt;01&lt;/span&gt;
+      &lt;div&gt;
+        &lt;h2&gt;우리의 목적&lt;/h2&gt;
+        &lt;p&gt;자체 제품을 새로 만드는 것이 아니라, 공식 OpenMetadata를 안전하게 계속 사용하는 것이 목적입니다.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;viz-grid om-purpose-grid&quot;&gt;
+      &lt;article class=&quot;card&quot;&gt;
+        &lt;span class=&quot;text-muted&quot;&gt;유지할 것&lt;/span&gt;
+        &lt;strong&gt;공식 OpenMetadata&lt;/strong&gt;
+        &lt;p&gt;공식 기능과 보안 업데이트를 계속 반영합니다.&lt;/p&gt;
+      &lt;/article&gt;
+      &lt;article class=&quot;card&quot;&gt;
+        &lt;span class=&quot;text-muted&quot;&gt;보호할 것&lt;/span&gt;
+        &lt;strong&gt;등록된 행내 기능&lt;/strong&gt;
+        &lt;p&gt;각 기능을 BANK-OM ID별 독립 변경 기록으로 관리합니다.&lt;/p&gt;
+      &lt;/article&gt;
+      &lt;article class=&quot;card&quot;&gt;
+        &lt;span class=&quot;text-muted&quot;&gt;증명할 것&lt;/span&gt;
+        &lt;strong&gt;재적용과 실제 동작&lt;/strong&gt;
+        &lt;p&gt;코드 재적용 결과와 행내 환경 동작을 서로 다른 검사로 확인합니다.&lt;/p&gt;
+      &lt;/article&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;om-repo-role&quot;&gt;
+      &lt;div&gt;
+        &lt;span&gt;행내 배포를 준비하는 OpenMetadata 코드&lt;/span&gt;
+        &lt;strong&gt;easyseop/OpenMetadata&lt;/strong&gt;
+        &lt;p&gt;&lt;code&gt;codex/bank-vendor-1.13.1-rebuild&lt;/code&gt; 브랜치의 &lt;code&gt;849ae756…&lt;/code&gt;에 11개 활성 BANK-OM 변경이 적용돼 있습니다. 아직 운영 배포가 확인된 코드라고 표현하지 않습니다.&lt;/p&gt;
+      &lt;/div&gt;
+      &lt;div&gt;
+        &lt;span&gt;제품 변경을 관리·검사하는 저장소&lt;/span&gt;
+        &lt;strong&gt;easyseop/openmetadata-test&lt;/strong&gt;
+        &lt;p&gt;직원용 별도 화면이 아니라 변경관리표, 검사기, 검사 결과와 인수인계 문서를 관리합니다.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;details class=&quot;om-watch-guide&quot;&gt;
+      &lt;summary&gt;왜 easyseop/OpenMetadata 화면에서 행내 정보가 안 보이나?&lt;/summary&gt;
+      &lt;ol&gt;
+        &lt;li&gt;&lt;b&gt;보고 있는 브랜치가 다를 수 있습니다.&lt;/b&gt; 현재 행내 코드는 기본 브랜치가 아니라 &lt;code&gt;codex/bank-vendor-1.13.1-rebuild&lt;/code&gt; 브랜치에 있습니다.&lt;/li&gt;
+        &lt;li&gt;&lt;b&gt;제품 저장소에는 실제 코드가 들어갑니다.&lt;/b&gt; &lt;code&gt;InstanceCodeResource.java&lt;/code&gt; 같은 코드와 각 Git 커밋 메시지의 &lt;code&gt;Customization-ID&lt;/code&gt;가 기록됩니다.&lt;/li&gt;
+        &lt;li&gt;&lt;b&gt;BANK-OM 변경관리표와 검사 결과는 검사 저장소에 있습니다.&lt;/b&gt; Manifest·검사기·인수인계 문서는 &lt;code&gt;easyseop/openmetadata-test&lt;/code&gt;에서 관리합니다.&lt;/li&gt;
+      &lt;/ol&gt;
+      &lt;p&gt;따라서 제품 저장소에서 BANK-OM 문서를 찾는 것이 아니라, 해당 제품 브랜치의 실제 코드·커밋 이력과 검사 저장소의 변경관리표를 함께 확인해야 합니다.&lt;/p&gt;
+    &lt;/details&gt;
+  &lt;/section&gt;
+
+  &lt;section id=&quot;branch&quot; class=&quot;om-section&quot;&gt;
+    &lt;div class=&quot;om-section-title&quot;&gt;
+      &lt;span&gt;02&lt;/span&gt;
+      &lt;div&gt;
+        &lt;h2&gt;브랜치 전략&lt;/h2&gt;
+        &lt;p&gt;공식 원본과 행내 변경 기록을 따로 관리하고, 업그레이드 때마다 새 공식 원본 위에 행내 변경을 순서대로 적용해 검사 대상 후보를 만듭니다.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;om-preflight-diagram&quot; aria-label=&quot;브랜치 작업 전 사전 설정&quot;&gt;
+      &lt;strong&gt;사전 설정&lt;/strong&gt;
+      &lt;div class=&quot;om-preflight-row&quot;&gt;
+        &lt;details class=&quot;om-preflight-step&quot;&gt;
+          &lt;summary&gt;&lt;span&gt;1&lt;/span&gt;&lt;b&gt;BANK-OM ID 발급&lt;/b&gt;&lt;/summary&gt;
+          &lt;pre&gt;&lt;code&gt;customization_id: BANK-OM-001
+title: InstanceCode
+kind: core-patch
+status: active&lt;/code&gt;&lt;/pre&gt;
+          &lt;div class=&quot;om-manifest-mini&quot; aria-label=&quot;변경 유형 종류&quot;&gt;
+            &lt;div&gt;&lt;code&gt;core-patch&lt;/code&gt;&lt;span&gt;제품 코드에 결합되는 변경&lt;/span&gt;&lt;/div&gt;
+            &lt;div&gt;&lt;code&gt;extension&lt;/code&gt;&lt;span&gt;공식 코드와 분리된 확장&lt;/span&gt;&lt;/div&gt;
+            &lt;div&gt;&lt;code&gt;governance&lt;/code&gt;&lt;span&gt;검사기·정책 변경&lt;/span&gt;&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/details&gt;
+        &lt;span aria-hidden=&quot;true&quot;&gt;→&lt;/span&gt;
+        &lt;details class=&quot;om-preflight-step&quot;&gt;
+          &lt;summary&gt;&lt;span&gt;2&lt;/span&gt;&lt;b&gt;변경관리표 작성&lt;/b&gt;&lt;/summary&gt;
+          &lt;pre&gt;&lt;code&gt;implementation:
+  allowed_changed_paths:
+    - .../Entity.java
+    - .../CollectionDAO.java
+
+  required_changed_paths:
+    - .../InstanceCodeResource.java
+    - .../instanceCode.json
+
+upgrade_watch:
+  paths: []&lt;/code&gt;&lt;/pre&gt;
+          &lt;div class=&quot;om-manifest-mini&quot; aria-label=&quot;변경관리표 내부 항목&quot;&gt;
+            &lt;div&gt;&lt;code&gt;allowed&lt;/code&gt;&lt;span&gt;전체 변경 · 누락 시 담당자 확인&lt;/span&gt;&lt;/div&gt;
+            &lt;div&gt;&lt;code&gt;required&lt;/code&gt;&lt;span&gt;행내 필수 파일 · 누락 시 즉시 실패&lt;/span&gt;&lt;/div&gt;
+            &lt;div&gt;&lt;code&gt;watch&lt;/code&gt;&lt;span&gt;미수정 의존 파일 · 변경 시 담당자 확인&lt;/span&gt;&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/details&gt;
+        &lt;span aria-hidden=&quot;true&quot;&gt;→&lt;/span&gt;
+        &lt;details class=&quot;om-preflight-step&quot;&gt;
+          &lt;summary&gt;&lt;span&gt;3&lt;/span&gt;&lt;b&gt;커밋 메시지 작성&lt;/b&gt;&lt;/summary&gt;
+          &lt;pre&gt;&lt;code&gt;git commit \
+  -m &quot;add InstanceCode&quot; \
+  -m &quot;Customization-ID: BANK-OM-001&quot;&lt;/code&gt;&lt;/pre&gt;
+        &lt;/details&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;om-repo-role om-implementation-status&quot; aria-label=&quot;현재 검사기와 개선 예정 구분&quot;&gt;
+        &lt;div&gt;
+          &lt;span&gt;현재 방식 · 검사기 동작 중&lt;/span&gt;
+          &lt;strong&gt;같은 파일을 두 곳에 적어야 함&lt;/strong&gt;
+          &lt;pre&gt;&lt;code&gt;allowed: Entity.java  # 우리가 수정함
+watch:   Entity.java  # 공식 버전 변경도 확인&lt;/code&gt;&lt;/pre&gt;
+          &lt;p&gt;BANK-OM-001은 이 방식으로 공식 공용 파일 3개를 중복 등록했고, T42 검사기가 공식 업그레이드 때 변경 여부를 확인합니다.&lt;/p&gt;
+        &lt;/div&gt;
+        &lt;div&gt;
+          &lt;span&gt;개선 후 · 추가 개발 대상&lt;/span&gt;
+          &lt;strong&gt;변경 파일에는 한 번만 적음&lt;/strong&gt;
+          &lt;pre&gt;&lt;code&gt;allowed: Entity.java
+# 공식 버전 변경 확인은 검사기가 자동 처리&lt;/code&gt;&lt;/pre&gt;
+          &lt;p&gt;검사기가 “공식 원본에도 있던 파일”임을 알아내 자동으로 업그레이드 전후를 비교합니다. 수동 &lt;code&gt;watch&lt;/code&gt;에는 우리가 수정하지 않은 의존 파일만 적습니다.&lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;details class=&quot;om-watch-guide&quot;&gt;
+        &lt;summary&gt;변경관리표에는 무엇을 왜 적나?&lt;/summary&gt;
+        &lt;div class=&quot;table-responsive&quot;&gt;
+          &lt;table class=&quot;table table-sm&quot;&gt;
+            &lt;thead&gt;
+              &lt;tr&gt;&lt;th&gt;사람이 이해할 이름&lt;/th&gt;&lt;th&gt;무엇을 적나?&lt;/th&gt;&lt;th&gt;검사기는 왜 필요한가?&lt;/th&gt;&lt;/tr&gt;
+            &lt;/thead&gt;
+            &lt;tbody&gt;
+              &lt;tr&gt;
+                &lt;td&gt;업무 기능 번호 &lt;code&gt;customization_id&lt;/code&gt;&lt;/td&gt;
+                &lt;td&gt;미사용 BANK-OM 번호&lt;/td&gt;
+                &lt;td&gt;코드·테스트·결과를 같은 기능으로 연결&lt;/td&gt;
+              &lt;/tr&gt;
+              &lt;tr&gt;
+                &lt;td&gt;변경 유형 &lt;code&gt;kind&lt;/code&gt;&lt;/td&gt;
+                &lt;td&gt;제품 코드·분리 확장·검사 정책 중 하나&lt;/td&gt;
+                &lt;td&gt;변경이 속한 영역을 확인&lt;/td&gt;
+              &lt;/tr&gt;
+              &lt;tr&gt;
+                &lt;td&gt;실제 변경 파일 &lt;code&gt;allowed&lt;/code&gt;&lt;/td&gt;
+                &lt;td&gt;이 기능이 변경한 파일 전체&lt;/td&gt;
+                &lt;td&gt;명단 밖 변경은 실패, 명단 안 누락은 담당자 확인&lt;/td&gt;
+              &lt;/tr&gt;
+              &lt;tr&gt;
+                &lt;td&gt;즉시 실패 파일 &lt;code&gt;required&lt;/code&gt;&lt;/td&gt;
+                &lt;td&gt;누락만으로 기능 소실을 확정할 필수 파일&lt;/td&gt;
+                &lt;td&gt;파일·변경이 없으면 즉시 실패&lt;/td&gt;
+              &lt;/tr&gt;
+              &lt;tr&gt;
+                &lt;td&gt;미수정 의존 파일 &lt;code&gt;watch&lt;/code&gt;&lt;/td&gt;
+                &lt;td&gt;수정하지 않았지만 행내 기능이 의존하는 파일&lt;/td&gt;
+                &lt;td&gt;공식 버전에서 바뀌면 담당자 확인&lt;/td&gt;
+              &lt;/tr&gt;
+              &lt;tr&gt;
+                &lt;td&gt;동작 검사 &lt;code&gt;contracts&lt;/code&gt;·&lt;code&gt;direct_tests&lt;/code&gt;&lt;/td&gt;
+                &lt;td&gt;업무 동작·기술 테스트 이름&lt;/td&gt;
+                &lt;td&gt;테스트 누락·실패 시 통과 금지&lt;/td&gt;
+              &lt;/tr&gt;
+              &lt;tr&gt;
+                &lt;td&gt;적용 순서 &lt;code&gt;series&lt;/code&gt;·&lt;code&gt;depends_on&lt;/code&gt;&lt;/td&gt;
+                &lt;td&gt;후속 커밋 허용 여부와 선행 BANK-OM&lt;/td&gt;
+                &lt;td&gt;순서·의존관계가 틀리면 실패&lt;/td&gt;
+              &lt;/tr&gt;
+            &lt;/tbody&gt;
+          &lt;/table&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;om-scope-compare&quot;&gt;
+          &lt;div&gt;
+            &lt;span&gt;1단계 · 모두 적기&lt;/span&gt;
+            &lt;strong&gt;실제 변경 파일 48개&lt;/strong&gt;
+            &lt;p&gt;“BANK-OM-001은 어느 파일들을 변경했나?”에 답합니다.&lt;/p&gt;
+          &lt;/div&gt;
+          &lt;b aria-hidden=&quot;true&quot;&gt;48개 중 2개는 즉시 실패 →&lt;/b&gt;
+          &lt;div&gt;
+            &lt;span&gt;2단계 · 즉시 실패 표시&lt;/span&gt;
+            &lt;strong&gt;필수 대표 파일 2개&lt;/strong&gt;
+            &lt;p&gt;“어느 파일이 빠지면 기능의 필수 부품이 사라진 것인가?”에 답합니다.&lt;/p&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;table-responsive&quot;&gt;
+          &lt;table class=&quot;table table-sm om-scope-example&quot;&gt;
+            &lt;thead&gt;
+              &lt;tr&gt;&lt;th&gt;BANK-OM-001 실제 파일&lt;/th&gt;&lt;th&gt;전체 명단&lt;/th&gt;&lt;th&gt;즉시 실패 표시&lt;/th&gt;&lt;th&gt;이렇게 정한 이유&lt;/th&gt;&lt;/tr&gt;
+            &lt;/thead&gt;
+            &lt;tbody&gt;
+              &lt;tr&gt;
+                &lt;td&gt;&lt;code&gt;InstanceCodeResource.java&lt;/code&gt;&lt;/td&gt;
+                &lt;td&gt;예&lt;/td&gt;
+                &lt;td&gt;&lt;b&gt;예&lt;/b&gt;&lt;/td&gt;
+                &lt;td&gt;InstanceCode API 전용 파일이라 없어지면 API 자체가 없어졌다고 바로 판단 가능&lt;/td&gt;
+              &lt;/tr&gt;
+              &lt;tr&gt;
+                &lt;td&gt;&lt;code&gt;instanceCode.json&lt;/code&gt;&lt;/td&gt;
+                &lt;td&gt;예&lt;/td&gt;
+                &lt;td&gt;&lt;b&gt;예&lt;/b&gt;&lt;/td&gt;
+                &lt;td&gt;InstanceCode 데이터 구조 전용 파일이라 없어지면 엔터티 정의가 성립하지 않음&lt;/td&gt;
+              &lt;/tr&gt;
+              &lt;tr&gt;
+                &lt;td&gt;&lt;code&gt;Entity.java&lt;/code&gt;&lt;/td&gt;
+                &lt;td&gt;예&lt;/td&gt;
+                &lt;td&gt;아니오&lt;/td&gt;
+                &lt;td&gt;여러 기능이 함께 쓰는 파일이라 파일 전체가 달라 보이는 것만으로 INSTANCE_CODE 코드가 남았다고 증명할 수 없음. 업그레이드 전후 코드 비교와 실제 동작 검사로 확인&lt;/td&gt;
+              &lt;/tr&gt;
+              &lt;tr&gt;
+                &lt;td&gt;&lt;code&gt;ko-kr.json&lt;/code&gt;&lt;/td&gt;
+                &lt;td&gt;예&lt;/td&gt;
+                &lt;td&gt;아니오&lt;/td&gt;
+                &lt;td&gt;번역 누락은 결함이므로 검토 대상이지만, 그 파일 하나만으로 InstanceCode 전체가 사라졌다고 단정하지 않음&lt;/td&gt;
+              &lt;/tr&gt;
+            &lt;/tbody&gt;
+          &lt;/table&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;om-required-rule&quot;&gt;
+          &lt;strong&gt;보통 어떤 파일을 “없으면 즉시 실패”로 정하나?&lt;/strong&gt;
+          &lt;ol&gt;
+            &lt;li&gt;행내 기능을 위해 새로 만든 Resource·Mapper·스키마처럼 전용 역할이 명확한 파일&lt;/li&gt;
+            &lt;li&gt;그 파일이 없거나 공식 원본 상태면 기능의 필수 구성요소가 실제로 빠졌다고 단정할 수 있어야 함&lt;/li&gt;
+            &lt;li&gt;다른 BANK-OM 변경 때문에 파일 전체가 달라 보이는 공용 파일은 경로만으로 증명하지 않고 코드·계약 검사로 확인&lt;/li&gt;
+            &lt;li&gt;왜 즉시 실패해야 하는지 변경관리표 검토 기록에 남기고 코드 책임자가 승인&lt;/li&gt;
+          &lt;/ol&gt;
+        &lt;/div&gt;
+        &lt;p&gt;&lt;b&gt;추측으로 넣지 않습니다.&lt;/b&gt; Git이 보여주는 공식 원본과 행내본의 실제 파일 차이, 공용 파일 안에서 각 BANK-OM이 수정한 코드 구간, 코드 연결 관계, 동작·기술 테스트와 코드 책임자 승인으로 결정합니다.&lt;/p&gt;
+      &lt;/details&gt;
+      &lt;details class=&quot;om-code-evidence&quot;&gt;
+        &lt;summary&gt;사전 설정 실제 코드 참고 · BANK-OM-001&lt;/summary&gt;
+        &lt;p class=&quot;text-small text-muted&quot;&gt;출처: &lt;a href=&quot;https://github.com/easyseop/OpenMetadata/commit/a2566fac322c877a645046264c8ae99df103f794&quot;&gt;실제 커밋 a2566fac…&lt;/a&gt;. 전체 48개 변경 경로 중 사전 설정 관계를 설명하는 핵심 파일 4개만 표시합니다.&lt;/p&gt;
+
+        &lt;details class=&quot;om-file-evidence&quot;&gt;
+          &lt;summary&gt;&lt;code&gt;Entity.java&lt;/code&gt; · 공식 공용 코드 수정 · 전체 48개 명단에 들어가는 이유&lt;/summary&gt;
+          &lt;pre&gt;&lt;code&gt;@@ 기존 Entity 종류 목록
+ public static final String FILE = &quot;file&quot;;
+ public static final String WORKSHEET = &quot;worksheet&quot;;
+&lt;ins&gt;+public static final String INSTANCE_CODE = &quot;instanceCode&quot;;&lt;/ins&gt;&lt;/code&gt;&lt;/pre&gt;
+          &lt;p&gt;공식 제품의 Entity 목록에 행내 기능 이름을 등록한 실제 변경입니다. 그래서 “BANK-OM-001이 실제로 바꾼 파일 전체 명단”(&lt;code&gt;allowed&lt;/code&gt;)에 들어갑니다. 1차 개선을 적용하면 공식 원본에도 있던 파일이라는 사실을 검사기가 판별해 업그레이드 전후 변경 여부도 자동 비교합니다.&lt;/p&gt;
+        &lt;/details&gt;
+
+        &lt;details class=&quot;om-file-evidence&quot;&gt;
+          &lt;summary&gt;&lt;code&gt;InstanceCodeResource.java&lt;/code&gt; · 신규 파일 · 즉시 실패 2개에도 들어가는 이유&lt;/summary&gt;
+          &lt;pre&gt;&lt;code&gt;@@ 신규 파일
+&lt;ins&gt;+@Path(&quot;/v1/instanceCodes&quot;)&lt;/ins&gt;
+&lt;ins&gt;+@Collection(name = &quot;instanceCodes&quot;)&lt;/ins&gt;
+&lt;ins&gt;+public class InstanceCodeResource&lt;/ins&gt;
+&lt;ins&gt;+    extends EntityResource&amp;lt;InstanceCode, InstanceCodeRepository&amp;gt; {&lt;/ins&gt;
+&lt;ins&gt;+  public static final String COLLECTION_PATH = &quot;/v1/instanceCodes/&quot;;&lt;/ins&gt;
+&lt;ins&gt;+  // 이하 실제 CRUD API 메서드는 화면에서 생략&lt;/ins&gt;&lt;/code&gt;&lt;/pre&gt;
+          &lt;p&gt;공식 원본에는 없던 InstanceCode API 전용 파일입니다. 따라서 “실제 변경 파일 전체 명단”(&lt;code&gt;allowed&lt;/code&gt;)에 들어갑니다. 이 파일이 없으면 API 자체가 사라지므로 “없으면 즉시 실패” 표시(&lt;code&gt;required&lt;/code&gt;)도 함께 붙습니다.&lt;/p&gt;
+        &lt;/details&gt;
+
+        &lt;details class=&quot;om-file-evidence&quot;&gt;
+          &lt;summary&gt;&lt;code&gt;InstanceCodeRepository.java&lt;/code&gt; · 신규 파일 · 공용 코드 연결을 확인하는 이유&lt;/summary&gt;
+          &lt;pre&gt;&lt;code&gt;@@ 신규 파일
+&lt;ins&gt;+public class InstanceCodeRepository&lt;/ins&gt;
+&lt;ins&gt;+    extends EntityRepository&amp;lt;InstanceCode&amp;gt; {&lt;/ins&gt;
+&lt;ins&gt;+  public InstanceCodeRepository() {&lt;/ins&gt;
+&lt;ins&gt;+    super(&lt;/ins&gt;
+&lt;ins&gt;+        InstanceCodeResource.COLLECTION_PATH,&lt;/ins&gt;
+&lt;ins&gt;+        Entity.INSTANCE_CODE,&lt;/ins&gt;
+&lt;ins&gt;+        InstanceCode.class,&lt;/ins&gt;
+&lt;ins&gt;+        Entity.getCollectionDAO().instanceCodeDAO(),&lt;/ins&gt;
+&lt;ins&gt;+        &quot;&quot;,&lt;/ins&gt;
+&lt;ins&gt;+        &quot;&quot;);&lt;/ins&gt;
+&lt;ins&gt;+  }&lt;/ins&gt;
+&lt;ins&gt;+  // 이하 실제 저장·수정 메서드는 화면에서 생략&lt;/ins&gt;&lt;/code&gt;&lt;/pre&gt;
+          &lt;p&gt;신규 저장 처리 코드가 공식 공용 코드의 &lt;code&gt;CollectionDAO.instanceCodeDAO()&lt;/code&gt;를 직접 사용합니다. 따라서 공식 버전에서 DAO 연결 방식이 바뀌면 InstanceCode 연결도 다시 확인해야 합니다.&lt;/p&gt;
+        &lt;/details&gt;
+
+        &lt;details class=&quot;om-file-evidence&quot;&gt;
+          &lt;summary&gt;&lt;code&gt;CollectionDAO.java&lt;/code&gt; · 공식 공용 코드 수정 · 개선 후 자동 비교 대상&lt;/summary&gt;
+          &lt;pre&gt;&lt;code&gt;@@ DAO 생성 메서드 추가
+&lt;ins&gt;+@CreateSqlObject&lt;/ins&gt;
+&lt;ins&gt;+InstanceCodeDAO instanceCodeDAO();&lt;/ins&gt;
+
+@@ DAO 인터페이스 추가
+&lt;ins&gt;+interface InstanceCodeDAO extends EntityDAO&amp;lt;InstanceCode&amp;gt; {&lt;/ins&gt;
+&lt;ins&gt;+  default String getTableName() {&lt;/ins&gt;
+&lt;ins&gt;+    return &quot;instance_code_entity&quot;;&lt;/ins&gt;
+&lt;ins&gt;+  }&lt;/ins&gt;
+&lt;ins&gt;+  default Class&amp;lt;InstanceCode&amp;gt; getEntityClass() {&lt;/ins&gt;
+&lt;ins&gt;+    return InstanceCode.class;&lt;/ins&gt;
+&lt;ins&gt;+  }&lt;/ins&gt;
+&lt;ins&gt;+}&lt;/ins&gt;&lt;/code&gt;&lt;/pre&gt;
+          &lt;p&gt;이번 커밋이 실제로 수정한 공식 공용 코드 파일이므로 “실제 변경 파일 전체 명단”(&lt;code&gt;allowed&lt;/code&gt;)에 들어갑니다. 1차 개선을 적용하면 검사기가 업그레이드 전후도 자동 비교하므로 사용자가 수동 감시 목록에 같은 경로를 또 적지 않습니다.&lt;/p&gt;
+        &lt;/details&gt;
+
+        &lt;section class=&quot;om-evidence-part&quot;&gt;
+          &lt;strong&gt;네 파일을 보고 만드는 사전 설정&lt;/strong&gt;
+          &lt;p&gt;&lt;code&gt;Entity.java&lt;/code&gt;, &lt;code&gt;CollectionDAO.java&lt;/code&gt; 수정과 신규 InstanceCode 파일들은 하나의 업무 기능이므로 &lt;code&gt;BANK-OM-001&lt;/code&gt;로 묶습니다. 먼저 실제 변경 파일 48개를 전부 기록합니다. 그중 필수 부품이 사라졌다고 즉시 판단 가능한 2개에는 실패 표시를 붙입니다. 1차 개선을 적용하면 48개 중 공식 원본에도 있던 파일은 검사기가 업그레이드 전후를 자동 비교하고, 수동 감시는 48개 밖의 의존 파일에만 사용합니다.&lt;/p&gt;
+          &lt;pre&gt;&lt;code&gt;add InstanceCode customization
+
+Customization-ID: BANK-OM-001&lt;/code&gt;&lt;/pre&gt;
+          &lt;p&gt;마지막으로 같은 ID를 실제 커밋 메시지에 기록합니다. 저장 후 Git이 &lt;code&gt;a2566fac…&lt;/code&gt;라는 SHA를 자동 생성합니다.&lt;/p&gt;
+        &lt;/section&gt;
+      &lt;/details&gt;
+      &lt;p&gt;&lt;b&gt;ID는 관리 담당자가 ID 대장에서 다음 미사용 번호를 발급합니다.&lt;/b&gt; LLM이나 Git이 만드는 값이 아닙니다. &lt;code&gt;kind&lt;/code&gt;는 실제 검사기 스키마가 허용하는 &lt;code&gt;core-patch&lt;/code&gt;·&lt;code&gt;extension&lt;/code&gt;·&lt;code&gt;governance&lt;/code&gt; 중 하나만 사용합니다. 변경관리표는 실제 코드 근거와 검토를 거쳐 작성하며, Git 커밋 식별값(SHA)만 Git이 저장할 때 자동 생성합니다.&lt;/p&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;om-branch-legend&quot; aria-label=&quot;브랜치 색상 구분&quot;&gt;
+      &lt;span class=&quot;om-swatch om-core-swatch&quot;&gt;&lt;/span&gt;&lt;span&gt;제품 작업 브랜치 안의 공식 Core 파일 수정&lt;/span&gt;
+      &lt;span class=&quot;om-swatch om-custom-swatch&quot;&gt;&lt;/span&gt;&lt;span&gt;같은 브랜치 안의 행내 전용 파일 추가&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;om-branch-visual&quot;&gt;
+      &lt;svg class=&quot;om-branch-svg&quot; viewBox=&quot;0 0 820 710&quot; role=&quot;img&quot; aria-labelledby=&quot;om-branch-title om-branch-desc&quot;&gt;
+        &lt;title id=&quot;om-branch-title&quot;&gt;OpenMetadata 행내 변경 브랜치와 검사 흐름&lt;/title&gt;
+        &lt;desc id=&quot;om-branch-desc&quot;&gt;승인한 공식 원본에 코어 패치와 행내 전용 변경을 순서대로 적용해 하나의 후보를 만든다. 검사에 실패하면 원인이 있는 코어 패치, 행내 코드 또는 환경 설정만 보완해 다시 검사하고, 통과하면 승인 후 행내 환경에 반영한다.&lt;/desc&gt;
+
+        &lt;path class=&quot;om-svg-path om-svg-core-line&quot; d=&quot;M238 82 L238 177&quot;/&gt;
+
+        &lt;ellipse class=&quot;om-svg-node om-svg-neutral-node&quot; cx=&quot;238&quot; cy=&quot;52&quot; rx=&quot;68&quot; ry=&quot;30&quot;/&gt;
+        &lt;text class=&quot;om-svg-label om-svg-center&quot; x=&quot;238&quot; y=&quot;48&quot;&gt;공식 원본&lt;/text&gt;
+        &lt;text class=&quot;om-svg-muted om-svg-center&quot; x=&quot;238&quot; y=&quot;66&quot;&gt;새 버전&lt;/text&gt;
+
+        &lt;ellipse class=&quot;om-svg-node om-svg-core-node&quot; cx=&quot;238&quot; cy=&quot;224&quot; rx=&quot;102&quot; ry=&quot;47&quot;/&gt;
+        &lt;text class=&quot;om-svg-label om-svg-center om-svg-strong&quot; x=&quot;238&quot; y=&quot;219&quot;&gt;Core 패치&lt;/text&gt;
+        &lt;text class=&quot;om-svg-muted om-svg-center&quot; x=&quot;238&quot; y=&quot;239&quot;&gt;공용 파일 최소 수정&lt;/text&gt;
+        &lt;text class=&quot;om-svg-caption om-svg-core-text&quot; x=&quot;238&quot; y=&quot;292&quot;&gt;예: Entity.java&lt;/text&gt;
+
+        &lt;text class=&quot;om-svg-muted om-svg-center&quot; x=&quot;582&quot; y=&quot;62&quot;&gt;사전에 관리한 BANK-OM 변경 묶음&lt;/text&gt;
+        &lt;path class=&quot;om-svg-path om-svg-custom-line om-svg-loop&quot; d=&quot;M582 82 L582 177&quot;/&gt;
+        &lt;circle class=&quot;om-svg-custom-dot&quot; cx=&quot;582&quot; cy=&quot;92&quot; r=&quot;5&quot;/&gt;
+        &lt;circle class=&quot;om-svg-custom-dot&quot; cx=&quot;582&quot; cy=&quot;112&quot; r=&quot;5&quot;/&gt;
+        &lt;circle class=&quot;om-svg-custom-dot&quot; cx=&quot;582&quot; cy=&quot;132&quot; r=&quot;5&quot;/&gt;
+        &lt;ellipse class=&quot;om-svg-node om-svg-custom-node&quot; cx=&quot;582&quot; cy=&quot;224&quot; rx=&quot;112&quot; ry=&quot;47&quot;/&gt;
+        &lt;text class=&quot;om-svg-label om-svg-center om-svg-strong&quot; x=&quot;582&quot; y=&quot;219&quot;&gt;행내 전용&lt;/text&gt;
+        &lt;text class=&quot;om-svg-muted om-svg-center&quot; x=&quot;582&quot; y=&quot;239&quot;&gt;신규 코드 추가&lt;/text&gt;
+        &lt;text class=&quot;om-svg-caption om-svg-custom-text&quot; x=&quot;582&quot; y=&quot;292&quot;&gt;Resource · Mapper · Repository&lt;/text&gt;
+
+        &lt;path class=&quot;om-svg-path om-svg-core-line&quot; d=&quot;M238 271 C238 369 352 365 390 405&quot;/&gt;
+        &lt;path class=&quot;om-svg-path om-svg-custom-line&quot; d=&quot;M582 271 C582 369 468 365 430 405&quot;/&gt;
+        &lt;text class=&quot;om-svg-muted om-svg-center&quot; x=&quot;238&quot; y=&quot;334&quot;&gt;① Core 패치 적용&lt;/text&gt;
+        &lt;text class=&quot;om-svg-muted om-svg-center&quot; x=&quot;582&quot; y=&quot;334&quot;&gt;② 행내 변경 적용&lt;/text&gt;
+        &lt;ellipse class=&quot;om-svg-node om-svg-candidate-node&quot; cx=&quot;410&quot; cy=&quot;433&quot; rx=&quot;94&quot; ry=&quot;43&quot;/&gt;
+        &lt;text class=&quot;om-svg-label om-svg-center om-svg-strong&quot; x=&quot;410&quot; y=&quot;428&quot;&gt;적용 후보&lt;/text&gt;
+        &lt;text class=&quot;om-svg-muted om-svg-center&quot; x=&quot;410&quot; y=&quot;447&quot;&gt;원본 + 행내 변경&lt;/text&gt;
+
+        &lt;path class=&quot;om-svg-path om-svg-neutral-line&quot; d=&quot;M410 476 L410 508&quot;/&gt;
+        &lt;polygon class=&quot;om-svg-node om-svg-verifier-node&quot; points=&quot;410,508 465,553 410,598 355,553&quot;/&gt;
+        &lt;text class=&quot;om-svg-label om-svg-center om-svg-strong&quot; x=&quot;410&quot; y=&quot;549&quot;&gt;검사기&lt;/text&gt;
+        &lt;text class=&quot;om-svg-muted om-svg-center&quot; x=&quot;410&quot; y=&quot;567&quot;&gt;변경·동작 확인&lt;/text&gt;
+
+        &lt;path class=&quot;om-svg-path om-svg-fail-line&quot; d=&quot;M355 553 C315 553 285 574 266 607&quot;/&gt;
+        &lt;ellipse class=&quot;om-svg-node om-svg-fail-node&quot; cx=&quot;235&quot; cy=&quot;633&quot; rx=&quot;112&quot; ry=&quot;31&quot;/&gt;
+        &lt;text class=&quot;om-svg-label om-svg-center om-svg-strong&quot; x=&quot;235&quot; y=&quot;629&quot;&gt;실패 · 원인 확인&lt;/text&gt;
+        &lt;text class=&quot;om-svg-muted om-svg-center&quot; x=&quot;235&quot; y=&quot;646&quot;&gt;원인이 있는 항목만 보완&lt;/text&gt;
+        &lt;path class=&quot;om-svg-path om-svg-fail-line om-svg-loop&quot; d=&quot;M123 633 C68 633 78 525 355 553&quot;/&gt;
+        &lt;text class=&quot;om-svg-fail-text&quot; x=&quot;182&quot; y=&quot;528&quot;&gt;보완 후 검사기로 돌아감&lt;/text&gt;
+        &lt;text class=&quot;om-svg-muted om-svg-center&quot; x=&quot;235&quot; y=&quot;681&quot;&gt;Core 패치 · 행내 코드 · 환경 설정 중 해당 항목&lt;/text&gt;
+
+        &lt;path class=&quot;om-svg-path om-svg-pass-line&quot; d=&quot;M465 553 C505 553 535 574 554 607&quot;/&gt;
+        &lt;ellipse class=&quot;om-svg-node om-svg-pass-node&quot; cx=&quot;585&quot; cy=&quot;633&quot; rx=&quot;58&quot; ry=&quot;31&quot;/&gt;
+        &lt;text class=&quot;om-svg-label om-svg-center om-svg-strong&quot; x=&quot;585&quot; y=&quot;629&quot;&gt;통과&lt;/text&gt;
+        &lt;text class=&quot;om-svg-muted om-svg-center&quot; x=&quot;585&quot; y=&quot;646&quot;&gt;승인&lt;/text&gt;
+        &lt;path class=&quot;om-svg-path om-svg-pass-line&quot; d=&quot;M616 633 L702 633&quot;/&gt;
+        &lt;text class=&quot;om-svg-label om-svg-strong&quot; x=&quot;713&quot; y=&quot;629&quot;&gt;행내 반영&lt;/text&gt;
+        &lt;text class=&quot;om-svg-muted&quot; x=&quot;713&quot; y=&quot;648&quot;&gt;배포·운영&lt;/text&gt;
+      &lt;/svg&gt;
+    &lt;/div&gt;
+
+    &lt;details class=&quot;om-details&quot;&gt;
+      &lt;summary&gt;왜 이 구조가 필요한가?&lt;/summary&gt;
+      &lt;p&gt;색상은 별도 제품이나 반드시 유지해야 하는 장기 브랜치 두 개가 아니라, 하나의 제품 작업 브랜치 안에서 변경의 역할을 구분합니다. Core 패치는 공식 공용 파일을 수정하는 변경이고, 행내 전용 변경은 신규 Resource·Mapper·Repository 등을 추가합니다. BANK-OM-001처럼 한 업무 기능이 두 역할을 모두 사용하면 같은 BANK-OM ID로 연결해 추적합니다.&lt;/p&gt;
+    &lt;/details&gt;
+  &lt;/section&gt;
+
+  &lt;section id=&quot;appendix&quot; class=&quot;om-section&quot;&gt;
+    &lt;div class=&quot;om-section-title&quot;&gt;
+      &lt;span&gt;Q&amp;amp;A&lt;/span&gt;
+      &lt;div&gt;
+        &lt;h2&gt;가장 중요한 질문&lt;/h2&gt;
+        &lt;p&gt;파일이 사라진 경우와 파일 안의 행내 변경이 사라진 경우를 구분합니다.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;details class=&quot;om-watch-guide&quot; open&gt;
+      &lt;summary&gt;Q1. “파일이 사라졌다”는 정확히 무슨 뜻인가?&lt;/summary&gt;
+      &lt;p&gt;&lt;b&gt;업그레이드 결과물에 파일 자체가 없는 경우입니다.&lt;/b&gt; 예를 들어 새로 만든 &lt;code&gt;InstanceCodeResource.java&lt;/code&gt;가 생성되지 않았다면 파일 소실입니다.&lt;/p&gt;
+      &lt;div class=&quot;table-responsive&quot;&gt;
+        &lt;table class=&quot;table table-sm&quot;&gt;
+          &lt;thead&gt;
+            &lt;tr&gt;&lt;th&gt;해당 파일의 등록&lt;/th&gt;&lt;th&gt;검사 결과&lt;/th&gt;&lt;th&gt;이유&lt;/th&gt;&lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody&gt;
+            &lt;tr&gt;&lt;td&gt;실제 변경 파일(&lt;code&gt;allowed&lt;/code&gt;)&lt;/td&gt;&lt;td&gt;&lt;b&gt;담당자 확인 알림&lt;/b&gt;&lt;/td&gt;&lt;td&gt;변경이 빠졌을 가능성이 있어 자동 통과시키지 않음&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;즉시 실패 파일(&lt;code&gt;required&lt;/code&gt;)&lt;/td&gt;&lt;td&gt;&lt;b&gt;즉시 실패&lt;/b&gt;&lt;/td&gt;&lt;td&gt;필수 구현 파일 누락을 파일 상태만으로 확인할 수 있음&lt;/td&gt;&lt;/tr&gt;
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+      &lt;/div&gt;
+    &lt;/details&gt;
+
+    &lt;details class=&quot;om-watch-guide&quot; open&gt;
+      &lt;summary&gt;Q2. “변경이 사라졌다”는 정확히 무슨 뜻인가?&lt;/summary&gt;
+      &lt;p&gt;&lt;b&gt;파일은 있지만 공식 새 버전의 파일과 완전히 같아서 행내 변경 흔적이 보이지 않는 경우입니다.&lt;/b&gt; 검사기는 업그레이드 결과물과 공식 새 버전을 비교해 이를 찾습니다.&lt;/p&gt;
+      &lt;pre&gt;&lt;code&gt;Entity.java 파일은 존재
+하지만 공식 새 버전의 Entity.java와 완전히 동일
+→ BANK-OM 변경이 적용되지 않았을 가능성
+→ allowed이면 담당자 확인, required이면 즉시 실패&lt;/code&gt;&lt;/pre&gt;
+    &lt;/details&gt;
+
+    &lt;details class=&quot;om-watch-guide&quot; open&gt;
+      &lt;summary&gt;Q3. 파일이 다르면 행내 코드가 전부 적용됐다는 뜻인가?&lt;/summary&gt;
+      &lt;p&gt;&lt;b&gt;아닙니다.&lt;/b&gt; 현재 파일 단위 검사는 “공식 원본과 다른가?”까지 확인합니다. 공용 파일이 다른 BANK-OM 때문에 달라졌다면, 정작 BANK-OM-001의 &lt;code&gt;INSTANCE_CODE&lt;/code&gt;가 빠져도 파일 전체는 다르게 보일 수 있습니다.&lt;/p&gt;
+      &lt;div class=&quot;om-required-rule&quot;&gt;
+        &lt;strong&gt;따라서 세 단계로 확인합니다&lt;/strong&gt;
+        &lt;ol&gt;
+          &lt;li&gt;&lt;b&gt;파일 검사:&lt;/b&gt; 필요한 파일이 있고 공식 원본 대비 변경이 보이는가?&lt;/li&gt;
+          &lt;li&gt;&lt;b&gt;코드 내용 검사:&lt;/b&gt; &lt;code&gt;Entity.INSTANCE_CODE&lt;/code&gt;, &lt;code&gt;instanceCodeDAO()&lt;/code&gt; 같은 필수 코드가 실제로 남아 있는가?&lt;/li&gt;
+          &lt;li&gt;&lt;b&gt;동작 검사:&lt;/b&gt; API 호출·저장·조회 등 InstanceCode 기능이 실제 환경에서 동작하는가?&lt;/li&gt;
+        &lt;/ol&gt;
+      &lt;/div&gt;
+    &lt;/details&gt;
+
+    &lt;details class=&quot;om-watch-guide&quot;&gt;
+      &lt;summary&gt;Q4. allowed·required·watch를 한 문장씩만 설명하면?&lt;/summary&gt;
+      &lt;div class=&quot;table-responsive&quot;&gt;
+        &lt;table class=&quot;table table-sm&quot;&gt;
+          &lt;thead&gt;
+            &lt;tr&gt;&lt;th&gt;항목&lt;/th&gt;&lt;th&gt;한 문장 정의&lt;/th&gt;&lt;th&gt;문제가 발견되면&lt;/th&gt;&lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody&gt;
+            &lt;tr&gt;&lt;td&gt;&lt;code&gt;allowed&lt;/code&gt;&lt;/td&gt;&lt;td&gt;이 BANK-OM 기능이 실제로 변경한 파일 전체&lt;/td&gt;&lt;td&gt;누락·변경 없음 → 담당자 확인&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;&lt;code&gt;required&lt;/code&gt;&lt;/td&gt;&lt;td&gt;보통 행내 전용 파일 중, 누락되면 필수 구현 누락을 확인할 수 있는 파일&lt;/td&gt;&lt;td&gt;누락·변경 없음 → 즉시 실패&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;&lt;code&gt;watch&lt;/code&gt;&lt;/td&gt;&lt;td&gt;직접 수정하지 않았지만 행내 기능에 영향을 줄 수 있는 의존 파일&lt;/td&gt;&lt;td&gt;공식 버전에서 변경 → 담당자 확인&lt;/td&gt;&lt;/tr&gt;
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+      &lt;/div&gt;
+    &lt;/details&gt;
+
+    &lt;details class=&quot;om-watch-guide&quot;&gt;
+      &lt;summary&gt;Q5. 기존 BANK-OM에 나중에 새 파일을 추가하면?&lt;/summary&gt;
+      &lt;p&gt;최초 BANK-OM-001의 48개 파일 기록은 그대로 두고, 후속 커밋에서 새로 추가한 파일만 &lt;code&gt;candidate_additional_paths&lt;/code&gt;에 기록합니다.&lt;/p&gt;
+      &lt;pre&gt;&lt;code&gt;candidate_additional_paths:
+  - .../InstanceCodeValidator.java&lt;/code&gt;&lt;/pre&gt;
+      &lt;div class=&quot;table-responsive&quot;&gt;
+        &lt;table class=&quot;table table-sm&quot;&gt;
+          &lt;thead&gt;
+            &lt;tr&gt;&lt;th&gt;기록&lt;/th&gt;&lt;th&gt;검사기에 알려주는 내용&lt;/th&gt;&lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody&gt;
+            &lt;tr&gt;&lt;td&gt;새 Git 커밋 식별값(SHA)&lt;/td&gt;&lt;td&gt;어떤 코드 변경을 어떤 순서로 추가했는가&lt;/td&gt;&lt;/tr&gt;
+            &lt;tr&gt;&lt;td&gt;&lt;code&gt;candidate_additional_paths&lt;/code&gt;&lt;/td&gt;&lt;td&gt;새 파일을 BANK-OM-001의 변경 범위로 승인했는가&lt;/td&gt;&lt;/tr&gt;
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+      &lt;/div&gt;
+      &lt;p&gt;&lt;b&gt;Git 커밋 식별값(SHA)만 추가하면 새 파일은 등록 범위 밖 변경으로 판단됩니다.&lt;/b&gt; 반대로 최초 48개 명단을 49개로 고치면 과거 최초 커밋에도 새 파일이 있었던 것처럼 기록이 바뀝니다. 따라서 최초 기록은 보존하고 후속 파일만 별도로 추가합니다.&lt;/p&gt;
+      &lt;p&gt;최초 설정에는 필요하지 않으며, 같은 BANK-OM ID로 후속 파일을 추가할 때만 사용합니다. 별도 기능이라면 새 BANK-OM ID를 발급합니다.&lt;/p&gt;
+    &lt;/details&gt;
+  &lt;/section&gt;
+
+  &lt;section id=&quot;gates&quot; class=&quot;om-section&quot;&gt;
+    &lt;div class=&quot;om-section-title&quot;&gt;
+      &lt;span&gt;03&lt;/span&gt;
+      &lt;div&gt;
+        &lt;h2&gt;검사기&lt;/h2&gt;
+        &lt;p&gt;각 검사는 한 가지 질문만 담당합니다. 실패하면 후보 승인을 중단하고 해당 원인을 수정합니다.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;table-responsive&quot;&gt;
+      &lt;table class=&quot;table om-gate-table&quot;&gt;
+        &lt;thead&gt;
+          &lt;tr&gt;
+            &lt;th&gt;검사기&lt;/th&gt;
+            &lt;th&gt;무엇을 검사하나&lt;/th&gt;
+            &lt;th&gt;어떤 경우 실패하나&lt;/th&gt;
+            &lt;th&gt;실패하면&lt;/th&gt;
+          &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+          &lt;tr&gt;
+            &lt;th&gt;T25-R&lt;br&gt;&lt;small&gt;최초 재구성&lt;/small&gt;&lt;/th&gt;
+            &lt;td&gt;과거 행내본의 실제 113개 차이를 BANK-OM별 정확한 파일 목록으로 분리했는지&lt;/td&gt;
+            &lt;td&gt;폴더 패턴, 없는 파일, 소유자 불일치, 제외 사유 누락, 최종 내용 불일치&lt;/td&gt;
+            &lt;td&gt;&lt;strong&gt;재구성 중단&lt;/strong&gt;&lt;br&gt;소유표를 다시 작성&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;th&gt;T25&lt;br&gt;&lt;small&gt;공식 기반&lt;/small&gt;&lt;/th&gt;
+            &lt;td&gt;검사 후보가 승인한 공식 원본에서 출발했는지&lt;/td&gt;
+            &lt;td&gt;공식 SHA가 후보 이력에 없음, 잠금 문서와 후보 SHA 불일치&lt;/td&gt;
+            &lt;td&gt;&lt;strong&gt;후보 차단&lt;/strong&gt;&lt;br&gt;올바른 공식 원본에서 다시 생성&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;th&gt;T30&lt;br&gt;&lt;small&gt;커밋 BANK-OM ID&lt;/small&gt;&lt;/th&gt;
+            &lt;td&gt;모든 제품 코드 변경 커밋에 BANK-OM ID가 정확히 하나 있는지&lt;/td&gt;
+            &lt;td&gt;라벨 없음, 한 커밋에 여러 ID, 제품 코드와 검사기 정책 혼합&lt;/td&gt;
+            &lt;td&gt;&lt;strong&gt;커밋 차단&lt;/strong&gt;&lt;br&gt;기능별로 다시 분리&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;th&gt;T31&lt;br&gt;&lt;small&gt;ID 이력&lt;/small&gt;&lt;/th&gt;
+            &lt;td&gt;ID가 등록돼 있고 커밋 순서와 의존관계가 올바른지&lt;/td&gt;
+            &lt;td&gt;미등록 ID, 허용되지 않은 여러 커밋, series 단절, 순환 의존&lt;/td&gt;
+            &lt;td&gt;&lt;strong&gt;적용 순서 차단&lt;/strong&gt;&lt;br&gt;등록부·의존관계 수정&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;th&gt;T26&lt;br&gt;&lt;small&gt;커스터마이징 유지&lt;/small&gt;&lt;/th&gt;
+            &lt;td&gt;등록한 원본 파일 전체와 필수 파일·계약·테스트가 후보에 남았는지&lt;/td&gt;
+            &lt;td&gt;필수 파일 소실은 block, 그 밖의 등록 파일 소실은 approval, 폴더 패턴은 analysis_error&lt;/td&gt;
+            &lt;td&gt;&lt;strong&gt;차단 또는 검토&lt;/strong&gt;&lt;br&gt;소실한 파일의 역할을 확인&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;th&gt;T40&lt;br&gt;&lt;small&gt;범위 이탈&lt;/small&gt;&lt;/th&gt;
+            &lt;td&gt;제품·검사기·등록부·문서의 실제 변경이 승인한 파일 범위 안인지&lt;/td&gt;
+            &lt;td&gt;등록하지 않은 파일 변경, required 파일의 순변경 없음&lt;/td&gt;
+            &lt;td&gt;&lt;strong&gt;변경 차단&lt;/strong&gt;&lt;br&gt;잘못 섞인 변경을 분리&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;th&gt;T41&lt;br&gt;&lt;small&gt;위험 영역&lt;/small&gt;&lt;/th&gt;
+            &lt;td&gt;변경이 금지·승인·관찰 영역 중 어디인지, 승인한 의도 범위 안인지&lt;/td&gt;
+            &lt;td&gt;빈 허용 범위, 금지 파일 변경, 승인 범위 밖 파일 변경&lt;/td&gt;
+            &lt;td&gt;&lt;strong&gt;오류·차단·승인&lt;/strong&gt;&lt;br&gt;위험 등급별로 분리&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;th&gt;T42&lt;br&gt;&lt;small&gt;업그레이드 영향&lt;/small&gt;&lt;/th&gt;
+            &lt;td&gt;공식 새 버전이 watch 경로·설정키·의존성을 바꿨는지와 직접 참조 후보&lt;/td&gt;
+            &lt;td&gt;등록한 의존 대상 변경 또는 미등록 직접 참조 후보 발견&lt;/td&gt;
+            &lt;td&gt;&lt;strong&gt;책임자 검토&lt;/strong&gt;&lt;br&gt;자동 등록 없이 근거 제시&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;th&gt;T43&lt;br&gt;&lt;small&gt;커스텀 부채&lt;/small&gt;&lt;/th&gt;
+            &lt;td&gt;코어 ID 수·변경 라인·충돌률·한 파일에 겹친 ID 수&lt;/td&gt;
+            &lt;td&gt;외부 정책의 soft/hard 기준 초과, 지표·정책 형식 오류&lt;/td&gt;
+            &lt;td&gt;&lt;strong&gt;승인 또는 차단&lt;/strong&gt;&lt;br&gt;범위 축소·기준선 검토&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;th&gt;T93&lt;br&gt;&lt;small&gt;정확 범위&lt;/small&gt;&lt;/th&gt;
+            &lt;td&gt;ID별 실제 커밋 파일과 manifest 파일 목록이 정확히 같은지&lt;/td&gt;
+            &lt;td&gt;실제 변경 누락, 실제로 바꾸지 않은 파일의 과다 허용&lt;/td&gt;
+            &lt;td&gt;&lt;strong&gt;누락 차단&lt;/strong&gt;&lt;br&gt;과다 범위는 승인 검토&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;th&gt;T70&lt;br&gt;&lt;small&gt;검사기 보호&lt;/small&gt;&lt;/th&gt;
+            &lt;td&gt;검사기·등록부·테스트·정책 문서를 느슨하게 바꾸지 않았는지&lt;/td&gt;
+            &lt;td&gt;보호 파일을 현재 변경본의 완화된 규칙으로 스스로 승인하려는 경우&lt;/td&gt;
+            &lt;td&gt;&lt;strong&gt;정책 변경 절차&lt;/strong&gt;&lt;br&gt;기존 기준으로 별도 승인&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;th&gt;T60-I&lt;br&gt;&lt;small&gt;검사 코드&lt;/small&gt;&lt;/th&gt;
+            &lt;td&gt;등록된 Python 테스트 파일과 함수가 실제로 존재하는지&lt;/td&gt;
+            &lt;td&gt;Python 파일 없음, 함수 이름 없음, 문법을 읽을 수 없음&lt;/td&gt;
+            &lt;td&gt;&lt;strong&gt;검사 준비 차단&lt;/strong&gt;&lt;br&gt;테스트 구현 보완&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;th&gt;T61&lt;br&gt;&lt;small&gt;반증 검사&lt;/small&gt;&lt;/th&gt;
+            &lt;td&gt;기능 코드를 제거하면 관련 테스트가 실제로 실패하는지&lt;/td&gt;
+            &lt;td&gt;기능을 빼도 테스트가 통과, 환경 오류만 발생, 비교 증거 없음&lt;/td&gt;
+            &lt;td&gt;&lt;strong&gt;검사 신뢰 불충분&lt;/strong&gt;&lt;br&gt;테스트 민감도 보완&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;th&gt;T62&lt;br&gt;&lt;small&gt;행내 동작&lt;/small&gt;&lt;/th&gt;
+            &lt;td&gt;행내 서버·DB·검색·브라우저에서 기능이 실제로 동작하는지&lt;/td&gt;
+            &lt;td&gt;테스트 미실행, API·저장·검색·화면 결과 불일치&lt;/td&gt;
+            &lt;td&gt;&lt;strong&gt;운영 승인 차단&lt;/strong&gt;&lt;br&gt;환경 또는 기능 수정 후 재실행&lt;/td&gt;
+          &lt;/tr&gt;
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+
+  &lt;section id=&quot;example&quot; class=&quot;om-section&quot;&gt;
+    &lt;div class=&quot;om-section-title&quot;&gt;
+      &lt;span&gt;04&lt;/span&gt;
+      &lt;div&gt;
+        &lt;h2&gt;실제 적용 예시&lt;/h2&gt;
+        &lt;p&gt;BANK-OM-001은 공식 원본에 없던 InstanceCode 기능을 코어 파일과 전용 파일에 함께 추가합니다.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;om-example-flow&quot; role=&quot;img&quot; aria-label=&quot;공식 원본에 BANK-OM-001 커밋을 적용하고 검사 결과를 얻는 흐름&quot;&gt;
+      &lt;span&gt;공식 원본&lt;br&gt;&lt;code&gt;afcb2d2…&lt;/code&gt;&lt;/span&gt;
+      &lt;b aria-hidden=&quot;true&quot;&gt;＋&lt;/b&gt;
+      &lt;span&gt;BANK-OM-001&lt;br&gt;&lt;code&gt;a2566fac…&lt;/code&gt;&lt;/span&gt;
+      &lt;b aria-hidden=&quot;true&quot;&gt;→&lt;/b&gt;
+      &lt;span&gt;적용 후보&lt;br&gt;&lt;code&gt;Entity + 전용 파일&lt;/code&gt;&lt;/span&gt;
+      &lt;b aria-hidden=&quot;true&quot;&gt;→&lt;/b&gt;
+      &lt;span&gt;검사 결과&lt;br&gt;&lt;code&gt;T26·T60-I pass&lt;/code&gt;&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;om-file-diffs&quot;&gt;
+      &lt;details class=&quot;om-file-diff&quot; open&gt;
+        &lt;summary&gt;&lt;code&gt;Entity.java&lt;/code&gt;&lt;span&gt;기존 코어 파일 수정 · 1줄 추가&lt;/span&gt;&lt;/summary&gt;
+        &lt;div class=&quot;om-split-diff&quot;&gt;
+          &lt;div&gt;
+            &lt;strong&gt;공식 원본&lt;/strong&gt;
+            &lt;pre&gt;&lt;code&gt;public static final String WORKSHEET = &quot;worksheet&quot;;
+&lt;span class=&quot;text-muted&quot;&gt;INSTANCE_CODE 없음&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+          &lt;/div&gt;
+          &lt;div&gt;
+            &lt;strong&gt;BANK-OM-001 적용본&lt;/strong&gt;
+            &lt;pre&gt;&lt;code&gt;public static final String WORKSHEET = &quot;worksheet&quot;;
+&lt;ins&gt;public static final String INSTANCE_CODE = &quot;instanceCode&quot;;&lt;/ins&gt;&lt;/code&gt;&lt;/pre&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/details&gt;
+
+      &lt;details class=&quot;om-file-diff&quot;&gt;
+        &lt;summary&gt;&lt;code&gt;InstanceCodeResource.java&lt;/code&gt;&lt;span&gt;신규 파일 · API 접수&lt;/span&gt;&lt;/summary&gt;
+        &lt;div class=&quot;om-split-diff&quot;&gt;
+          &lt;div class=&quot;om-no-file&quot;&gt;&lt;strong&gt;공식 원본&lt;/strong&gt;&lt;span&gt;파일 없음&lt;/span&gt;&lt;/div&gt;
+          &lt;div&gt;
+            &lt;strong&gt;BANK-OM-001 적용본&lt;/strong&gt;
+            &lt;pre&gt;&lt;code&gt;&lt;ins&gt;@Path(&quot;/v1/instanceCodes&quot;)&lt;/ins&gt;
+&lt;ins&gt;class InstanceCodeResource&lt;/ins&gt;
+&lt;ins&gt;  extends EntityResource&amp;lt;InstanceCode, InstanceCodeRepository&amp;gt; {&lt;/ins&gt;
+&lt;ins&gt;  super(Entity.INSTANCE_CODE, authorizer, limits);&lt;/ins&gt;
+&lt;ins&gt;}&lt;/ins&gt;&lt;/code&gt;&lt;/pre&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/details&gt;
+
+      &lt;details class=&quot;om-file-diff&quot;&gt;
+        &lt;summary&gt;&lt;code&gt;InstanceCodeMapper.java&lt;/code&gt;&lt;span&gt;신규 파일 · 요청값 변환&lt;/span&gt;&lt;/summary&gt;
+        &lt;div class=&quot;om-split-diff&quot;&gt;
+          &lt;div class=&quot;om-no-file&quot;&gt;&lt;strong&gt;공식 원본&lt;/strong&gt;&lt;span&gt;파일 없음&lt;/span&gt;&lt;/div&gt;
+          &lt;div&gt;
+            &lt;strong&gt;BANK-OM-001 적용본&lt;/strong&gt;
+            &lt;pre&gt;&lt;code&gt;&lt;ins&gt;class InstanceCodeMapper {&lt;/ins&gt;
+&lt;ins&gt;  return copy(new InstanceCode(), create, user)&lt;/ins&gt;
+&lt;ins&gt;      .withCodeGroup(create.getCodeGroup())&lt;/ins&gt;
+&lt;ins&gt;      .withCodeValue(create.getCodeValue());&lt;/ins&gt;
+&lt;ins&gt;}&lt;/ins&gt;&lt;/code&gt;&lt;/pre&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/details&gt;
+
+      &lt;details class=&quot;om-file-diff&quot;&gt;
+        &lt;summary&gt;&lt;code&gt;InstanceCodeRepository.java&lt;/code&gt;&lt;span&gt;신규 파일 · DB·검색 연결&lt;/span&gt;&lt;/summary&gt;
+        &lt;div class=&quot;om-split-diff&quot;&gt;
+          &lt;div class=&quot;om-no-file&quot;&gt;&lt;strong&gt;공식 원본&lt;/strong&gt;&lt;span&gt;파일 없음&lt;/span&gt;&lt;/div&gt;
+          &lt;div&gt;
+            &lt;strong&gt;BANK-OM-001 적용본&lt;/strong&gt;
+            &lt;pre&gt;&lt;code&gt;&lt;ins&gt;class InstanceCodeRepository&lt;/ins&gt;
+&lt;ins&gt;  extends EntityRepository&amp;lt;InstanceCode&amp;gt; {&lt;/ins&gt;
+&lt;ins&gt;  super(InstanceCodeResource.COLLECTION_PATH,&lt;/ins&gt;
+&lt;ins&gt;      Entity.INSTANCE_CODE,&lt;/ins&gt;
+&lt;ins&gt;      Entity.getCollectionDAO().instanceCodeDAO());&lt;/ins&gt;
+&lt;ins&gt;}&lt;/ins&gt;&lt;/code&gt;&lt;/pre&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/details&gt;
+    &lt;/div&gt;
+
+    &lt;details class=&quot;om-details&quot;&gt;
+      &lt;summary&gt;커밋과 등록 파일의 역할 차이&lt;/summary&gt;
+      &lt;p&gt;&lt;strong&gt;Git 커밋&lt;/strong&gt;이 실제 코드를 수정합니다. &lt;strong&gt;BANK-OM ID&lt;/strong&gt;는 변경을 업무 기능으로 묶고, &lt;strong&gt;Manifest&lt;/strong&gt;는 허용 경로·필수 파일·감시 지점·테스트 계약을 검사기에 알려줍니다. 등록 파일 자체가 제품 코드를 수정하지는 않습니다.&lt;/p&gt;
+    &lt;/details&gt;
+  &lt;/section&gt;
+
+  &lt;section id=&quot;result&quot; class=&quot;om-section&quot;&gt;
+    &lt;div class=&quot;om-section-title&quot;&gt;
+      &lt;span&gt;05&lt;/span&gt;
+      &lt;div&gt;
+        &lt;h2&gt;결과&lt;/h2&gt;
+        &lt;p&gt;현재는 소스 수준 재적용까지 확인됐고, 최종 행내 동작 승인은 남아 있습니다.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;om-result-list&quot;&gt;
+      &lt;div&gt;&lt;span class=&quot;om-status om-pass&quot;&gt;통과&lt;/span&gt;&lt;strong&gt;T25-R&lt;/strong&gt;&lt;p&gt;113개 경로 = 단독 74 + 공유 37 + 제외 2, 폴더 패턴 없음&lt;/p&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;span class=&quot;om-status om-pass&quot;&gt;통과&lt;/span&gt;&lt;strong&gt;T25·T30·T31&lt;/strong&gt;&lt;p&gt;공식 기반과 BANK-OM 커밋 장부·순서 정상&lt;/p&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;span class=&quot;om-status om-pass&quot;&gt;통과&lt;/span&gt;&lt;strong&gt;T26·T60-I&lt;/strong&gt;&lt;p&gt;등록 원본 파일 전체·필수 코드·Python 검사 구현 존재&lt;/p&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;span class=&quot;om-status om-pass&quot;&gt;통과&lt;/span&gt;&lt;strong&gt;T40·T70&lt;/strong&gt;&lt;p&gt;전체 변경 범위와 검사기 자체 보호 단위 테스트 통과&lt;/p&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;span class=&quot;om-status om-pass&quot;&gt;통과&lt;/span&gt;&lt;strong&gt;T41·T43·T93&lt;/strong&gt;&lt;p&gt;검사 대상 코드의 위험 영역·부채 기준선·ID별 정확 경로 일치. BANK-OM-007은 원본 8개와 등록된 후속 2개를 합쳐 현재 10개 경로로 검사&lt;/p&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;span class=&quot;om-status om-pass&quot;&gt;구현&lt;/span&gt;&lt;strong&gt;T42·T50·T51&lt;/strong&gt;&lt;p&gt;watch 제안·빈 선언 차단·scalar/list 구조 변화 출력&lt;/p&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;span class=&quot;om-status om-limited&quot;&gt;범위 통과&lt;/span&gt;&lt;strong&gt;T61&lt;/strong&gt;&lt;p&gt;현재 Sybase·Tibero만 반증 완료&lt;/p&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;span class=&quot;om-status om-block&quot;&gt;환경 대기&lt;/span&gt;&lt;strong&gt;T62&lt;/strong&gt;&lt;p&gt;실행기와 환경 사전검사는 완료, 행내 운영 테스트 7건 실행 필요&lt;/p&gt;&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;om-decision&quot;&gt;
+      &lt;div&gt;&lt;strong&gt;지금 말할 수 있음&lt;/strong&gt;&lt;span&gt;코드 재적용 구조와 소스 검사는 정상&lt;/span&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;strong&gt;아직 말할 수 없음&lt;/strong&gt;&lt;span&gt;행내 환경에서 모든 기능이 정상 동작한다는 최종 결론&lt;/span&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+
+  &lt;section id=&quot;roadmap&quot; class=&quot;om-section&quot;&gt;
+    &lt;div class=&quot;om-section-title&quot;&gt;
+      &lt;span&gt;06&lt;/span&gt;
+      &lt;div&gt;
+        &lt;h2&gt;현재까지 구현 단계와 향후 추가 구현&lt;/h2&gt;
+        &lt;p&gt;1·2·3차 코드는 완료했습니다. 이제 행내 환경 값을 넣고 실제 결과 증거를 만드는 단계입니다.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;om-roadmap&quot;&gt;
+      &lt;div class=&quot;om-roadmap-group&quot;&gt;
+        &lt;strong&gt;현재 완료&lt;/strong&gt;
+        &lt;ol&gt;
+          &lt;li&gt;&lt;span&gt;1&lt;/span&gt;&lt;div&gt;&lt;b&gt;BANK-OM 등록 체계&lt;/b&gt;&lt;p&gt;등록된 BANK-OM 전체의 Manifest·계약·커밋 라벨 구성&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;span&gt;2&lt;/span&gt;&lt;div&gt;&lt;b&gt;행내 OpenMetadata 코드 재구성&lt;/b&gt;&lt;p&gt;공식 1.13.1 위에 등록된 BANK-OM 변경 적용 · &lt;code&gt;849ae756…&lt;/code&gt;&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;span&gt;3&lt;/span&gt;&lt;div&gt;&lt;b&gt;정확 경로 검사기 1차&lt;/b&gt;&lt;p&gt;T25-R·T26·T40·T70 강화 · 39개 단위 테스트 통과&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;span&gt;4&lt;/span&gt;&lt;div&gt;&lt;b&gt;위험 검사기 2차&lt;/b&gt;&lt;p&gt;T41·T42·T43·T93·T50·T51 보강과 실제 후보 통합&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;span&gt;5&lt;/span&gt;&lt;div&gt;&lt;b&gt;운영 실행기 3차&lt;/b&gt;&lt;p&gt;환경 사전검사·T62 결과 결속·90일 증거 보존&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;span&gt;6&lt;/span&gt;&lt;div&gt;&lt;b&gt;제한 범위 반증&lt;/b&gt;&lt;p&gt;Sybase·Tibero T61 증명&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;
+        &lt;/ol&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;om-roadmap-group om-future&quot;&gt;
+        &lt;strong&gt;행내에서 실행할 일&lt;/strong&gt;
+        &lt;ol&gt;
+          &lt;li&gt;&lt;span&gt;1&lt;/span&gt;&lt;div&gt;&lt;b&gt;필수 환경값 입력&lt;/b&gt;&lt;p&gt;URL·토큰·테스트 식별값·브라우저 로그인 상태·배포 digest&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;span&gt;2&lt;/span&gt;&lt;div&gt;&lt;b&gt;T62 운영 테스트 7건&lt;/b&gt;&lt;p&gt;InstanceCode CRUD·저장·검색·화면 검증&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;span&gt;3&lt;/span&gt;&lt;div&gt;&lt;b&gt;T61 범위 확대&lt;/b&gt;&lt;p&gt;BANK-OM-001을 포함한 나머지 기능의 제거본 배포·반증&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;span&gt;4&lt;/span&gt;&lt;div&gt;&lt;b&gt;다음 공식 버전 입력&lt;/b&gt;&lt;p&gt;새 target SHA로 T42 watch·설정·의존성 영향과 후보 제안 실행&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;span&gt;5&lt;/span&gt;&lt;div&gt;&lt;b&gt;업그레이드 리허설&lt;/b&gt;&lt;p&gt;재적용·충돌 해결·T43 실제 conflict rate·전체 재검사&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;span&gt;6&lt;/span&gt;&lt;div&gt;&lt;b&gt;동일 산출물 승인&lt;/b&gt;&lt;p&gt;검사한 소스 SHA와 실제 배포 이미지 digest 일치 증명&lt;/p&gt;&lt;/div&gt;&lt;/li&gt;
+        &lt;/ol&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+  #om-guide-v3 {
+    width: 100%;
+    color: var(--foreground);
+  }
+
+  #om-guide-v3 h1,
+  #om-guide-v3 h2,
+  #om-guide-v3 h3,
+  #om-guide-v3 p {
+    margin-top: 0;
+  }
+
+  #om-guide-v3 p {
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-hero {
+    display: grid;
+    gap: 10px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  #om-guide-v3 .om-hero h1,
+  #om-guide-v3 .om-hero p {
+    margin-bottom: 0;
+  }
+
+  #om-guide-v3 .om-now {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    padding-top: 8px;
+  }
+
+  #om-guide-v3 .om-progress {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 18px 0 4px;
+  }
+
+  #om-guide-v3 .om-progress article {
+    display: grid;
+    align-content: start;
+    gap: 6px;
+    min-height: 116px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--card);
+  }
+
+  #om-guide-v3 .om-progress article.om-progress-done {
+    border-color: color-mix(in srgb, var(--viz-series-2) 60%, var(--border));
+    background: color-mix(in srgb, var(--viz-series-2) 8%, var(--card));
+  }
+
+  #om-guide-v3 .om-progress span {
+    color: var(--muted-foreground);
+    font-size: 0.82rem;
+  }
+
+  #om-guide-v3 .om-progress p {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+  }
+
+  #om-guide-v3 .om-toc {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin: 14px 0 4px;
+    padding: 8px 0;
+    background: var(--background);
+  }
+
+  #om-guide-v3 .om-section {
+    padding: 28px 0;
+    border-bottom: 1px solid var(--border);
+    scroll-margin-top: 58px;
+  }
+
+  #om-guide-v3 .om-section-title {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  #om-guide-v3 .om-section-title &gt; span {
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-section-title h2,
+  #om-guide-v3 .om-section-title p {
+    margin-bottom: 4px;
+  }
+
+  #om-guide-v3 .om-purpose-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #om-guide-v3 .om-purpose-grid article {
+    display: grid;
+    gap: 6px;
+  }
+
+  #om-guide-v3 .om-purpose-grid p {
+    margin-bottom: 0;
+  }
+
+  #om-guide-v3 .om-branch-diagram {
+    display: grid;
+    gap: 10px;
+  }
+
+  #om-guide-v3 .om-lane {
+    display: grid;
+    gap: 9px;
+    padding: 12px;
+    border-left: 3px solid var(--border);
+  }
+
+  #om-guide-v3 .om-bank-lane {
+    border-left-color: var(--viz-series-1);
+  }
+
+  #om-guide-v3 .om-check-lane {
+    border-left-color: var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-node {
+    display: grid;
+    gap: 4px;
+    width: fit-content;
+    padding: 8px 10px;
+    background: var(--muted);
+  }
+
+  #om-guide-v3 .om-line {
+    width: 2px;
+    height: 16px;
+    margin-left: 20px;
+    background: var(--border);
+  }
+
+  #om-guide-v3 .om-commit-row {
+    display: flex;
+    align-items: stretch;
+    gap: 7px;
+  }
+
+  #om-guide-v3 .om-commit-row &gt; span,
+  #om-guide-v3 .om-branch-arrow {
+    display: grid;
+    place-items: center;
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-bank-lane p {
+    margin-bottom: 0;
+  }
+
+  #om-guide-v3 .om-preflight-diagram {
+    display: grid;
+    gap: 9px;
+    margin-bottom: 18px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  #om-guide-v3 .om-preflight-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 7px;
+    align-items: stretch;
+  }
+
+  #om-guide-v3 .om-preflight-step {
+    display: grid;
+    align-content: start;
+    min-width: 0;
+    background: var(--muted);
+  }
+
+  #om-guide-v3 .om-preflight-step summary {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 7px;
+    padding: 9px;
+  }
+
+  #om-guide-v3 .om-preflight-step summary::after {
+    content: &quot;예시 보기&quot;;
+    color: var(--muted-foreground);
+    font-weight: 400;
+  }
+
+  #om-guide-v3 .om-preflight-step[open] summary::after {
+    content: &quot;접기&quot;;
+  }
+
+  #om-guide-v3 .om-preflight-step summary span {
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-preflight-step pre {
+    margin: 0 9px 9px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  #om-guide-v3 .om-preflight-step &gt; p {
+    margin: 0 9px 10px;
+  }
+
+  #om-guide-v3 .om-manifest-mini {
+    display: grid;
+    gap: 1px;
+    margin: 0 9px 9px;
+    background: var(--border);
+  }
+
+  #om-guide-v3 .om-manifest-mini &gt; div {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 7px;
+    padding: 6px 7px;
+    background: var(--card);
+  }
+
+  #om-guide-v3 .om-manifest-mini span {
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-preflight-row &gt; span {
+    display: grid;
+    place-items: center;
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-preflight-diagram p {
+    margin-bottom: 0;
+  }
+
+  #om-guide-v3 .om-watch-guide,
+  #om-guide-v3 .om-code-evidence {
+    margin-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  #om-guide-v3 .om-watch-guide summary,
+  #om-guide-v3 .om-code-evidence summary {
+    cursor: pointer;
+    padding: 10px 0;
+    font-weight: 500;
+  }
+
+  #om-guide-v3 .om-watch-guide ol {
+    margin: 0;
+    padding-left: 22px;
+  }
+
+  #om-guide-v3 .om-watch-guide li + li,
+  #om-guide-v3 .om-watch-guide p {
+    margin-top: 8px;
+  }
+
+  #om-guide-v3 .om-code-evidence &gt; p {
+    margin-top: 0;
+  }
+
+  #om-guide-v3 .om-file-evidence {
+    border-top: 1px solid var(--border);
+  }
+
+  #om-guide-v3 .om-file-evidence pre {
+    margin: 0 0 8px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  #om-guide-v3 .om-file-evidence p {
+    margin: 0 0 12px;
+  }
+
+  #om-guide-v3 .om-file-evidence ins {
+    padding-inline: 5px 2px;
+    color: var(--foreground);
+    text-decoration: none;
+    background: color-mix(in srgb, var(--viz-series-2) 18%, transparent);
+    box-shadow: inset 3px 0 var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-evidence-part {
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  #om-guide-v3 .om-evidence-part pre {
+    margin: 8px 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  #om-guide-v3 .om-evidence-part p {
+    margin: 0;
+  }
+
+  #om-guide-v3 .om-branch-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  #om-guide-v3 .om-swatch {
+    width: 12px;
+    height: 12px;
+  }
+
+  #om-guide-v3 .om-core-swatch {
+    background: var(--viz-series-1);
+  }
+
+  #om-guide-v3 .om-custom-swatch {
+    background: var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-branch-visual {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  #om-guide-v3 .om-branch-svg {
+    display: block;
+    width: 100%;
+    min-width: 680px;
+    height: auto;
+  }
+
+  #om-guide-v3 .om-svg-path {
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+
+  #om-guide-v3 .om-svg-node {
+    stroke-width: 2;
+  }
+
+  #om-guide-v3 .om-svg-neutral-line {
+    stroke: var(--border);
+  }
+
+  #om-guide-v3 .om-svg-core-line {
+    stroke: var(--viz-series-1);
+  }
+
+  #om-guide-v3 .om-svg-custom-line {
+    stroke: var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-svg-fail-line {
+    stroke: var(--destructive);
+  }
+
+  #om-guide-v3 .om-svg-pass-line {
+    stroke: var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-svg-loop {
+    stroke-dasharray: 7 8;
+  }
+
+  #om-guide-v3 .om-svg-neutral-node {
+    fill: var(--muted);
+    stroke: var(--border);
+  }
+
+  #om-guide-v3 .om-svg-core-node {
+    fill: color-mix(in srgb, var(--viz-series-1) 14%, var(--background));
+    stroke: var(--viz-series-1);
+  }
+
+  #om-guide-v3 .om-svg-custom-node,
+  #om-guide-v3 .om-svg-pass-node {
+    fill: color-mix(in srgb, var(--viz-series-2) 14%, var(--background));
+    stroke: var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-svg-candidate-node {
+    fill: color-mix(in srgb, var(--primary) 12%, var(--background));
+    stroke: var(--primary);
+  }
+
+  #om-guide-v3 .om-svg-verifier-node {
+    fill: color-mix(in srgb, var(--viz-series-3) 14%, var(--background));
+    stroke: var(--viz-series-3);
+  }
+
+  #om-guide-v3 .om-svg-fail-node {
+    fill: color-mix(in srgb, var(--destructive) 10%, var(--background));
+    stroke: var(--destructive);
+  }
+
+  #om-guide-v3 .om-svg-core-dot {
+    fill: var(--viz-series-1);
+  }
+
+  #om-guide-v3 .om-svg-custom-dot {
+    fill: var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-svg-label,
+  #om-guide-v3 .om-svg-caption {
+    fill: var(--foreground);
+  }
+
+  #om-guide-v3 .om-svg-muted {
+    fill: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-svg-center,
+  #om-guide-v3 .om-svg-caption {
+    text-anchor: middle;
+  }
+
+  #om-guide-v3 .om-svg-strong {
+    font-weight: 500;
+  }
+
+  #om-guide-v3 .om-svg-caption,
+  #om-guide-v3 .om-svg-core-text {
+    fill: var(--viz-series-1);
+  }
+
+  #om-guide-v3 .om-svg-custom-text {
+    fill: var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-svg-fail-text {
+    fill: var(--destructive);
+    text-anchor: middle;
+  }
+
+  #om-guide-v3 .om-details,
+  #om-guide-v3 .om-file-diff {
+    margin-top: 12px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  #om-guide-v3 details &gt; summary {
+    cursor: pointer;
+    padding: 10px 0;
+    font-weight: 500;
+  }
+
+  #om-guide-v3 .om-details p {
+    margin-bottom: 12px;
+  }
+
+  #om-guide-v3 .om-gate-table th:first-child {
+    white-space: nowrap;
+  }
+
+  #om-guide-v3 .om-gate-table small {
+    color: var(--muted-foreground);
+    font-weight: 400;
+  }
+
+  #om-guide-v3 .om-example-flow {
+    display: flex;
+    align-items: stretch;
+    gap: 7px;
+    margin-bottom: 16px;
+  }
+
+  #om-guide-v3 .om-example-flow span {
+    flex: 1 1 0;
+    padding: 9px;
+    text-align: center;
+    background: var(--muted);
+  }
+
+  #om-guide-v3 .om-example-flow b {
+    display: grid;
+    place-items: center;
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-file-diffs {
+    display: grid;
+    gap: 6px;
+  }
+
+  #om-guide-v3 .om-file-diff {
+    margin: 0;
+  }
+
+  #om-guide-v3 .om-file-diff summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  #om-guide-v3 .om-file-diff summary span {
+    color: var(--muted-foreground);
+    font-weight: 400;
+  }
+
+  #om-guide-v3 .om-split-diff {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--border);
+  }
+
+  #om-guide-v3 .om-split-diff &gt; div {
+    min-width: 0;
+    padding: 10px;
+    background: var(--background);
+  }
+
+  #om-guide-v3 .om-split-diff pre {
+    margin: 8px 0 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  #om-guide-v3 .om-split-diff ins {
+    color: var(--foreground);
+    text-decoration: none;
+    background: color-mix(in srgb, var(--viz-series-2) 20%, transparent);
+  }
+
+  #om-guide-v3 .om-no-file {
+    display: grid;
+    align-content: center;
+    gap: 6px;
+    min-height: 100px;
+    text-align: center;
+  }
+
+  #om-guide-v3 .om-no-file span {
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-result-list {
+    display: grid;
+    gap: 1px;
+    background: var(--border);
+  }
+
+  #om-guide-v3 .om-result-list &gt; div {
+    display: grid;
+    grid-template-columns: auto minmax(110px, auto) minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    padding: 10px;
+    background: var(--background);
+  }
+
+  #om-guide-v3 .om-result-list p {
+    margin-bottom: 0;
+  }
+
+  #om-guide-v3 .om-status {
+    width: fit-content;
+    padding: 2px 7px;
+  }
+
+  #om-guide-v3 .om-pass {
+    background: color-mix(in srgb, var(--viz-series-2) 20%, transparent);
+  }
+
+  #om-guide-v3 .om-limited {
+    background: color-mix(in srgb, var(--viz-series-3) 22%, transparent);
+  }
+
+  #om-guide-v3 .om-block {
+    color: var(--destructive);
+    background: color-mix(in srgb, var(--destructive) 12%, transparent);
+  }
+
+  #om-guide-v3 .om-decision {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  #om-guide-v3 .om-decision &gt; div {
+    display: grid;
+    gap: 5px;
+    padding-top: 10px;
+    border-top: 3px solid var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-decision &gt; div:last-child {
+    border-top-color: var(--destructive);
+  }
+
+  #om-guide-v3 .om-roadmap {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  #om-guide-v3 .om-roadmap-group {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+  }
+
+  #om-guide-v3 .om-roadmap ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  #om-guide-v3 .om-roadmap li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  #om-guide-v3 .om-roadmap li &gt; span {
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-roadmap p {
+    margin: 3px 0 0;
+  }
+
+  #om-guide-v3 #gates,
+  #om-guide-v3 #example,
+  #om-guide-v3 #result,
+  #om-guide-v3 #roadmap {
+    display: none;
+  }
+
+  #om-guide-v3 .om-repo-role {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin-top: 14px;
+    background: var(--border);
+  }
+
+  #om-guide-v3 .om-repo-role &gt; div {
+    display: grid;
+    gap: 5px;
+    padding: 14px;
+    background: var(--background);
+  }
+
+  #om-guide-v3 .om-repo-role span {
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-implementation-status pre {
+    margin: 2px 0;
+    white-space: pre-wrap;
+  }
+
+  #om-guide-v3 .om-scope-compare {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    margin: 14px 0;
+  }
+
+  #om-guide-v3 .om-scope-compare &gt; div {
+    display: grid;
+    gap: 5px;
+    padding: 12px;
+    border-left: 4px solid var(--viz-series-1);
+    background: color-mix(in srgb, var(--muted) 45%, transparent);
+  }
+
+  #om-guide-v3 .om-scope-compare &gt; div:last-child {
+    border-left-color: var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-scope-compare span {
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-scope-compare &gt; b {
+    color: var(--muted-foreground);
+    text-align: center;
+  }
+
+  #om-guide-v3 .om-scope-example td:nth-child(2),
+  #om-guide-v3 .om-scope-example td:nth-child(3) {
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  #om-guide-v3 .om-required-rule {
+    display: grid;
+    gap: 7px;
+    margin-top: 12px;
+    padding: 12px 0 12px 14px;
+    border-left: 4px solid var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-required-rule ol {
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  @media (max-width: 760px) {
+    #om-guide-v3 .om-purpose-grid,
+    #om-guide-v3 .om-repo-role,
+    #om-guide-v3 .om-roadmap,
+    #om-guide-v3 .om-progress {
+      grid-template-columns: 1fr;
+    }
+
+    #om-guide-v3 .om-commit-row,
+    #om-guide-v3 .om-example-flow {
+      flex-direction: column;
+    }
+
+    #om-guide-v3 .om-commit-row &gt; span,
+    #om-guide-v3 .om-example-flow b {
+      transform: rotate(90deg);
+    }
+
+    #om-guide-v3 .om-preflight-row {
+      grid-template-columns: 1fr;
+    }
+
+    #om-guide-v3 .om-preflight-row &gt; span {
+      transform: rotate(90deg);
+    }
+
+    #om-guide-v3 .om-result-list &gt; div {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    #om-guide-v3 .om-result-list p {
+      grid-column: 1 / -1;
+    }
+
+    #om-guide-v3 .om-scope-compare {
+      grid-template-columns: 1fr;
+    }
+
+    #om-guide-v3 .om-scope-compare &gt; b {
+      transform: rotate(90deg);
+    }
+  }
+
+  @media (max-width: 520px) {
+    #om-guide-v3 .om-split-diff,
+    #om-guide-v3 .om-decision,
+    #om-guide-v3 .om-after-check {
+      grid-template-columns: 1fr;
+    }
+  }
+&lt;/style&gt;
+
+&lt;script src=&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set([&quot;top&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;left&quot;]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+
+  const getTrigger = (target) =&gt;
+    target?.nodeType === Node.ELEMENT_NODE
+      ? target.closest(&quot;[data-tooltip]&quot;)
+      : null;
+  const containsTarget = (trigger, target) =&gt;
+    target?.nodeType != null &amp;&amp; trigger.contains(target);
+  const getContent = (trigger) =&gt;
+    trigger.getAttribute(&quot;data-tooltip&quot;)?.trim() ?? &quot;&quot;;
+  const getPlacement = (trigger) =&gt; {
+    const placement = trigger.getAttribute(&quot;data-tooltip-placement&quot;);
+    return tooltipPlacements.has(placement) ? placement : &quot;top&quot;;
+  };
+  const getTooltip = () =&gt; {
+    if (tooltip == null) {
+      tooltip = document.createElement(&quot;div&quot;);
+      tooltip.id = tooltipId;
+      tooltip.className = &quot;tooltip&quot;;
+      tooltip.setAttribute(&quot;role&quot;, &quot;tooltip&quot;);
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) =&gt; {
+    const ids = new Set(
+      (trigger.getAttribute(&quot;aria-describedby&quot;) ?? &quot;&quot;)
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute(&quot;aria-describedby&quot;);
+    } else {
+      trigger.setAttribute(&quot;aria-describedby&quot;, [...ids].join(&quot; &quot;));
+    }
+  };
+  const clearOpenTimeout = () =&gt; {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) =&gt; {
+    clearOpenTimeout();
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) =&gt; {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-width&quot;,
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-height&quot;,
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: &quot;fixed&quot;,
+    })
+      .then(({ x, y }) =&gt; {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = &quot;visible&quot;;
+      })
+      .catch(() =&gt; {
+        if (activeTrigger === trigger &amp;&amp; request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) =&gt; {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = &quot;hidden&quot;;
+    floating.style.transform = &quot;translate(0, 0)&quot;;
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () =&gt; {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) =&gt; {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() &lt; skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() =&gt; {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) =&gt; {
+    if (event.pointerType === &quot;touch&quot;) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handleLeave = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger?.matches(&quot;:focus-visible&quot;)) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) =&gt; {
+    if (event.key === &quot;Escape&quot;) {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const destroy = () =&gt; {
+    closeTooltip(false);
+    document.removeEventListener(&quot;pointerover&quot;, handlePointerOpen);
+    document.removeEventListener(&quot;pointerout&quot;, handleLeave);
+    document.removeEventListener(&quot;focusin&quot;, handleFocusIn);
+    document.removeEventListener(&quot;focusout&quot;, handleLeave);
+    document.removeEventListener(&quot;keydown&quot;, handleKeyDown);
+    document.removeEventListener(&quot;contextmenu&quot;, handleContextMenu);
+    tooltip = null;
+  };
+
+  document.addEventListener(&quot;pointerover&quot;, handlePointerOpen);
+  document.addEventListener(&quot;pointerout&quot;, handleLeave);
+  document.addEventListener(&quot;focusin&quot;, handleFocusIn);
+  document.addEventListener(&quot;focusout&quot;, handleLeave);
+  document.addEventListener(&quot;keydown&quot;, handleKeyDown);
+  document.addEventListener(&quot;contextmenu&quot;, handleContextMenu);
+  window.addEventListener(&quot;pagehide&quot;, destroy, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-lucide&quot; async src=&quot;https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  const initialize = () =&gt; {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById(&quot;codex-visualization-lucide&quot;)
+    ?.addEventListener(&quot;load&quot;, initialize, { once: true });
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</body>
+</html>

@@ -1,0 +1,1516 @@
+<div id="om-guide-v3" data-artifact-status="review-draft">
+  <header class="om-hero">
+    <span class="viz-badge">1차 공유문서 검토본</span>
+    <h1>공식 업그레이드 뒤에도 행내 기능을 잃지 않는 방법</h1>
+    <p>공식 원본 위에 BANK-OM 변경을 다시 적용하고, 검사기로 누락·혼합·동작 여부를 단계별 확인합니다.</p>
+    <div class="om-now" role="status">
+      <span><strong>이번 검토 범위</strong> 목적 · 사전 설정 · 브랜치 전략</span>
+      <span><strong>대표 사례</strong> BANK-OM-001 · InstanceCode</span>
+      <span class="text-destructive"><strong>T42 검사기 완료</strong> 수동 watch 비교는 동작 중 · allowed 공식 파일 자동 포함만 개선 예정</span>
+    </div>
+  </header>
+
+  <section class="om-progress om-phase1-progress" aria-label="1차 공유문서 구성">
+    <article class="om-progress-done">
+      <span>1차 · 검토 중</span>
+      <strong>왜 필요한가</strong>
+      <p>자체 제품 개발이 아니라 공식 OpenMetadata와 행내 기능을 함께 유지하는 목적을 설명합니다.</p>
+    </article>
+    <article>
+      <span>1차 · 검토 중</span>
+      <strong>무엇을 미리 등록하나</strong>
+      <p>BANK-OM ID, 변경 파일 명단, 실제 코드와 커밋 메시지를 하나로 연결합니다.</p>
+    </article>
+    <article>
+      <span>1차 · 검토 중</span>
+      <strong>어떻게 업그레이드하나</strong>
+      <p>공식 원본에서 제품 작업 브랜치, 검사 후보, 승인·행내 반영까지의 흐름을 도식으로 봅니다.</p>
+    </article>
+  </section>
+
+  <nav class="viz-controls om-toc" aria-label="가이드 목차">
+    <a class="btn" href="#purpose">1. 우리의 목적</a>
+    <a class="btn" href="#branch">2. 사전 설정과 브랜치 전략</a>
+    <a class="btn" href="#appendix">부록 · 가장 많이 묻는 질문</a>
+  </nav>
+
+  <section id="purpose" class="om-section">
+    <div class="om-section-title">
+      <span>01</span>
+      <div>
+        <h2>우리의 목적</h2>
+        <p>자체 제품을 새로 만드는 것이 아니라, 공식 OpenMetadata를 안전하게 계속 사용하는 것이 목적입니다.</p>
+      </div>
+    </div>
+
+    <div class="viz-grid om-purpose-grid">
+      <article class="card">
+        <span class="text-muted">유지할 것</span>
+        <strong>공식 OpenMetadata</strong>
+        <p>공식 기능과 보안 업데이트를 계속 반영합니다.</p>
+      </article>
+      <article class="card">
+        <span class="text-muted">보호할 것</span>
+        <strong>등록된 행내 기능</strong>
+        <p>각 기능을 BANK-OM ID별 독립 변경 기록으로 관리합니다.</p>
+      </article>
+      <article class="card">
+        <span class="text-muted">증명할 것</span>
+        <strong>재적용과 실제 동작</strong>
+        <p>코드 재적용 결과와 행내 환경 동작을 서로 다른 검사로 확인합니다.</p>
+      </article>
+    </div>
+
+    <div class="om-repo-role">
+      <div>
+        <span>행내 배포를 준비하는 OpenMetadata 코드</span>
+        <strong>easyseop/OpenMetadata</strong>
+        <p><code>codex/bank-vendor-1.13.1-rebuild</code> 브랜치의 <code>849ae756…</code>에 11개 활성 BANK-OM 변경이 적용돼 있습니다. 아직 운영 배포가 확인된 코드라고 표현하지 않습니다.</p>
+      </div>
+      <div>
+        <span>제품 변경을 관리·검사하는 저장소</span>
+        <strong>easyseop/openmetadata-test</strong>
+        <p>직원용 별도 화면이 아니라 변경관리표, 검사기, 검사 결과와 인수인계 문서를 관리합니다.</p>
+      </div>
+    </div>
+    <details class="om-watch-guide">
+      <summary>왜 easyseop/OpenMetadata 화면에서 행내 정보가 안 보이나?</summary>
+      <ol>
+        <li><b>보고 있는 브랜치가 다를 수 있습니다.</b> 현재 행내 코드는 기본 브랜치가 아니라 <code>codex/bank-vendor-1.13.1-rebuild</code> 브랜치에 있습니다.</li>
+        <li><b>제품 저장소에는 실제 코드가 들어갑니다.</b> <code>InstanceCodeResource.java</code> 같은 코드와 각 Git 커밋 메시지의 <code>Customization-ID</code>가 기록됩니다.</li>
+        <li><b>BANK-OM 변경관리표와 검사 결과는 검사 저장소에 있습니다.</b> Manifest·검사기·인수인계 문서는 <code>easyseop/openmetadata-test</code>에서 관리합니다.</li>
+      </ol>
+      <p>따라서 제품 저장소에서 BANK-OM 문서를 찾는 것이 아니라, 해당 제품 브랜치의 실제 코드·커밋 이력과 검사 저장소의 변경관리표를 함께 확인해야 합니다.</p>
+    </details>
+  </section>
+
+  <section id="branch" class="om-section">
+    <div class="om-section-title">
+      <span>02</span>
+      <div>
+        <h2>브랜치 전략</h2>
+        <p>공식 원본과 행내 변경 기록을 따로 관리하고, 업그레이드 때마다 새 공식 원본 위에 행내 변경을 순서대로 적용해 검사 대상 후보를 만듭니다.</p>
+      </div>
+    </div>
+
+    <div class="om-preflight-diagram" aria-label="브랜치 작업 전 사전 설정">
+      <strong>사전 설정</strong>
+      <div class="om-preflight-row">
+        <details class="om-preflight-step">
+          <summary><span>1</span><b>BANK-OM ID 발급</b></summary>
+          <pre><code>customization_id: BANK-OM-001
+title: InstanceCode
+kind: core-patch
+status: active</code></pre>
+          <div class="om-manifest-mini" aria-label="변경 유형 종류">
+            <div><code>core-patch</code><span>제품 코드에 결합되는 변경</span></div>
+            <div><code>extension</code><span>공식 코드와 분리된 확장</span></div>
+            <div><code>governance</code><span>검사기·정책 변경</span></div>
+          </div>
+        </details>
+        <span aria-hidden="true">→</span>
+        <details class="om-preflight-step">
+          <summary><span>2</span><b>변경관리표 작성</b></summary>
+          <pre><code>implementation:
+  allowed_changed_paths:
+    - .../Entity.java
+    - .../CollectionDAO.java
+
+  required_changed_paths:
+    - .../InstanceCodeResource.java
+    - .../instanceCode.json
+
+upgrade_watch:
+  paths: []</code></pre>
+          <div class="om-manifest-mini" aria-label="변경관리표 내부 항목">
+            <div><code>allowed</code><span>전체 변경 · 누락 시 담당자 확인</span></div>
+            <div><code>required</code><span>행내 필수 파일 · 누락 시 즉시 실패</span></div>
+            <div><code>watch</code><span>미수정 의존 파일 · 변경 시 담당자 확인</span></div>
+          </div>
+        </details>
+        <span aria-hidden="true">→</span>
+        <details class="om-preflight-step">
+          <summary><span>3</span><b>커밋 메시지 작성</b></summary>
+          <pre><code>git commit \
+  -m "add InstanceCode" \
+  -m "Customization-ID: BANK-OM-001"</code></pre>
+        </details>
+      </div>
+
+      <div class="om-repo-role om-implementation-status" aria-label="현재 검사기와 개선 예정 구분">
+        <div>
+          <span>현재 방식 · 검사기 동작 중</span>
+          <strong>같은 파일을 두 곳에 적어야 함</strong>
+          <pre><code>allowed: Entity.java  # 우리가 수정함
+watch:   Entity.java  # 공식 버전 변경도 확인</code></pre>
+          <p>BANK-OM-001은 이 방식으로 공식 공용 파일 3개를 중복 등록했고, T42 검사기가 공식 업그레이드 때 변경 여부를 확인합니다.</p>
+        </div>
+        <div>
+          <span>개선 후 · 추가 개발 대상</span>
+          <strong>변경 파일에는 한 번만 적음</strong>
+          <pre><code>allowed: Entity.java
+# 공식 버전 변경 확인은 검사기가 자동 처리</code></pre>
+          <p>검사기가 “공식 원본에도 있던 파일”임을 알아내 자동으로 업그레이드 전후를 비교합니다. 수동 <code>watch</code>에는 우리가 수정하지 않은 의존 파일만 적습니다.</p>
+        </div>
+      </div>
+      <details class="om-watch-guide">
+        <summary>변경관리표에는 무엇을 왜 적나?</summary>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead>
+              <tr><th>사람이 이해할 이름</th><th>무엇을 적나?</th><th>검사기는 왜 필요한가?</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>업무 기능 번호 <code>customization_id</code></td>
+                <td>미사용 BANK-OM 번호</td>
+                <td>코드·테스트·결과를 같은 기능으로 연결</td>
+              </tr>
+              <tr>
+                <td>변경 유형 <code>kind</code></td>
+                <td>제품 코드·분리 확장·검사 정책 중 하나</td>
+                <td>변경이 속한 영역을 확인</td>
+              </tr>
+              <tr>
+                <td>실제 변경 파일 <code>allowed</code></td>
+                <td>이 기능이 변경한 파일 전체</td>
+                <td>명단 밖 변경은 실패, 명단 안 누락은 담당자 확인</td>
+              </tr>
+              <tr>
+                <td>즉시 실패 파일 <code>required</code></td>
+                <td>누락만으로 기능 소실을 확정할 필수 파일</td>
+                <td>파일·변경이 없으면 즉시 실패</td>
+              </tr>
+              <tr>
+                <td>미수정 의존 파일 <code>watch</code></td>
+                <td>수정하지 않았지만 행내 기능이 의존하는 파일</td>
+                <td>공식 버전에서 바뀌면 담당자 확인</td>
+              </tr>
+              <tr>
+                <td>동작 검사 <code>contracts</code>·<code>direct_tests</code></td>
+                <td>업무 동작·기술 테스트 이름</td>
+                <td>테스트 누락·실패 시 통과 금지</td>
+              </tr>
+              <tr>
+                <td>적용 순서 <code>series</code>·<code>depends_on</code></td>
+                <td>후속 커밋 허용 여부와 선행 BANK-OM</td>
+                <td>순서·의존관계가 틀리면 실패</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="om-scope-compare">
+          <div>
+            <span>1단계 · 모두 적기</span>
+            <strong>실제 변경 파일 48개</strong>
+            <p>“BANK-OM-001은 어느 파일들을 변경했나?”에 답합니다.</p>
+          </div>
+          <b aria-hidden="true">48개 중 2개는 즉시 실패 →</b>
+          <div>
+            <span>2단계 · 즉시 실패 표시</span>
+            <strong>필수 대표 파일 2개</strong>
+            <p>“어느 파일이 빠지면 기능의 필수 부품이 사라진 것인가?”에 답합니다.</p>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-sm om-scope-example">
+            <thead>
+              <tr><th>BANK-OM-001 실제 파일</th><th>전체 명단</th><th>즉시 실패 표시</th><th>이렇게 정한 이유</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>InstanceCodeResource.java</code></td>
+                <td>예</td>
+                <td><b>예</b></td>
+                <td>InstanceCode API 전용 파일이라 없어지면 API 자체가 없어졌다고 바로 판단 가능</td>
+              </tr>
+              <tr>
+                <td><code>instanceCode.json</code></td>
+                <td>예</td>
+                <td><b>예</b></td>
+                <td>InstanceCode 데이터 구조 전용 파일이라 없어지면 엔터티 정의가 성립하지 않음</td>
+              </tr>
+              <tr>
+                <td><code>Entity.java</code></td>
+                <td>예</td>
+                <td>아니오</td>
+                <td>여러 기능이 함께 쓰는 파일이라 파일 전체가 달라 보이는 것만으로 INSTANCE_CODE 코드가 남았다고 증명할 수 없음. 업그레이드 전후 코드 비교와 실제 동작 검사로 확인</td>
+              </tr>
+              <tr>
+                <td><code>ko-kr.json</code></td>
+                <td>예</td>
+                <td>아니오</td>
+                <td>번역 누락은 결함이므로 검토 대상이지만, 그 파일 하나만으로 InstanceCode 전체가 사라졌다고 단정하지 않음</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="om-required-rule">
+          <strong>보통 어떤 파일을 “없으면 즉시 실패”로 정하나?</strong>
+          <ol>
+            <li>행내 기능을 위해 새로 만든 Resource·Mapper·스키마처럼 전용 역할이 명확한 파일</li>
+            <li>그 파일이 없거나 공식 원본 상태면 기능의 필수 구성요소가 실제로 빠졌다고 단정할 수 있어야 함</li>
+            <li>다른 BANK-OM 변경 때문에 파일 전체가 달라 보이는 공용 파일은 경로만으로 증명하지 않고 코드·계약 검사로 확인</li>
+            <li>왜 즉시 실패해야 하는지 변경관리표 검토 기록에 남기고 코드 책임자가 승인</li>
+          </ol>
+        </div>
+        <p><b>추측으로 넣지 않습니다.</b> Git이 보여주는 공식 원본과 행내본의 실제 파일 차이, 공용 파일 안에서 각 BANK-OM이 수정한 코드 구간, 코드 연결 관계, 동작·기술 테스트와 코드 책임자 승인으로 결정합니다.</p>
+      </details>
+      <details class="om-code-evidence">
+        <summary>사전 설정 실제 코드 참고 · BANK-OM-001</summary>
+        <p class="text-small text-muted">출처: <a href="https://github.com/easyseop/OpenMetadata/commit/a2566fac322c877a645046264c8ae99df103f794">실제 커밋 a2566fac…</a>. 전체 48개 변경 경로 중 사전 설정 관계를 설명하는 핵심 파일 4개만 표시합니다.</p>
+
+        <details class="om-file-evidence">
+          <summary><code>Entity.java</code> · 공식 공용 코드 수정 · 전체 48개 명단에 들어가는 이유</summary>
+          <pre><code>@@ 기존 Entity 종류 목록
+ public static final String FILE = "file";
+ public static final String WORKSHEET = "worksheet";
+<ins>+public static final String INSTANCE_CODE = "instanceCode";</ins></code></pre>
+          <p>공식 제품의 Entity 목록에 행내 기능 이름을 등록한 실제 변경입니다. 그래서 “BANK-OM-001이 실제로 바꾼 파일 전체 명단”(<code>allowed</code>)에 들어갑니다. 1차 개선을 적용하면 공식 원본에도 있던 파일이라는 사실을 검사기가 판별해 업그레이드 전후 변경 여부도 자동 비교합니다.</p>
+        </details>
+
+        <details class="om-file-evidence">
+          <summary><code>InstanceCodeResource.java</code> · 신규 파일 · 즉시 실패 2개에도 들어가는 이유</summary>
+          <pre><code>@@ 신규 파일
+<ins>+@Path("/v1/instanceCodes")</ins>
+<ins>+@Collection(name = "instanceCodes")</ins>
+<ins>+public class InstanceCodeResource</ins>
+<ins>+    extends EntityResource&lt;InstanceCode, InstanceCodeRepository&gt; {</ins>
+<ins>+  public static final String COLLECTION_PATH = "/v1/instanceCodes/";</ins>
+<ins>+  // 이하 실제 CRUD API 메서드는 화면에서 생략</ins></code></pre>
+          <p>공식 원본에는 없던 InstanceCode API 전용 파일입니다. 따라서 “실제 변경 파일 전체 명단”(<code>allowed</code>)에 들어갑니다. 이 파일이 없으면 API 자체가 사라지므로 “없으면 즉시 실패” 표시(<code>required</code>)도 함께 붙습니다.</p>
+        </details>
+
+        <details class="om-file-evidence">
+          <summary><code>InstanceCodeRepository.java</code> · 신규 파일 · 공용 코드 연결을 확인하는 이유</summary>
+          <pre><code>@@ 신규 파일
+<ins>+public class InstanceCodeRepository</ins>
+<ins>+    extends EntityRepository&lt;InstanceCode&gt; {</ins>
+<ins>+  public InstanceCodeRepository() {</ins>
+<ins>+    super(</ins>
+<ins>+        InstanceCodeResource.COLLECTION_PATH,</ins>
+<ins>+        Entity.INSTANCE_CODE,</ins>
+<ins>+        InstanceCode.class,</ins>
+<ins>+        Entity.getCollectionDAO().instanceCodeDAO(),</ins>
+<ins>+        "",</ins>
+<ins>+        "");</ins>
+<ins>+  }</ins>
+<ins>+  // 이하 실제 저장·수정 메서드는 화면에서 생략</ins></code></pre>
+          <p>신규 저장 처리 코드가 공식 공용 코드의 <code>CollectionDAO.instanceCodeDAO()</code>를 직접 사용합니다. 따라서 공식 버전에서 DAO 연결 방식이 바뀌면 InstanceCode 연결도 다시 확인해야 합니다.</p>
+        </details>
+
+        <details class="om-file-evidence">
+          <summary><code>CollectionDAO.java</code> · 공식 공용 코드 수정 · 개선 후 자동 비교 대상</summary>
+          <pre><code>@@ DAO 생성 메서드 추가
+<ins>+@CreateSqlObject</ins>
+<ins>+InstanceCodeDAO instanceCodeDAO();</ins>
+
+@@ DAO 인터페이스 추가
+<ins>+interface InstanceCodeDAO extends EntityDAO&lt;InstanceCode&gt; {</ins>
+<ins>+  default String getTableName() {</ins>
+<ins>+    return "instance_code_entity";</ins>
+<ins>+  }</ins>
+<ins>+  default Class&lt;InstanceCode&gt; getEntityClass() {</ins>
+<ins>+    return InstanceCode.class;</ins>
+<ins>+  }</ins>
+<ins>+}</ins></code></pre>
+          <p>이번 커밋이 실제로 수정한 공식 공용 코드 파일이므로 “실제 변경 파일 전체 명단”(<code>allowed</code>)에 들어갑니다. 1차 개선을 적용하면 검사기가 업그레이드 전후도 자동 비교하므로 사용자가 수동 감시 목록에 같은 경로를 또 적지 않습니다.</p>
+        </details>
+
+        <section class="om-evidence-part">
+          <strong>네 파일을 보고 만드는 사전 설정</strong>
+          <p><code>Entity.java</code>, <code>CollectionDAO.java</code> 수정과 신규 InstanceCode 파일들은 하나의 업무 기능이므로 <code>BANK-OM-001</code>로 묶습니다. 먼저 실제 변경 파일 48개를 전부 기록합니다. 그중 필수 부품이 사라졌다고 즉시 판단 가능한 2개에는 실패 표시를 붙입니다. 1차 개선을 적용하면 48개 중 공식 원본에도 있던 파일은 검사기가 업그레이드 전후를 자동 비교하고, 수동 감시는 48개 밖의 의존 파일에만 사용합니다.</p>
+          <pre><code>add InstanceCode customization
+
+Customization-ID: BANK-OM-001</code></pre>
+          <p>마지막으로 같은 ID를 실제 커밋 메시지에 기록합니다. 저장 후 Git이 <code>a2566fac…</code>라는 SHA를 자동 생성합니다.</p>
+        </section>
+      </details>
+      <p><b>ID는 관리 담당자가 ID 대장에서 다음 미사용 번호를 발급합니다.</b> LLM이나 Git이 만드는 값이 아닙니다. <code>kind</code>는 실제 검사기 스키마가 허용하는 <code>core-patch</code>·<code>extension</code>·<code>governance</code> 중 하나만 사용합니다. 변경관리표는 실제 코드 근거와 검토를 거쳐 작성하며, Git 커밋 식별값(SHA)만 Git이 저장할 때 자동 생성합니다.</p>
+    </div>
+
+    <div class="om-branch-legend" aria-label="브랜치 색상 구분">
+      <span class="om-swatch om-core-swatch"></span><span>제품 작업 브랜치 안의 공식 Core 파일 수정</span>
+      <span class="om-swatch om-custom-swatch"></span><span>같은 브랜치 안의 행내 전용 파일 추가</span>
+    </div>
+
+    <div class="om-branch-visual">
+      <svg class="om-branch-svg" viewBox="0 0 820 710" role="img" aria-labelledby="om-branch-title om-branch-desc">
+        <title id="om-branch-title">OpenMetadata 행내 변경 브랜치와 검사 흐름</title>
+        <desc id="om-branch-desc">승인한 공식 원본에 코어 패치와 행내 전용 변경을 순서대로 적용해 하나의 후보를 만든다. 검사에 실패하면 원인이 있는 코어 패치, 행내 코드 또는 환경 설정만 보완해 다시 검사하고, 통과하면 승인 후 행내 환경에 반영한다.</desc>
+
+        <path class="om-svg-path om-svg-core-line" d="M238 82 L238 177"/>
+
+        <ellipse class="om-svg-node om-svg-neutral-node" cx="238" cy="52" rx="68" ry="30"/>
+        <text class="om-svg-label om-svg-center" x="238" y="48">공식 원본</text>
+        <text class="om-svg-muted om-svg-center" x="238" y="66">새 버전</text>
+
+        <ellipse class="om-svg-node om-svg-core-node" cx="238" cy="224" rx="102" ry="47"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="238" y="219">Core 패치</text>
+        <text class="om-svg-muted om-svg-center" x="238" y="239">공용 파일 최소 수정</text>
+        <text class="om-svg-caption om-svg-core-text" x="238" y="292">예: Entity.java</text>
+
+        <text class="om-svg-muted om-svg-center" x="582" y="62">사전에 관리한 BANK-OM 변경 묶음</text>
+        <path class="om-svg-path om-svg-custom-line om-svg-loop" d="M582 82 L582 177"/>
+        <circle class="om-svg-custom-dot" cx="582" cy="92" r="5"/>
+        <circle class="om-svg-custom-dot" cx="582" cy="112" r="5"/>
+        <circle class="om-svg-custom-dot" cx="582" cy="132" r="5"/>
+        <ellipse class="om-svg-node om-svg-custom-node" cx="582" cy="224" rx="112" ry="47"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="582" y="219">행내 전용</text>
+        <text class="om-svg-muted om-svg-center" x="582" y="239">신규 코드 추가</text>
+        <text class="om-svg-caption om-svg-custom-text" x="582" y="292">Resource · Mapper · Repository</text>
+
+        <path class="om-svg-path om-svg-core-line" d="M238 271 C238 369 352 365 390 405"/>
+        <path class="om-svg-path om-svg-custom-line" d="M582 271 C582 369 468 365 430 405"/>
+        <text class="om-svg-muted om-svg-center" x="238" y="334">① Core 패치 적용</text>
+        <text class="om-svg-muted om-svg-center" x="582" y="334">② 행내 변경 적용</text>
+        <ellipse class="om-svg-node om-svg-candidate-node" cx="410" cy="433" rx="94" ry="43"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="410" y="428">적용 후보</text>
+        <text class="om-svg-muted om-svg-center" x="410" y="447">원본 + 행내 변경</text>
+
+        <path class="om-svg-path om-svg-neutral-line" d="M410 476 L410 508"/>
+        <polygon class="om-svg-node om-svg-verifier-node" points="410,508 465,553 410,598 355,553"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="410" y="549">검사기</text>
+        <text class="om-svg-muted om-svg-center" x="410" y="567">변경·동작 확인</text>
+
+        <path class="om-svg-path om-svg-fail-line" d="M355 553 C315 553 285 574 266 607"/>
+        <ellipse class="om-svg-node om-svg-fail-node" cx="235" cy="633" rx="112" ry="31"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="235" y="629">실패 · 원인 확인</text>
+        <text class="om-svg-muted om-svg-center" x="235" y="646">원인이 있는 항목만 보완</text>
+        <path class="om-svg-path om-svg-fail-line om-svg-loop" d="M123 633 C68 633 78 525 355 553"/>
+        <text class="om-svg-fail-text" x="182" y="528">보완 후 검사기로 돌아감</text>
+        <text class="om-svg-muted om-svg-center" x="235" y="681">Core 패치 · 행내 코드 · 환경 설정 중 해당 항목</text>
+
+        <path class="om-svg-path om-svg-pass-line" d="M465 553 C505 553 535 574 554 607"/>
+        <ellipse class="om-svg-node om-svg-pass-node" cx="585" cy="633" rx="58" ry="31"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="585" y="629">통과</text>
+        <text class="om-svg-muted om-svg-center" x="585" y="646">승인</text>
+        <path class="om-svg-path om-svg-pass-line" d="M616 633 L702 633"/>
+        <text class="om-svg-label om-svg-strong" x="713" y="629">행내 반영</text>
+        <text class="om-svg-muted" x="713" y="648">배포·운영</text>
+      </svg>
+    </div>
+
+    <details class="om-details">
+      <summary>왜 이 구조가 필요한가?</summary>
+      <p>색상은 별도 제품이나 반드시 유지해야 하는 장기 브랜치 두 개가 아니라, 하나의 제품 작업 브랜치 안에서 변경의 역할을 구분합니다. Core 패치는 공식 공용 파일을 수정하는 변경이고, 행내 전용 변경은 신규 Resource·Mapper·Repository 등을 추가합니다. BANK-OM-001처럼 한 업무 기능이 두 역할을 모두 사용하면 같은 BANK-OM ID로 연결해 추적합니다.</p>
+    </details>
+  </section>
+
+  <section id="appendix" class="om-section">
+    <div class="om-section-title">
+      <span>Q&amp;A</span>
+      <div>
+        <h2>가장 중요한 질문</h2>
+        <p>파일이 사라진 경우와 파일 안의 행내 변경이 사라진 경우를 구분합니다.</p>
+      </div>
+    </div>
+
+    <details class="om-watch-guide" open>
+      <summary>Q1. “파일이 사라졌다”는 정확히 무슨 뜻인가?</summary>
+      <p><b>업그레이드 결과물에 파일 자체가 없는 경우입니다.</b> 예를 들어 새로 만든 <code>InstanceCodeResource.java</code>가 생성되지 않았다면 파일 소실입니다.</p>
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead>
+            <tr><th>해당 파일의 등록</th><th>검사 결과</th><th>이유</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>실제 변경 파일(<code>allowed</code>)</td><td><b>담당자 확인 알림</b></td><td>변경이 빠졌을 가능성이 있어 자동 통과시키지 않음</td></tr>
+            <tr><td>즉시 실패 파일(<code>required</code>)</td><td><b>즉시 실패</b></td><td>필수 구현 파일 누락을 파일 상태만으로 확인할 수 있음</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    <details class="om-watch-guide" open>
+      <summary>Q2. “변경이 사라졌다”는 정확히 무슨 뜻인가?</summary>
+      <p><b>파일은 있지만 공식 새 버전의 파일과 완전히 같아서 행내 변경 흔적이 보이지 않는 경우입니다.</b> 검사기는 업그레이드 결과물과 공식 새 버전을 비교해 이를 찾습니다.</p>
+      <pre><code>Entity.java 파일은 존재
+하지만 공식 새 버전의 Entity.java와 완전히 동일
+→ BANK-OM 변경이 적용되지 않았을 가능성
+→ allowed이면 담당자 확인, required이면 즉시 실패</code></pre>
+    </details>
+
+    <details class="om-watch-guide" open>
+      <summary>Q3. 파일이 다르면 행내 코드가 전부 적용됐다는 뜻인가?</summary>
+      <p><b>아닙니다.</b> 현재 파일 단위 검사는 “공식 원본과 다른가?”까지 확인합니다. 공용 파일이 다른 BANK-OM 때문에 달라졌다면, 정작 BANK-OM-001의 <code>INSTANCE_CODE</code>가 빠져도 파일 전체는 다르게 보일 수 있습니다.</p>
+      <div class="om-required-rule">
+        <strong>따라서 세 단계로 확인합니다</strong>
+        <ol>
+          <li><b>파일 검사:</b> 필요한 파일이 있고 공식 원본 대비 변경이 보이는가?</li>
+          <li><b>코드 내용 검사:</b> <code>Entity.INSTANCE_CODE</code>, <code>instanceCodeDAO()</code> 같은 필수 코드가 실제로 남아 있는가?</li>
+          <li><b>동작 검사:</b> API 호출·저장·조회 등 InstanceCode 기능이 실제 환경에서 동작하는가?</li>
+        </ol>
+      </div>
+    </details>
+
+    <details class="om-watch-guide">
+      <summary>Q4. allowed·required·watch를 한 문장씩만 설명하면?</summary>
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead>
+            <tr><th>항목</th><th>한 문장 정의</th><th>문제가 발견되면</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>allowed</code></td><td>이 BANK-OM 기능이 실제로 변경한 파일 전체</td><td>누락·변경 없음 → 담당자 확인</td></tr>
+            <tr><td><code>required</code></td><td>보통 행내 전용 파일 중, 누락되면 필수 구현 누락을 확인할 수 있는 파일</td><td>누락·변경 없음 → 즉시 실패</td></tr>
+            <tr><td><code>watch</code></td><td>직접 수정하지 않았지만 행내 기능에 영향을 줄 수 있는 의존 파일</td><td>공식 버전에서 변경 → 담당자 확인</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    <details class="om-watch-guide">
+      <summary>Q5. 기존 BANK-OM에 나중에 새 파일을 추가하면?</summary>
+      <p>최초 BANK-OM-001의 48개 파일 기록은 그대로 두고, 후속 커밋에서 새로 추가한 파일만 <code>candidate_additional_paths</code>에 기록합니다.</p>
+      <pre><code>candidate_additional_paths:
+  - .../InstanceCodeValidator.java</code></pre>
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead>
+            <tr><th>기록</th><th>검사기에 알려주는 내용</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>새 Git 커밋 식별값(SHA)</td><td>어떤 코드 변경을 어떤 순서로 추가했는가</td></tr>
+            <tr><td><code>candidate_additional_paths</code></td><td>새 파일을 BANK-OM-001의 변경 범위로 승인했는가</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><b>Git 커밋 식별값(SHA)만 추가하면 새 파일은 등록 범위 밖 변경으로 판단됩니다.</b> 반대로 최초 48개 명단을 49개로 고치면 과거 최초 커밋에도 새 파일이 있었던 것처럼 기록이 바뀝니다. 따라서 최초 기록은 보존하고 후속 파일만 별도로 추가합니다.</p>
+      <p>최초 설정에는 필요하지 않으며, 같은 BANK-OM ID로 후속 파일을 추가할 때만 사용합니다. 별도 기능이라면 새 BANK-OM ID를 발급합니다.</p>
+    </details>
+  </section>
+
+  <section id="gates" class="om-section">
+    <div class="om-section-title">
+      <span>03</span>
+      <div>
+        <h2>검사기</h2>
+        <p>각 검사는 한 가지 질문만 담당합니다. 실패하면 후보 승인을 중단하고 해당 원인을 수정합니다.</p>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table om-gate-table">
+        <thead>
+          <tr>
+            <th>검사기</th>
+            <th>무엇을 검사하나</th>
+            <th>어떤 경우 실패하나</th>
+            <th>실패하면</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>T25-R<br><small>최초 재구성</small></th>
+            <td>과거 행내본의 실제 113개 차이를 BANK-OM별 정확한 파일 목록으로 분리했는지</td>
+            <td>폴더 패턴, 없는 파일, 소유자 불일치, 제외 사유 누락, 최종 내용 불일치</td>
+            <td><strong>재구성 중단</strong><br>소유표를 다시 작성</td>
+          </tr>
+          <tr>
+            <th>T25<br><small>공식 기반</small></th>
+            <td>검사 후보가 승인한 공식 원본에서 출발했는지</td>
+            <td>공식 SHA가 후보 이력에 없음, 잠금 문서와 후보 SHA 불일치</td>
+            <td><strong>후보 차단</strong><br>올바른 공식 원본에서 다시 생성</td>
+          </tr>
+          <tr>
+            <th>T30<br><small>커밋 BANK-OM ID</small></th>
+            <td>모든 제품 코드 변경 커밋에 BANK-OM ID가 정확히 하나 있는지</td>
+            <td>라벨 없음, 한 커밋에 여러 ID, 제품 코드와 검사기 정책 혼합</td>
+            <td><strong>커밋 차단</strong><br>기능별로 다시 분리</td>
+          </tr>
+          <tr>
+            <th>T31<br><small>ID 이력</small></th>
+            <td>ID가 등록돼 있고 커밋 순서와 의존관계가 올바른지</td>
+            <td>미등록 ID, 허용되지 않은 여러 커밋, series 단절, 순환 의존</td>
+            <td><strong>적용 순서 차단</strong><br>등록부·의존관계 수정</td>
+          </tr>
+          <tr>
+            <th>T26<br><small>커스터마이징 유지</small></th>
+            <td>등록한 원본 파일 전체와 필수 파일·계약·테스트가 후보에 남았는지</td>
+            <td>필수 파일 소실은 block, 그 밖의 등록 파일 소실은 approval, 폴더 패턴은 analysis_error</td>
+            <td><strong>차단 또는 검토</strong><br>소실한 파일의 역할을 확인</td>
+          </tr>
+          <tr>
+            <th>T40<br><small>범위 이탈</small></th>
+            <td>제품·검사기·등록부·문서의 실제 변경이 승인한 파일 범위 안인지</td>
+            <td>등록하지 않은 파일 변경, required 파일의 순변경 없음</td>
+            <td><strong>변경 차단</strong><br>잘못 섞인 변경을 분리</td>
+          </tr>
+          <tr>
+            <th>T41<br><small>위험 영역</small></th>
+            <td>변경이 금지·승인·관찰 영역 중 어디인지, 승인한 의도 범위 안인지</td>
+            <td>빈 허용 범위, 금지 파일 변경, 승인 범위 밖 파일 변경</td>
+            <td><strong>오류·차단·승인</strong><br>위험 등급별로 분리</td>
+          </tr>
+          <tr>
+            <th>T42<br><small>업그레이드 영향</small></th>
+            <td>공식 새 버전이 watch 경로·설정키·의존성을 바꿨는지와 직접 참조 후보</td>
+            <td>등록한 의존 대상 변경 또는 미등록 직접 참조 후보 발견</td>
+            <td><strong>책임자 검토</strong><br>자동 등록 없이 근거 제시</td>
+          </tr>
+          <tr>
+            <th>T43<br><small>커스텀 부채</small></th>
+            <td>코어 ID 수·변경 라인·충돌률·한 파일에 겹친 ID 수</td>
+            <td>외부 정책의 soft/hard 기준 초과, 지표·정책 형식 오류</td>
+            <td><strong>승인 또는 차단</strong><br>범위 축소·기준선 검토</td>
+          </tr>
+          <tr>
+            <th>T93<br><small>정확 범위</small></th>
+            <td>ID별 실제 커밋 파일과 manifest 파일 목록이 정확히 같은지</td>
+            <td>실제 변경 누락, 실제로 바꾸지 않은 파일의 과다 허용</td>
+            <td><strong>누락 차단</strong><br>과다 범위는 승인 검토</td>
+          </tr>
+          <tr>
+            <th>T70<br><small>검사기 보호</small></th>
+            <td>검사기·등록부·테스트·정책 문서를 느슨하게 바꾸지 않았는지</td>
+            <td>보호 파일을 현재 변경본의 완화된 규칙으로 스스로 승인하려는 경우</td>
+            <td><strong>정책 변경 절차</strong><br>기존 기준으로 별도 승인</td>
+          </tr>
+          <tr>
+            <th>T60-I<br><small>검사 코드</small></th>
+            <td>등록된 Python 테스트 파일과 함수가 실제로 존재하는지</td>
+            <td>Python 파일 없음, 함수 이름 없음, 문법을 읽을 수 없음</td>
+            <td><strong>검사 준비 차단</strong><br>테스트 구현 보완</td>
+          </tr>
+          <tr>
+            <th>T61<br><small>반증 검사</small></th>
+            <td>기능 코드를 제거하면 관련 테스트가 실제로 실패하는지</td>
+            <td>기능을 빼도 테스트가 통과, 환경 오류만 발생, 비교 증거 없음</td>
+            <td><strong>검사 신뢰 불충분</strong><br>테스트 민감도 보완</td>
+          </tr>
+          <tr>
+            <th>T62<br><small>행내 동작</small></th>
+            <td>행내 서버·DB·검색·브라우저에서 기능이 실제로 동작하는지</td>
+            <td>테스트 미실행, API·저장·검색·화면 결과 불일치</td>
+            <td><strong>운영 승인 차단</strong><br>환경 또는 기능 수정 후 재실행</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="example" class="om-section">
+    <div class="om-section-title">
+      <span>04</span>
+      <div>
+        <h2>실제 적용 예시</h2>
+        <p>BANK-OM-001은 공식 원본에 없던 InstanceCode 기능을 코어 파일과 전용 파일에 함께 추가합니다.</p>
+      </div>
+    </div>
+
+    <div class="om-example-flow" role="img" aria-label="공식 원본에 BANK-OM-001 커밋을 적용하고 검사 결과를 얻는 흐름">
+      <span>공식 원본<br><code>afcb2d2…</code></span>
+      <b aria-hidden="true">＋</b>
+      <span>BANK-OM-001<br><code>a2566fac…</code></span>
+      <b aria-hidden="true">→</b>
+      <span>적용 후보<br><code>Entity + 전용 파일</code></span>
+      <b aria-hidden="true">→</b>
+      <span>검사 결과<br><code>T26·T60-I pass</code></span>
+    </div>
+
+    <div class="om-file-diffs">
+      <details class="om-file-diff" open>
+        <summary><code>Entity.java</code><span>기존 코어 파일 수정 · 1줄 추가</span></summary>
+        <div class="om-split-diff">
+          <div>
+            <strong>공식 원본</strong>
+            <pre><code>public static final String WORKSHEET = "worksheet";
+<span class="text-muted">INSTANCE_CODE 없음</span></code></pre>
+          </div>
+          <div>
+            <strong>BANK-OM-001 적용본</strong>
+            <pre><code>public static final String WORKSHEET = "worksheet";
+<ins>public static final String INSTANCE_CODE = "instanceCode";</ins></code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="om-file-diff">
+        <summary><code>InstanceCodeResource.java</code><span>신규 파일 · API 접수</span></summary>
+        <div class="om-split-diff">
+          <div class="om-no-file"><strong>공식 원본</strong><span>파일 없음</span></div>
+          <div>
+            <strong>BANK-OM-001 적용본</strong>
+            <pre><code><ins>@Path("/v1/instanceCodes")</ins>
+<ins>class InstanceCodeResource</ins>
+<ins>  extends EntityResource&lt;InstanceCode, InstanceCodeRepository&gt; {</ins>
+<ins>  super(Entity.INSTANCE_CODE, authorizer, limits);</ins>
+<ins>}</ins></code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="om-file-diff">
+        <summary><code>InstanceCodeMapper.java</code><span>신규 파일 · 요청값 변환</span></summary>
+        <div class="om-split-diff">
+          <div class="om-no-file"><strong>공식 원본</strong><span>파일 없음</span></div>
+          <div>
+            <strong>BANK-OM-001 적용본</strong>
+            <pre><code><ins>class InstanceCodeMapper {</ins>
+<ins>  return copy(new InstanceCode(), create, user)</ins>
+<ins>      .withCodeGroup(create.getCodeGroup())</ins>
+<ins>      .withCodeValue(create.getCodeValue());</ins>
+<ins>}</ins></code></pre>
+          </div>
+        </div>
+      </details>
+
+      <details class="om-file-diff">
+        <summary><code>InstanceCodeRepository.java</code><span>신규 파일 · DB·검색 연결</span></summary>
+        <div class="om-split-diff">
+          <div class="om-no-file"><strong>공식 원본</strong><span>파일 없음</span></div>
+          <div>
+            <strong>BANK-OM-001 적용본</strong>
+            <pre><code><ins>class InstanceCodeRepository</ins>
+<ins>  extends EntityRepository&lt;InstanceCode&gt; {</ins>
+<ins>  super(InstanceCodeResource.COLLECTION_PATH,</ins>
+<ins>      Entity.INSTANCE_CODE,</ins>
+<ins>      Entity.getCollectionDAO().instanceCodeDAO());</ins>
+<ins>}</ins></code></pre>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <details class="om-details">
+      <summary>커밋과 등록 파일의 역할 차이</summary>
+      <p><strong>Git 커밋</strong>이 실제 코드를 수정합니다. <strong>BANK-OM ID</strong>는 변경을 업무 기능으로 묶고, <strong>Manifest</strong>는 허용 경로·필수 파일·감시 지점·테스트 계약을 검사기에 알려줍니다. 등록 파일 자체가 제품 코드를 수정하지는 않습니다.</p>
+    </details>
+  </section>
+
+  <section id="result" class="om-section">
+    <div class="om-section-title">
+      <span>05</span>
+      <div>
+        <h2>결과</h2>
+        <p>현재는 소스 수준 재적용까지 확인됐고, 최종 행내 동작 승인은 남아 있습니다.</p>
+      </div>
+    </div>
+
+    <div class="om-result-list">
+      <div><span class="om-status om-pass">통과</span><strong>T25-R</strong><p>113개 경로 = 단독 74 + 공유 37 + 제외 2, 폴더 패턴 없음</p></div>
+      <div><span class="om-status om-pass">통과</span><strong>T25·T30·T31</strong><p>공식 기반과 BANK-OM 커밋 장부·순서 정상</p></div>
+      <div><span class="om-status om-pass">통과</span><strong>T26·T60-I</strong><p>등록 원본 파일 전체·필수 코드·Python 검사 구현 존재</p></div>
+      <div><span class="om-status om-pass">통과</span><strong>T40·T70</strong><p>전체 변경 범위와 검사기 자체 보호 단위 테스트 통과</p></div>
+      <div><span class="om-status om-pass">통과</span><strong>T41·T43·T93</strong><p>검사 대상 코드의 위험 영역·부채 기준선·ID별 정확 경로 일치. BANK-OM-007은 원본 8개와 등록된 후속 2개를 합쳐 현재 10개 경로로 검사</p></div>
+      <div><span class="om-status om-pass">구현</span><strong>T42·T50·T51</strong><p>watch 제안·빈 선언 차단·scalar/list 구조 변화 출력</p></div>
+      <div><span class="om-status om-limited">범위 통과</span><strong>T61</strong><p>현재 Sybase·Tibero만 반증 완료</p></div>
+      <div><span class="om-status om-block">환경 대기</span><strong>T62</strong><p>실행기와 환경 사전검사는 완료, 행내 운영 테스트 7건 실행 필요</p></div>
+    </div>
+
+    <div class="om-decision">
+      <div><strong>지금 말할 수 있음</strong><span>코드 재적용 구조와 소스 검사는 정상</span></div>
+      <div><strong>아직 말할 수 없음</strong><span>행내 환경에서 모든 기능이 정상 동작한다는 최종 결론</span></div>
+    </div>
+  </section>
+
+  <section id="roadmap" class="om-section">
+    <div class="om-section-title">
+      <span>06</span>
+      <div>
+        <h2>현재까지 구현 단계와 향후 추가 구현</h2>
+        <p>1·2·3차 코드는 완료했습니다. 이제 행내 환경 값을 넣고 실제 결과 증거를 만드는 단계입니다.</p>
+      </div>
+    </div>
+
+    <div class="om-roadmap">
+      <div class="om-roadmap-group">
+        <strong>현재 완료</strong>
+        <ol>
+          <li><span>1</span><div><b>BANK-OM 등록 체계</b><p>등록된 BANK-OM 전체의 Manifest·계약·커밋 라벨 구성</p></div></li>
+          <li><span>2</span><div><b>행내 OpenMetadata 코드 재구성</b><p>공식 1.13.1 위에 등록된 BANK-OM 변경 적용 · <code>849ae756…</code></p></div></li>
+          <li><span>3</span><div><b>정확 경로 검사기 1차</b><p>T25-R·T26·T40·T70 강화 · 39개 단위 테스트 통과</p></div></li>
+          <li><span>4</span><div><b>위험 검사기 2차</b><p>T41·T42·T43·T93·T50·T51 보강과 실제 후보 통합</p></div></li>
+          <li><span>5</span><div><b>운영 실행기 3차</b><p>환경 사전검사·T62 결과 결속·90일 증거 보존</p></div></li>
+          <li><span>6</span><div><b>제한 범위 반증</b><p>Sybase·Tibero T61 증명</p></div></li>
+        </ol>
+      </div>
+
+      <div class="om-roadmap-group om-future">
+        <strong>행내에서 실행할 일</strong>
+        <ol>
+          <li><span>1</span><div><b>필수 환경값 입력</b><p>URL·토큰·테스트 식별값·브라우저 로그인 상태·배포 digest</p></div></li>
+          <li><span>2</span><div><b>T62 운영 테스트 7건</b><p>InstanceCode CRUD·저장·검색·화면 검증</p></div></li>
+          <li><span>3</span><div><b>T61 범위 확대</b><p>BANK-OM-001을 포함한 나머지 기능의 제거본 배포·반증</p></div></li>
+          <li><span>4</span><div><b>다음 공식 버전 입력</b><p>새 target SHA로 T42 watch·설정·의존성 영향과 후보 제안 실행</p></div></li>
+          <li><span>5</span><div><b>업그레이드 리허설</b><p>재적용·충돌 해결·T43 실제 conflict rate·전체 재검사</p></div></li>
+          <li><span>6</span><div><b>동일 산출물 승인</b><p>검사한 소스 SHA와 실제 배포 이미지 digest 일치 증명</p></div></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+</div>
+
+<style>
+  #om-guide-v3 {
+    width: 100%;
+    color: var(--foreground);
+  }
+
+  #om-guide-v3 h1,
+  #om-guide-v3 h2,
+  #om-guide-v3 h3,
+  #om-guide-v3 p {
+    margin-top: 0;
+  }
+
+  #om-guide-v3 p {
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-hero {
+    display: grid;
+    gap: 10px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  #om-guide-v3 .om-hero h1,
+  #om-guide-v3 .om-hero p {
+    margin-bottom: 0;
+  }
+
+  #om-guide-v3 .om-now {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    padding-top: 8px;
+  }
+
+  #om-guide-v3 .om-progress {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 18px 0 4px;
+  }
+
+  #om-guide-v3 .om-progress article {
+    display: grid;
+    align-content: start;
+    gap: 6px;
+    min-height: 116px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--card);
+  }
+
+  #om-guide-v3 .om-progress article.om-progress-done {
+    border-color: color-mix(in srgb, var(--viz-series-2) 60%, var(--border));
+    background: color-mix(in srgb, var(--viz-series-2) 8%, var(--card));
+  }
+
+  #om-guide-v3 .om-progress span {
+    color: var(--muted-foreground);
+    font-size: 0.82rem;
+  }
+
+  #om-guide-v3 .om-progress p {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+  }
+
+  #om-guide-v3 .om-toc {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin: 14px 0 4px;
+    padding: 8px 0;
+    background: var(--background);
+  }
+
+  #om-guide-v3 .om-section {
+    padding: 28px 0;
+    border-bottom: 1px solid var(--border);
+    scroll-margin-top: 58px;
+  }
+
+  #om-guide-v3 .om-section-title {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  #om-guide-v3 .om-section-title > span {
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-section-title h2,
+  #om-guide-v3 .om-section-title p {
+    margin-bottom: 4px;
+  }
+
+  #om-guide-v3 .om-purpose-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #om-guide-v3 .om-purpose-grid article {
+    display: grid;
+    gap: 6px;
+  }
+
+  #om-guide-v3 .om-purpose-grid p {
+    margin-bottom: 0;
+  }
+
+  #om-guide-v3 .om-branch-diagram {
+    display: grid;
+    gap: 10px;
+  }
+
+  #om-guide-v3 .om-lane {
+    display: grid;
+    gap: 9px;
+    padding: 12px;
+    border-left: 3px solid var(--border);
+  }
+
+  #om-guide-v3 .om-bank-lane {
+    border-left-color: var(--viz-series-1);
+  }
+
+  #om-guide-v3 .om-check-lane {
+    border-left-color: var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-node {
+    display: grid;
+    gap: 4px;
+    width: fit-content;
+    padding: 8px 10px;
+    background: var(--muted);
+  }
+
+  #om-guide-v3 .om-line {
+    width: 2px;
+    height: 16px;
+    margin-left: 20px;
+    background: var(--border);
+  }
+
+  #om-guide-v3 .om-commit-row {
+    display: flex;
+    align-items: stretch;
+    gap: 7px;
+  }
+
+  #om-guide-v3 .om-commit-row > span,
+  #om-guide-v3 .om-branch-arrow {
+    display: grid;
+    place-items: center;
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-bank-lane p {
+    margin-bottom: 0;
+  }
+
+  #om-guide-v3 .om-preflight-diagram {
+    display: grid;
+    gap: 9px;
+    margin-bottom: 18px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  #om-guide-v3 .om-preflight-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 7px;
+    align-items: stretch;
+  }
+
+  #om-guide-v3 .om-preflight-step {
+    display: grid;
+    align-content: start;
+    min-width: 0;
+    background: var(--muted);
+  }
+
+  #om-guide-v3 .om-preflight-step summary {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 7px;
+    padding: 9px;
+  }
+
+  #om-guide-v3 .om-preflight-step summary::after {
+    content: "예시 보기";
+    color: var(--muted-foreground);
+    font-weight: 400;
+  }
+
+  #om-guide-v3 .om-preflight-step[open] summary::after {
+    content: "접기";
+  }
+
+  #om-guide-v3 .om-preflight-step summary span {
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-preflight-step pre {
+    margin: 0 9px 9px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  #om-guide-v3 .om-preflight-step > p {
+    margin: 0 9px 10px;
+  }
+
+  #om-guide-v3 .om-manifest-mini {
+    display: grid;
+    gap: 1px;
+    margin: 0 9px 9px;
+    background: var(--border);
+  }
+
+  #om-guide-v3 .om-manifest-mini > div {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 7px;
+    padding: 6px 7px;
+    background: var(--card);
+  }
+
+  #om-guide-v3 .om-manifest-mini span {
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-preflight-row > span {
+    display: grid;
+    place-items: center;
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-preflight-diagram p {
+    margin-bottom: 0;
+  }
+
+  #om-guide-v3 .om-watch-guide,
+  #om-guide-v3 .om-code-evidence {
+    margin-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  #om-guide-v3 .om-watch-guide summary,
+  #om-guide-v3 .om-code-evidence summary {
+    cursor: pointer;
+    padding: 10px 0;
+    font-weight: 500;
+  }
+
+  #om-guide-v3 .om-watch-guide ol {
+    margin: 0;
+    padding-left: 22px;
+  }
+
+  #om-guide-v3 .om-watch-guide li + li,
+  #om-guide-v3 .om-watch-guide p {
+    margin-top: 8px;
+  }
+
+  #om-guide-v3 .om-code-evidence > p {
+    margin-top: 0;
+  }
+
+  #om-guide-v3 .om-file-evidence {
+    border-top: 1px solid var(--border);
+  }
+
+  #om-guide-v3 .om-file-evidence pre {
+    margin: 0 0 8px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  #om-guide-v3 .om-file-evidence p {
+    margin: 0 0 12px;
+  }
+
+  #om-guide-v3 .om-file-evidence ins {
+    padding-inline: 5px 2px;
+    color: var(--foreground);
+    text-decoration: none;
+    background: color-mix(in srgb, var(--viz-series-2) 18%, transparent);
+    box-shadow: inset 3px 0 var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-evidence-part {
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  #om-guide-v3 .om-evidence-part pre {
+    margin: 8px 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  #om-guide-v3 .om-evidence-part p {
+    margin: 0;
+  }
+
+  #om-guide-v3 .om-branch-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  #om-guide-v3 .om-swatch {
+    width: 12px;
+    height: 12px;
+  }
+
+  #om-guide-v3 .om-core-swatch {
+    background: var(--viz-series-1);
+  }
+
+  #om-guide-v3 .om-custom-swatch {
+    background: var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-branch-visual {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  #om-guide-v3 .om-branch-svg {
+    display: block;
+    width: 100%;
+    min-width: 680px;
+    height: auto;
+  }
+
+  #om-guide-v3 .om-svg-path {
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+
+  #om-guide-v3 .om-svg-node {
+    stroke-width: 2;
+  }
+
+  #om-guide-v3 .om-svg-neutral-line {
+    stroke: var(--border);
+  }
+
+  #om-guide-v3 .om-svg-core-line {
+    stroke: var(--viz-series-1);
+  }
+
+  #om-guide-v3 .om-svg-custom-line {
+    stroke: var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-svg-fail-line {
+    stroke: var(--destructive);
+  }
+
+  #om-guide-v3 .om-svg-pass-line {
+    stroke: var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-svg-loop {
+    stroke-dasharray: 7 8;
+  }
+
+  #om-guide-v3 .om-svg-neutral-node {
+    fill: var(--muted);
+    stroke: var(--border);
+  }
+
+  #om-guide-v3 .om-svg-core-node {
+    fill: color-mix(in srgb, var(--viz-series-1) 14%, var(--background));
+    stroke: var(--viz-series-1);
+  }
+
+  #om-guide-v3 .om-svg-custom-node,
+  #om-guide-v3 .om-svg-pass-node {
+    fill: color-mix(in srgb, var(--viz-series-2) 14%, var(--background));
+    stroke: var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-svg-candidate-node {
+    fill: color-mix(in srgb, var(--primary) 12%, var(--background));
+    stroke: var(--primary);
+  }
+
+  #om-guide-v3 .om-svg-verifier-node {
+    fill: color-mix(in srgb, var(--viz-series-3) 14%, var(--background));
+    stroke: var(--viz-series-3);
+  }
+
+  #om-guide-v3 .om-svg-fail-node {
+    fill: color-mix(in srgb, var(--destructive) 10%, var(--background));
+    stroke: var(--destructive);
+  }
+
+  #om-guide-v3 .om-svg-core-dot {
+    fill: var(--viz-series-1);
+  }
+
+  #om-guide-v3 .om-svg-custom-dot {
+    fill: var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-svg-label,
+  #om-guide-v3 .om-svg-caption {
+    fill: var(--foreground);
+  }
+
+  #om-guide-v3 .om-svg-muted {
+    fill: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-svg-center,
+  #om-guide-v3 .om-svg-caption {
+    text-anchor: middle;
+  }
+
+  #om-guide-v3 .om-svg-strong {
+    font-weight: 500;
+  }
+
+  #om-guide-v3 .om-svg-caption,
+  #om-guide-v3 .om-svg-core-text {
+    fill: var(--viz-series-1);
+  }
+
+  #om-guide-v3 .om-svg-custom-text {
+    fill: var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-svg-fail-text {
+    fill: var(--destructive);
+    text-anchor: middle;
+  }
+
+  #om-guide-v3 .om-details,
+  #om-guide-v3 .om-file-diff {
+    margin-top: 12px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  #om-guide-v3 details > summary {
+    cursor: pointer;
+    padding: 10px 0;
+    font-weight: 500;
+  }
+
+  #om-guide-v3 .om-details p {
+    margin-bottom: 12px;
+  }
+
+  #om-guide-v3 .om-gate-table th:first-child {
+    white-space: nowrap;
+  }
+
+  #om-guide-v3 .om-gate-table small {
+    color: var(--muted-foreground);
+    font-weight: 400;
+  }
+
+  #om-guide-v3 .om-example-flow {
+    display: flex;
+    align-items: stretch;
+    gap: 7px;
+    margin-bottom: 16px;
+  }
+
+  #om-guide-v3 .om-example-flow span {
+    flex: 1 1 0;
+    padding: 9px;
+    text-align: center;
+    background: var(--muted);
+  }
+
+  #om-guide-v3 .om-example-flow b {
+    display: grid;
+    place-items: center;
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-file-diffs {
+    display: grid;
+    gap: 6px;
+  }
+
+  #om-guide-v3 .om-file-diff {
+    margin: 0;
+  }
+
+  #om-guide-v3 .om-file-diff summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  #om-guide-v3 .om-file-diff summary span {
+    color: var(--muted-foreground);
+    font-weight: 400;
+  }
+
+  #om-guide-v3 .om-split-diff {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--border);
+  }
+
+  #om-guide-v3 .om-split-diff > div {
+    min-width: 0;
+    padding: 10px;
+    background: var(--background);
+  }
+
+  #om-guide-v3 .om-split-diff pre {
+    margin: 8px 0 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  #om-guide-v3 .om-split-diff ins {
+    color: var(--foreground);
+    text-decoration: none;
+    background: color-mix(in srgb, var(--viz-series-2) 20%, transparent);
+  }
+
+  #om-guide-v3 .om-no-file {
+    display: grid;
+    align-content: center;
+    gap: 6px;
+    min-height: 100px;
+    text-align: center;
+  }
+
+  #om-guide-v3 .om-no-file span {
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-result-list {
+    display: grid;
+    gap: 1px;
+    background: var(--border);
+  }
+
+  #om-guide-v3 .om-result-list > div {
+    display: grid;
+    grid-template-columns: auto minmax(110px, auto) minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    padding: 10px;
+    background: var(--background);
+  }
+
+  #om-guide-v3 .om-result-list p {
+    margin-bottom: 0;
+  }
+
+  #om-guide-v3 .om-status {
+    width: fit-content;
+    padding: 2px 7px;
+  }
+
+  #om-guide-v3 .om-pass {
+    background: color-mix(in srgb, var(--viz-series-2) 20%, transparent);
+  }
+
+  #om-guide-v3 .om-limited {
+    background: color-mix(in srgb, var(--viz-series-3) 22%, transparent);
+  }
+
+  #om-guide-v3 .om-block {
+    color: var(--destructive);
+    background: color-mix(in srgb, var(--destructive) 12%, transparent);
+  }
+
+  #om-guide-v3 .om-decision {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  #om-guide-v3 .om-decision > div {
+    display: grid;
+    gap: 5px;
+    padding-top: 10px;
+    border-top: 3px solid var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-decision > div:last-child {
+    border-top-color: var(--destructive);
+  }
+
+  #om-guide-v3 .om-roadmap {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  #om-guide-v3 .om-roadmap-group {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+  }
+
+  #om-guide-v3 .om-roadmap ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  #om-guide-v3 .om-roadmap li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  #om-guide-v3 .om-roadmap li > span {
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-roadmap p {
+    margin: 3px 0 0;
+  }
+
+  #om-guide-v3 #gates,
+  #om-guide-v3 #example,
+  #om-guide-v3 #result,
+  #om-guide-v3 #roadmap {
+    display: none;
+  }
+
+  #om-guide-v3 .om-repo-role {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin-top: 14px;
+    background: var(--border);
+  }
+
+  #om-guide-v3 .om-repo-role > div {
+    display: grid;
+    gap: 5px;
+    padding: 14px;
+    background: var(--background);
+  }
+
+  #om-guide-v3 .om-repo-role span {
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-implementation-status pre {
+    margin: 2px 0;
+    white-space: pre-wrap;
+  }
+
+  #om-guide-v3 .om-scope-compare {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    margin: 14px 0;
+  }
+
+  #om-guide-v3 .om-scope-compare > div {
+    display: grid;
+    gap: 5px;
+    padding: 12px;
+    border-left: 4px solid var(--viz-series-1);
+    background: color-mix(in srgb, var(--muted) 45%, transparent);
+  }
+
+  #om-guide-v3 .om-scope-compare > div:last-child {
+    border-left-color: var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-scope-compare span {
+    color: var(--muted-foreground);
+  }
+
+  #om-guide-v3 .om-scope-compare > b {
+    color: var(--muted-foreground);
+    text-align: center;
+  }
+
+  #om-guide-v3 .om-scope-example td:nth-child(2),
+  #om-guide-v3 .om-scope-example td:nth-child(3) {
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  #om-guide-v3 .om-required-rule {
+    display: grid;
+    gap: 7px;
+    margin-top: 12px;
+    padding: 12px 0 12px 14px;
+    border-left: 4px solid var(--viz-series-2);
+  }
+
+  #om-guide-v3 .om-required-rule ol {
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  @media (max-width: 760px) {
+    #om-guide-v3 .om-purpose-grid,
+    #om-guide-v3 .om-repo-role,
+    #om-guide-v3 .om-roadmap,
+    #om-guide-v3 .om-progress {
+      grid-template-columns: 1fr;
+    }
+
+    #om-guide-v3 .om-commit-row,
+    #om-guide-v3 .om-example-flow {
+      flex-direction: column;
+    }
+
+    #om-guide-v3 .om-commit-row > span,
+    #om-guide-v3 .om-example-flow b {
+      transform: rotate(90deg);
+    }
+
+    #om-guide-v3 .om-preflight-row {
+      grid-template-columns: 1fr;
+    }
+
+    #om-guide-v3 .om-preflight-row > span {
+      transform: rotate(90deg);
+    }
+
+    #om-guide-v3 .om-result-list > div {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    #om-guide-v3 .om-result-list p {
+      grid-column: 1 / -1;
+    }
+
+    #om-guide-v3 .om-scope-compare {
+      grid-template-columns: 1fr;
+    }
+
+    #om-guide-v3 .om-scope-compare > b {
+      transform: rotate(90deg);
+    }
+  }
+
+  @media (max-width: 520px) {
+    #om-guide-v3 .om-split-diff,
+    #om-guide-v3 .om-decision,
+    #om-guide-v3 .om-after-check {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

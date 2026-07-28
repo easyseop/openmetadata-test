@@ -1,5 +1,11 @@
 # Claude 독립 검토 인수인계
 
+> **현재 공유문서 작업 안내:** 이 문서는 과거 구현 상세를 보존한다. 현재
+> `codex/strict-manifest-gates` 브랜치의 1차·2차·3차 공유문서 상태와 다음 작업은
+> [`CODEX_HANDOFF.md`](CODEX_HANDOFF.md)와
+> [`SHARING_ARTIFACT_REQUIREMENTS.md`](SHARING_ARTIFACT_REQUIREMENTS.md)를 먼저
+> 따른다.
+
 > 작성일: 2026-07-27
 > 대상 브랜치: `claude/markdown-file-feedback-26933w`
 > 변경 전 기준 커밋: `9d2a174` (`implement T25 vendor ancestry gate`)
