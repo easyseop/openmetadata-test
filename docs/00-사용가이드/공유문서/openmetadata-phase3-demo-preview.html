@@ -1,0 +1,1755 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Openmetadata Phase3 Demo Fragment</title>
+<style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
+</head>
+<body>
+<iframe sandbox="allow-scripts" referrerpolicy="no-referrer" title="Openmetadata Phase3 Demo Fragment" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &#x27;none&#x27;; script-src &#x27;unsafe-inline&#x27; &#x27;unsafe-eval&#x27; &#x27;wasm-unsafe-eval&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src &#x27;unsafe-inline&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src &#x27;none&#x27;; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;&quot;&gt;
+&lt;title&gt;Openmetadata Phase3 Demo Fragment&lt;/title&gt;
+&lt;style&gt;:root {
+  color-scheme: light dark;
+  background-color: var(
+    --background,
+    var(--color-background-primary, light-dark(rgb(255 255 255), rgb(24 24 24)))
+  ) !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --color-background-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --card: color-mix(in oklab, var(--foreground) 5%, transparent);
+  --card-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --popover: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255), rgb(45 45 45))
+  );
+  --popover-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --primary: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --primary-foreground: var(
+    --color-text-inverse,
+    light-dark(rgb(255 255 255), rgb(13 13 13))
+  );
+  --secondary: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%))
+  );
+  --secondary-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: var(
+    --color-text-secondary,
+    light-dark(rgb(26 28 31 / 49.4%), rgb(255 255 255 / 49.8%))
+  );
+  --accent: var(
+    --color-background-info,
+    light-dark(rgb(229 242 255), rgb(13 39 63))
+  );
+  --accent-foreground: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --destructive: var(
+    --color-text-warning,
+    light-dark(rgb(226 85 7), rgb(255 133 73))
+  );
+  --border: var(
+    --color-border-secondary,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+  --input: var(
+    --color-border-primary,
+    light-dark(
+      rgb(26 28 31 / 11.8%),
+      color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+    )
+  );
+  --ring: var(
+    --color-ring-primary,
+    light-dark(rgb(51 156 255), rgb(131 195 255 / 76%))
+  );
+  --font-size-base: var(--font-text-md-size, 14px);
+  --red: light-dark(rgb(186 38 35), rgb(250 66 62));
+  --green: light-dark(rgb(0 162 64), rgb(64 201 119));
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(rgb(243 136 59), rgb(245 154 86));
+  --viz-series-3: light-dark(rgb(93 201 119), rgb(116 213 139));
+  --viz-series-4: light-dark(rgb(235 119 177), rgb(240 143 192));
+  --viz-series-5: light-dark(rgb(155 121 236), rgb(170 145 239));
+  --viz-series-6: light-dark(rgb(58 185 177), rgb(90 203 194));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, &quot;Segoe UI&quot;, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;,
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --radius: var(--border-radius-lg, 12.5px);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 17 17&#x27;%3E%3Cpath d=&#x27;M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z&#x27;/%3E%3C/svg%3E&quot;);
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+}
+
+:root[data-theme=&quot;light&quot;] {
+  color-scheme: light;
+}
+
+:root[data-theme=&quot;dark&quot;] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html &gt; body {
+  /* Preserve MCP aliases for older inline renderers without creating :root cycles. */
+  --color-background-primary: var(
+    --background,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --color-text-primary: var(
+    --foreground,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --color-border-secondary: var(
+    --border,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+
+  margin: 0;
+  padding: 5px;
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: pointer;
+  font-weight: var(--font-weight-medium, 500);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.table-responsive &gt; .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead th {
+  padding-block: 8px;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 6px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align=&quot;right&quot;]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align=&quot;center&quot;]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  corner-shape: superellipse(1.5);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget &gt; :not(.card) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls &gt; .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls &gt; .form-label &gt; :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: padding-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(in srgb, var(--primary-foreground) 50%, transparent);
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type=&quot;file&quot;] {
+  padding: 0;
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control[type=&quot;file&quot;]::file-selector-button {
+  min-height: 26px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+}
+
+.form-control[type=&quot;file&quot;]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type=&quot;color&quot;] {
+  width: 40px;
+  height: 28px;
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  corner-shape: superellipse(1.5);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: &quot;&quot;;
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type=&quot;radio&quot;] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type=&quot;radio&quot;]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: &quot;&quot;;
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+    [aria-pressed=&quot;true&quot;],
+    [aria-selected=&quot;true&quot;],
+    .is-selected
+  ) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed=&quot;true&quot;], [aria-selected=&quot;true&quot;], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget &gt; svg {
+  width: 100%;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+
+html&gt;body{padding:0}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id=&quot;om-phase3&quot; data-artifact-status=&quot;review-draft&quot;&gt;
+  &lt;header class=&quot;p3-hero&quot;&gt;
+    &lt;span class=&quot;viz-badge&quot;&gt;3차 시연문서 초안&lt;/span&gt;
+    &lt;h1&gt;코드 변경부터 검사 결과와 배포 판단까지&lt;/h1&gt;
+    &lt;p&gt;실제 제품 소스와 로컬 검사 결과를 연결해 보여줍니다. 다음 공식 버전과 행내 실행 환경이 필요한 항목은 완료된 결과로 표시하지 않습니다.&lt;/p&gt;
+    &lt;div class=&quot;p3-final&quot; role=&quot;status&quot;&gt;
+      &lt;div&gt;
+        &lt;span&gt;현재 최종 판단&lt;/span&gt;
+        &lt;strong&gt;BLOCK · 운영 배포 진행 불가&lt;/strong&gt;
+      &lt;/div&gt;
+      &lt;p&gt;소스 변경 검사는 통과했지만 실제 공식 업그레이드, 행내 API·화면·DB 테스트와 배포본 일치 검사가 남아 있습니다.&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/header&gt;
+
+  &lt;section class=&quot;p3-section&quot; aria-labelledby=&quot;p3-input-title&quot;&gt;
+    &lt;div class=&quot;p3-heading&quot;&gt;
+      &lt;span&gt;01&lt;/span&gt;
+      &lt;div&gt;
+        &lt;h2 id=&quot;p3-input-title&quot;&gt;이번 시연에서 확인하는 코드&lt;/h2&gt;
+        &lt;p&gt;어떤 공식 원본과 어떤 행내 코드 상태를 비교했는지 먼저 고정합니다.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;table-responsive&quot;&gt;
+      &lt;table class=&quot;table table-sm p3-input-table&quot;&gt;
+        &lt;thead&gt;
+          &lt;tr&gt;&lt;th&gt;구분&lt;/th&gt;&lt;th&gt;저장소·버전&lt;/th&gt;&lt;th&gt;이번 시연에서의 의미&lt;/th&gt;&lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+          &lt;tr&gt;
+            &lt;td&gt;공식 원본&lt;/td&gt;
+            &lt;td&gt;&lt;code&gt;open-metadata/OpenMetadata&lt;/code&gt;&lt;br&gt;&lt;code&gt;1.13.1-release · afcb2d2…&lt;/code&gt;&lt;/td&gt;
+            &lt;td&gt;행내 커스터마이징을 적용하기 전 기준 코드&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;행내 배포 준비 코드&lt;/td&gt;
+            &lt;td&gt;&lt;code&gt;easyseop/OpenMetadata&lt;/code&gt;&lt;br&gt;&lt;code&gt;codex/bank-vendor-1.13.1-rebuild · 849ae756…&lt;/code&gt;&lt;/td&gt;
+            &lt;td&gt;BANK-OM-001~011이 적용된 소스 검사 대상이며 운영 배포 완료 상태는 아님&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;다음 공식 버전&lt;/td&gt;
+            &lt;td&gt;&lt;strong&gt;아직 지정하지 않음&lt;/strong&gt;&lt;/td&gt;
+            &lt;td&gt;실제 업그레이드 비교와 충돌 측정은 아직 실행할 수 없음&lt;/td&gt;
+          &lt;/tr&gt;
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+
+  &lt;section class=&quot;p3-section&quot; aria-labelledby=&quot;p3-flow-title&quot;&gt;
+    &lt;div class=&quot;p3-heading&quot;&gt;
+      &lt;span&gt;02&lt;/span&gt;
+      &lt;div&gt;
+        &lt;h2 id=&quot;p3-flow-title&quot;&gt;전체 시연 순서&lt;/h2&gt;
+        &lt;p&gt;완료된 소스 검사와 아직 행내 환경이 필요한 검사를 한 흐름에서 구분합니다.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;ol class=&quot;p3-flow&quot;&gt;
+      &lt;li class=&quot;p3-done&quot;&gt;&lt;span&gt;1&lt;/span&gt;&lt;strong&gt;현재 코드 확인&lt;/strong&gt;&lt;small&gt;완료&lt;/small&gt;&lt;/li&gt;
+      &lt;li class=&quot;p3-pending&quot;&gt;&lt;span&gt;2&lt;/span&gt;&lt;strong&gt;새 공식 버전 지정&lt;/strong&gt;&lt;small&gt;대기&lt;/small&gt;&lt;/li&gt;
+      &lt;li class=&quot;p3-pending&quot;&gt;&lt;span&gt;3&lt;/span&gt;&lt;strong&gt;커스터마이징 재적용&lt;/strong&gt;&lt;small&gt;대기&lt;/small&gt;&lt;/li&gt;
+      &lt;li class=&quot;p3-done&quot;&gt;&lt;span&gt;4&lt;/span&gt;&lt;strong&gt;Manifest·Git 확인&lt;/strong&gt;&lt;small&gt;완료&lt;/small&gt;&lt;/li&gt;
+      &lt;li class=&quot;p3-done&quot;&gt;&lt;span&gt;5&lt;/span&gt;&lt;strong&gt;소스 검사 실행&lt;/strong&gt;&lt;small&gt;완료&lt;/small&gt;&lt;/li&gt;
+      &lt;li class=&quot;p3-partial&quot;&gt;&lt;span&gt;6&lt;/span&gt;&lt;strong&gt;행내 동작 검사&lt;/strong&gt;&lt;small&gt;일부 완료&lt;/small&gt;&lt;/li&gt;
+      &lt;li class=&quot;p3-blocked&quot;&gt;&lt;span&gt;7&lt;/span&gt;&lt;strong&gt;배포 판단&lt;/strong&gt;&lt;small&gt;중단&lt;/small&gt;&lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/section&gt;
+
+  &lt;section class=&quot;p3-section&quot; aria-labelledby=&quot;p3-code-title&quot;&gt;
+    &lt;div class=&quot;p3-heading&quot;&gt;
+      &lt;span&gt;03&lt;/span&gt;
+      &lt;div&gt;
+        &lt;h2 id=&quot;p3-code-title&quot;&gt;실제 코드가 어떻게 달라졌나&lt;/h2&gt;
+        &lt;p&gt;BANK-OM-001의 InstanceCode를 대표 사례로 사용합니다. 전체 11개 커스터마이징 중 한 사례입니다.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;p3-relation&quot; aria-label=&quot;InstanceCode 코드 연결 관계&quot;&gt;
+      &lt;div&gt;&lt;span&gt;공식 공용 코드&lt;/span&gt;&lt;strong&gt;Entity.java&lt;/strong&gt;&lt;p&gt;OpenMetadata가 인식할 엔티티 이름에 &lt;code&gt;instanceCode&lt;/code&gt;를 연결합니다.&lt;/p&gt;&lt;/div&gt;
+      &lt;b aria-hidden=&quot;true&quot;&gt;→&lt;/b&gt;
+      &lt;div&gt;&lt;span&gt;행내 추가 API 코드&lt;/span&gt;&lt;strong&gt;InstanceCodeResource.java&lt;/strong&gt;&lt;p&gt;&lt;code&gt;/v1/instanceCodes&lt;/code&gt; API와 조회·등록·변경 동작을 제공합니다.&lt;/p&gt;&lt;/div&gt;
+      &lt;b aria-hidden=&quot;true&quot;&gt;→&lt;/b&gt;
+      &lt;div&gt;&lt;span&gt;행내 추가 스키마&lt;/span&gt;&lt;strong&gt;instanceCode.json&lt;/strong&gt;&lt;p&gt;InstanceCode 데이터의 필드와 형식을 정의합니다.&lt;/p&gt;&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;details class=&quot;p3-details&quot; open&gt;
+      &lt;summary&gt;Entity.java · 공식 공용 파일의 실제 변경&lt;/summary&gt;
+      &lt;div class=&quot;p3-diff&quot; aria-label=&quot;Entity.java 좌우 코드 비교&quot;&gt;
+        &lt;div&gt;
+          &lt;span&gt;공식 원본 · afcb2d2…&lt;/span&gt;
+          &lt;pre&gt;&lt;code&gt;public static final String FILE = &quot;file&quot;;
+public static final String SPREADSHEET = &quot;spreadsheet&quot;;
+public static final String WORKSHEET = &quot;worksheet&quot;;
+
+public static final String GLOSSARY = &quot;glossary&quot;;&lt;/code&gt;&lt;/pre&gt;
+        &lt;/div&gt;
+        &lt;div&gt;
+          &lt;span&gt;행내 코드 · a2566fac…에서 추가&lt;/span&gt;
+          &lt;pre&gt;&lt;code&gt;public static final String FILE = &quot;file&quot;;
+public static final String SPREADSHEET = &quot;spreadsheet&quot;;
+public static final String WORKSHEET = &quot;worksheet&quot;;
+&lt;mark&gt;public static final String INSTANCE_CODE = &quot;instanceCode&quot;;&lt;/mark&gt;
+
+public static final String GLOSSARY = &quot;glossary&quot;;&lt;/code&gt;&lt;/pre&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;p class=&quot;p3-caption&quot;&gt;이 변경으로 새 API 코드가 &lt;code&gt;Entity.INSTANCE_CODE&lt;/code&gt;를 사용해 OpenMetadata의 공통 엔티티 처리 구조에 연결됩니다.&lt;/p&gt;
+    &lt;/details&gt;
+
+    &lt;details class=&quot;p3-details&quot;&gt;
+      &lt;summary&gt;InstanceCodeResource.java · 커스터마이징으로 추가된 실제 파일&lt;/summary&gt;
+      &lt;div class=&quot;p3-diff&quot; aria-label=&quot;InstanceCodeResource.java 좌우 코드 비교&quot;&gt;
+        &lt;div&gt;
+          &lt;span&gt;공식 원본&lt;/span&gt;
+          &lt;pre&gt;&lt;code&gt;파일 없음
+
+공식 1.13.1에는
+InstanceCode 전용 API 파일이 없습니다.&lt;/code&gt;&lt;/pre&gt;
+        &lt;/div&gt;
+        &lt;div&gt;
+          &lt;span&gt;행내 코드 · 새 파일 527줄&lt;/span&gt;
+          &lt;pre&gt;&lt;code&gt;&lt;mark&gt;@Path(&quot;/v1/instanceCodes&quot;)&lt;/mark&gt;
+@Collection(name = &quot;instanceCodes&quot;)
+public class InstanceCodeResource
+    extends EntityResource&amp;lt;InstanceCode,
+      InstanceCodeRepository&amp;gt; {
+
+  public InstanceCodeResource(
+      Authorizer authorizer, Limits limits) {
+    &lt;mark&gt;super(Entity.INSTANCE_CODE, authorizer, limits);&lt;/mark&gt;
+  }
+}&lt;/code&gt;&lt;/pre&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+      &lt;p class=&quot;p3-caption&quot;&gt;&lt;code&gt;Entity.java&lt;/code&gt;의 공통 등록값과 새 API 파일은 서로 독립된 변경이 아니라 함께 동작하는 코드입니다.&lt;/p&gt;
+    &lt;/details&gt;
+  &lt;/section&gt;
+
+  &lt;section class=&quot;p3-section&quot; aria-labelledby=&quot;p3-record-title&quot;&gt;
+    &lt;div class=&quot;p3-heading&quot;&gt;
+      &lt;span&gt;04&lt;/span&gt;
+      &lt;div&gt;
+        &lt;h2 id=&quot;p3-record-title&quot;&gt;변경관리표와 Git 기록이 어떻게 연결되나&lt;/h2&gt;
+        &lt;p&gt;BANK-OM ID는 업무 기능 번호이고, Git commit SHA는 해당 코드 상태를 식별하는 값입니다.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;p3-record-grid&quot;&gt;
+      &lt;div&gt;
+        &lt;strong&gt;1. BANK-OM-001 Manifest&lt;/strong&gt;
+        &lt;pre&gt;&lt;code&gt;customization_id: BANK-OM-001
+status: active
+kind: core-patch
+title: InstanceCode
+
+implementation:
+  allowed_changed_paths:
+    - .../Entity.java
+    - .../InstanceCodeResource.java
+    - .../instanceCode.json
+  required_changed_paths:
+    - .../InstanceCodeResource.java
+    - .../instanceCode.json
+
+assurance:
+  contracts:
+    - CONTRACT-INSTANCE-CODE&lt;/code&gt;&lt;/pre&gt;
+        &lt;p&gt;실제 Manifest에는 전체 변경 파일 48개가 개별 경로로 등록돼 있으며, 화면에는 관계 설명에 필요한 대표 파일만 줄여 표시했습니다.&lt;/p&gt;
+      &lt;/div&gt;
+      &lt;div&gt;
+        &lt;strong&gt;2. 개발자가 작성하는 커밋 메시지&lt;/strong&gt;
+        &lt;pre&gt;&lt;code&gt;git commit \
+  -m &quot;add InstanceCode customization&quot; \
+  -m &quot;Customization-ID: BANK-OM-001&quot;&lt;/code&gt;&lt;/pre&gt;
+        &lt;strong&gt;3. 실제 Git 기록&lt;/strong&gt;
+        &lt;pre&gt;&lt;code&gt;a2566fac32 add InstanceCode customization
+Customization-ID: BANK-OM-001&lt;/code&gt;&lt;/pre&gt;
+        &lt;p&gt;&lt;code&gt;BANK-OM-001&lt;/code&gt;은 사람이 발급한 기능 ID이고, &lt;code&gt;a2566fac…&lt;/code&gt;은 Git이 생성한 해당 커밋의 SHA입니다.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+
+  &lt;section class=&quot;p3-section&quot; aria-labelledby=&quot;p3-run-title&quot;&gt;
+    &lt;div class=&quot;p3-heading&quot;&gt;
+      &lt;span&gt;05&lt;/span&gt;
+      &lt;div&gt;
+        &lt;h2 id=&quot;p3-run-title&quot;&gt;검사기를 실제로 실행하면 무엇이 나오나&lt;/h2&gt;
+        &lt;p&gt;아래 명령과 결과는 로컬 저장소에서 다시 실행해 확인한 소스 검사입니다.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;details class=&quot;p3-details&quot;&gt;
+      &lt;summary&gt;실제 실행 명령 보기&lt;/summary&gt;
+      &lt;pre&gt;&lt;code&gt;./.venv/bin/python \
+  harness/registrations/kb-openmetadata/run_source_candidate_gates.py \
+  --repo ../review-kb-openmetadata \
+  --harness harness \
+  --registration harness/registrations/kb-openmetadata \
+  --layout harness/policies/repository-layout.yaml \
+  --sensitive-zones harness/policies/sensitive-zones.yaml&lt;/code&gt;&lt;/pre&gt;
+    &lt;/details&gt;
+    &lt;div class=&quot;p3-console&quot; aria-label=&quot;실제 로컬 소스 검사 출력 요약&quot;&gt;
+      &lt;div&gt;&lt;span&gt;검사 대상 코드 SHA&lt;/span&gt;&lt;code&gt;849ae756cd238f218b5e3a6c795a392305cb32ee&lt;/code&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;span&gt;공식 원본 SHA&lt;/span&gt;&lt;code&gt;afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9&lt;/code&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;span&gt;검사 대상 잠금값&lt;/span&gt;&lt;code&gt;candidate lock digest · sha256:61a3f02d3f22…&lt;/code&gt;&lt;/div&gt;
+      &lt;pre&gt;&lt;code&gt;vendor-ancestry              pass
+customization-survival       pass
+required-test-implementations pass
+commit-invariants            pass
+id-invariants                pass
+drift                        pass
+sensitive-zones              pass
+exact-scope-history          pass&lt;/code&gt;&lt;/pre&gt;
+    &lt;/div&gt;
+    &lt;p class=&quot;p3-caption&quot;&gt;&lt;code&gt;candidate lock digest&lt;/code&gt;는 검사 대상 commit·Git tree·공식 원본 설정이 중간에 바뀌지 않았는지 비교하는 값입니다. 위 결과는 공식 1.13.1과 현재 행내 소스의 관계를 검사한 결과이며, 다음 공식 버전 업그레이드나 행내 운영 환경의 동작 결과는 아닙니다.&lt;/p&gt;
+  &lt;/section&gt;
+
+  &lt;section class=&quot;p3-section&quot; aria-labelledby=&quot;p3-result-title&quot;&gt;
+    &lt;div class=&quot;p3-heading&quot;&gt;
+      &lt;span&gt;06&lt;/span&gt;
+      &lt;div&gt;
+        &lt;h2 id=&quot;p3-result-title&quot;&gt;책임자가 확인할 검사 결과&lt;/h2&gt;
+        &lt;p&gt;각 라벨은 실제로 확인된 범위를 기준으로 표시합니다.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;p3-label-guide&quot; aria-label=&quot;검사 결과 라벨 설명&quot;&gt;
+      &lt;span&gt;&lt;b&gt;PASS&lt;/b&gt; 필요한 조건을 확인해 통과&lt;/span&gt;
+      &lt;span&gt;&lt;b&gt;APPROVAL&lt;/b&gt; 담당자 확인 필요&lt;/span&gt;
+      &lt;span&gt;&lt;b&gt;PARTIAL&lt;/b&gt; 일부만 완료&lt;/span&gt;
+      &lt;span&gt;&lt;b&gt;NOT RUN&lt;/b&gt; 아직 실행하지 않음&lt;/span&gt;
+      &lt;span&gt;&lt;b&gt;ANALYSIS ERROR&lt;/b&gt; 검사 근거가 부족해 판단 중단&lt;/span&gt;
+      &lt;span&gt;&lt;b&gt;BLOCK&lt;/b&gt; 다음 단계 진행 금지&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;table-responsive&quot;&gt;
+      &lt;table class=&quot;table table-sm p3-results&quot;&gt;
+        &lt;thead&gt;
+          &lt;tr&gt;&lt;th&gt;검사명&lt;/th&gt;&lt;th&gt;검사 설명&lt;/th&gt;&lt;th&gt;실제 실행 내용&lt;/th&gt;&lt;th&gt;검사 결과&lt;/th&gt;&lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+          &lt;tr&gt;
+            &lt;td&gt;T25&lt;/td&gt;
+            &lt;td&gt;공식 1.13.1 코드가 행내 코드의 Git 이력에 포함됐는지 확인&lt;/td&gt;
+            &lt;td&gt;&lt;code&gt;afcb2d2… → 849ae756…&lt;/code&gt; 포함 관계 확인&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;p3-label p3-pass&quot;&gt;PASS · 통과&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;T26&lt;/td&gt;
+            &lt;td&gt;활성 BANK-OM 11개의 필수 파일과 테스트 연결이 남아 있는지 확인&lt;/td&gt;
+            &lt;td&gt;필수 파일 22개·계약 15개·유효 테스트 17개 확인&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;p3-label p3-pass&quot;&gt;PASS · 통과&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;T60-I&lt;/td&gt;
+            &lt;td&gt;등록한 필수 Python 테스트 함수가 실제 코드에 있는지 확인&lt;/td&gt;
+            &lt;td&gt;필수 테스트 함수 9개 존재 확인·실행은 하지 않음&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;p3-label p3-pass&quot;&gt;PASS · 존재 확인&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;T30·T31&lt;/td&gt;
+            &lt;td&gt;각 커밋의 BANK-OM ID와 ID 사용 순서가 규칙에 맞는지 확인&lt;/td&gt;
+            &lt;td&gt;공식 원본 이후 전체 커밋 메시지와 순서 검사&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;p3-label p3-pass&quot;&gt;PASS · 통과&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;T40·T93&lt;/td&gt;
+            &lt;td&gt;실제 변경 파일과 Manifest의 파일 명단이 일치하는지 확인&lt;/td&gt;
+            &lt;td&gt;커밋별 실제 경로와 ID별 등록 경로의 정확 일치 확인&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;p3-label p3-pass&quot;&gt;PASS · 통과&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;T41&lt;/td&gt;
+            &lt;td&gt;DB·인증·보안 등 민감 경로 변경이 정책에 맞는지 확인&lt;/td&gt;
+            &lt;td&gt;DB migration 2개를 감시 대상으로 확인&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;p3-label p3-pass&quot;&gt;PASS · 표시 완료&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;T42&lt;/td&gt;
+            &lt;td&gt;다음 공식 버전에서 감시 파일이 바뀌었는지 확인&lt;/td&gt;
+            &lt;td&gt;같은 1.13.1을 양쪽에 넣은 연결 확인만 완료&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;p3-label p3-notrun&quot;&gt;NOT RUN · 실제 업그레이드 미실행&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;T43&lt;/td&gt;
+            &lt;td&gt;재적용 충돌률과 커스터마이징 관리 부담을 확인&lt;/td&gt;
+            &lt;td&gt;충돌률 0은 연결 확인용 입력이며 실제 재적용 측정값이 아님&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;p3-label p3-notrun&quot;&gt;NOT RUN · 실제 충돌률 없음&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;T61&lt;/td&gt;
+            &lt;td&gt;커스터마이징을 제거했을 때 필수 테스트가 실패하는지 확인&lt;/td&gt;
+            &lt;td&gt;소스에서 가능한 5개 대상 중 BANK-OM-006·007만 확인&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;p3-label p3-partial&quot;&gt;PARTIAL · 2/5 완료&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;T62&lt;/td&gt;
+            &lt;td&gt;행내 API·화면 테스트 결과를 정확한 코드와 배포 파일에 연결&lt;/td&gt;
+            &lt;td&gt;실행기만 구현됐고 행내 환경 실행 결과는 없음&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;p3-label p3-notrun&quot;&gt;NOT RUN · 행내 실행 대기&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;T63&lt;/td&gt;
+            &lt;td&gt;행내 코드에 새로운 TypeScript 오류가 생겼는지 비교&lt;/td&gt;
+            &lt;td&gt;새 오류 조합은 없지만 공식 원본부터 있던 오류가 남아 있음&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;p3-label p3-approval&quot;&gt;APPROVAL · 담당자 확인&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;tr&gt;
+            &lt;td&gt;T90·T91&lt;/td&gt;
+            &lt;td&gt;실제 업그레이드 동작과 검사한 배포본의 일치를 확인&lt;/td&gt;
+            &lt;td&gt;행내 테스트 환경과 배포 대상이 없어 실행하지 않음&lt;/td&gt;
+            &lt;td&gt;&lt;span class=&quot;p3-label p3-notrun&quot;&gt;NOT RUN · 행내 실행 대기&lt;/span&gt;&lt;/td&gt;
+          &lt;/tr&gt;
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+
+  &lt;section class=&quot;p3-section&quot; aria-labelledby=&quot;p3-next-title&quot;&gt;
+    &lt;div class=&quot;p3-heading&quot;&gt;
+      &lt;span&gt;07&lt;/span&gt;
+      &lt;div&gt;
+        &lt;h2 id=&quot;p3-next-title&quot;&gt;현재 완료 범위와 다음 작업&lt;/h2&gt;
+        &lt;p&gt;소스 검사 통과와 운영 배포 승인을 구분합니다.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;p3-next&quot;&gt;
+      &lt;div&gt;
+        &lt;strong&gt;완료&lt;/strong&gt;
+        &lt;ul&gt;
+          &lt;li&gt;BANK-OM-001~011 Manifest와 Git 커밋 연결&lt;/li&gt;
+          &lt;li&gt;공식 1.13.1 대비 소스 변경 검사&lt;/li&gt;
+          &lt;li&gt;검사 대상 commit SHA와 source tree digest 고정&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/div&gt;
+      &lt;div&gt;
+        &lt;strong&gt;다음 작업&lt;/strong&gt;
+        &lt;ol&gt;
+          &lt;li&gt;업그레이드할 다음 공식 OpenMetadata 버전 지정&lt;/li&gt;
+          &lt;li&gt;새 공식 버전에 BANK-OM 커스터마이징 재적용&lt;/li&gt;
+          &lt;li&gt;T42·T43을 실제 업그레이드 입력으로 다시 실행&lt;/li&gt;
+          &lt;li&gt;행내 환경에서 T61·T62·T63·T90·T91 실행&lt;/li&gt;
+          &lt;li&gt;실제 실행 화면을 캡처해 최종 시연본에 추가&lt;/li&gt;
+        &lt;/ol&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+
+  &lt;style&gt;
+    #om-phase3 {
+      color: var(--foreground);
+    }
+
+    #om-phase3 h1,
+    #om-phase3 h2,
+    #om-phase3 p,
+    #om-phase3 pre {
+      margin: 0;
+    }
+
+    #om-phase3 .p3-hero {
+      display: grid;
+      gap: 10px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #om-phase3 .p3-final {
+      display: grid;
+      grid-template-columns: minmax(180px, 0.7fr) minmax(0, 1.8fr);
+      gap: 14px;
+      align-items: center;
+      padding: 14px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    #om-phase3 .p3-final div {
+      display: grid;
+      gap: 4px;
+    }
+
+    #om-phase3 .p3-final strong {
+      color: var(--destructive);
+    }
+
+    #om-phase3 .p3-section {
+      display: grid;
+      gap: 14px;
+      padding: 22px 0 2px;
+    }
+
+    #om-phase3 .p3-heading {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+    }
+
+    #om-phase3 .p3-heading &gt; span,
+    #om-phase3 .p3-flow li &gt; span {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    #om-phase3 .p3-heading div {
+      display: grid;
+      gap: 4px;
+    }
+
+    #om-phase3 .p3-input-table {
+      min-width: 720px;
+    }
+
+    #om-phase3 .p3-flow {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(110px, 1fr));
+      gap: 1px;
+      margin: 0;
+      padding: 0;
+      background: var(--border);
+      list-style: none;
+      overflow-x: auto;
+    }
+
+    #om-phase3 .p3-flow li {
+      display: grid;
+      align-content: start;
+      gap: 7px;
+      min-height: 112px;
+      padding: 12px;
+      background: var(--background);
+    }
+
+    #om-phase3 .p3-flow small {
+      color: var(--muted-foreground);
+    }
+
+    #om-phase3 .p3-flow .p3-blocked small {
+      color: var(--destructive);
+    }
+
+    #om-phase3 .p3-relation {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    #om-phase3 .p3-relation div {
+      display: grid;
+      gap: 4px;
+    }
+
+    #om-phase3 .p3-relation span,
+    #om-phase3 .p3-caption,
+    #om-phase3 .p3-record-grid p {
+      color: var(--muted-foreground);
+    }
+
+    #om-phase3 .p3-details {
+      padding: 12px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    #om-phase3 .p3-details summary {
+      font-weight: 500;
+    }
+
+    #om-phase3 .p3-details &gt; pre,
+    #om-phase3 .p3-details &gt; .p3-diff {
+      margin-top: 12px;
+    }
+
+    #om-phase3 .p3-details &gt; .p3-caption {
+      padding-top: 10px;
+    }
+
+    #om-phase3 .p3-diff {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--border);
+    }
+
+    #om-phase3 .p3-diff &gt; div {
+      min-width: 0;
+      background: var(--background);
+    }
+
+    #om-phase3 .p3-diff span {
+      display: block;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted-foreground);
+    }
+
+    #om-phase3 pre {
+      overflow-x: auto;
+      padding: 12px;
+      background: var(--muted);
+    }
+
+    #om-phase3 mark {
+      color: var(--foreground);
+      background: color-mix(in srgb, var(--viz-series-1) 24%, transparent);
+    }
+
+    #om-phase3 .p3-record-grid,
+    #om-phase3 .p3-next {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    #om-phase3 .p3-record-grid &gt; div,
+    #om-phase3 .p3-next &gt; div {
+      display: grid;
+      align-content: start;
+      gap: 10px;
+    }
+
+    #om-phase3 .p3-console {
+      display: grid;
+      gap: 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    #om-phase3 .p3-console &gt; div {
+      display: grid;
+      grid-template-columns: 180px minmax(0, 1fr);
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #om-phase3 .p3-console &gt; div code {
+      overflow-wrap: anywhere;
+    }
+
+    #om-phase3 .p3-console pre {
+      margin: 12px 0;
+    }
+
+    #om-phase3 .p3-label-guide {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      padding: 10px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    #om-phase3 .p3-results {
+      min-width: 940px;
+      table-layout: fixed;
+    }
+
+    #om-phase3 .p3-results th:first-child,
+    #om-phase3 .p3-results td:first-child {
+      width: 10%;
+    }
+
+    #om-phase3 .p3-results th:nth-child(2),
+    #om-phase3 .p3-results td:nth-child(2) {
+      width: 29%;
+    }
+
+    #om-phase3 .p3-results th:nth-child(3),
+    #om-phase3 .p3-results td:nth-child(3) {
+      width: 35%;
+    }
+
+    #om-phase3 .p3-results th:nth-child(4),
+    #om-phase3 .p3-results td:nth-child(4) {
+      width: 26%;
+    }
+
+    #om-phase3 .p3-results td {
+      vertical-align: top;
+    }
+
+    #om-phase3 .p3-label {
+      display: inline-block;
+      padding: 3px 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      white-space: normal;
+    }
+
+    #om-phase3 .p3-pass {
+      background: color-mix(in srgb, var(--viz-series-1) 18%, transparent);
+    }
+
+    #om-phase3 .p3-approval {
+      background: color-mix(in srgb, var(--viz-series-2) 18%, transparent);
+    }
+
+    #om-phase3 .p3-partial,
+    #om-phase3 .p3-notrun {
+      background: var(--muted);
+    }
+
+    #om-phase3 .p3-next ul,
+    #om-phase3 .p3-next ol {
+      margin: 0;
+      padding-left: 22px;
+    }
+
+    @media (max-width: 700px) {
+      #om-phase3 .p3-final,
+      #om-phase3 .p3-relation,
+      #om-phase3 .p3-diff,
+      #om-phase3 .p3-record-grid,
+      #om-phase3 .p3-next {
+        grid-template-columns: 1fr;
+      }
+
+      #om-phase3 .p3-relation &gt; b {
+        transform: rotate(90deg);
+        justify-self: start;
+      }
+
+      #om-phase3 .p3-console &gt; div {
+        grid-template-columns: 1fr;
+      }
+    }
+  &lt;/style&gt;
+&lt;/div&gt;
+
+&lt;script src=&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set([&quot;top&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;left&quot;]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+
+  const getTrigger = (target) =&gt;
+    target?.nodeType === Node.ELEMENT_NODE
+      ? target.closest(&quot;[data-tooltip]&quot;)
+      : null;
+  const containsTarget = (trigger, target) =&gt;
+    target?.nodeType != null &amp;&amp; trigger.contains(target);
+  const getContent = (trigger) =&gt;
+    trigger.getAttribute(&quot;data-tooltip&quot;)?.trim() ?? &quot;&quot;;
+  const getPlacement = (trigger) =&gt; {
+    const placement = trigger.getAttribute(&quot;data-tooltip-placement&quot;);
+    return tooltipPlacements.has(placement) ? placement : &quot;top&quot;;
+  };
+  const getTooltip = () =&gt; {
+    if (tooltip == null) {
+      tooltip = document.createElement(&quot;div&quot;);
+      tooltip.id = tooltipId;
+      tooltip.className = &quot;tooltip&quot;;
+      tooltip.setAttribute(&quot;role&quot;, &quot;tooltip&quot;);
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) =&gt; {
+    const ids = new Set(
+      (trigger.getAttribute(&quot;aria-describedby&quot;) ?? &quot;&quot;)
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute(&quot;aria-describedby&quot;);
+    } else {
+      trigger.setAttribute(&quot;aria-describedby&quot;, [...ids].join(&quot; &quot;));
+    }
+  };
+  const clearOpenTimeout = () =&gt; {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) =&gt; {
+    clearOpenTimeout();
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) =&gt; {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-width&quot;,
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-height&quot;,
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: &quot;fixed&quot;,
+    })
+      .then(({ x, y }) =&gt; {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = &quot;visible&quot;;
+      })
+      .catch(() =&gt; {
+        if (activeTrigger === trigger &amp;&amp; request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) =&gt; {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = &quot;hidden&quot;;
+    floating.style.transform = &quot;translate(0, 0)&quot;;
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () =&gt; {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) =&gt; {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() &lt; skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() =&gt; {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) =&gt; {
+    if (event.pointerType === &quot;touch&quot;) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handleLeave = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger?.matches(&quot;:focus-visible&quot;)) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) =&gt; {
+    if (event.key === &quot;Escape&quot;) {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const destroy = () =&gt; {
+    closeTooltip(false);
+    document.removeEventListener(&quot;pointerover&quot;, handlePointerOpen);
+    document.removeEventListener(&quot;pointerout&quot;, handleLeave);
+    document.removeEventListener(&quot;focusin&quot;, handleFocusIn);
+    document.removeEventListener(&quot;focusout&quot;, handleLeave);
+    document.removeEventListener(&quot;keydown&quot;, handleKeyDown);
+    document.removeEventListener(&quot;contextmenu&quot;, handleContextMenu);
+    tooltip = null;
+  };
+
+  document.addEventListener(&quot;pointerover&quot;, handlePointerOpen);
+  document.addEventListener(&quot;pointerout&quot;, handleLeave);
+  document.addEventListener(&quot;focusin&quot;, handleFocusIn);
+  document.addEventListener(&quot;focusout&quot;, handleLeave);
+  document.addEventListener(&quot;keydown&quot;, handleKeyDown);
+  document.addEventListener(&quot;contextmenu&quot;, handleContextMenu);
+  window.addEventListener(&quot;pagehide&quot;, destroy, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-lucide&quot; async src=&quot;https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  const initialize = () =&gt; {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById(&quot;codex-visualization-lucide&quot;)
+    ?.addEventListener(&quot;load&quot;, initialize, { once: true });
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</body>
+</html>

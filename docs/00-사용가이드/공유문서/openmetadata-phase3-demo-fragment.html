@@ -1,0 +1,634 @@
+<div id="om-phase3" data-artifact-status="review-draft">
+  <header class="p3-hero">
+    <span class="viz-badge">3차 시연문서 초안</span>
+    <h1>코드 변경부터 검사 결과와 배포 판단까지</h1>
+    <p>실제 제품 소스와 로컬 검사 결과를 연결해 보여줍니다. 다음 공식 버전과 행내 실행 환경이 필요한 항목은 완료된 결과로 표시하지 않습니다.</p>
+    <div class="p3-final" role="status">
+      <div>
+        <span>현재 최종 판단</span>
+        <strong>BLOCK · 운영 배포 진행 불가</strong>
+      </div>
+      <p>소스 변경 검사는 통과했지만 실제 공식 업그레이드, 행내 API·화면·DB 테스트와 배포본 일치 검사가 남아 있습니다.</p>
+    </div>
+  </header>
+
+  <section class="p3-section" aria-labelledby="p3-input-title">
+    <div class="p3-heading">
+      <span>01</span>
+      <div>
+        <h2 id="p3-input-title">이번 시연에서 확인하는 코드</h2>
+        <p>어떤 공식 원본과 어떤 행내 코드 상태를 비교했는지 먼저 고정합니다.</p>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm p3-input-table">
+        <thead>
+          <tr><th>구분</th><th>저장소·버전</th><th>이번 시연에서의 의미</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>공식 원본</td>
+            <td><code>open-metadata/OpenMetadata</code><br><code>1.13.1-release · afcb2d2…</code></td>
+            <td>행내 커스터마이징을 적용하기 전 기준 코드</td>
+          </tr>
+          <tr>
+            <td>행내 배포 준비 코드</td>
+            <td><code>easyseop/OpenMetadata</code><br><code>codex/bank-vendor-1.13.1-rebuild · 849ae756…</code></td>
+            <td>BANK-OM-001~011이 적용된 소스 검사 대상이며 운영 배포 완료 상태는 아님</td>
+          </tr>
+          <tr>
+            <td>다음 공식 버전</td>
+            <td><strong>아직 지정하지 않음</strong></td>
+            <td>실제 업그레이드 비교와 충돌 측정은 아직 실행할 수 없음</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="p3-section" aria-labelledby="p3-flow-title">
+    <div class="p3-heading">
+      <span>02</span>
+      <div>
+        <h2 id="p3-flow-title">전체 시연 순서</h2>
+        <p>완료된 소스 검사와 아직 행내 환경이 필요한 검사를 한 흐름에서 구분합니다.</p>
+      </div>
+    </div>
+    <ol class="p3-flow">
+      <li class="p3-done"><span>1</span><strong>현재 코드 확인</strong><small>완료</small></li>
+      <li class="p3-pending"><span>2</span><strong>새 공식 버전 지정</strong><small>대기</small></li>
+      <li class="p3-pending"><span>3</span><strong>커스터마이징 재적용</strong><small>대기</small></li>
+      <li class="p3-done"><span>4</span><strong>Manifest·Git 확인</strong><small>완료</small></li>
+      <li class="p3-done"><span>5</span><strong>소스 검사 실행</strong><small>완료</small></li>
+      <li class="p3-partial"><span>6</span><strong>행내 동작 검사</strong><small>일부 완료</small></li>
+      <li class="p3-blocked"><span>7</span><strong>배포 판단</strong><small>중단</small></li>
+    </ol>
+  </section>
+
+  <section class="p3-section" aria-labelledby="p3-code-title">
+    <div class="p3-heading">
+      <span>03</span>
+      <div>
+        <h2 id="p3-code-title">실제 코드가 어떻게 달라졌나</h2>
+        <p>BANK-OM-001의 InstanceCode를 대표 사례로 사용합니다. 전체 11개 커스터마이징 중 한 사례입니다.</p>
+      </div>
+    </div>
+
+    <div class="p3-relation" aria-label="InstanceCode 코드 연결 관계">
+      <div><span>공식 공용 코드</span><strong>Entity.java</strong><p>OpenMetadata가 인식할 엔티티 이름에 <code>instanceCode</code>를 연결합니다.</p></div>
+      <b aria-hidden="true">→</b>
+      <div><span>행내 추가 API 코드</span><strong>InstanceCodeResource.java</strong><p><code>/v1/instanceCodes</code> API와 조회·등록·변경 동작을 제공합니다.</p></div>
+      <b aria-hidden="true">→</b>
+      <div><span>행내 추가 스키마</span><strong>instanceCode.json</strong><p>InstanceCode 데이터의 필드와 형식을 정의합니다.</p></div>
+    </div>
+
+    <details class="p3-details" open>
+      <summary>Entity.java · 공식 공용 파일의 실제 변경</summary>
+      <div class="p3-diff" aria-label="Entity.java 좌우 코드 비교">
+        <div>
+          <span>공식 원본 · afcb2d2…</span>
+          <pre><code>public static final String FILE = "file";
+public static final String SPREADSHEET = "spreadsheet";
+public static final String WORKSHEET = "worksheet";
+
+public static final String GLOSSARY = "glossary";</code></pre>
+        </div>
+        <div>
+          <span>행내 코드 · a2566fac…에서 추가</span>
+          <pre><code>public static final String FILE = "file";
+public static final String SPREADSHEET = "spreadsheet";
+public static final String WORKSHEET = "worksheet";
+<mark>public static final String INSTANCE_CODE = "instanceCode";</mark>
+
+public static final String GLOSSARY = "glossary";</code></pre>
+        </div>
+      </div>
+      <p class="p3-caption">이 변경으로 새 API 코드가 <code>Entity.INSTANCE_CODE</code>를 사용해 OpenMetadata의 공통 엔티티 처리 구조에 연결됩니다.</p>
+    </details>
+
+    <details class="p3-details">
+      <summary>InstanceCodeResource.java · 커스터마이징으로 추가된 실제 파일</summary>
+      <div class="p3-diff" aria-label="InstanceCodeResource.java 좌우 코드 비교">
+        <div>
+          <span>공식 원본</span>
+          <pre><code>파일 없음
+
+공식 1.13.1에는
+InstanceCode 전용 API 파일이 없습니다.</code></pre>
+        </div>
+        <div>
+          <span>행내 코드 · 새 파일 527줄</span>
+          <pre><code><mark>@Path("/v1/instanceCodes")</mark>
+@Collection(name = "instanceCodes")
+public class InstanceCodeResource
+    extends EntityResource&lt;InstanceCode,
+      InstanceCodeRepository&gt; {
+
+  public InstanceCodeResource(
+      Authorizer authorizer, Limits limits) {
+    <mark>super(Entity.INSTANCE_CODE, authorizer, limits);</mark>
+  }
+}</code></pre>
+        </div>
+      </div>
+      <p class="p3-caption"><code>Entity.java</code>의 공통 등록값과 새 API 파일은 서로 독립된 변경이 아니라 함께 동작하는 코드입니다.</p>
+    </details>
+  </section>
+
+  <section class="p3-section" aria-labelledby="p3-record-title">
+    <div class="p3-heading">
+      <span>04</span>
+      <div>
+        <h2 id="p3-record-title">변경관리표와 Git 기록이 어떻게 연결되나</h2>
+        <p>BANK-OM ID는 업무 기능 번호이고, Git commit SHA는 해당 코드 상태를 식별하는 값입니다.</p>
+      </div>
+    </div>
+
+    <div class="p3-record-grid">
+      <div>
+        <strong>1. BANK-OM-001 Manifest</strong>
+        <pre><code>customization_id: BANK-OM-001
+status: active
+kind: core-patch
+title: InstanceCode
+
+implementation:
+  allowed_changed_paths:
+    - .../Entity.java
+    - .../InstanceCodeResource.java
+    - .../instanceCode.json
+  required_changed_paths:
+    - .../InstanceCodeResource.java
+    - .../instanceCode.json
+
+assurance:
+  contracts:
+    - CONTRACT-INSTANCE-CODE</code></pre>
+        <p>실제 Manifest에는 전체 변경 파일 48개가 개별 경로로 등록돼 있으며, 화면에는 관계 설명에 필요한 대표 파일만 줄여 표시했습니다.</p>
+      </div>
+      <div>
+        <strong>2. 개발자가 작성하는 커밋 메시지</strong>
+        <pre><code>git commit \
+  -m "add InstanceCode customization" \
+  -m "Customization-ID: BANK-OM-001"</code></pre>
+        <strong>3. 실제 Git 기록</strong>
+        <pre><code>a2566fac32 add InstanceCode customization
+Customization-ID: BANK-OM-001</code></pre>
+        <p><code>BANK-OM-001</code>은 사람이 발급한 기능 ID이고, <code>a2566fac…</code>은 Git이 생성한 해당 커밋의 SHA입니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="p3-section" aria-labelledby="p3-run-title">
+    <div class="p3-heading">
+      <span>05</span>
+      <div>
+        <h2 id="p3-run-title">검사기를 실제로 실행하면 무엇이 나오나</h2>
+        <p>아래 명령과 결과는 로컬 저장소에서 다시 실행해 확인한 소스 검사입니다.</p>
+      </div>
+    </div>
+    <details class="p3-details">
+      <summary>실제 실행 명령 보기</summary>
+      <pre><code>./.venv/bin/python \
+  harness/registrations/kb-openmetadata/run_source_candidate_gates.py \
+  --repo ../review-kb-openmetadata \
+  --harness harness \
+  --registration harness/registrations/kb-openmetadata \
+  --layout harness/policies/repository-layout.yaml \
+  --sensitive-zones harness/policies/sensitive-zones.yaml</code></pre>
+    </details>
+    <div class="p3-console" aria-label="실제 로컬 소스 검사 출력 요약">
+      <div><span>검사 대상 코드 SHA</span><code>849ae756cd238f218b5e3a6c795a392305cb32ee</code></div>
+      <div><span>공식 원본 SHA</span><code>afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9</code></div>
+      <div><span>검사 대상 잠금값</span><code>candidate lock digest · sha256:61a3f02d3f22…</code></div>
+      <pre><code>vendor-ancestry              pass
+customization-survival       pass
+required-test-implementations pass
+commit-invariants            pass
+id-invariants                pass
+drift                        pass
+sensitive-zones              pass
+exact-scope-history          pass</code></pre>
+    </div>
+    <p class="p3-caption"><code>candidate lock digest</code>는 검사 대상 commit·Git tree·공식 원본 설정이 중간에 바뀌지 않았는지 비교하는 값입니다. 위 결과는 공식 1.13.1과 현재 행내 소스의 관계를 검사한 결과이며, 다음 공식 버전 업그레이드나 행내 운영 환경의 동작 결과는 아닙니다.</p>
+  </section>
+
+  <section class="p3-section" aria-labelledby="p3-result-title">
+    <div class="p3-heading">
+      <span>06</span>
+      <div>
+        <h2 id="p3-result-title">책임자가 확인할 검사 결과</h2>
+        <p>각 라벨은 실제로 확인된 범위를 기준으로 표시합니다.</p>
+      </div>
+    </div>
+    <div class="p3-label-guide" aria-label="검사 결과 라벨 설명">
+      <span><b>PASS</b> 필요한 조건을 확인해 통과</span>
+      <span><b>APPROVAL</b> 담당자 확인 필요</span>
+      <span><b>PARTIAL</b> 일부만 완료</span>
+      <span><b>NOT RUN</b> 아직 실행하지 않음</span>
+      <span><b>ANALYSIS ERROR</b> 검사 근거가 부족해 판단 중단</span>
+      <span><b>BLOCK</b> 다음 단계 진행 금지</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm p3-results">
+        <thead>
+          <tr><th>검사명</th><th>검사 설명</th><th>실제 실행 내용</th><th>검사 결과</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>T25</td>
+            <td>공식 1.13.1 코드가 행내 코드의 Git 이력에 포함됐는지 확인</td>
+            <td><code>afcb2d2… → 849ae756…</code> 포함 관계 확인</td>
+            <td><span class="p3-label p3-pass">PASS · 통과</span></td>
+          </tr>
+          <tr>
+            <td>T26</td>
+            <td>활성 BANK-OM 11개의 필수 파일과 테스트 연결이 남아 있는지 확인</td>
+            <td>필수 파일 22개·계약 15개·유효 테스트 17개 확인</td>
+            <td><span class="p3-label p3-pass">PASS · 통과</span></td>
+          </tr>
+          <tr>
+            <td>T60-I</td>
+            <td>등록한 필수 Python 테스트 함수가 실제 코드에 있는지 확인</td>
+            <td>필수 테스트 함수 9개 존재 확인·실행은 하지 않음</td>
+            <td><span class="p3-label p3-pass">PASS · 존재 확인</span></td>
+          </tr>
+          <tr>
+            <td>T30·T31</td>
+            <td>각 커밋의 BANK-OM ID와 ID 사용 순서가 규칙에 맞는지 확인</td>
+            <td>공식 원본 이후 전체 커밋 메시지와 순서 검사</td>
+            <td><span class="p3-label p3-pass">PASS · 통과</span></td>
+          </tr>
+          <tr>
+            <td>T40·T93</td>
+            <td>실제 변경 파일과 Manifest의 파일 명단이 일치하는지 확인</td>
+            <td>커밋별 실제 경로와 ID별 등록 경로의 정확 일치 확인</td>
+            <td><span class="p3-label p3-pass">PASS · 통과</span></td>
+          </tr>
+          <tr>
+            <td>T41</td>
+            <td>DB·인증·보안 등 민감 경로 변경이 정책에 맞는지 확인</td>
+            <td>DB migration 2개를 감시 대상으로 확인</td>
+            <td><span class="p3-label p3-pass">PASS · 표시 완료</span></td>
+          </tr>
+          <tr>
+            <td>T42</td>
+            <td>다음 공식 버전에서 감시 파일이 바뀌었는지 확인</td>
+            <td>같은 1.13.1을 양쪽에 넣은 연결 확인만 완료</td>
+            <td><span class="p3-label p3-notrun">NOT RUN · 실제 업그레이드 미실행</span></td>
+          </tr>
+          <tr>
+            <td>T43</td>
+            <td>재적용 충돌률과 커스터마이징 관리 부담을 확인</td>
+            <td>충돌률 0은 연결 확인용 입력이며 실제 재적용 측정값이 아님</td>
+            <td><span class="p3-label p3-notrun">NOT RUN · 실제 충돌률 없음</span></td>
+          </tr>
+          <tr>
+            <td>T61</td>
+            <td>커스터마이징을 제거했을 때 필수 테스트가 실패하는지 확인</td>
+            <td>소스에서 가능한 5개 대상 중 BANK-OM-006·007만 확인</td>
+            <td><span class="p3-label p3-partial">PARTIAL · 2/5 완료</span></td>
+          </tr>
+          <tr>
+            <td>T62</td>
+            <td>행내 API·화면 테스트 결과를 정확한 코드와 배포 파일에 연결</td>
+            <td>실행기만 구현됐고 행내 환경 실행 결과는 없음</td>
+            <td><span class="p3-label p3-notrun">NOT RUN · 행내 실행 대기</span></td>
+          </tr>
+          <tr>
+            <td>T63</td>
+            <td>행내 코드에 새로운 TypeScript 오류가 생겼는지 비교</td>
+            <td>새 오류 조합은 없지만 공식 원본부터 있던 오류가 남아 있음</td>
+            <td><span class="p3-label p3-approval">APPROVAL · 담당자 확인</span></td>
+          </tr>
+          <tr>
+            <td>T90·T91</td>
+            <td>실제 업그레이드 동작과 검사한 배포본의 일치를 확인</td>
+            <td>행내 테스트 환경과 배포 대상이 없어 실행하지 않음</td>
+            <td><span class="p3-label p3-notrun">NOT RUN · 행내 실행 대기</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="p3-section" aria-labelledby="p3-next-title">
+    <div class="p3-heading">
+      <span>07</span>
+      <div>
+        <h2 id="p3-next-title">현재 완료 범위와 다음 작업</h2>
+        <p>소스 검사 통과와 운영 배포 승인을 구분합니다.</p>
+      </div>
+    </div>
+    <div class="p3-next">
+      <div>
+        <strong>완료</strong>
+        <ul>
+          <li>BANK-OM-001~011 Manifest와 Git 커밋 연결</li>
+          <li>공식 1.13.1 대비 소스 변경 검사</li>
+          <li>검사 대상 commit SHA와 source tree digest 고정</li>
+        </ul>
+      </div>
+      <div>
+        <strong>다음 작업</strong>
+        <ol>
+          <li>업그레이드할 다음 공식 OpenMetadata 버전 지정</li>
+          <li>새 공식 버전에 BANK-OM 커스터마이징 재적용</li>
+          <li>T42·T43을 실제 업그레이드 입력으로 다시 실행</li>
+          <li>행내 환경에서 T61·T62·T63·T90·T91 실행</li>
+          <li>실제 실행 화면을 캡처해 최종 시연본에 추가</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    #om-phase3 {
+      color: var(--foreground);
+    }
+
+    #om-phase3 h1,
+    #om-phase3 h2,
+    #om-phase3 p,
+    #om-phase3 pre {
+      margin: 0;
+    }
+
+    #om-phase3 .p3-hero {
+      display: grid;
+      gap: 10px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #om-phase3 .p3-final {
+      display: grid;
+      grid-template-columns: minmax(180px, 0.7fr) minmax(0, 1.8fr);
+      gap: 14px;
+      align-items: center;
+      padding: 14px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    #om-phase3 .p3-final div {
+      display: grid;
+      gap: 4px;
+    }
+
+    #om-phase3 .p3-final strong {
+      color: var(--destructive);
+    }
+
+    #om-phase3 .p3-section {
+      display: grid;
+      gap: 14px;
+      padding: 22px 0 2px;
+    }
+
+    #om-phase3 .p3-heading {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+    }
+
+    #om-phase3 .p3-heading > span,
+    #om-phase3 .p3-flow li > span {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    #om-phase3 .p3-heading div {
+      display: grid;
+      gap: 4px;
+    }
+
+    #om-phase3 .p3-input-table {
+      min-width: 720px;
+    }
+
+    #om-phase3 .p3-flow {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(110px, 1fr));
+      gap: 1px;
+      margin: 0;
+      padding: 0;
+      background: var(--border);
+      list-style: none;
+      overflow-x: auto;
+    }
+
+    #om-phase3 .p3-flow li {
+      display: grid;
+      align-content: start;
+      gap: 7px;
+      min-height: 112px;
+      padding: 12px;
+      background: var(--background);
+    }
+
+    #om-phase3 .p3-flow small {
+      color: var(--muted-foreground);
+    }
+
+    #om-phase3 .p3-flow .p3-blocked small {
+      color: var(--destructive);
+    }
+
+    #om-phase3 .p3-relation {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    #om-phase3 .p3-relation div {
+      display: grid;
+      gap: 4px;
+    }
+
+    #om-phase3 .p3-relation span,
+    #om-phase3 .p3-caption,
+    #om-phase3 .p3-record-grid p {
+      color: var(--muted-foreground);
+    }
+
+    #om-phase3 .p3-details {
+      padding: 12px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    #om-phase3 .p3-details summary {
+      font-weight: 500;
+    }
+
+    #om-phase3 .p3-details > pre,
+    #om-phase3 .p3-details > .p3-diff {
+      margin-top: 12px;
+    }
+
+    #om-phase3 .p3-details > .p3-caption {
+      padding-top: 10px;
+    }
+
+    #om-phase3 .p3-diff {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--border);
+    }
+
+    #om-phase3 .p3-diff > div {
+      min-width: 0;
+      background: var(--background);
+    }
+
+    #om-phase3 .p3-diff span {
+      display: block;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted-foreground);
+    }
+
+    #om-phase3 pre {
+      overflow-x: auto;
+      padding: 12px;
+      background: var(--muted);
+    }
+
+    #om-phase3 mark {
+      color: var(--foreground);
+      background: color-mix(in srgb, var(--viz-series-1) 24%, transparent);
+    }
+
+    #om-phase3 .p3-record-grid,
+    #om-phase3 .p3-next {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    #om-phase3 .p3-record-grid > div,
+    #om-phase3 .p3-next > div {
+      display: grid;
+      align-content: start;
+      gap: 10px;
+    }
+
+    #om-phase3 .p3-console {
+      display: grid;
+      gap: 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    #om-phase3 .p3-console > div {
+      display: grid;
+      grid-template-columns: 180px minmax(0, 1fr);
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #om-phase3 .p3-console > div code {
+      overflow-wrap: anywhere;
+    }
+
+    #om-phase3 .p3-console pre {
+      margin: 12px 0;
+    }
+
+    #om-phase3 .p3-label-guide {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      padding: 10px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    #om-phase3 .p3-results {
+      min-width: 940px;
+      table-layout: fixed;
+    }
+
+    #om-phase3 .p3-results th:first-child,
+    #om-phase3 .p3-results td:first-child {
+      width: 10%;
+    }
+
+    #om-phase3 .p3-results th:nth-child(2),
+    #om-phase3 .p3-results td:nth-child(2) {
+      width: 29%;
+    }
+
+    #om-phase3 .p3-results th:nth-child(3),
+    #om-phase3 .p3-results td:nth-child(3) {
+      width: 35%;
+    }
+
+    #om-phase3 .p3-results th:nth-child(4),
+    #om-phase3 .p3-results td:nth-child(4) {
+      width: 26%;
+    }
+
+    #om-phase3 .p3-results td {
+      vertical-align: top;
+    }
+
+    #om-phase3 .p3-label {
+      display: inline-block;
+      padding: 3px 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      white-space: normal;
+    }
+
+    #om-phase3 .p3-pass {
+      background: color-mix(in srgb, var(--viz-series-1) 18%, transparent);
+    }
+
+    #om-phase3 .p3-approval {
+      background: color-mix(in srgb, var(--viz-series-2) 18%, transparent);
+    }
+
+    #om-phase3 .p3-partial,
+    #om-phase3 .p3-notrun {
+      background: var(--muted);
+    }
+
+    #om-phase3 .p3-next ul,
+    #om-phase3 .p3-next ol {
+      margin: 0;
+      padding-left: 22px;
+    }
+
+    @media (max-width: 700px) {
+      #om-phase3 .p3-final,
+      #om-phase3 .p3-relation,
+      #om-phase3 .p3-diff,
+      #om-phase3 .p3-record-grid,
+      #om-phase3 .p3-next {
+        grid-template-columns: 1fr;
+      }
+
+      #om-phase3 .p3-relation > b {
+        transform: rotate(90deg);
+        justify-self: start;
+      }
+
+      #om-phase3 .p3-console > div {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</div>

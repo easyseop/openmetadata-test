@@ -35,7 +35,7 @@ BANK-OM 변경관리 정보와 검사기는 `easyseop/openmetadata-test`에 있�
 |---|---|---|---|
 | 1차 | 목적과 브랜치 전략은 사용자 검토를 통과했다. 전체 문서는 최종 승인 전 검토본이다. | `docs/00-사용가이드/공유문서/openmetadata-phase1-sharing-fragment.html`, `openmetadata-phase1-sharing-preview.html` | 현재 파일 하단에는 이전 통합안의 검사기·결과·로드맵도 남아 있다. 3차를 만들 때 2차·3차와 중복되는 하단 내용을 분리하고 최종 통합본에서 한 번만 설명 |
 | 2차 | 검사 방법과 예외 가능성을 상세히 보강한 검토본이다. 사용자 최종 승인은 아직 받지 않았다. | `docs/00-사용가이드/공유문서/openmetadata-phase2-verifier-table-fragment.html`, `openmetadata-phase2-verifier-table-preview.html` | 사용자 피드백을 받은 뒤 문장 길이를 줄이되 검사 원리와 예외 설명은 유지 |
-| 3차 | 아직 HTML을 만들지 않았다. 시연 구성과 필수 화면은 요구사항 문서에 확정해 두었다. | `docs/04-진행/SHARING_ARTIFACT_REQUIREMENTS.md` | 실제 명령 실행, 실제 결과 수집, 화면 캡처, 책임자용 최종 판정 화면 작성 |
+| 3차 | 실제 제품 코드·BANK-OM-001 Manifest·Git 기록·소스 검사 결과를 연결한 HTML 초안을 만들었다. 화면 캡처와 실제 공식 업그레이드·행내 환경 결과는 아직 없다. | `docs/00-사용가이드/공유문서/openmetadata-phase3-demo-fragment.html`, `openmetadata-phase3-demo-preview.html` | 사용자 검토 후 문장과 구성을 조정하고, 다음 공식 버전 및 행내 환경이 준비되면 실제 실행 화면을 캡처해 교체 |
 
 검토본을 승인본이라고 표시하지 않는다. 사용자가 명시적으로 승인한 범위와 아직
 검토 중인 범위를 문서와 화면에서 구분한다.
@@ -119,6 +119,9 @@ Java JUnit·TypeScript Jest를 직접 등록하고 실행하려면 언어·도�
   남아 있어 담당자 승인 필요
 - T90·T91: 실제 행내 업그레이드와 배포 승격을 실행하지 않음
 - 결론: 소스 커스터마이징 관리 검사는 진행됐지만 운영 배포 승인 상태는 아님
+- 3차 초안 작성 시 소스 검사 명령을 다시 실행해 T25·T26·T60-I·T30·T31·
+  T40·T41·T93 통과를 확인했다. 이 실행은 다음 공식 버전 업그레이드나 행내
+  운영 환경 검사가 아니다.
 
 ## 6. 검증 명령
 
