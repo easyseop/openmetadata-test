@@ -22,6 +22,7 @@ reconstruction:
   strict_scope_local_verification:
     executed_at: "2026-07-28T10:07:10+09:00"
     governance_branch: codex/strict-manifest-gates
+    implementation_commit: 5f546876c31405a49ab5b67b03de16253d91e0e9
     verdict: pass
     tests_passed: 301
     tests_skipped_environment: 47

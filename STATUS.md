@@ -2,7 +2,7 @@
 
 > Updated: 2026-07-28 KST
 > Branch: `codex/strict-manifest-gates`
-> Last verified implementation commit: `291c6f2` (2·3차 batch pending commit)
+> Last verified implementation commit: `5f54687`
 > Strict-scope and stage 2·3 batch verified: 2026-07-28 10:07 KST
 > Current product candidate: `849ae756cd238f218b5e3a6c795a392305cb32ee`
 > Strict-scope progress: [`docs/04-진행/STRICT_SCOPE_IMPROVEMENT_PROGRESS.md`](docs/04-진행/STRICT_SCOPE_IMPROVEMENT_PROGRESS.md)

@@ -1962,6 +1962,8 @@ git pull --ff-only
 
 ## 10. 2026-07-28 2·3차 검사기 보강
 
+- implementation commit: `5f54687`
+
 ### 구현한 코드
 
 - `acgh/upgrade_watch.py`: watch 경로 외에 configuration key와 dependency
