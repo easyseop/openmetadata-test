@@ -56,6 +56,24 @@ nondeveloper guide is updated in the same coherent batch.
 
 ## Outcome
 
+### 2026-07-29 phase 2 verifier status presentation
+
+The phase 2 verifier map now reports actual availability for all four groups:
+A is usable, B is limited, C is partially executable, and D has not been run
+operationally. T60-I moved from the A details to C so the map and detail
+classification agree.
+
+Twelve verifier details have a green gradient check and light green tint
+because both the implementation and a currently inspectable result exist:
+eight in A, two in B, and two in C. The legend explicitly says this is not a
+PASS label; the result may still require approval. T43, T61, T62, T90, and T91
+remain unmarked.
+
+The pre-production backlog now names those five unfinished-result verifiers,
+the exact implementation or external input still needed, and a concrete
+completion criterion. Separate hardening items cover T41, T42/T93, T60-I, and
+T63 without misclassifying their existing results as final operating proof.
+
 ### 2026-07-29 phase 1·2 readability revision
 
 The phase 1 shared HTML no longer presents the legacy
@@ -73,9 +91,10 @@ patch-lock is updated only in patch-replay mode.
 
 The phase 2 shared HTML now starts with a four-group verifier map. It explains
 that T-numbers are stable task IDs from the full build plan rather than page
-sequence numbers. Sixteen detailed verifiers are independent accordions, and
-each expanded view separates purpose, actual check, and exception/remediation.
-The full input/output matrix is retained as a final collapsed detail.
+sequence numbers. Seventeen detailed verifier views are independent
+accordions; T93 has separate exact-scope and policy-drift views. Each expanded
+view separates purpose, actual check, and exception/remediation. The full
+input/output matrix is retained as a final collapsed detail.
 
 Both fragments and standalone previews were regenerated. A stack-based HTML
 structure check found no unbalanced relevant elements; phase 2 contains 17
