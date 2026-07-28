@@ -12,7 +12,7 @@
 이 문서는 다른 노트북이나 새 작업에서 바로 이어가기 위한 현재 정본이다.
 과거 Claude 작업의 상세 기록은
 [`CLAUDE_REVIEW_HANDOFF.md`](CLAUDE_REVIEW_HANDOFF.md)에 남아 있지만, 공유문서
-1차·2차·3차 작업은 이 문서와
+1차·2차·3차·4차 작업은 이 문서와
 [`SHARING_ARTIFACT_REQUIREMENTS.md`](SHARING_ARTIFACT_REQUIREMENTS.md)를 먼저
 따른다.
 
@@ -35,7 +35,14 @@ BANK-OM 변경관리 정보와 검사기는 `easyseop/openmetadata-test`에 있�
 |---|---|---|---|
 | 1차 | 목적과 브랜치 전략은 사용자 검토를 통과했다. 전체 문서는 최종 승인 전 검토본이다. | `docs/00-사용가이드/공유문서/openmetadata-phase1-sharing-fragment.html`, `openmetadata-phase1-sharing-preview.html` | 현재 파일 하단에는 이전 통합안의 검사기·결과·로드맵도 남아 있다. 3차를 만들 때 2차·3차와 중복되는 하단 내용을 분리하고 최종 통합본에서 한 번만 설명 |
 | 2차 | 검사 방법과 예외 가능성을 상세히 보강한 검토본이다. 사용자 최종 승인은 아직 받지 않았다. | `docs/00-사용가이드/공유문서/openmetadata-phase2-verifier-table-fragment.html`, `openmetadata-phase2-verifier-table-preview.html` | 사용자 피드백을 받은 뒤 문장 길이를 줄이되 검사 원리와 예외 설명은 유지 |
-| 3차 | 실제 제품 코드·BANK-OM-001 Manifest·Git 기록·소스 검사 결과를 연결한 HTML 초안을 만들었다. 화면 캡처와 실제 공식 업그레이드·행내 환경 결과는 아직 없다. | `docs/00-사용가이드/공유문서/openmetadata-phase3-demo-fragment.html`, `openmetadata-phase3-demo-preview.html` | 사용자 검토 후 문장과 구성을 조정하고, 다음 공식 버전 및 행내 환경이 준비되면 실제 실행 화면을 캡처해 교체 |
+| 3차 | 실제 제품 코드·BANK-OM-001 Manifest·Git 기록·소스 검사 결과와 책임자 판정표를 연결한 HTML 초안을 만들었다. 실제 Git 화면 시연 문서는 아니다. | `docs/00-사용가이드/공유문서/openmetadata-phase3-demo-fragment.html`, `openmetadata-phase3-demo-preview.html` | 사용자 검토를 반영해 검사 결과와 판정 구조를 먼저 확정 |
+| 4차 | 아직 만들지 않았다. 실제 Git 화면으로 병합 전 대상 확인, 공식·행내 diff, 병합·재적용, 검사 실행, 병합 결과와 검사 라벨을 순서대로 보여준다. | `docs/04-진행/SHARING_ARTIFACT_REQUIREMENTS.md` | 3차 확정 후 테스트할 공식 버전 구간을 정하고 실제 Git 작업·검사 화면 캡처 |
+
+4차 업그레이드 반복 테스트의 우선 검토 조합은
+`1.12.7→1.12.8`, `1.12.8→1.13.0`, `1.13.0→1.13.1`이다. 공식 버전
+3개가 아니라 4개를 사용해야 업그레이드 구간 3개가 나온다. 현재 BANK-OM
+커스터마이징은 1.13.1 기준으로 재구성했으므로, 과거 구간의 결과는 실제 과거
+운영 이력이 아니라 브랜치 전략과 검사기의 반복 검증으로 표시한다.
 
 검토본을 승인본이라고 표시하지 않는다. 사용자가 명시적으로 승인한 범위와 아직
 검토 중인 범위를 문서와 화면에서 구분한다.
@@ -181,10 +188,11 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
 3. `.agents/skills/clarity-preflight-review/SKILL.md`를 읽고 이후 모든 공유문서
    검토에 적용한다.
 4. 2차 HTML을 열어 사용자 피드백이 남았는지 확인한다.
-5. 2차가 승인되면 3차 시연 HTML을 만든다.
-6. 실제 소스·변경관리표·Git 커밋·검사 명령 결과를 캡처한다.
-7. 1차·2차·3차를 하나의 최종 공유문서로 합치고 중복과 용어를 다시 검토한다.
-8. 작업 완료 후 이 문서의 상태·검증·다음 단계를 갱신하고 같은 브랜치에
+5. 2차가 승인되면 3차 검사 결과·책임자 판정 HTML을 확정한다.
+6. 4차에서 테스트할 공식 버전 구간을 정하고 upgrade branch를 별도로 만든다.
+7. 실제 Git 병합 전 대상·diff·병합·검사·결과 화면을 캡처해 4차 시연을 만든다.
+8. 1차·2차·3차·4차를 하나의 최종 공유문서로 합치고 중복과 용어를 다시 검토한다.
+9. 작업 완료 후 이 문서의 상태·검증·다음 단계를 갱신하고 같은 브랜치에
    커밋·푸시한다.
 
 ## 8. 작업 시 주의

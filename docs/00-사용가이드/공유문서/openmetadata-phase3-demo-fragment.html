@@ -1,8 +1,8 @@
 <div id="om-phase3" data-artifact-status="review-draft">
   <header class="p3-hero">
-    <span class="viz-badge">3차 시연문서 초안</span>
-    <h1>코드 변경부터 검사 결과와 배포 판단까지</h1>
-    <p>실제 제품 소스와 로컬 검사 결과를 연결해 보여줍니다. 다음 공식 버전과 행내 실행 환경이 필요한 항목은 완료된 결과로 표시하지 않습니다.</p>
+    <span class="viz-badge">3차 검사결과 검토본</span>
+    <h1>현재 소스 검사 결과와 책임자 판단 기준</h1>
+    <p>실제 제품 소스와 로컬 검사 결과를 연결해 설명합니다. 실제 Git 화면으로 병합 전후 전체 과정을 보여주는 시연은 3차를 확정한 뒤 4차에서 별도로 진행합니다.</p>
     <div class="p3-final" role="status">
       <div>
         <span>현재 최종 판단</span>
@@ -16,14 +16,14 @@
     <div class="p3-heading">
       <span>01</span>
       <div>
-        <h2 id="p3-input-title">이번 시연에서 확인하는 코드</h2>
+        <h2 id="p3-input-title">이번 문서에서 확인하는 코드</h2>
         <p>어떤 공식 원본과 어떤 행내 코드 상태를 비교했는지 먼저 고정합니다.</p>
       </div>
     </div>
     <div class="table-responsive">
       <table class="table table-sm p3-input-table">
         <thead>
-          <tr><th>구분</th><th>저장소·버전</th><th>이번 시연에서의 의미</th></tr>
+          <tr><th>구분</th><th>저장소·버전</th><th>이번 문서에서의 의미</th></tr>
         </thead>
         <tbody>
           <tr>
@@ -50,8 +50,8 @@
     <div class="p3-heading">
       <span>02</span>
       <div>
-        <h2 id="p3-flow-title">전체 시연 순서</h2>
-        <p>완료된 소스 검사와 아직 행내 환경이 필요한 검사를 한 흐름에서 구분합니다.</p>
+        <h2 id="p3-flow-title">현재 단계별 증거 상태</h2>
+        <p>완료된 소스 검사와 아직 다음 공식 버전·행내 환경이 필요한 단계를 구분합니다.</p>
       </div>
     </div>
     <ol class="p3-flow">
@@ -70,7 +70,7 @@
       <span>03</span>
       <div>
         <h2 id="p3-code-title">실제 코드가 어떻게 달라졌나</h2>
-        <p>BANK-OM-001의 InstanceCode를 대표 사례로 사용합니다. 전체 11개 커스터마이징 중 한 사례입니다.</p>
+        <p>실제 Git diff에서 BANK-OM-001의 InstanceCode 관련 부분을 발췌해 설명용 좌우 비교로 배치했습니다. 전체 11개 커스터마이징 중 한 사례입니다.</p>
       </div>
     </div>
 
@@ -336,7 +336,7 @@ exact-scope-history          pass</code></pre>
           <li>새 공식 버전에 BANK-OM 커스터마이징 재적용</li>
           <li>T42·T43을 실제 업그레이드 입력으로 다시 실행</li>
           <li>행내 환경에서 T61·T62·T63·T90·T91 실행</li>
-          <li>실제 실행 화면을 캡처해 최종 시연본에 추가</li>
+          <li>3차 내용을 확정한 뒤 4차에서 실제 Git 병합·검사 화면을 캡처</li>
         </ol>
       </div>
     </div>
