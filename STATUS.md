@@ -1,8 +1,9 @@
 # Current implementation status
 
-> Updated: 2026-07-27
+> Updated: 2026-07-28 KST
 > Branch: `codex/strict-manifest-gates`
-> Last verified implementation commit: pending this coherent batch
+> Last verified implementation commit: `291c6f2`
+> Strict-scope batch recorded: 2026-07-28 09:41 KST
 > Current product candidate: `849ae756cd238f218b5e3a6c795a392305cb32ee`
 > Strict-scope progress: [`docs/04-진행/STRICT_SCOPE_IMPROVEMENT_PROGRESS.md`](docs/04-진행/STRICT_SCOPE_IMPROVEMENT_PROGRESS.md)
 > BANK-OM-011 governance registration / evidence rebind: `b1d3fa6` / `c246ae2`

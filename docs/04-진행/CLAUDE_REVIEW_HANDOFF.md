@@ -1912,6 +1912,7 @@ counterexample을 기준으로 판단해야 한다.
 
 - governance repository: `easyseop/openmetadata-test`
 - branch: `codex/strict-manifest-gates`
+- first strict-scope implementation commit: `291c6f2`
 - product validation repository: `easyseop/OpenMetadata`
 - unchanged product candidate: `849ae756cd238f218b5e3a6c795a392305cb32ee`
 - 상세 진척도:
