@@ -43,15 +43,48 @@ class Commit:
         return len(self.parents) > 1
 
 
+@dataclass(frozen=True)
+class TreeEntry:
+    mode: str
+    object_type: str
+    object_id: str
+    path: str
+
+
 def git(repo: str, *args: str, check: bool = True) -> str:
     """Run a git command in repo and return stdout (text)."""
-    proc = subprocess.run(
-        ["git", "-C", repo, *_STABLE_CONFIG, *args],
-        check=check,
-        text=True,
-        capture_output=True,
-    )
+    try:
+        proc = subprocess.run(
+            ["git", "-C", repo, *_STABLE_CONFIG, *args],
+            check=check,
+            text=True,
+            capture_output=True,
+        )
+    except subprocess.CalledProcessError as exc:
+        detail = (exc.stderr or exc.stdout or "no output").strip()
+        raise GitPrimitiveError(
+            f"git {' '.join(args)} failed ({exc.returncode}): {detail}"
+        ) from exc
     return proc.stdout
+
+
+def resolve_commit(repo: str, ref: str) -> str:
+    """Resolve one ref to an exact commit SHA, rejecting ambiguous output."""
+    sha = git(
+        repo,
+        "rev-parse",
+        "--verify",
+        "--end-of-options",
+        f"{ref}^{{commit}}",
+    ).strip()
+    if not _FULL_SHA.match(sha):
+        raise GitPrimitiveError(f"cannot resolve commit ref {ref!r}: {sha!r}")
+    return sha
+
+
+def worktree_is_dirty(repo: str) -> bool:
+    """Return whether tracked or untracked worktree state is present."""
+    return bool(git(repo, "status", "--porcelain=v1", "-z"))
 
 
 def commits(repo: str, base: str, head: str) -> list[Commit]:
@@ -122,6 +155,35 @@ def list_tree_recursive(repo: str, ref: str) -> list[str]:
     """All file paths under ``ref``'s tree (NUL-safe)."""
     out = git(repo, "ls-tree", "-r", "--name-only", "-z", ref)
     return [p for p in out.split("\x00") if p != ""]
+
+
+def tree_entries(repo: str, ref: str) -> dict[str, TreeEntry]:
+    """Return every recursive tree entry keyed by its NUL-safe path."""
+    out = git(repo, "ls-tree", "-r", "-z", ref)
+    entries: dict[str, TreeEntry] = {}
+    for raw in (item for item in out.split("\x00") if item):
+        metadata, separator, path = raw.partition("\t")
+        parts = metadata.split()
+        if not separator or len(parts) != 3:
+            raise GitPrimitiveError(f"malformed ls-tree record: {raw!r}")
+        mode, object_type, object_id = parts
+        entries[path] = TreeEntry(mode, object_type, object_id, path)
+    return entries
+
+
+def blob_bytes(repo: str, ref: str, path: str) -> bytes:
+    """Read one path from one ref without applying text decoding."""
+    proc = subprocess.run(
+        ["git", "-C", repo, *_STABLE_CONFIG, "show", f"{ref}:{path}"],
+        check=False,
+        capture_output=True,
+    )
+    if proc.returncode != 0:
+        raise GitPrimitiveError(
+            f"cannot read {ref}:{path}: "
+            f"{proc.stderr.decode('utf-8', errors='replace').strip()}"
+        )
+    return proc.stdout
 
 
 def object_exists(repo: str, sha: str) -> bool:

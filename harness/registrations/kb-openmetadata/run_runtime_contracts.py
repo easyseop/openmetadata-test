@@ -121,6 +121,7 @@ def main() -> int:
         upstream_target_sha=target,
         candidate_repository=args.candidate_repository,
         artifact_digest=args.artifact_digest,
+        artifact_kind=candidate.BUILD_ARTIFACT,
         upstream_base_tag=registry.source["upstream_tag"],
         upstream_target_tag=registry.source["upstream_tag"],
     )

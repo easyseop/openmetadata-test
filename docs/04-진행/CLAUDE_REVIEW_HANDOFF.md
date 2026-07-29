@@ -1,5 +1,30 @@
 # Claude 독립 검토 인수인계
 
+## 2026-07-30 추가 검토 대상
+
+사전준비 자동화 설계 검토 후속 구현이 완료됐다. Claude는 아래를 우선
+재검토하면 된다.
+
+1. `registration_prep.build_plan()`의 Git 사실과 사람 정책 경계
+2. `REVIEW_REQUIRED`인데 `apply_ready: true`인 제안이 exact decision set
+   없이는 적용되지 않는지
+3. digest·patch/custom ref·등록 입력 digest·동시 lock의 TOCTOU 차단
+4. 실패 중 원자 쓰기 rollback과 symlink target 차단
+5. 공식 patch에 없는 watch 경로를 자동 추가하지 않고 기능별 질문으로 묶은 방식
+6. Candidate lock v2의 `source-tree` / `build-artifact` 구분과 v1 호환
+7. 실제 1.13.0 제안의 자동 변경 0·질문 5·차단 0 경계
+
+검토 시작점:
+
+- `harness/acgh/registration_prep.py`
+- `harness/prepare_registration.py`
+- `harness/tests/test_registration_prep.py`
+- `harness/preparation-plans/om-temp-1.13.0-20260730/summary.md`
+- `docs/00-사용가이드/OM_TEMP_검사전_준비도구_쉬운사용법.md`
+
+사람 승인과 apply는 의도적으로 실행하지 않았다. 1.13.1 원격 branch, 조직
+owner, runtime 환경, 실제 build artifact와 운영 배포도 아직 외부 입력이다.
+
 > **현재 공유문서 작업 안내:** 이 문서는 과거 구현 상세를 보존한다. 현재
 > `codex/strict-manifest-gates` 브랜치의 1차·2차·3차 공유문서 상태와 다음 작업은
 > [`CODEX_HANDOFF.md`](CODEX_HANDOFF.md)와

@@ -1,6 +1,6 @@
 # Current implementation status
 
-> Updated: 2026-07-29 23:42 KST
+> Updated: 2026-07-30 KST
 > Branch: `codex/strict-manifest-gates`
 > Latest local implementation: `2d017846b2cb4fb9883929f00b4f20bb8aa6c85a`
 > Latest remotely verified head:
@@ -57,6 +57,50 @@ When user-visible status, inputs, terminology, or operating steps change, the
 nondeveloper guide is updated in the same coherent batch.
 
 ## Outcome
+
+### 2026-07-30 registration preparation automation
+
+The reviewed `plan → human approval → apply` workflow is now implemented.
+`harness/prepare_registration.py` pins patch/custom refs, inventories every
+BANK-OM commit and touched path, compares them with registration policy, and
+writes an immutable proposal outside the registration directory. It does not
+infer owners, required paths, contracts, or approvals.
+
+Fail-closed checks cover dirty worktrees, unavailable source objects, unrelated
+history, merge/empty commits, missing or multiple IDs, mixed ownership,
+non-contiguous series, retired IDs, required/source-owner loss, shared-owner
+drift, unknown paths, symlinks, submodules, and Git LFS pointers. Apply requires
+an exact approval decision set and rechecks the proposal digest, both Git refs,
+the registration-input digest, and an exclusive lock before atomic writes with
+rollback.
+
+The former hardcoded OM_TEMP Manifest draft generator now delegates to the
+range analyzer. Candidate lock schema v2 explicitly distinguishes
+`source-tree` from `build-artifact`; legacy schema v1 remains read-compatible.
+
+The actual OM_TEMP 1.13.0 plan is stored at
+`harness/preparation-plans/om-temp-1.13.0-20260730/`:
+
+- patch `2f4f3560e7a8437e2f4f7fcafd00d32ea2d91a50`
+- custom `7d19c8952612e77467b0a80d6287170d814f1de1`
+- `REVIEW_REQUIRED`, automatic changes 0, grouped human decisions 5
+- blocked 0, analysis errors 0
+- proposal digest
+  `sha256:502a6824bb60e02b0d6cf4a66043e9e5d9ec0b22ed70b2c3387437b738d278b7`
+
+No human approval was invented and no proposal was applied. The five questions
+ask whether existing bank-only watch paths should remain. A second plan run was
+byte-identical.
+
+OM_TEMP 1.13.0 registration validation is still 5 PASS, and the eight source
+gates passed again with Candidate lock v2 digest
+`sha256:2c966250f31897d9aa6a6cee2d80a324c5997f258d02f0a2a6295b45d4f2fc14`.
+The local full harness suite is **341 passed, 37 environment-dependent
+skipped** out of 378. Skips are not counted as operational evidence.
+
+Remaining external inputs are the five watch decisions, real owner/approver
+identities, missing remote 1.13.1 branches, full build/runtime evidence,
+artifact promotion, and production deployment approval.
 
 ### 2026-07-29 precheck automation review baseline recovery
 

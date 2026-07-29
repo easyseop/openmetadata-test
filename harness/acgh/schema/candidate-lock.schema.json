@@ -7,7 +7,7 @@
   "additionalProperties": false,
   "required": ["schema_version", "integration_strategy", "upstream", "candidate"],
   "properties": {
-    "schema_version": {"const": 1},
+    "schema_version": {"enum": [1, 2]},
     "integration_strategy": {
       "enum": ["vendor-merge", "patch-replay"],
       "default": "vendor-merge"
@@ -35,6 +35,7 @@
       ],
       "properties": {
         "repository": {"type": "string", "minLength": 1},
+        "artifact_kind": {"enum": ["source-tree", "build-artifact"]},
         "commit_sha": {"$ref": "#/$defs/gitSha"},
         "tree_sha": {"$ref": "#/$defs/gitSha"},
         "artifact_digest": {"$ref": "#/$defs/sha256Digest"}
@@ -43,6 +44,17 @@
     "patch_source_lock_digest": {"$ref": "#/$defs/sha256Digest"}
   },
   "allOf": [
+    {
+      "if": {
+        "properties": {"schema_version": {"const": 2}},
+        "required": ["schema_version"]
+      },
+      "then": {
+        "properties": {
+          "candidate": {"required": ["artifact_kind"]}
+        }
+      }
+    },
     {
       "if": {
         "properties": {

@@ -1,5 +1,68 @@
 # Codex 작업 인수인계
 
+## 0-latest. 2026-07-30 검사 전 준비 자동화 구현
+
+독립 검토를 받은 등록자료 준비 설계의 0~6단계를 구현했다.
+
+### 구현 파일과 방식
+
+- `harness/prepare_registration.py`: `plan`, `approval-template`, `apply` CLI
+- `harness/acgh/registration_prep.py`: Git 분석, 정책 비교, 상태 판정,
+  제안 digest, stale 확인, 잠금, 원자 적용과 rollback
+- `harness/acgh/gitprim.py`: ref 고정, dirty 상태, NUL-safe tree entry,
+  binary-safe blob 읽기
+- `harness/acgh/schema/commit-inventory.schema.json`
+- `harness/acgh/schema/registration-proposal.schema.json`
+- `harness/acgh/schema/registration-approval.schema.json`
+- `harness/tests/test_registration_prep.py`: 정상·후속·ID·소유영역·무관 이력,
+  source/shared owner, symlink·submodule·LFS, digest·stale·lock 회귀 test
+- `generate_manifest_drafts.py`: BANK-OM SHA 하드코딩 제거, 새 planner 호환
+  진입점
+- Candidate lock schema v2: `source-tree`와 `build-artifact` 구분. v1은 과거
+  digest를 깨지 않도록 read-compatible
+
+자동화는 Git이 알 수 있는 SHA·commit·경로만 계산한다. 신규 ID의 owner,
+criticality, required path, Contract, 기존 bank-only watch 보존 여부는
+질문으로 남긴다. `READY`도 자동 적용하지 않는다.
+
+### 실제 OM_TEMP 1.13.0 결과
+
+- 제안:
+  `harness/preparation-plans/om-temp-1.13.0-20260730/`
+- patch: `2f4f3560e7a8437e2f4f7fcafd00d32ea2d91a50`
+- custom: `7d19c8952612e77467b0a80d6287170d814f1de1`
+- 상태: `REVIEW_REQUIRED`
+- 자동 변경 0, 기능별 사람 판단 5, 차단 0, 분석 오류 0
+- digest:
+  `sha256:502a6824bb60e02b0d6cf4a66043e9e5d9ec0b22ed70b2c3387437b738d278b7`
+- 두 번째 plan 산출물: byte-identical
+- 승인·apply: 미실행
+
+기능별 질문은 공식 patch에 없는 기존 watch 경로를 보존할지 묻는다. 43개
+경로를 각각 승인하게 하지 않고 BANK-OM별 5개 묶음으로 보여주되 상세 경로는
+그대로 보존한다.
+
+등록자료 검증 5종과 source gate 8종을 결정론적 후보 `3a2811cf...`에서 다시
+통과했다. Candidate lock은 schema v2, `artifact_kind: source-tree`, digest
+`sha256:2c966250f31897d9aa6a6cee2d80a324c5997f258d02f0a2a6295b45d4f2fc14`다.
+이는 build/image 검증이 아니다.
+
+전체 로컬 harness는 378개 중 `341 passed, 37 environment-dependent
+skipped`다. 신규 준비·Git·Candidate 집중 test는 `38 passed`다. `py_compile`,
+위키 JavaScript 구문 검사, 제안 결정론 diff, ZIP 무결성, `git diff --check`도
+통과했다.
+
+### 다음 작업자가 해야 할 정확한 일
+
+1. 담당자에게 `review-required.yaml`의 5개 질문을 전달한다.
+2. 실제 승인자 ID·시각·구체 사유로 template을 채운다.
+3. 같은 제안 digest인지 검토한 뒤 `apply`를 실행한다.
+4. 등록자료 검증과 source gate를 다시 실행한다.
+5. 원격 1.13.1 patch/custom branch가 제공되면 1.13.1에서 plan부터 반복한다.
+
+owner·승인자·1.13.1 SHA·비밀값·실제 산출물은 추측하지 않는다. 전체 build,
+행내 runtime, 산출물 승격, 운영 배포는 여전히 외부 입력 대기다.
+
 > 갱신 기준: 2026-07-29 23:42 KST
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
@@ -76,7 +139,7 @@ Manifest·Registry·Contract 등 등록자료를 자동으로 준비하는
 `8728243380`, SHA-256은
 `6e15ea0a3c4f33f7a22bee27602be0da86e70f7cb79de9c2f81b71f80b27745e`다.
 
-### 다음 정확한 작업
+### 당시 다음 작업 기록 — 2026-07-30 구현 완료
 
 1. `prepare_registration.py plan`의 1단계 읽기 전용 Git 분석기를 구현한다.
 2. patch/custom ref를 SHA로 고정하고 BANK-OM별 commit·경로를 계산한다.
@@ -87,9 +150,10 @@ Manifest·Registry·Contract 등 등록자료를 자동으로 준비하는
 5. 위 판정이 안정된 뒤 proposal/review-required, 마지막에 digest 승인과
    원자적 apply를 구현한다.
 
-아직 구현하지 않은 것은 source/build artifact 종류 구분, upstream에 없는
-행내 경로의 watch 분리 코드, symlink·submodule·LFS mode 차단, OM_TEMP 1.13.1
-재검증, 실제 runtime/build/deploy와 조직 owner·승인자 지정이다. 원격
+위 1~5와 source/build artifact 종류 구분, upstream에 없는 행내 경로의
+watch 분리, symlink·submodule·LFS mode 차단은 2026-07-30 완료됐다.
+여전히 남은 것은 OM_TEMP 1.13.1 재검증, 실제 runtime/build/deploy와 조직
+owner·승인자 지정이다. 원격
 `patch/om-1.13.1`·`custom/om-1.13.1`, 비밀값, owner를 추측하지 않는다.
 
 ## 0-0. 2026-07-29 Claude 위키 검토 반영

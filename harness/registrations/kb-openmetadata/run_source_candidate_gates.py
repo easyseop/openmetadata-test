@@ -70,6 +70,7 @@ def main() -> int:
         upstream_target_sha=target,
         candidate_repository=registry.source["repository"],
         artifact_digest=source_digest,
+        artifact_kind=candidate.SOURCE_TREE,
         upstream_base_tag=registry.source["upstream_tag"],
         upstream_target_tag=registry.source["upstream_tag"],
     )

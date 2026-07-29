@@ -118,6 +118,7 @@ def test_build_lock_pins_real_commit_and_tree(tmp_path):
         upstream_target_sha=_TARGET,
         candidate_repository="bank/kb_openmetadata",
         artifact_digest=_ARTIFACT,
+        artifact_kind=C.SOURCE_TREE,
     )
     assert lock.candidate.commit_sha == _run(repo, "rev-parse", "HEAD")
     assert lock.candidate.tree_sha == _run(repo, "rev-parse", "HEAD^{tree}")
@@ -134,11 +135,14 @@ def test_binding_detects_tree_and_artifact_mismatch(tmp_path):
         upstream_target_sha=_TARGET,
         candidate_repository="bank/kb_openmetadata",
         artifact_digest=_ARTIFACT,
+        artifact_kind=C.BUILD_ARTIFACT,
     )
     bad_data = lock.canonical()
     bad_data["candidate"]["tree_sha"] = "0" * 40
     with pytest.raises(C.CandidateLockError, match="tree mismatch"):
         C.assert_candidate_binding(str(repo), C.parse_candidate_lock(bad_data))
+    with pytest.raises(C.CandidateLockError, match="requires"):
+        C.assert_candidate_binding(str(repo), lock)
     with pytest.raises(C.CandidateLockError, match="artifact digest mismatch"):
         C.assert_candidate_binding(
             str(repo), lock, artifact_digest="sha256:" + "0" * 64
@@ -157,6 +161,17 @@ def test_result_inputs_are_derived_from_candidate_lock():
     assert inputs["artifact_digest"] == _ARTIFACT
     assert inputs["candidate_lock_digest"] == lock.digest()
     assert "patch_source_lock_digest" not in inputs
+
+
+def test_schema_v2_requires_explicit_artifact_kind():
+    data = _lock_dict()
+    data["schema_version"] = 2
+    with pytest.raises(C.CandidateLockError, match="artifact_kind"):
+        C.parse_candidate_lock(data)
+    data["candidate"]["artifact_kind"] = C.SOURCE_TREE
+    lock = C.parse_candidate_lock(data)
+    assert lock.candidate.artifact_kind == C.SOURCE_TREE
+    assert lock.canonical()["candidate"]["artifact_kind"] == C.SOURCE_TREE
 
 
 def test_changed_candidate_lock_invalidates_prior_result(tmp_path):

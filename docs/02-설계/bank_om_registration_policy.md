@@ -12,7 +12,7 @@
 | 커밋의 `Customization-ID` 검사 | 구현 완료 | T30·T31 |
 | 변경 파일 범위·필수 파일 검사 | 구현 완료 | T26·T40·T93 |
 | `upgrade_watch.paths` 비교 | 구현 완료 | T42 |
-| 실제 변경 경로의 `upgrade_watch.paths` 자동 포함 | 부분 구현·보완 필요 | 현재 생성기는 행내 신규 파일도 포함해 영구 APPROVAL을 만들 수 있음 |
+| 실제 변경 경로의 `upgrade_watch.paths` 자동 포함 | 구현 완료 | 공식 patch tree에 있는 경로만 자동 포함, 행내 신규 경로는 기능별 사람 판단 |
 | 직접 참조된 공식 변경 파일의 watch 후보 제안 | 구현 완료·담당자 검토 필요 | `watch_suggest.py` |
 | 담당자 `owner` 저장·검증 | 구현 완료·실제 배정 대기 | 별도 `customization-registry.yaml`, T29 |
 
@@ -94,11 +94,10 @@ upgrade_watch:
 
 독립 설계 검토에서 공식 upstream tree에 없는 행내 신규 파일까지 watch에
 넣으면 T93 정책 노후화 검사가 매번 `stale_pattern` APPROVAL을 만든다는
-문제를 확인했다. 새 자동화는 공식 upstream tree에 존재하는 변경 경로만
-watch 후보에 자동 포함해야 한다. 행내 신규 파일은 `changed_paths`로 계속
-검사하되 watch 자동 포함을 보류하고 담당자 판단 항목으로 표시한다. 이 보완은
-아직 구현되지 않았으므로 현재 watch 목록의 APPROVAL을 그대로 정책 노후화
-확정으로 해석하지 않는다.
+문제를 확인했다. 현재 준비 자동화는 공식 upstream tree에 존재하는 변경
+경로만 watch 후보에 자동 포함한다. 행내 신규 파일은 `changed_paths`로 계속
+검사하되 watch 자동 포함을 보류하고 BANK-OM별 한 개의 담당자 판단 항목으로
+묶는다. 기존 watch 값은 승인 없이 삭제하지 않는다.
 
 행내에서 직접 수정하지 않았지만 커스터마이징이 의존하는 경로는 담당자가
 `watch_dependencies`로 등록한다. 새 공식 버전에서 바뀐 파일 이름을

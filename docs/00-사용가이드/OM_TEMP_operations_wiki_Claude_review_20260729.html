@@ -1445,9 +1445,9 @@ window.WIKI_FILES = {
     ],
     commands: [
       {
-        label: "초안 재생성 · 검토용 폴더의 Manifest가 바뀜",
-        meaning: "Git commit 이력에서 BANK-OM ID별 changed_paths 초안을 다시 만듭니다. 예를 들어 BANK-OM-007의 두 commit이 8개와 2개 파일을 변경했다면 한 Manifest의 changed_paths 10개로 합칩니다. 실제 Manifest를 바로 덮어쓰지 않도록 검토용 출력 폴더를 지정합니다. 이미 Manifest를 직접 수정했다면 반드시 실행할 명령이 아닙니다.",
-        command: "python harness/registrations/om-temp-1.13.0/generate_manifest_drafts.py \\\n  --repo /path/to/OM_TEMP \\\n  --output /tmp/om-temp-manifest-review"
+        label: "변경안 생성 · 실제 등록자료는 바뀌지 않음",
+        meaning: "Git commit 이력에서 BANK-OM ID별 SHA와 changed_paths를 계산하고 기존 사람 정책과 비교합니다. 제안·질문·diff를 등록 폴더 밖에 만들며, 승인 전에는 실제 Manifest를 수정하지 않습니다.",
+        command: "PYTHONPATH=harness python harness/prepare_registration.py plan \\\n  --repo /path/to/OM_TEMP \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --patch-ref origin/patch/om-1.13.0 \\\n  --custom-ref origin/custom/om-1.13.0 \\\n  --product-version 1.13.0 \\\n  --output harness/preparation-plans/om-temp-1.13.0-YYYYMMDD"
       },
       {
         label: "등록자료 검증 · Manifest는 바뀌지 않음",
@@ -1455,7 +1455,7 @@ window.WIKI_FILES = {
         command: "python harness/registrations/om-temp-1.13.0/validate_registration_bundle.py \\\n  --repo /path/to/OM_TEMP"
       }
     ],
-    storage: "버전별 등록 폴더에서 Git 이력으로 관리합니다. 새 공식 버전에서도 같은 업무 기능이면 같은 BANK-OM ID를 유지하되 새 버전 폴더의 changed_paths를 다시 생성·검토합니다. 최초 구현과 후속 수정의 구분은 Manifest 목록을 나누지 않고 Git commit SHA와 커밋 순서로 확인합니다. 생성 명령에서 --output을 생략하면 실제 manifests 폴더가 기본 출력이므로 기존 파일을 덮어쓸 수 있습니다."
+    storage: "버전별 등록 폴더에서 Git 이력으로 관리합니다. 새 공식 버전에서도 같은 업무 기능이면 같은 BANK-OM ID를 유지하되 새 버전 폴더의 changed_paths를 다시 생성·검토합니다. 최초 구현과 후속 수정의 구분은 Manifest 목록을 나누지 않고 Git commit SHA와 커밋 순서로 확인합니다. 새 plan 명령은 --output을 필수로 요구하고 등록 폴더 내부 출력을 차단합니다."
   },
   registry: {
     title: "Customization Registry",
@@ -1808,12 +1808,12 @@ window.WIKI_TOPICS = {
       ["2. 코드와 commit", "한 업무 기능 단위로 코드를 변경하고 commit 본문에 Customization-ID를 넣습니다."],
       ["3. Manifest 초안", "생성기가 같은 ID가 붙은 모든 commit의 실제 변경 파일을 합쳐 changed_paths와 watch 초안을 만듭니다."],
       ["4. 사람 승인", "required, 간접 watch, Contract, owner와 criticality를 담당자가 정합니다."],
-      ["5. 등록 묶음 생성", "Registry, 공용 파일 소유정보와 전체 변경 목록을 다시 생성합니다."],
+      ["5. 승인안 적용", "같은 digest의 승인서가 있을 때 현재 버전 Manifest·Registry 변경안과 commit inventory·최종 diff를 적용합니다. 과거 source snapshot 소유파일은 일반 후속 commit 때문에 다시 만들지 않습니다."],
       ["6. 검사", "등록자료 검사와 소스 검사를 실행하고 BLOCK 원인을 수정합니다."]
     ],
-    example: "python harness/registrations/om-temp-1.13.0/generate_manifest_drafts.py --repo /path/to/OM_TEMP\npython harness/registrations/om-temp-1.13.0/generate_registration_bundle.py --repo /path/to/OM_TEMP\npython harness/registrations/om-temp-1.13.0/validate_registration_bundle.py --repo /path/to/OM_TEMP",
+    example: "PYTHONPATH=harness python harness/prepare_registration.py plan \\\n  --repo /path/to/OM_TEMP \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --patch-ref origin/patch/om-1.13.0 \\\n  --custom-ref origin/custom/om-1.13.0 \\\n  --product-version 1.13.0 \\\n  --output harness/preparation-plans/om-temp-1.13.0-YYYYMMDD\n\n# 사람 검토·digest 승인 뒤에만 apply\npython harness/registrations/om-temp-1.13.0/validate_registration_bundle.py --repo /path/to/OM_TEMP",
     resultExample: "등록 검증 PASS 예시\n- Manifest 구조와 작성 규칙: 7개 PASS\n- Registry·Manifest·Contract 연결: 7개 PASS\n- 공식 1.13.0 ↔ 행내 custom 1.13.0 차이: 111개 경로 PASS\n- 공용 파일 소유정보: 37개 경로 PASS\n- 필수 Python test 코드: 9개 PASS\n\n참고: 공식 1.13.0 → 공식 1.13.1 변경은 별도 비교 축이며 834개 경로입니다.",
-    update: "같은 ID의 후속 commit에서 새 파일이 확인되면 해당 버전 Manifest의 changed_paths를 갱신하고 Registry·공용 소유정보·전체 변경 목록을 재생성합니다.",
+    update: "같은 ID의 후속 commit에서 새 파일이 확인되면 plan이 해당 버전 Manifest의 changed_paths, commit inventory와 최종 diff 변경안을 만듭니다. required·watch·Contract 판단을 승인한 뒤 apply하고 등록자료 검사를 다시 실행합니다.",
     caution: "생성기가 required나 업무 invariant를 임의로 확정하지 않습니다. 자동 초안을 검토하지 않고 그대로 병합하면 기능 누락을 잘못 판단할 수 있습니다."
   },
   followup: {
@@ -1826,25 +1826,25 @@ window.WIKI_TOPICS = {
       ["3. 후속 commit 작성", "commit 본문에 기존 Customization-ID를 그대로 넣습니다."],
       ["4. 현재 변경 범위 갱신", "후속 commit이 새 파일을 변경했다면 changed_paths에 추가합니다. 기존 등록 파일의 내용만 수정했다면 파일명 목록은 그대로 둡니다."],
       ["5. 필수·watch·Contract 재검토", "새 파일이 기능 필수 요소인지, 공식 업그레이드 감시와 test 갱신이 필요한지 확인합니다."],
-      ["6. 파생 파일·검사 갱신", "Registry 연결, 공용 소유정보와 전체 변경 목록을 재생성하고 T30·T31·T40·T42·T93을 다시 실행합니다."]
+      ["6. 제안 적용·검사", "담당자가 같은 digest의 제안을 승인하면 apply한 뒤 등록자료 검사와 T30·T31·T40·T42·T93을 다시 실행합니다. source snapshot 소유자료는 일반 후속 commit에서 자동 재생성하지 않습니다."]
     ],
     example: "git commit -m \"Tibero 연결 파일 누락 보완\" \\\n  -m \"Customization-ID: BANK-OM-007\"\n\n# 변경 전: 8개\nimplementation:\n  changed_paths:\n    - openmetadata-spec/.../tiberoConnection.json\n\n# 변경 후: 기존 8개 + 새 파일 2개\nimplementation:\n  changed_paths:\n    - openmetadata-spec/.../tiberoConnection.json\n    - openmetadata-ui/.../serviceConnection.ts\n    - openmetadata-ui/.../DatabaseServiceUtils.test.tsx",
     resultExample: "후속 commit 7d19c895…를 별도 기능으로 만들지 않고 BANK-OM-007에 연결\n→ series.allowed=true 확인\n→ changed_paths 8개에서 현재 전체 10개로 갱신\n→ 등록 범위 검사 PASS",
-    update: "Manifest, 필요한 경우 Contract·Registry, shared-path-owners.yaml과 source-diff-paths.txt를 갱신합니다. patch-replay 전략에서만 Patch-lock revision과 source_commits도 추가합니다.",
+    update: "Manifest, 필요한 경우 Contract·Registry를 승인된 제안으로 갱신합니다. source snapshot을 새로 등록하는 별도 작업에서만 shared/source 소유자료를 갱신하고, patch-replay 전략에서만 Patch-lock revision과 source_commits를 추가합니다.",
     caution: "changed_paths는 현재 버전의 전체 범위만 보여줍니다. 어느 commit에서 파일이 추가됐는지는 Git 이력에서 확인하며, Manifest에 최초·후속 목록을 따로 만들지 않습니다."
   },
   automation: {
     group: "검사 전 사전환경 상세",
     title: "커밋 후 자동화와 사람 승인",
-    summary: "목표 자동화는 commit을 감지해 경로 초안과 파생 파일을 만들고 검사를 시작하는 것입니다. 현재 생성 스크립트는 있지만 OM_TEMP commit과 검사 저장소 갱신이 완전히 자동 연결되지는 않았습니다.",
+    summary: "현재 plan은 commit과 경로를 자동 분석해 제안·질문·diff를 만들고, apply는 사람이 승인한 같은 digest만 원자적으로 반영합니다. 자동 commit 감지와 운영 검사 시작은 CI 연동 범위로 남아 있습니다.",
     sections: [
-      ["자동화할 항목", "변경 경로, BANK-OM ID 형식, Manifest 경로 초안, Registry 연결, 공용 파일 소유정보, 전체 변경 목록과 스키마 검증"],
+      ["자동화한 항목", "patch/custom SHA, BANK-OM별 commit·변경 경로, 최종 diff, Manifest 변경안, 스키마·안전 차단, 제안 digest와 원자 적용"],
       ["사람이 결정할 항목", "required 파일, 간접 watch 의존, Contract invariant와 test, owner·criticality, 충돌 해결 코드와 최종 승인"],
-      ["후보 확정 뒤 자동 생성", "Candidate lock은 commit과 빌드 artifact가 모두 확정된 뒤 생성합니다."],
+      ["후보 확정 뒤 자동 생성", "Candidate lock v2는 소스 검사면 source-tree, 실제 빌드 결과면 build-artifact를 명시합니다."],
       ["환경 test 때 자동 생성", "Test run set과 검사 결과는 실행마다 새로 만들고 기존 결과를 덮어쓰지 않습니다."]
     ],
-    example: "OM_TEMP 코드 commit\n  → 자동 diff·Manifest 변경안\n  → 담당자 의미 확인\n  → 등록 묶음 재생성·검사\n  → Pull Request 또는 BLOCK",
-    resultExample: "현재: 담당자가 생성 스크립트를 직접 실행하고 결과를 검토\n목표: commit 감지 → 자동 변경안 생성 → 담당자 승인 → 검사 통과 시 병합 가능\n사람 판단: required·Contract·간접 watch·충돌 해결은 자동 확정하지 않음",
+    example: "OM_TEMP 코드 commit\n  → plan: SHA·경로·Manifest 변경안\n  → 담당자 의미 확인·digest 승인\n  → apply: 승인한 등록 변경만 원자 적용\n  → 등록자료·소스 검사 또는 BLOCK",
+    resultExample: "현재 1.13.0 plan: REVIEW_REQUIRED\n- 자동 변경 0\n- 기능별 사람 판단 5\n- 차단 0\n- 분석 오류 0\n- 승인·apply는 미실행\n사람 판단: required·Contract·bank-only watch·owner·충돌 해결은 자동 확정하지 않음",
     update: "생성 스크립트나 스키마가 바뀌면 CI workflow와 이 위키의 자동/수동 구분을 함께 갱신합니다.",
     caution: "자동화가 관리 branch를 직접 덮어쓰기보다 변경안을 Pull Request로 제시하고, 불일치가 남으면 병합을 차단하는 구성이 안전합니다."
   },

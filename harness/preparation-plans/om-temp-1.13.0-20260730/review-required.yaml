@@ -1,0 +1,72 @@
+schema_version: 1
+proposal_digest: sha256:502a6824bb60e02b0d6cf4a66043e9e5d9ec0b22ed70b2c3387437b738d278b7
+status: REVIEW_REQUIRED
+items:
+- finding_id: REVIEW-0001
+  code: BANK_ONLY_WATCH_DECISION
+  question: 공식 patch에 없는 기존 watch 경로 16개를 보존할지 행내 changed_paths만으로 관리할지 담당자가 한 번에 확인해야 합니다.
+  customization_id: BANK-OM-001
+  paths:
+  - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/InstanceCodeRepository.java
+  - openmetadata-service/src/main/java/org/openmetadata/service/resources/instancecode/InstanceCodeMapper.java
+  - openmetadata-service/src/main/java/org/openmetadata/service/resources/instancecode/InstanceCodeResource.java
+  - openmetadata-service/src/main/java/org/openmetadata/service/search/indexes/InstanceCodeIndex.java
+  - openmetadata-spec/src/main/resources/elasticsearch/en/instance_code_index_mapping.json
+  - openmetadata-spec/src/main/resources/elasticsearch/jp/instance_code_index_mapping.json
+  - openmetadata-spec/src/main/resources/elasticsearch/ru/instance_code_index_mapping.json
+  - openmetadata-spec/src/main/resources/elasticsearch/zh/instance_code_index_mapping.json
+  - openmetadata-spec/src/main/resources/json/schema/api/data/createInstanceCode.json
+  - openmetadata-spec/src/main/resources/json/schema/entity/data/instanceCode.json
+  - openmetadata-ui/src/main/resources/ui/src/components/InstanceCode/InstanceCodeListPage.tsx
+  - openmetadata-ui/src/main/resources/ui/src/generated/api/data/createInstanceCode.ts
+  - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/instanceCode.ts
+  - openmetadata-ui/src/main/resources/ui/src/pages/InstanceCodeDetailsPage/InstanceCodeDetailsPage.tsx
+  - openmetadata-ui/src/main/resources/ui/src/pages/InstanceCodeGroupDetailsPage/InstanceCodeGroupDetailsPage.tsx
+  - openmetadata-ui/src/main/resources/ui/src/rest/instanceCodeAPI.ts
+- finding_id: REVIEW-0002
+  code: BANK_ONLY_WATCH_DECISION
+  question: 공식 patch에 없는 기존 watch 경로 18개를 보존할지 행내 changed_paths만으로 관리할지 담당자가 한 번에 확인해야 합니다.
+  customization_id: BANK-OM-002
+  paths:
+  - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/QueryReportRepository.java
+  - openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/QueryReportMapper.java
+  - openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/QueryReportResource.java
+  - openmetadata-service/src/main/java/org/openmetadata/service/search/indexes/QueryReportIndex.java
+  - openmetadata-spec/src/main/resources/elasticsearch/en/query_report_index_mapping.json
+  - openmetadata-spec/src/main/resources/elasticsearch/jp/query_report_index_mapping.json
+  - openmetadata-spec/src/main/resources/elasticsearch/ru/query_report_index_mapping.json
+  - openmetadata-spec/src/main/resources/elasticsearch/zh/query_report_index_mapping.json
+  - openmetadata-spec/src/main/resources/json/schema/api/data/createQueryReport.json
+  - openmetadata-spec/src/main/resources/json/schema/entity/data/queryReport.json
+  - openmetadata-ui/src/main/resources/ui/src/components/QueryReport/QueryReportListPage.tsx
+  - openmetadata-ui/src/main/resources/ui/src/components/QueryReport/QueryReportQueryEditor/QueryReportQueryEditor.component.tsx
+  - openmetadata-ui/src/main/resources/ui/src/generated/api/data/createQueryReport.ts
+  - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/queryReport.ts
+  - openmetadata-ui/src/main/resources/ui/src/pages/QueryReportDetailsPage/QueryReportDetailsPage.tsx
+  - openmetadata-ui/src/main/resources/ui/src/pages/QueryReportYearDetailsPage/QueryReportYearDetailsPage.tsx
+  - openmetadata-ui/src/main/resources/ui/src/rest/queryReportAPI.ts
+  - openmetadata-ui/src/main/resources/ui/src/utils/QueryReportUtils.ts
+- finding_id: REVIEW-0003
+  code: BANK_ONLY_WATCH_DECISION
+  question: 공식 patch에 없는 기존 watch 경로 3개를 보존할지 행내 changed_paths만으로 관리할지 담당자가 한 번에 확인해야 합니다.
+  customization_id: BANK-OM-003
+  paths:
+  - openmetadata-ui/src/main/resources/ui/src/components/MyData/MyDataFailedAssertions/MyDataFailedAssertions.component.tsx
+  - openmetadata-ui/src/main/resources/ui/src/pages/DataAssertionsPage/DataAssertionsPage.tsx
+  - openmetadata-ui/src/main/resources/ui/src/rest/dataAssertionsAPI.ts
+- finding_id: REVIEW-0004
+  code: BANK_ONLY_WATCH_DECISION
+  question: 공식 patch에 없는 기존 watch 경로 3개를 보존할지 행내 changed_paths만으로 관리할지 담당자가 한 번에 확인해야 합니다.
+  customization_id: BANK-OM-006
+  paths:
+  - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/sybaseConnection.json
+  - openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-sybase.svg
+  - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/sybaseConnection.ts
+- finding_id: REVIEW-0005
+  code: BANK_ONLY_WATCH_DECISION
+  question: 공식 patch에 없는 기존 watch 경로 3개를 보존할지 행내 changed_paths만으로 관리할지 담당자가 한 번에 확인해야 합니다.
+  customization_id: BANK-OM-007
+  paths:
+  - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/tiberoConnection.json
+  - openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-tibero.svg
+  - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/tiberoConnection.ts

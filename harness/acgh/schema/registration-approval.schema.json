@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bank.local/acgh/registration-approval.schema.json",
+  "title": "Registration proposal approval",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "proposal_digest", "approved_by", "approved_at", "decisions"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "proposal_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "approved_by": {"type": "string", "minLength": 1},
+    "approved_at": {"type": "string", "format": "date-time"},
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding_id", "decision", "reason"],
+        "properties": {
+          "finding_id": {"type": "string", "pattern": "^REVIEW-[0-9]{4}$"},
+          "decision": {"const": "accept_proposal"},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

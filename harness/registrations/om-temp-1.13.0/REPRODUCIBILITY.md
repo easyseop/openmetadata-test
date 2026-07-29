@@ -1,6 +1,6 @@
 # OM_TEMP 1.13.0 소스 검사 재현 기준
 
-> 상태: Manifest v2 T41 수정 후 2026-07-29 재검증 완료
+> 상태: Manifest v2 T41·Candidate lock v2 반영 후 2026-07-30 재검증 완료
 > 범위: 소스 등록자료 5종과 소스 게이트 8종
 > 운영 배포 상태: 미실행
 
@@ -59,6 +59,8 @@ git -C /tmp/om-temp-1.13.0-source-recheck \
 
 - `registration-validation-results.json`: 5종 PASS
 - `source-gate-results.json`: 8종 PASS
+- Candidate lock schema v2는 이 결과가 실제 build 산출물이 아니라
+  `artifact_kind: source-tree`임을 명시
 - T41은 Manifest v1 필드를 직접 읽지 않고
   `manifest.declared_scope()`로 Manifest v2 `changed_paths`를 읽었습니다.
 - 기존 `63820f88...` 결과는 원격에 없는 과거 로컬 후보에 결속돼 있었으므로

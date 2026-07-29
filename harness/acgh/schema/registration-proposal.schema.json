@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bank.local/acgh/registration-proposal.schema.json",
+  "title": "Registration preparation proposal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "apply_ready",
+    "inputs",
+    "generated",
+    "changes",
+    "review_required",
+    "blocked",
+    "analysis_errors"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "status": {"enum": ["READY", "REVIEW_REQUIRED", "BLOCKED", "ANALYSIS_ERROR"]},
+    "apply_ready": {"type": "boolean"},
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "registration",
+        "patch_ref",
+        "patch_sha",
+        "custom_ref",
+        "custom_head_sha",
+        "registration_state_digest"
+      ],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "registration": {"type": "string", "minLength": 1},
+        "patch_ref": {"type": "string", "minLength": 1},
+        "patch_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "custom_ref": {"type": "string", "minLength": 1},
+        "custom_head_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "registration_state_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    },
+    "generated": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit_inventory", "current_diff_paths"],
+      "properties": {
+        "commit_inventory": {"type": "object"},
+        "current_diff_paths": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        }
+      }
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "customization_id",
+          "action",
+          "manifest_path",
+          "added_changed_paths",
+          "removed_changed_paths",
+          "added_watch_paths",
+          "after_manifest"
+        ],
+        "properties": {
+          "customization_id": {"type": "string", "pattern": "^BANK-OM-[0-9]{3,}$"},
+          "action": {"enum": ["update_existing", "create_new"]},
+          "manifest_path": {"type": "string", "pattern": "^manifests/BANK-OM-[0-9]{3,}\\.yaml$"},
+          "added_changed_paths": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "removed_changed_paths": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "added_watch_paths": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "after_manifest": {"type": "object"}
+        }
+      }
+    },
+    "registry_after": {"type": ["object", "null"]},
+    "review_required": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding_id", "code", "question"],
+        "properties": {
+          "finding_id": {"type": "string", "pattern": "^REVIEW-[0-9]{4}$"},
+          "code": {"type": "string", "minLength": 1},
+          "customization_id": {"type": "string", "pattern": "^BANK-OM-[0-9]{3,}$"},
+          "path": {"type": "string", "minLength": 1},
+          "paths": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1},
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "question": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "blocked": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message"],
+        "properties": {
+          "code": {"type": "string", "minLength": 1},
+          "message": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "analysis_errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message"],
+        "properties": {
+          "code": {"type": "string", "minLength": 1},
+          "message": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

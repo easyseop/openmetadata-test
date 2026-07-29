@@ -5,6 +5,8 @@ The candidate lock is the source of truth for one upgrade evaluation:
 - the default integration strategy is ``vendor-merge``;
 - the official upstream base and target are pinned to full commit SHAs;
 - the candidate is pinned to commit SHA, tree SHA, and artifact digest;
+- schema v2 explicitly distinguishes a source-tree identity from a built
+  release artifact, while schema v1 stays read-compatible;
 - ``patch-replay`` additionally binds the patch source lock it replays.
 
 The strategy belongs to the upgrade run, not to every customization manifest.
@@ -29,6 +31,9 @@ from acgh import verdict
 VENDOR_MERGE = "vendor-merge"
 PATCH_REPLAY = "patch-replay"
 INTEGRATION_STRATEGIES = (VENDOR_MERGE, PATCH_REPLAY)
+SOURCE_TREE = "source-tree"
+BUILD_ARTIFACT = "build-artifact"
+ARTIFACT_KINDS = (SOURCE_TREE, BUILD_ARTIFACT)
 
 _SCHEMA_PATH = Path(__file__).parent / "schema" / "candidate-lock.schema.json"
 
@@ -52,10 +57,12 @@ class CandidateIdentity:
     commit_sha: str
     tree_sha: str
     artifact_digest: str
+    artifact_kind: str | None = None
 
 
 @dataclass(frozen=True)
 class CandidateLock:
+    schema_version: int
     integration_strategy: str
     upstream: UpstreamLock
     candidate: CandidateIdentity
@@ -72,16 +79,19 @@ class CandidateLock:
             upstream["base_tag"] = self.upstream.base_tag
         if self.upstream.target_tag is not None:
             upstream["target_tag"] = self.upstream.target_tag
+        candidate = {
+            "repository": self.candidate.repository,
+            "commit_sha": self.candidate.commit_sha,
+            "tree_sha": self.candidate.tree_sha,
+            "artifact_digest": self.candidate.artifact_digest,
+        }
+        if self.candidate.artifact_kind is not None:
+            candidate["artifact_kind"] = self.candidate.artifact_kind
         data = {
-            "schema_version": 1,
+            "schema_version": self.schema_version,
             "integration_strategy": self.integration_strategy,
             "upstream": upstream,
-            "candidate": {
-                "repository": self.candidate.repository,
-                "commit_sha": self.candidate.commit_sha,
-                "tree_sha": self.candidate.tree_sha,
-                "artifact_digest": self.candidate.artifact_digest,
-            },
+            "candidate": candidate,
         }
         if self.patch_source_lock_digest is not None:
             data["patch_source_lock_digest"] = self.patch_source_lock_digest
@@ -129,6 +139,7 @@ def parse_candidate_lock(data: dict) -> CandidateLock:
     upstream = normalized["upstream"]
     candidate = normalized["candidate"]
     return CandidateLock(
+        schema_version=normalized["schema_version"],
         integration_strategy=normalized["integration_strategy"],
         upstream=UpstreamLock(
             repository=upstream["repository"],
@@ -142,6 +153,7 @@ def parse_candidate_lock(data: dict) -> CandidateLock:
             commit_sha=candidate["commit_sha"],
             tree_sha=candidate["tree_sha"],
             artifact_digest=candidate["artifact_digest"],
+            artifact_kind=candidate.get("artifact_kind"),
         ),
         patch_source_lock_digest=normalized.get("patch_source_lock_digest"),
     )
@@ -156,6 +168,7 @@ def build_candidate_lock(
     upstream_target_sha: str,
     candidate_repository: str,
     artifact_digest: str,
+    artifact_kind: str,
     integration_strategy: str = VENDOR_MERGE,
     upstream_base_tag: str | None = None,
     upstream_target_tag: str | None = None,
@@ -165,7 +178,7 @@ def build_candidate_lock(
     commit_sha = binding.pin(repo, candidate_ref)
     tree_sha = gitprim.git(repo, "rev-parse", f"{commit_sha}^{{tree}}").strip()
     data = {
-        "schema_version": 1,
+        "schema_version": 2,
         "integration_strategy": integration_strategy,
         "upstream": {
             "repository": upstream_repository,
@@ -174,6 +187,7 @@ def build_candidate_lock(
         },
         "candidate": {
             "repository": candidate_repository,
+            "artifact_kind": artifact_kind,
             "commit_sha": commit_sha,
             "tree_sha": tree_sha,
             "artifact_digest": artifact_digest,
@@ -213,6 +227,13 @@ def assert_candidate_binding(
     if actual_tree != lock.candidate.tree_sha:
         raise CandidateLockError(
             f"candidate tree mismatch: {actual_tree} != {lock.candidate.tree_sha}"
+        )
+    if (
+        lock.candidate.artifact_kind == BUILD_ARTIFACT
+        and artifact_digest is None
+    ):
+        raise CandidateLockError(
+            "build-artifact binding requires the actual artifact digest"
         )
     if (
         artifact_digest is not None

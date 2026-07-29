@@ -93,3 +93,24 @@ def test_merge_commit_has_two_parents(repo):
     merge = G.commits(str(repo), base, "HEAD")[-1]
     assert merge.is_merge is True
     assert len(merge.parents) == 2
+
+
+def test_ref_worktree_and_tree_primitives(repo):
+    base = _commit(repo, "README", "base\n", "base")
+    assert G.resolve_commit(str(repo), "HEAD") == base
+    assert G.worktree_is_dirty(str(repo)) is False
+
+    (repo / "untracked.txt").write_text("local\n")
+    assert G.worktree_is_dirty(str(repo)) is True
+    (repo / "untracked.txt").unlink()
+
+    entries = G.tree_entries(str(repo), "HEAD")
+    assert entries["README"].mode == "100644"
+    assert entries["README"].object_type == "blob"
+    assert G.blob_bytes(str(repo), "HEAD", "README") == b"base\n"
+
+
+def test_invalid_ref_becomes_structured_git_error(repo):
+    _commit(repo, "README", "base\n", "base")
+    with pytest.raises(G.GitPrimitiveError, match="failed"):
+        G.resolve_commit(str(repo), "--definitely-not-a-ref")

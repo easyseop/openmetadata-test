@@ -126,6 +126,8 @@ def build_candidate_inputs(candidate_lock, *, verifier_catalog_digest: str) -> d
         "candidate_lock_digest": candidate_lock.digest(),
         "verifier_catalog_digest": verifier_catalog_digest,
     }
+    if candidate.artifact_kind is not None:
+        result["artifact_kind"] = candidate.artifact_kind
     if candidate_lock.patch_source_lock_digest is not None:
         result["patch_source_lock_digest"] = (
             candidate_lock.patch_source_lock_digest
