@@ -883,7 +883,7 @@ OM_TEMP patch/om-1.13.0 commit   2f4f3560...
 <style>
 :root {{ --ink:#172033; --muted:#667085; --line:#d9dfeb; --blue:#2457d6; --soft:#f5f7fb; }}
 * {{ box-sizing:border-box; }}
-body {{ margin:0; background:#eef2f7; color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif; }}
+body {{ margin:0; background:#eef2f7; color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",sans-serif; font-weight:400; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }}
 main {{ width:min(1120px,calc(100% - 32px)); margin:32px auto 72px; }}
 .guide-pagination {{ display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:10px; align-items:stretch; margin:0 0 16px; }}
 .guide-pagination-bottom {{ margin:18px 0 0; }}

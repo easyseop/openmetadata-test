@@ -1,6 +1,6 @@
 # Codex 작업 인수인계
 
-> 갱신 기준: 2026-07-29 10:32 KST
+> 갱신 기준: 2026-07-29 10:43 KST
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
 > 문서 묶음 작성 전 기준 commit: `0a6d009107a18e69a2150388442adffb6332f08c`
@@ -33,13 +33,30 @@
 있으므로 검사기 원리를 먼저 읽는다. 실제 작업에서는 3번의 사전환경 설정을
 완료한 뒤 검사기를 실행한다. 이 차이를 3번 문서 첫 화면에 명시했다.
 
-다섯 페이지 모두 위·아래에 이전·다음 이동을 넣었다. 1차·2차·3차 fragment를
-`visualize` renderer로 다시 만들면 iframe의 상위 페이지 이동 권한이 사라질 수
-있으므로, 렌더링 직후 다음 명령을 실행한다.
+다섯 페이지 모두 위·아래에 이전·다음 이동을 넣었다. 1차·2차·4차의
+`visualize` 미리보기는 본문이 iframe 안에 있으므로, `file://`로 열었을 때도
+동작하도록 이동 버튼을 iframe 바깥 preview 문서에 생성한다. fragment를 다시
+렌더링한 직후 다음 명령을 실행한다.
 
 ```bash
 ./.venv/bin/python harness/tools/enable_guide_navigation.py
 ```
+
+`enable_guide_navigation.py`는 여러 번 실행해도 기존 바깥 이동 버튼을 지우고
+한 번만 다시 생성한다. 2026-07-29 KST에 브라우저에서
+`1 → 2 → 3 → 4 → 5` 이동과 `5 → 4` 이전 이동을 실제 클릭해 확인했다.
+
+다섯 페이지의 일반 본문 폰트는 다음 하나의 규칙으로 통일했다. 코드 블록은
+가독성을 위해 기존 고정폭 글꼴을 유지한다.
+
+```css
+font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+  "Noto Sans KR", "Segoe UI", sans-serif;
+```
+
+브라우저 계산값도 다섯 페이지에서 동일한 것을 확인했다. 생성형 페이지인 3번과
+5번은 각 renderer의 원본 CSS에, iframe형 페이지인 1번·2번·4번은 fragment
+본문 루트와 바깥 이동 영역에 같은 규칙을 넣었다.
 
 이번 배치에서 추가로 반영한 내용은 다음과 같다.
 
@@ -93,6 +110,10 @@ BANK-OM 변경관리 정보와 검사기는 `easyseop/openmetadata-test`에 있�
 가이드와 같은 파란색 헤더·흰색 카드·표·펼치기 디자인을 적용했다. 수정된
 fragment와 standalone preview를 함께 다시 생성했으며, 두 화면 모두 본문 폭
 1100px에서 가로 넘침이 없음을 확인했다.
+
+같은 날 다섯 페이지의 일반 본문 폰트 스택과 렌더링 품질을 통일했다.
+1차·2차·4차 미리보기의 이전·다음 버튼은 iframe 내부가 아니라 바깥 preview에
+배치해 `file://`와 로컬 HTTP 미리보기에서 같은 상대경로를 사용하도록 고쳤다.
 
 4차 업그레이드 시연 범위는 `1.13.0→1.13.1` 한 구간으로 좁혔다. 먼저 공식
 1.13.0 구조에 맞춰 BANK-OM-001~007을 재구현하고 검사한 뒤, 그 commit을 공식
@@ -461,7 +482,7 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
 10. 환경 test·담당자 승인·검증 tag·배포 결과 화면을 5번 페이지에 추가한다.
 11. 다섯 페이지의 중복과 용어를 다시 검토한다.
 12. fragment를 다시 렌더링했다면 `harness/tools/enable_guide_navigation.py`를
-   실행해 페이지 이동 권한을 복구한다.
+   실행해 iframe 바깥의 이전·다음 이동 영역을 다시 생성한다.
 13. 작업 완료 후 이 문서의 상태·검증·다음 단계를 갱신하고 같은 브랜치에
    커밋·푸시한다.
 

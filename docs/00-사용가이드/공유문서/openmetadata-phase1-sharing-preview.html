@@ -6,9 +6,62 @@
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>Openmetadata Phase1 Sharing Fragment</title>
-<style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
+<style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}
+/* file:// 미리보기에서도 동작하는 프레임 바깥 페이지 이동 */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+    "Noto Sans KR", "Segoe UI", sans-serif;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.outer-guide-pagination {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 10px;
+  width: min(1100px, 100%);
+  margin: 0 auto 12px;
+  color: #172033;
+}
+.outer-guide-pagination.is-bottom { margin: 12px auto 0; }
+.outer-guide-pagination a,
+.outer-guide-pagination span {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: 11px 14px;
+  border: 1px solid #d8dfeb;
+  border-radius: 13px;
+  color: inherit;
+  background: #fff;
+  text-decoration: none;
+}
+.outer-guide-pagination a:hover {
+  border-color: #2457d6;
+  box-shadow: 0 7px 20px rgb(36 87 214 / 12%);
+}
+.outer-guide-pagination .is-current { text-align: center; }
+.outer-guide-pagination .is-next { text-align: right; }
+.outer-guide-pagination .is-disabled { color: #98a2b3; background: #f8fafc; }
+.outer-guide-pagination small { margin-bottom: 3px; color: #667085; font-size: 12px; }
+.outer-guide-pagination strong { overflow-wrap: anywhere; }
+iframe { height: calc(100vh - 10rem); min-height: 640px; }
+@media (max-width: 720px) {
+  .outer-guide-pagination { grid-template-columns: 1fr 1fr; }
+  .outer-guide-pagination .is-current { grid-column: 1 / -1; grid-row: 1; }
+  iframe { height: calc(100vh - 14rem); min-height: 560px; }
+}
+</style>
 </head>
 <body>
+<!-- OUTER_GUIDE_NAV_START -->
+<nav class="outer-guide-pagination" aria-label="가이드 페이지 이동">
+  <span class="is-disabled"><small>← 이전 가이드</small><strong>첫 페이지</strong></span>
+  <span class="is-current"><small>전체 5개 중</small><strong>1 · 목적과 브랜치 전략</strong></span>
+  <a class="is-next" href="openmetadata-phase2-verifier-table-preview.html"><small>다음 가이드 →</small><strong>검사기 원리</strong></a>
+</nav>
+<!-- OUTER_GUIDE_NAV_END -->
 <iframe sandbox="allow-scripts allow-top-navigation-by-user-activation" referrerpolicy="no-referrer" title="Openmetadata Phase1 Sharing Fragment" srcdoc="&lt;!doctype html&gt;
 &lt;html lang=&quot;en&quot;&gt;
 &lt;head&gt;
@@ -875,21 +928,6 @@ html&gt;body{padding:0}&lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
 &lt;div id=&quot;om-guide-v3&quot; data-artifact-status=&quot;review-draft&quot;&gt;
-  &lt;nav class=&quot;guide-pagination&quot; aria-label=&quot;가이드 페이지 이동&quot;&gt;
-    &lt;span class=&quot;guide-page-link is-disabled&quot; aria-disabled=&quot;true&quot;&gt;
-      &lt;small&gt;← 이전 가이드&lt;/small&gt;
-      &lt;strong&gt;첫 페이지&lt;/strong&gt;
-    &lt;/span&gt;
-    &lt;div class=&quot;guide-page-current&quot;&gt;
-      &lt;small&gt;전체 5개 중&lt;/small&gt;
-      &lt;strong&gt;1 · 목적과 브랜치 전략&lt;/strong&gt;
-    &lt;/div&gt;
-    &lt;a class=&quot;guide-page-link is-next&quot; href=&quot;openmetadata-phase2-verifier-table-preview.html&quot; target=&quot;_top&quot;&gt;
-      &lt;small&gt;다음 가이드 →&lt;/small&gt;
-      &lt;strong&gt;검사기 원리&lt;/strong&gt;
-    &lt;/a&gt;
-  &lt;/nav&gt;
-
   &lt;header class=&quot;om-hero&quot;&gt;
     &lt;span class=&quot;viz-badge&quot;&gt;1차 공유문서 검토본&lt;/span&gt;
     &lt;h1&gt;공식 업그레이드 뒤에도 행내 기능을 잃지 않는 방법&lt;/h1&gt;
@@ -1657,20 +1695,6 @@ Customization-ID: BANK-OM-001&lt;/code&gt;&lt;/pre&gt;
     &lt;/div&gt;
   &lt;/section&gt;
 
-  &lt;nav class=&quot;guide-pagination guide-pagination-bottom&quot; aria-label=&quot;가이드 페이지 이동&quot;&gt;
-    &lt;span class=&quot;guide-page-link is-disabled&quot; aria-disabled=&quot;true&quot;&gt;
-      &lt;small&gt;← 이전 가이드&lt;/small&gt;
-      &lt;strong&gt;첫 페이지&lt;/strong&gt;
-    &lt;/span&gt;
-    &lt;div class=&quot;guide-page-current&quot;&gt;
-      &lt;small&gt;전체 5개 중&lt;/small&gt;
-      &lt;strong&gt;1 · 목적과 브랜치 전략&lt;/strong&gt;
-    &lt;/div&gt;
-    &lt;a class=&quot;guide-page-link is-next&quot; href=&quot;openmetadata-phase2-verifier-table-preview.html&quot; target=&quot;_top&quot;&gt;
-      &lt;small&gt;다음 가이드 →&lt;/small&gt;
-      &lt;strong&gt;검사기 원리&lt;/strong&gt;
-    &lt;/a&gt;
-  &lt;/nav&gt;
 &lt;/div&gt;
 
 &lt;style&gt;
@@ -2475,7 +2499,11 @@ Customization-ID: BANK-OM-001&lt;/code&gt;&lt;/pre&gt;
     color: var(--guide-ink);
     border-radius: 26px;
     background: #eef2f7;
-    font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, &quot;Apple SD Gothic Neo&quot;,
+      &quot;Noto Sans KR&quot;, &quot;Segoe UI&quot;, sans-serif;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 
   #om-guide-v3 .om-hero {
@@ -2992,5 +3020,12 @@ Customization-ID: BANK-OM-001&lt;/code&gt;&lt;/pre&gt;
 &lt;/body&gt;
 &lt;/html&gt;
 "></iframe>
+<!-- OUTER_GUIDE_NAV_START -->
+<nav class="outer-guide-pagination is-bottom" aria-label="가이드 페이지 이동">
+  <span class="is-disabled"><small>← 이전 가이드</small><strong>첫 페이지</strong></span>
+  <span class="is-current"><small>전체 5개 중</small><strong>1 · 목적과 브랜치 전략</strong></span>
+  <a class="is-next" href="openmetadata-phase2-verifier-table-preview.html"><small>다음 가이드 →</small><strong>검사기 원리</strong></a>
+</nav>
+<!-- OUTER_GUIDE_NAV_END -->
 </body>
 </html>
