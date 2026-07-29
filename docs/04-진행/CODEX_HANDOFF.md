@@ -1,10 +1,11 @@
 # Codex 작업 인수인계
 
-> 갱신 기준: 2026-07-30 01:54 KST
+> 갱신 기준: 2026-07-30 02:27 KST
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
-> 이번 문서 개편 commit: `10f864750173fccf22ef94d61d5f5e9f726dfaf5`
-> 최신 원격 검증: `10f8647...`의 `Source candidate` run
+> 이번 문서 개편 commit: 이 문서를 포함한 현재 branch의 최신 commit
+> (`git log -1 --oneline`으로 확인)
+> 직전 확인된 원격 검증: `10f8647...`의 `Source candidate` run
 > [`30376209792`](https://github.com/easyseop/openmetadata-test/actions/runs/30376209792)
 > 성공 (`348 passed, 7 operational skips`, source gates와 source
 > patch-kill 2건 통과)
@@ -29,71 +30,72 @@ GitHub 서버 시각을 기준으로 한다.
 
 ## 0. 최신 공유문서 상태
 
-공유문서의 **읽는 순서**를 다음과 같이 확정했다.
+2026-07-30 KST에 처음 보는 부서 독자가 “이 개념은 누가 만든 것인지, 어느
+코드 상태에만 해당하는지, 다음 페이지에서 무엇을 확인해야 하는지”를 계속
+질문하는 방식으로 전체 구조를 다시 검토했다. 검토 결과와 페이지별 예상 질문은
+[`5개_가이드_논리구조_검토결과.md`](../00-사용가이드/5개_가이드_논리구조_검토결과.md)에
+정리했다.
 
-1. 목적과 브랜치 전략
-2. 검사기 원리
-3. 검사 전 사전환경 설정
-4. 검사 결과와 책임자 판단
-5. 실제 `1.13.0 → 1.13.1` 업그레이드
+현재 **읽는 순서**는 다음과 같다.
 
-이 순서는 실제 명령 실행 순서와 다르다. 처음 보는 독자는 검사기가 무엇을
-판단하는지 먼저 알아야 Manifest·Registry·Contracts를 왜 준비하는지 이해할 수
-있으므로 검사기 원리를 먼저 읽는다. 실제 작업에서는 3번의 사전환경 설정을
-완료한 뒤 검사기를 실행한다. 이 차이를 3번 문서 첫 화면에 명시했다.
+1. 목적과 목표 브랜치 전략: 직전 `custom` 이력에 새 공식 `patch`를 병합하는
+   `vendor-merge` 운영 Cycle
+2. 검사기 원리: 각 검사가 읽는 입력, 판단 방법, 출력과 한계
+3. 검사 전 사전환경 설정: Manifest·Registry·Contract와 실제 Git diff 등록
+4. OM_TEMP 코드 업그레이드 연습: 1.13.0 commit을 1.13.1에 하나씩 적용해
+   BANK-OM별 충돌을 분리한 진단 결과
+5. 부록 · 과거 참고 코드 검사: `easyseop/OpenMetadata`의 `849ae756...`
+   소스 검사 사례
 
-다섯 페이지 모두 위·아래에 이전·다음 이동을 넣었다. 1차·2차·4차의
-`visualize` 미리보기는 본문이 iframe 안에 있으므로, `file://`로 열었을 때도
-동작하도록 이동 버튼을 iframe 바깥 preview 문서에 생성한다. fragment를 다시
-렌더링한 직후 다음 명령을 실행한다.
+기존 4번의 과거 코드 검사와 5번의 OM_TEMP 연습 순서를 바꿨다. 과거
+`849ae756...` 사례는 현재 OM_TEMP 흐름을 끊고 저장소·ID 범위도 다르므로 본문
+결론이 아니라 마지막 부록으로 내렸다. 다섯 페이지를 한 파일로 합치지는 않았다.
+목적·검사 원리·설정·실제 결과는 각각 판단 범위가 달라 합치면 PASS의 의미와
+실행 순서가 다시 섞이기 때문이다. 반대로 Manifest 필드 설명은 본문을 과도하게
+늘리므로 3번에서
+[`OM_TEMP_관리파일_필드_사전_미리보기.html`](../00-사용가이드/OM_TEMP_관리파일_필드_사전_미리보기.html)로
+분리 연결했다.
+
+각 첫 화면에는 다음 경계를 명시했다.
+
+- BANK-OM ID, `patch/custom` 이름과 반복 절차는 OpenMetadata 기본 기능이
+  아니라 이 프로젝트의 내부 운영 방식이다.
+- T25·T42 같은 번호와 PASS·APPROVAL·BLOCK은
+  `easyseop/openmetadata-test`의 내부 검사 체계다.
+- Manifest·Registry·Contract·Candidate lock은 OpenMetadata 실행 설정이
+  아니라 검사 기준자료다.
+- 4번의 commit별 재적용과 JSON 충돌 보조 도구는 BANK-OM별 충돌을 분리한
+  이번 연습용 방법이며 확정 운영 절차가 아니다.
+- 부록의 `849ae756...`와 BANK-OM-008~011 판정은 당시 저장소에만 해당한다.
+
+가장 중요한 사실 보정은 **목표 운영 전략과 현재 증거의 분리**다. ADR의 기본
+운영 전략은 `vendor-merge`지만, 현재 OM_TEMP 1.13.1 후보는 BANK-OM commit을
+하나씩 재적용해 만들었다. 저장된 소스 결과의
+`integration_strategy: vendor-merge` 표시는 실제 후보 생성 이력과 맞지 않는다.
+따라서 문서에는 소스 범위 검사 8종은 PASS, 실제 vendor-merge 수행과 충돌 해결
+증거는 `NOT VERIFIED`로 표시했다. 결과 파일을 사실과 다르게 고쳐 쓰지는
+않았으며, 다음 검증에서는 직전 custom 이력과 공식 1.13.1을 실제로 병합한
+후보를 새로 만들고 전략 값까지 검사해야 한다.
+
+다섯 페이지 모두 위·아래 이전·다음 이동을 유지한다. iframe형 미리보기는
+fragment를 다시 렌더링한 뒤 아래 명령으로 바깥 이동 버튼을 재생성한다.
 
 ```bash
 ./.venv/bin/python harness/tools/enable_guide_navigation.py
 ```
 
-`enable_guide_navigation.py`는 여러 번 실행해도 기존 바깥 이동 버튼을 지우고
-한 번만 다시 생성한다. 2026-07-28 KST에 브라우저에서
-`1 → 2 → 3 → 4 → 5` 이동과 `5 → 4` 이전 이동을 실제 클릭해 확인했다.
+2026-07-30 KST에 로컬 HTTP 미리보기에서 `1 → 2 → 3 → 4 → 부록` 이동을 실제
+클릭해 확인했다. 1번 SVG는 공식 `patch`와 직전 `custom`의 병합 지점, Git 충돌
+해결, 검사 BLOCK 보완, 배포 후보 tag와 다음 Cycle 복귀가 겹치지 않는지 독립
+화면으로 다시 확인했다.
 
-다섯 페이지의 일반 본문 폰트는 다음 하나의 규칙으로 통일했다. 코드 블록은
-가독성을 위해 기존 고정폭 글꼴을 유지한다.
-
-```css
-font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
-  "Noto Sans KR", "Segoe UI", sans-serif;
-```
-
-브라우저 계산값도 다섯 페이지에서 동일한 것을 확인했다. 생성형 페이지인 3번과
-5번은 각 renderer의 원본 CSS에, iframe형 페이지인 1번·2번·4번은 fragment
-본문 루트와 바깥 이동 영역에 같은 규칙을 넣었다.
-
-이번 배치에서 추가로 반영한 내용은 다음과 같다.
-
-- 1차 branch SVG는 왼쪽 `patch` branch의 공식 코드와 오른쪽의 BANK-OM
-  commit이 중앙의 새 `custom` branch로 합류하는 구조를 먼저 보여준 뒤,
-  `적용 완료 commit → 검사 → 검증 tag·배포`로 이어지는 Cycle로 구성했다.
-- 두 입력 화살표 설명은 별도 라벨 안에 넣고, 합류 지점은 긴 설명이 들어가는
-  둥근 사각형으로 바꿨다. 충돌 해결 복귀선은 설명 아래쪽으로 우회시켜 화살표와
-  글자 겹침을 제거했다.
-- 실제 Git 충돌은 BANK-OM commit이 새 `custom` branch에 합류하는 단계에서
-  발생한다고 표시했다. 충돌
-  해결 commit을 `custom` branch에 남기고 다시 재적용하는 loop와, 적용 완료 후
-  검사 BLOCK 때문에 `custom`을 보완하고 재검사하는 loop를 서로 분리했다.
-- `custom` branch는 `patch`의 공식 코드에서 시작하고, 사전에 관리한 BANK-OM
-  ID별 commit이 오른쪽 입력으로 들어와 순서대로 재적용된다는 관계를 별도
-  화살표로 표시했다.
-- 충돌 해결 commit은 현재 버전의 `custom` branch에 기록하고 재검사한다.
-  `patch` branch에는 공식 원본만 유지한다.
-- 검사 통과 시 `verified/...` tag로 배포 검토 대상 commit을 고정한다. 다음
-  공식 버전에는 새 `patch`·`custom` branch를 만들고 BANK-OM 변경을 다시
-  적용한다.
-- 2차에는 각 검사기의 입력, 판단 방법, 출력, 실패 조건을 한 표로 정리했다.
-- 3번 사전환경 설정에는 Manifest·Registry·Contracts·공용 파일 소유정보·전체
-  변경 목록·선택적 Patch-lock의 필드 의미와 실제 사용 검사를 정리했다.
-- 4번 결과 문서는 기존 `easyseop/OpenMetadata`의 `849ae756...` 제품 후보를
-  검사했던 과거 결과임을 명시하고, 5번 OM_TEMP 업그레이드와 구분했다.
-- 5번에는 `cherry-pick`의 사용 시점, 실제 Git 충돌 표식, 해결 전후 diff,
-  JSON 충돌 해결 도구의 제한, 담당자와 검사기의 역할을 구분해 설명했다.
+| 페이지 | 현재 역할 | 정본 파일 |
+|---|---|---|
+| 1 · 목적과 브랜치 전략 | 목표 `vendor-merge` Cycle과 배포 전 조건 | `docs/00-사용가이드/공유문서/openmetadata-phase1-sharing-fragment.html` |
+| 2 · 검사기 원리 | 특정 후보 결과를 섞지 않은 검사 방법·한계 | `docs/00-사용가이드/공유문서/openmetadata-phase2-verifier-table-fragment.html` |
+| 3 · 검사 전 사전환경 설정 | OM_TEMP 1.13.0 실제 diff·Manifest 7개·기준자료 | `harness/registrations/om-temp-1.13.0/render_manifest_evidence_guide.py` |
+| 4 · OM_TEMP 코드 업그레이드 연습 | commit별 충돌 진단과 완료·미완료 판정 | `harness/registrations/om-temp-1.13.1/render_upgrade_guide.py` |
+| 부록 · 과거 참고 코드 검사 | `849ae756...`의 과거 소스 검사 예시 | `docs/00-사용가이드/공유문서/openmetadata-phase3-demo-fragment.html` |
 
 ## 1. 저장소와 브랜치
 
@@ -111,27 +113,18 @@ BANK-OM Manifest와 검사기는 `easyseop/openmetadata-test`에 있다.
 
 ## 2. 공유문서 진행 상태
 
-| 페이지 | 현재 상태 | 저장된 파일 | 남은 일 |
-|---|---|---|---|
-| 1 · 목적과 브랜치 전략 | 목적·두 branch 원칙과 버전 반복 흐름을 같은 SVG에서 설명하는 현행본 | `docs/00-사용가이드/공유문서/openmetadata-phase1-sharing-fragment.html`, `openmetadata-phase1-sharing-preview.html` | 내용 승인 완료, 최종 부서 공유 시 문서 책임자만 확인 |
-| 2 · 검사기 원리 | 검사기별 입력·판단·출력·실패 조건과 예외를 설명하는 현행본 | `docs/00-사용가이드/공유문서/openmetadata-phase2-verifier-table-fragment.html`, `openmetadata-phase2-verifier-table-preview.html` | 검사기 구현 변경 시 함께 갱신 |
-| 3 · 검사 전 사전환경 설정 | 실제 OM_TEMP commit 캡처와 등록된 Manifest 7개, 검사 기준자료의 의미·시점·사용 예시를 연결한 현행본 | `docs/00-사용가이드/OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html` | 담당자 지정과 선택적 Patch-lock 여부 확정 |
-| 4 · 검사 결과와 책임자 판단 | 기존 `easyseop/OpenMetadata` 후보 `849ae756...`의 검사 결과를 설명하는 현행본 | `docs/00-사용가이드/공유문서/openmetadata-phase3-demo-fragment.html`, `openmetadata-phase3-demo-preview.html` | OM_TEMP 결과와 구분 유지 |
-| 5 · 실제 업그레이드 | 실제 OM_TEMP `1.13.0 → 1.13.1` 적용·충돌·해결·검사 결과를 설명하는 현행본 | `docs/00-사용가이드/OM_TEMP_1.13.0_1.13.1_업그레이드_실행_가이드_미리보기.html` | 환경 test, 담당자 승인, 검증 tag와 배포 화면 추가 |
+현재 페이지별 역할·정본·논리 판단은 0절과
+[`5개_가이드_논리구조_검토결과.md`](../00-사용가이드/5개_가이드_논리구조_검토결과.md)에
+한 번만 정리한다. 이 절에서는 남은 실행 작업만 관리한다.
 
-2026-07-28 KST에 1차·2차 문서의 확정된 본문은 유지하고, 1.13.1 업그레이드
-가이드와 같은 파란색 헤더·흰색 카드·표·펼치기 디자인을 적용했다. 수정된
-fragment와 standalone preview를 함께 다시 생성했으며, 두 화면 모두 본문 폭
-1100px에서 가로 넘침이 없음을 확인했다.
-
-같은 날 다섯 페이지의 일반 본문 폰트 스택과 렌더링 품질을 통일했다.
-1차·2차·4차 미리보기의 이전·다음 버튼은 iframe 내부가 아니라 바깥 preview에
-배치해 `file://`와 로컬 HTTP 미리보기에서 같은 상대경로를 사용하도록 고쳤다.
-
-4차 업그레이드 시연 범위는 `1.13.0→1.13.1` 한 구간으로 좁혔다. 먼저 공식
-1.13.0 구조에 맞춰 BANK-OM-001~007을 재구현하고 검사한 뒤, 그 commit을 공식
-1.13.1 기준에 다시 적용해 충돌·보완·재검사 과정을 보여준다. 1.12.x 구간은
-1.13.1 기준 commit의 역방향 적용으로 충돌이 과장되므로 이번 시연에서 제외한다.
+- 실제 `vendor-merge` 방식으로 1.13.1 후보를 다시 만들고 후보 생성 이력,
+  candidate lock의 `integration_strategy`와 결과가 일치하는지 검사한다.
+- 담당자를 Registry에 지정하고 Contract test 7개, OpenMetadata 전체 build,
+  행내 API·화면·DB 테스트를 실행한다.
+- 위 결과가 같은 commit·배포 파일을 가리키는지 확인한 뒤에만 검증 tag와 배포
+  승인 자료를 만든다.
+- 최종 시연에서는 Git 병합 전후, 충돌, 해결 commit, 검사 명령과 PASS·APPROVAL·
+  BLOCK 라벨을 실제 화면 캡처로 연결한다.
 
 ### OM_TEMP 현재 구성
 
@@ -201,12 +194,15 @@ Manifest 작성 절차는
 
 - 공식 OpenMetadata 저장소의 새 버전은 패치 브랜치로 가져온다.
 - 행내 커스터마이징 브랜치는 BANK-OM ID별 커밋을 유지한다.
+- 다음 버전 후보는 새 `patch`에서 커스터마이징 commit을 다시 쌓는 것을 기본으로
+  하지 않는다. 직전 `custom` branch의 전체 이력에 새 공식 `patch`를 병합하는
+  `vendor-merge`가 기본 운영 전략이다.
 - 버전별 장기 작업 브랜치는 `patch/om-<version>`과
   `custom/om-<version>` 두 개만 사용한다.
 - 별도의 장기 `candidate/...` 브랜치는 만들지 않는다. 검사 대상은
   `custom/...` 브랜치의 Git commit SHA와 digest로 고정하고, 통과한 상태는
   `verified/om-<version>-bank.<revision>` tag로 보존한다.
-- 4차 시연의 임시 upgrade branch는 충돌 재현을 위한 작업 공간이며 결과와
+- OM_TEMP 1.13.1 연습의 임시 upgrade branch는 충돌 진단을 위한 작업 공간이며 결과와
   검증 tag를 보존한 뒤 삭제할 수 있다. 검사기 코드에서 `candidate`는 Git
   브랜치 이름이 아니라 검사 대상 코드 상태를 뜻한다.
 - 새 공식 버전에 커스터마이징을 적용한 뒤 검사기를 실행하고, 필수 검사가 끝난
@@ -289,7 +285,7 @@ Java JUnit·TypeScript Jest를 직접 등록하고 실행하려면 언어·도�
   남아 있어 담당자 승인 필요
 - T90·T91: 실제 행내 업그레이드와 배포 승격을 실행하지 않음
 - 결론: 소스 커스터마이징 관리 검사는 진행됐지만 운영 배포 승인 상태는 아님
-- 4번 결과 문서 작성 시 소스 검사 명령을 다시 실행해 T25·T26·T60-I·T30·T31·
+- 부록의 과거 코드 검사 문서 작성 시 소스 검사 명령을 다시 실행해 T25·T26·T60-I·T30·T31·
   T40·T41·T93 통과를 확인했다. 이 실행은 다음 공식 버전 업그레이드나 행내
   운영 환경 검사가 아니다.
 
@@ -488,7 +484,7 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
   Manifest를 임의로 수정하거나 승인하는 기능은 아니라는 한계는 유지했다.
 - 1번의 흰 배경 보조문구 색을 진하게 조정하고, 첫 `왜 필요한가` 카드의
   글자·테두리 대비를 높였다.
-- 4번(기존 3차 결과 문서)의 코드 비교 박스에 짙은 배경, 밝은 글자, 초록색
+- 부록(과거 참고 코드 검사)의 코드 비교 박스에 짙은 배경, 밝은 글자, 초록색
   추가 코드 표시와 줄바꿈을 적용했다.
 - 다섯 페이지의 상·하단 이전/다음 링크와 가로 넘침 여부를 브라우저에서
   확인했다.
@@ -503,7 +499,7 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
 3. `.agents/skills/clarity-preflight-review/SKILL.md`를 읽고 이후 모든 공유문서
    검토에 적용한다.
 4. 공유문서는 `목적과 브랜치 전략 → 검사기 원리 → 검사 전 사전환경 설정 →
-   검사 결과와 책임자 판단 → 실제 업그레이드` 순서로 읽는다.
+   OM_TEMP 코드 업그레이드 연습 → 부록·과거 참고 코드 검사` 순서로 읽는다.
 5. `OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html`에서 Manifest 등록,
    기준자료 생성, 로컬 연결, 실제 소스 검사 4단계를 확인한다. 파일명은 유지했지만
    화면 제목은 `OM_TEMP 검사 전 사전환경 설정 가이드`다. 실제 명령 실행에서는
@@ -515,7 +511,7 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
 8. `custom/om-1.13.1`에서 가능한 build와 Contract test를 실행하고 결과를
    1.13.1 가이드에 추가한다.
 9. 다섯 HTML에 남은 사용자 피드백을 반영한다.
-10. 환경 test·담당자 승인·검증 tag·배포 결과 화면을 5번 페이지에 추가한다.
+10. 환경 test·담당자 승인·검증 tag·배포 결과 화면을 4번 페이지에 추가한다.
 11. 다섯 페이지의 중복과 용어를 다시 검토한다.
 12. fragment를 다시 렌더링했다면 `harness/tools/enable_guide_navigation.py`를
    실행해 iframe 바깥의 이전·다음 이동 영역을 다시 생성한다.
@@ -549,11 +545,11 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
 - 4번 문서에서 `easyseop/OpenMetadata`를 배포 준비 코드가 아닌 과거 구현
   참고 코드로 정정했다. BANK-OM-001~007 업무 커스터마이징과 008~011 기술
   보완 코드를 구분했다.
-- 5번 문서는 실제 cherry-pick 충돌 발생 화면 → 충돌 원문 → 해결 diff →
+- 현재 4번 문서는 실제 cherry-pick 충돌 발생 화면 → 충돌 원문 → 해결 diff →
   JSON 충돌 보조 도구의 입력·출력·한계 → 정식 승인 절차 순서로 다시 구성했다.
   보조 도구는 충돌 JSON 파일을 수정하고 터미널 건수만 출력하며 별도 보고서나
   승인 파일을 만들지 않는다는 점을 명시했다.
-- 1~5번 미리보기의 이전·다음 이동 링크를 다시 생성했다.
+- `1 → 2 → 3 → 4 → 부록` 미리보기의 이전·다음 이동 링크를 다시 생성했다.
 
 ### 다음 작업에서 먼저 확인할 내용
 
@@ -562,7 +558,7 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
 2. `candidate_additional_paths`처럼 실제 스키마 이름은 유지하되, 처음 등장하는
    위치에 “같은 BANK-OM의 후속 커밋에서 처음 추가된 파일”이라는 설명이
    붙어 있는지 재확인한다.
-3. 5번 페이지의 충돌 전·해결 후 색상 구분과 전체 diff 펼치기를 화면 크기별로
+3. 4번 페이지의 충돌 전·해결 후 색상 구분과 전체 diff 펼치기를 화면 크기별로
    최종 확인한다.
 4. 관련 단위 테스트와 `git diff --check`를 다시 실행한다.
 - 공유문서 묶음 최초 commit `becb18e`부터 최신 보강 commit `482788d`까지
@@ -582,9 +578,10 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
 - “push 승인 대기” 문구를 실제 원격 push·CI 성공 상태로 정정했다.
 - 다섯 페이지를 1280×900과 390×844에서 검사했다. 전체 페이지 가로 넘침,
   깨진 이미지와 잘린 일반 문장은 0건이다.
-- 5번 페이지에서 긴 Python 파일 경로가 390px 화면에서 잘리는 문제 1건을
+- 현재 4번 페이지에서 긴 Python 파일 경로가 390px 화면에서 잘리는 문제 1건을
   발견해 생성기 CSS에 인라인 코드 줄바꿈 규칙을 추가하고 다시 렌더링했다.
-- `1 → 2 → 3 → 4 → 5`와 `5 → 4` 이동을 실제 클릭해 확인했다.
+- 당시 `1 → 2 → 3 → 과거 결과 → 실제 업그레이드` 이동을 확인했고,
+  2026-07-30 재구성 후에는 `1 → 2 → 3 → 4 → 부록` 이동을 다시 확인했다.
 - `candidate_additional_paths`의 첫 설명은 “같은 BANK-OM의 후속 commit에서
   처음 추가된 파일”이라는 뜻을 바로 제시한다.
 - 전체 harness 단위 테스트는 `308 passed, 37 skipped`다. 37개 skip은 이

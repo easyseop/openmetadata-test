@@ -1,8 +1,8 @@
 <div id="om-phase3" data-artifact-status="current">
   <header class="p3-hero">
-    <span class="viz-badge">4번 · 기존 코드 검사결과 현행본</span>
-    <h1>기존 행내 코드의 소스 검사 결과와 책임자 판단 기준</h1>
-    <p><code>easyseop/OpenMetadata</code>의 Git commit <code>849ae756…</code>에 저장된 코드 상태를 검사한 결과입니다. 이 검사는 Manifest와 Git 기록이 맞는지 확인했지만 공식 버전을 올리는 작업은 하지 않았습니다. 5번째 가이드에서 별도 저장소 <code>OM_TEMP</code>의 실제 1.13.0→1.13.1 업그레이드 결과를 설명합니다.</p>
+    <span class="viz-badge">부록 · 과거 참고 코드 검사</span>
+    <h1>과거 참고 코드에서 확인한 소스 검사 사례</h1>
+    <p><code>easyseop/OpenMetadata</code>의 Git commit <code>849ae756…</code>에 저장된 과거 코드 상태를 검사한 결과입니다. 현재 OM_TEMP 업그레이드 흐름을 설명하는 본문이 아니라, 검사기가 소스 수준에서 어떤 근거를 보여주는지 비교할 때만 보는 참고 자료입니다.</p>
     <div class="p3-final" role="status">
       <div>
         <span>이 코드 상태의 최종 판단</span>
@@ -11,6 +11,13 @@
       <p>소스 변경 검사는 통과했지만 공식 업그레이드 재적용, 행내 API·화면·DB 테스트와 배포본 일치 검사를 수행하지 않아 이 코드 상태를 운영에 배포할 수 없습니다.</p>
     </div>
   </header>
+
+  <aside class="p3-page-scope" aria-label="이 페이지가 답하는 질문과 범위">
+    <div><strong>이 부록이 답하는 질문</strong><p>과거 참고 코드에서는 소스 검사 결과가 어떤 형태로 나왔고, 왜 소스 PASS만으로 배포할 수 없었는가?</p></div>
+    <div><strong>여기서 답하지 않는 것</strong><p>현재 OM_TEMP 1.13.1 후보의 충돌과 결과는 앞의 4번 연습에서 설명합니다.</p></div>
+    <div><strong>읽어야 하는 경우</strong><p>BANK-OM-008~011이 포함된 과거 11개 변경이나 실제 코드·Manifest·결과 연결 예시가 필요할 때만 펼쳐봅니다.</p></div>
+  </aside>
+  <p class="p3-internal-scope"><strong>이 저장소에 한정된 과거 사례:</strong> <code>849ae756…</code>, BANK-OM-008~011과 아래 판정은 <code>easyseop/OpenMetadata</code>의 당시 코드 상태에만 해당합니다. 현재 OM_TEMP 후보나 OpenMetadata 일반 동작으로 확대해석하지 않습니다.</p>
 
   <section class="p3-section" aria-labelledby="p3-input-title">
     <div class="p3-heading">
@@ -34,7 +41,7 @@
           <tr>
             <td>과거 구현 참고 코드</td>
             <td><code>easyseop/OpenMetadata</code><br><code>codex/bank-vendor-1.13.1-rebuild · 849ae756…</code></td>
-            <td>BANK-OM-001~007 업무 커스터마이징과 008~011 기술 보완 코드가 함께 있는 소스 검사 대상. 현재 업그레이드 실습이나 운영 배포 대상은 아님</td>
+            <td>BANK-OM-001~007 업무 커스터마이징과 008~011 기술 보완 코드가 함께 있는 소스 검사 대상. 008~011은 탐색 UI·검색 결과·알림·목록 변환의 TypeScript 타입 정합성을 보완한 후속 기록이며, 깨끗하게 다시 구성한 OM_TEMP 1.13.0의 초기 업무 기능 범위에서는 제외했습니다. 현재 업그레이드 실습이나 운영 배포 대상은 아닙니다.</td>
           </tr>
           <tr>
             <td>이 검사 당시 업그레이드 대상</td>
@@ -719,6 +726,39 @@ exact-scope-history          pass</code></pre>
       color: #ffd7aa;
     }
 
+    #om-phase3 .p3-page-scope {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    #om-phase3 .p3-page-scope > div {
+      padding: 14px 16px;
+      border: 1px solid #d8dfeb;
+      border-radius: 14px;
+      background: white;
+    }
+
+    #om-phase3 .p3-page-scope strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    #om-phase3 .p3-page-scope p {
+      margin: 0;
+      color: #667085;
+      line-height: 1.65;
+    }
+
+    #om-phase3 .p3-internal-scope {
+      margin: 0 0 18px;
+      padding: 11px 13px;
+      border-left: 4px solid var(--viz-series-2);
+      background: color-mix(in srgb, var(--viz-series-2) 9%, transparent);
+      color: var(--foreground);
+    }
+
     #om-phase3 .p3-section {
       margin-top: 16px;
       padding: 24px;
@@ -820,6 +860,7 @@ exact-scope-history          pass</code></pre>
       }
 
       #om-phase3 .p3-final,
+      #om-phase3 .p3-page-scope,
       #om-phase3 .p3-relation,
       #om-phase3 .p3-diff,
       #om-phase3 .p3-record-grid,

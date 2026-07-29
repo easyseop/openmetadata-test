@@ -15,10 +15,10 @@ RESOLUTION_DIFF = EVIDENCE / "BANK-OM-001_ko-kr_resolution.diff"
 
 
 ROWS = [
-    ("BANK-OM-001", "83b1e0ac7d", "번역 JSON 18개", "각 파일의 BANK-OM 키 9개"),
-    ("BANK-OM-002", "8b368af0a2", "번역 JSON 18개", "각 파일의 BANK-OM 키 11개"),
-    ("BANK-OM-003", "e1d181d728", "번역 JSON 18개", "각 파일의 BANK-OM 키 5개"),
-    ("BANK-OM-004", "ed870cd63d", "번역 JSON 18개", "각 파일의 BANK-OM 키 9개"),
+    ("BANK-OM-001", "83b1e0ac7d", "번역 JSON 18개", "각 파일에 행내 번역 항목 9개 추가"),
+    ("BANK-OM-002", "8b368af0a2", "번역 JSON 18개", "각 파일에 행내 번역 항목 11개 추가"),
+    ("BANK-OM-003", "e1d181d728", "번역 JSON 18개", "각 파일에 행내 번역 항목 5개 추가"),
+    ("BANK-OM-004", "ed870cd63d", "번역 JSON 18개", "각 파일에 행내 번역 항목 9개 추가"),
     ("BANK-OM-005", "dfd3ad5e1c", "충돌 없음", "자동 적용"),
     ("BANK-OM-006", "15b85814f5", "충돌 없음", "자동 적용"),
     ("BANK-OM-007", "e7e4ba67b6 + dee330ebd5", "충돌 없음", "두 커밋을 순서대로 적용"),
@@ -28,7 +28,7 @@ ROWS = [
 def markdown() -> str:
     rows = "\n".join(f"| {a} | `{b}` | {c} | {d} |" for a, b, c, d in ROWS)
     resolution_diff = RESOLUTION_DIFF.read_text(encoding="utf-8").rstrip()
-    return f"""# OM_TEMP 1.13.0 → 1.13.1 업그레이드 실행 가이드
+    return f"""# OM_TEMP 1.13.0 → 1.13.1 코드 업그레이드 연습 결과
 
 > 공식 기준: OpenMetadata `1.13.0-release` → `1.13.1-release`
 >
@@ -36,11 +36,20 @@ def markdown() -> str:
 >
 > 최종 검사 대상 commit: `dee330ebd5abfe33e1ac61e1ca31879746a1b423`
 
+> **이 페이지가 답하는 질문:** 커밋별 재적용 진단에서 어떤 충돌이 발생했고, 현재 검사기로 어디까지 확인했는가?
+> **이 페이지가 답하지 않는 것:** 기본 운영 방식인 vendor-merge 전체와 행내 배포 완료 여부는 아직 검증하지 않았습니다.
+> **읽고 나면:** 현재 완료·미완료를 구분한 뒤, 필요한 경우 부록의 과거 참고 코드 검사와 비교합니다.
+
+> **이번 연습에만 사용한 방법:** commit별 재적용과 JSON 충돌 보조 도구는 BANK-OM별
+> 충돌을 분리해 보기 위해 이번 OM_TEMP 연습에서 사용했습니다. OpenMetadata 공식
+> 업그레이드 기능이나 확정된 행내 운영 절차가 아닙니다.
+
 ## 1. 이번 작업의 목적
 
 공식 1.13.1 코드 위에 BANK-OM-001~007을 순서대로 다시 적용하고, 실제 충돌을
 해결한 뒤 Manifest와 Git 이력이 일치하는지 검사했습니다. 이 결과는 소스 코드
-수준의 업그레이드 검증이며 운영 배포 완료를 뜻하지 않습니다.
+수준의 **커밋별 재적용 진단**이며, 기본 운영 방식인 vendor-merge나 운영 배포
+완료를 뜻하지 않습니다.
 
 ## 2. 적용 전에 확인한 영향
 
@@ -99,6 +108,13 @@ BANK-OM ID가 아닙니다. 공식 1.13.1 위에 BANK-OM-001~007의 8개 commit�
 적용한 `custom/om-1.13.1` branch의 마지막 Git commit SHA입니다. 검사기는 이
 SHA를 지정해 “바로 이 코드 상태”의 Git 이력과 111개 변경 경로를 확인했습니다.
 
+여기에는 운영 판단상 중요한 제한이 있습니다. 저장된 소스 검사 결과의
+`integration_strategy`는 `vendor-merge`로 기록됐지만, 이 후보를 만든 실제
+방법은 아래에 설명한 커밋별 재적용입니다. 따라서 T25의 PASS는 “공식 1.13.1이
+후보의 Git 이력에 포함됐다”는 사실만 증명합니다. 실제 vendor branch 병합 기록과
+충돌 해결 증거까지 검증한 결과가 아니므로, 이 후보를 vendor-merge 운영경로
+통과로 해석하면 안 됩니다.
+
 ```text
 공식 1.13.1 afcb2d2...
   └─ BANK-OM-001 적용
@@ -108,20 +124,34 @@ SHA를 지정해 “바로 이 코드 상태”의 Git 이력과 111개 변경 �
 
 ## 4. 실제 충돌과 해결
 
-### 먼저, 1.13.0 커스터마이징을 1.13.1에 옮긴 방법
+### 먼저, BANK-OM별 충돌을 분리해 확인한 진단 방법
 
 1.13.0의 BANK-OM 변경은 기능별 Git commit으로 나뉘어 있습니다. 이 연습에서는
-각 commit의 변경 내용을 공식 1.13.1 위에 순서대로 다시 적용하기 위해
-`git cherry-pick <BANK-OM commit SHA>`를 사용했습니다. 즉 `cherry-pick`은
-**충돌을 해결하는 도구가 아니라, 이전 버전의 BANK-OM commit 하나를 새 버전
-branch에 옮기는 Git 명령**입니다.
+**어느 BANK-OM에서 충돌하는지 기능별로 구분해 확인하려고** 각 commit의 변경을
+공식 1.13.1 위에 하나씩 다시 적용했습니다. 이때 실제로 사용한 Git 명령이
+`git cherry-pick <BANK-OM commit SHA>`입니다.
+
+이 문서에서는 이 작업을 **BANK-OM 변경 적용**이라고 부릅니다. `cherry-pick`은
+이번 진단에서 선택한 commit 단위 적용 방법이지, 충돌을 재현하는 데 반드시
+필요한 명령도 아니고 모든 업그레이드에서 사용해야 하는 규칙도 아닙니다.
+branch를 합치거나 rebase할 때도 같은 코드 구간이 겹치면 충돌할 수 있습니다.
+
+이번에는 BANK-OM별 충돌 파일을 바로 식별하려고 `cherry-pick`을 사용했습니다.
+따라서 아래 결과가 증명하는 범위는 **commit별 재적용에서 발생한 충돌과 해결
+과정**입니다. 실제 운영 전략을 `vendor-merge`로 정한다면 patch branch와 custom
+branch를 실제 방식으로 합친 뒤 검사기까지 실행하는 별도 운영경로 검증이
+필요합니다.
 
 ```text
 1.13.0에서 만든 BANK-OM commit
-  → 공식 1.13.1에서 git cherry-pick 실행
+  → 공식 1.13.1에 BANK-OM 변경을 하나씩 적용
+    (이번 실행 명령: git cherry-pick)
     → 충돌 없음: 해당 BANK-OM 적용 완료
     → 충돌 발생: Git이 멈추고 사람이 해결한 뒤 계속 진행
 ```
+
+> **현재 검증 범위:** 아래 표와 충돌 화면은 BANK-OM별 진단 결과입니다.
+> `vendor-merge` 운영경로 전체가 검증됐다는 의미는 아닙니다.
 
 | BANK-OM | 1.13.1 적용 commit | 실제 충돌 | 처리 |
 |---|---|---|---|
@@ -133,8 +163,9 @@ branch에 옮기는 Git 명령**입니다.
 
 ### 실제로 충돌이 발생한 순간
 
-BANK-OM-001의 1.13.0 commit `4df83b311f`를 공식 1.13.1에 다시 적용해
-충돌을 재현했습니다.
+BANK-OM-001의 1.13.0 변경 `4df83b311f`를 공식 1.13.1에 하나의 기능 단위로
+다시 적용했습니다. 실제 명령은 `git cherry-pick 4df83b311f`였고, Git이 아래
+지점에서 자동 적용을 중단했습니다.
 
 ```text
 Auto-merging .../Entity.java
@@ -302,6 +333,7 @@ SHA·전체 diff·공용 경로·정책 파일은 1.13.1 기준으로 다시 생
 | 변경 범위 | Manifest에 등록된 파일만 바꿨는지 | PASS |
 | 민감 경로 | 별도 정책을 위반하지 않았는지 | PASS |
 | 커밋별 실제 경로 일치 | 실제 변경 파일과 Manifest가 같은지 | PASS |
+| 운영 통합 방식 일치 | 실제 vendor-merge 기록과 충돌 해결 증거가 있는지 | NOT VERIFIED |
 
 ## 7. Contract test와 build 환경 확인
 
@@ -331,6 +363,7 @@ URL이 준비된 행내 환경에서 나머지 7개를 실행해야 합니다.
 | BANK-OM별 commit이 다시 적용됐는지 | 충족 | 8개 commit과 최종 SHA 확인 |
 | 실제 충돌과 해결 결과가 남았는지 | 충족 | 001~004 충돌, 18개 경로, 해결 commit 기록 |
 | Manifest와 최종 소스가 일치하는지 | 충족 | 사전자료 5종·소스 검사 8종 PASS |
+| 목표 vendor-merge 절차를 통과했는지 | 미충족 | 후보는 커밋별 재적용으로 생성됐고 실제 merge 증거가 없음 |
 | 전체 코드가 build되는지 | 미충족 | Java·Maven·Yarn 환경이 없어 미실행 |
 | 실제 업무 기능이 정상 동작하는지 | 부분 충족 | 2개 PASS, 7개는 행내 서버·브라우저가 없어 SKIP |
 | 사람이 충돌 해결을 승인했는지 | 미충족 | 선택·승인자·승인 시각 기록 없음 |
@@ -342,8 +375,10 @@ URL이 준비된 행내 환경에서 나머지 7개를 실행해야 합니다.
 증명하지는 못합니다.
 
 다음 단계는 Java·Maven·Yarn과 행내 test URL을 준비해 build와 남은 Contract
-test를 수행하고, 충돌 비교 plan과 승인 기록 기능을 추가한 뒤 실제 Git
-화면·터미널·검사 결과를 시연 문서에 추가하는 것입니다.
+test를 수행하는 것입니다. 그와 별도로 직전 custom branch에 공식 1.13.1을 실제
+merge해 vendor-merge 후보를 만들고, merge 기록·충돌 증거·candidate lock의
+전략값이 일치하는지 다시 검사해야 합니다. 이후 충돌 비교 plan과 승인 기록
+기능을 추가하고 실제 Git 화면·터미널·검사 결과를 시연 문서에 추가합니다.
 """
 
 
@@ -355,18 +390,18 @@ def html_page() -> str:
     resolution_diff = escape(RESOLUTION_DIFF.read_text(encoding="utf-8").rstrip())
     pagination = """
 <nav class="guide-pagination" aria-label="가이드 페이지 이동">
-  <a class="guide-page-link" href="공유문서/openmetadata-phase3-demo-preview.html" target="_top">
+  <a class="guide-page-link" href="OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html" target="_top">
     <small>← 이전 가이드</small>
-    <strong>검사 결과와 책임자 판단</strong>
+    <strong>검사 전 사전환경 설정</strong>
   </a>
   <div class="guide-page-current">
     <small>전체 5개 중</small>
-    <strong>5 · 1.13.0 → 1.13.1 실제 업그레이드</strong>
+    <strong>4 · OM_TEMP 코드 업그레이드 연습</strong>
   </div>
-  <span class="guide-page-link is-disabled" aria-disabled="true">
+  <a class="guide-page-link is-next" href="공유문서/openmetadata-phase3-demo-preview.html" target="_top">
     <small>다음 가이드 →</small>
-    <strong>마지막 페이지</strong>
-  </span>
+    <strong>부록 · 과거 참고 코드 검사</strong>
+  </a>
 </nav>
     """.strip()
     return f"""<!doctype html>
@@ -374,7 +409,7 @@ def html_page() -> str:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>OM_TEMP 1.13.0 → 1.13.1 업그레이드 실행 가이드</title>
+<title>OM_TEMP 1.13.0 → 1.13.1 코드 업그레이드 연습 결과</title>
 <style>
 :root{{--ink:#172033;--muted:#667085;--line:#d8dfeb;--blue:#2457d6;--green:#067647;--amber:#b54708}}
 *{{box-sizing:border-box}} body{{margin:0;background:#eef2f7;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",sans-serif;font-weight:400;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}}
@@ -386,6 +421,10 @@ main{{width:min(1100px,calc(100% - 28px));margin:28px auto 64px}}
 .hero{{padding:34px;border-radius:24px;color:white;background:linear-gradient(135deg,#172554,#2457d6);box-shadow:0 20px 55px #193b7b2e}}
 h1{{margin:0 0 12px;font-size:clamp(28px,4vw,43px);letter-spacing:-.04em}} .hero p{{margin:6px 0;color:#e5edff;line-height:1.65}}
 .chips{{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}} .chips span{{padding:7px 11px;border:1px solid #ffffff42;border-radius:999px;background:#ffffff16;font-size:13px}}
+.page-scope{{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}}
+.page-scope>div{{padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:white}}
+.page-scope strong{{display:block;margin-bottom:6px}} .page-scope p{{margin:0;color:var(--muted);line-height:1.65}}
+.internal-scope{{margin:0 0 18px;padding:11px 13px;border-left:4px solid var(--orange);background:#fff7ed;color:var(--ink)}}
 .summary{{margin:18px 0;padding:22px;border:1px solid var(--line);border-radius:18px;background:white;line-height:1.7}}
 details{{margin:14px 0;border:1px solid var(--line);border-radius:18px;background:white;overflow:hidden;box-shadow:0 6px 22px #13234a0d}}
 summary{{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:12px;align-items:center;padding:19px 21px;cursor:pointer;list-style:none}}
@@ -409,19 +448,25 @@ code{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}} p code,li code,t
 .artifact-links{{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}} .artifact-links a{{padding:8px 11px;border:1px solid #b8c8ee;border-radius:9px;color:var(--blue);background:#f7f9ff;text-decoration:none;font-weight:700;font-size:13px}}
 .steps{{display:grid;gap:9px;margin:14px 0}} .steps div{{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;padding:12px;border-radius:12px;background:#f7f9fc;line-height:1.65}} .steps b{{display:grid;place-items:center;width:25px;height:25px;border-radius:8px;background:var(--blue);color:white}}
 .status-ok{{color:var(--green);font-weight:850}} .status-part{{color:var(--amber);font-weight:850}} .status-no{{color:#b42318;font-weight:850}}
-@media(max-width:720px){{main{{width:min(100% - 18px,1100px);margin-top:9px}}.guide-pagination{{grid-template-columns:1fr 1fr}}.guide-page-current{{grid-column:1 / -1;grid-row:1}}.hero{{padding:24px;border-radius:18px}}.flow,.evidence,.tool-output{{grid-template-columns:1fr}}summary{{padding:16px}}}}
+@media(max-width:720px){{main{{width:min(100% - 18px,1100px);margin-top:9px}}.guide-pagination{{grid-template-columns:1fr 1fr}}.guide-page-current{{grid-column:1 / -1;grid-row:1}}.hero{{padding:24px;border-radius:18px}}.page-scope,.flow,.evidence,.tool-output{{grid-template-columns:1fr}}summary{{padding:16px}}}}
 </style>
 </head>
 <body><main>
 {pagination}
 <section class="hero">
-  <h1>1.13.0 → 1.13.1 실제 업그레이드</h1>
-  <p>공식 1.13.1 위에 BANK-OM-001~007을 다시 적용하고 충돌 해결과 소스 검사까지 수행한 결과입니다.</p>
+  <h1>1.13.0 → 1.13.1 코드 업그레이드 연습</h1>
+  <p>BANK-OM별 충돌을 분리해 보기 위해 공식 1.13.1 위에 커밋을 하나씩 적용하고 소스 검사를 수행한 결과입니다.</p>
   <div class="chips"><span>공식 변경 834개 파일</span><span>번역 JSON 18개 충돌</span><span>등록 경로 111개</span><span>소스 검사 8종 PASS</span></div>
 </section>
+<section class="page-scope" aria-label="이 페이지가 답하는 질문과 범위">
+  <div><strong>이 페이지가 답하는 질문</strong><p>커밋별 재적용 진단에서 어떤 충돌이 발생했고 검사기로 어디까지 확인했는가?</p></div>
+  <div><strong>여기서 답하지 않는 것</strong><p>기본 운영 방식인 vendor-merge 전체와 행내 배포 완료 여부는 아직 검증하지 않았습니다.</p></div>
+  <div><strong>읽고 나면</strong><p>완료·미완료를 구분하고, 필요한 경우 부록의 과거 참고 코드 검사와 비교합니다.</p></div>
+</section>
+<p class="internal-scope"><strong>이번 연습에만 사용한 방법:</strong> commit별 재적용과 JSON 충돌 보조 도구는 BANK-OM별 충돌을 분리해 보기 위해 사용했습니다. OpenMetadata 공식 업그레이드 기능이나 확정된 행내 운영 절차가 아닙니다.</p>
 <section class="summary">
-  <strong>결론:</strong> BANK-OM-001~007은 공식 1.13.1에 다시 적용됐고 소스 검사 8종을 통과했습니다.
-  다만 전체 build, 환경이 필요한 Contract test 7개, 담당자 지정과 배포 승인은 아직 남아 있습니다.
+  <strong>결론:</strong> 커밋별 재적용으로 만든 후보에서 BANK-OM-001~007의 소스 범위는 확인했습니다.
+  그러나 실제 vendor-merge 기록, 전체 build, Contract test 7개, 담당자 승인과 배포 검증은 남아 있습니다.
 </section>
 
 <details open><summary><span class="n">1</span><span class="title"><strong>업그레이드 전 영향 확인</strong><small>공식 변경과 upgrade_watch 비교</small></span></summary>
@@ -453,20 +498,21 @@ git -C ../om-temp-1.13.1-upgrade switch -c custom/om-1.13.1</code></pre>
   <p><strong><code>dee330ebd5...</code>는 무엇인가?</strong> 공식 commit이나 BANK-OM ID가 아닙니다. 공식 1.13.1 위에 BANK-OM-001~007의 8개 commit을 모두 적용한 <code>custom/om-1.13.1</code> branch의 마지막 Git commit SHA입니다.</p>
   <div class="flow"><div><b>공식 시작점</b><code>afcb2d2...</code><br>공식 1.13.1</div><div><b>순차 적용</b>BANK-OM-001~006</div><div><b>마지막 기능</b>BANK-OM-007과 후속 보완</div><div><b>최종 코드 상태</b><code>dee330ebd5...</code><br>검사기가 고정한 대상</div></div>
   <p class="note">검사기는 이 SHA를 입력으로 받아 “그 시점의 전체 코드와 Git 이력”을 검사합니다. 이후 commit이 하나라도 추가되면 코드 상태가 달라지므로 다시 검사해야 합니다.</p>
+  <p class="warning"><strong>운영 전략과 이번 후보 생성 방식은 다릅니다.</strong> 저장된 검사 결과에는 <code>integration_strategy: vendor-merge</code>가 기록됐지만, 실제 후보는 아래의 커밋별 재적용으로 만들었습니다. 따라서 공식 1.13.1 포함 관계는 확인했어도 실제 vendor branch 병합 기록과 충돌 해결 증거까지 검증한 것은 아닙니다. 이 후보를 vendor-merge 운영경로 통과로 해석하면 안 됩니다.</p>
   <p class="note">두 branch는 현재 로컬에만 있고 GitHub에는 아직 push하지 않았습니다.</p>
 </div></details>
 
 <details open><summary><span class="n">3</span><span class="title"><strong>커스터마이징 적용과 충돌 해결</strong><small>실제 커밋별 결과</small></span></summary>
 <div class="body">
-  <h3 class="subhead">먼저, 1.13.0 변경을 1.13.1에 옮긴 방법</h3>
-  <p>1.13.0의 BANK-OM 변경은 기능별 Git commit으로 나뉘어 있습니다. 이 연습에서는 각 commit의 변경 내용을 공식 1.13.1 위에 순서대로 다시 적용하기 위해 <code>git cherry-pick &lt;BANK-OM commit SHA&gt;</code>를 사용했습니다.</p>
-  <div class="flow"><div><b>이전 버전</b>1.13.0의 BANK-OM commit</div><div><b>Git 적용 명령</b>공식 1.13.1에서 cherry-pick</div><div><b>충돌 없음</b>해당 BANK-OM 적용 완료</div><div><b>충돌 발생</b>Git이 멈추고 해결 대기</div></div>
-  <p class="note"><strong>cherry-pick의 역할:</strong> 충돌을 해결하는 도구가 아니라, 이전 버전의 BANK-OM commit 하나를 새 버전 branch에 옮기는 Git 명령입니다. 충돌은 이 명령을 실행하는 도중 Git이 두 변경을 자동으로 합치지 못할 때 발생합니다.</p>
+  <h3 class="subhead">먼저, BANK-OM별 충돌을 분리해 확인한 방법</h3>
+  <p>이 연습에서는 어느 BANK-OM에서 충돌하는지 바로 구분하려고 1.13.0의 기능별 commit을 공식 1.13.1 위에 하나씩 적용했습니다. 실제 명령은 <code>git cherry-pick &lt;BANK-OM commit SHA&gt;</code>였지만, 이 문서에서는 이해하기 쉽게 <strong>BANK-OM 변경 적용</strong>이라고 부릅니다.</p>
+  <div class="flow"><div><b>이전 버전</b>1.13.0의 BANK-OM commit</div><div><b>이번 진단 방법</b>공식 1.13.1에 commit별 적용</div><div><b>충돌 없음</b>해당 BANK-OM 적용 완료</div><div><b>충돌 발생</b>Git이 멈추고 해결 대기</div></div>
+  <p class="note"><strong>왜 cherry-pick을 썼나?</strong> 충돌을 만들기 위해 필요한 명령이라서가 아니라, 충돌을 BANK-OM ID별로 분리해 기록하기 쉬웠기 때문입니다. branch merge나 rebase도 같은 코드 구간이 겹치면 충돌할 수 있습니다. 따라서 아래는 commit별 진단 결과이며 vendor-merge 운영경로 전체 결과가 아닙니다.</p>
   <table><thead><tr><th>BANK-OM</th><th>1.13.1 commit</th><th>실제 충돌</th><th>처리</th></tr></thead><tbody>{conflict_rows}</tbody></table>
   <p>001~004는 매번 같은 18개 번역 JSON에서 충돌했습니다. 72개 다른 파일이 아니라 <strong>18개 고유 파일에서 네 번 발생한 충돌</strong>입니다.</p>
 
   <h3 class="subhead">1. 실제로 충돌이 발생한 순간</h3>
-  <p>BANK-OM-001의 1.13.0 commit <code>4df83b311f</code>를 공식 1.13.1에서 <code>cherry-pick</code>하자 아래처럼 Git이 중단됐습니다.</p>
+  <p>BANK-OM-001의 1.13.0 변경 <code>4df83b311f</code>를 공식 1.13.1에 하나의 기능 단위로 적용했습니다. 실제 명령은 <code>git cherry-pick 4df83b311f</code>였고, Git이 아래 지점에서 자동 적용을 중단했습니다.</p>
   <pre><code><span class="term-ok">Auto-merging .../Entity.java
 Auto-merging .../CollectionDAO.java</span>
 Auto-merging .../languages/ko-kr.json
@@ -622,6 +668,7 @@ plan_digest: sha256:...</code></pre>
     <tr><td>변경 범위</td><td>Manifest 밖 변경</td><td class="pass">PASS</td></tr>
     <tr><td>민감 경로</td><td>보안·설정·DB 경로 정책</td><td class="pass">PASS</td></tr>
     <tr><td>커밋별 실제 경로 일치</td><td>실제 변경과 Manifest 목록</td><td class="pass">PASS</td></tr>
+    <tr><td>운영 통합 방식 일치</td><td>실제 vendor-merge 기록과 충돌 해결 증거</td><td class="status-no">NOT VERIFIED</td></tr>
   </tbody></table>
   <p class="note">소스 검사 PASS는 build와 업무 동작 test 성공을 대신하지 않습니다.</p>
 </div></details>
@@ -645,14 +692,15 @@ plan_digest: sha256:...</code></pre>
     <tr><td>BANK-OM별 commit 재적용</td><td class="status-ok">충족</td><td>8개 commit과 최종 SHA 확인</td></tr>
     <tr><td>실제 충돌과 해결 기록</td><td class="status-ok">충족</td><td>001~004 충돌, 18개 경로, 해결 commit과 전체 원문 보관</td></tr>
     <tr><td>Manifest와 최종 소스 일치</td><td class="status-ok">충족</td><td>사전자료 5종·소스 검사 8종 PASS</td></tr>
+    <tr><td>목표 vendor-merge 절차</td><td class="status-no">미충족</td><td>후보는 커밋별 재적용으로 생성됐고 실제 merge 증거가 없음</td></tr>
     <tr><td>전체 코드 build</td><td class="status-no">미충족</td><td>Java·Maven·Yarn 환경이 없어 미실행</td></tr>
     <tr><td>실제 업무 기능 동작</td><td class="status-part">부분 충족</td><td>필수 2개 PASS, 7개는 행내 서버·브라우저가 없어 SKIP</td></tr>
     <tr><td>사람의 충돌 해결 승인</td><td class="status-no">미충족</td><td>선택·승인자·승인 시각 기록 없음</td></tr>
     <tr><td>배포 가능한 상태</td><td class="status-no">미충족</td><td>build·남은 test·승인·검증 tag 필요</td></tr>
   </tbody></table>
-  <p class="note"><strong>현재 검사기로 확인 가능한 범위:</strong> 공식 변경 영향, BANK-OM commit 적용, 변경 파일 범위, 필수 구현 파일과 테스트 코드의 존재입니다.</p>
+  <p class="note"><strong>현재 검사기로 확인 가능한 범위:</strong> 공식 변경 영향, BANK-OM commit 적용, 변경 파일 범위, 필수 구현 파일과 테스트 코드의 존재입니다. 실제 vendor-merge 수행 여부는 이번 증거로 확인되지 않았습니다.</p>
   <p class="warning"><strong>아직 증명하지 못한 범위:</strong> 전체 build 성공, 실제 화면·API 업무 동작, 사람의 승인과 배포 안전성입니다. 따라서 현재 결과는 <strong>소스 수준 업그레이드 검증 완료</strong>이지 <strong>배포 승인 완료</strong>가 아닙니다.</p>
-  <p>다음에는 Java·Maven·Yarn과 행내 test URL을 준비해 build와 남은 Contract test를 수행하고, 충돌 비교 plan과 승인 기록 기능을 추가한 뒤 실제 Git 화면·터미널·검사 결과를 시연 문서에 추가합니다.</p>
+  <p>다음에는 Java·Maven·Yarn과 행내 test URL을 준비해 build와 남은 Contract test를 수행합니다. 그와 별도로 직전 custom branch에 공식 1.13.1을 실제 merge한 후보를 만들고, merge 기록·충돌 증거·candidate lock의 전략값이 일치하는지 다시 검사해야 합니다. 이후 충돌 비교 plan과 승인 기록 기능을 추가하고 실제 Git 화면·터미널·검사 결과를 시연 문서에 추가합니다.</p>
 </div></details>
 <div class="guide-pagination-bottom">{pagination}</div>
 </main></body></html>"""

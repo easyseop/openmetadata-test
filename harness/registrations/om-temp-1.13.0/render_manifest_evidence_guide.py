@@ -170,6 +170,15 @@ def render() -> str:
         "> 대상 코드: `easyseop/OM_TEMP`의 `custom/om-1.13.0`  ",
         "> 검사 설정 위치: `easyseop/openmetadata-test/harness/registrations/om-temp-1.13.0/`",
         "",
+        "> **이 페이지가 답하는 질문:** 검사기가 코드와 비교할 Manifest·Registry·Contract를 "
+        "언제 만들고, 실제 Git diff를 어떤 기준으로 등록하는가?  ",
+        "> **이 페이지가 답하지 않는 것:** 1.13.1 충돌과 검사 결과는 4번에서 설명합니다.  ",
+        "> **다음 행동:** 등록자료와 로컬 repository를 연결한 뒤 4번 업그레이드 연습으로 이동합니다.",
+        "",
+        "> **우리 내부에서 만든 기준자료:** Manifest·Registry·Contract와 BANK-OM ID는 "
+        "OpenMetadata 공식 설정이 아니라 `easyseop/openmetadata-test`가 행내 변경을 "
+        "검사하기 위해 정의한 관리 자료입니다.",
+        "",
         "## 이 자료가 필요한 이유",
         "",
         "이 문서는 전체 가이드에서 검사기 원리를 설명한 다음에 읽습니다. 다만 실제 "
@@ -202,7 +211,9 @@ def render() -> str:
         "| BANK-OM ID | 사람이 발급하는 업무 기능 번호 | `BANK-OM-005` |",
         "| Git commit SHA | Git이 한 번의 코드 저장에 자동 부여하는 값 | `d983f7c...` |",
         "",
-        "Manifest는 **BANK-OM ID마다 한 파일**을 만듭니다. 같은 기능을 후속 보완하면 "
+        "Manifest는 **BANK-OM ID마다 한 파일**을 최초 등록 때 만듭니다. 같은 기능을 "
+        "새 공식 버전에 맞추거나 후속 보완해도 새 ID를 만들지 않습니다. 새 버전 등록 "
+        "폴더에 기존 Manifest를 복사한 뒤 실제 경로·watch·Contract 변경만 갱신합니다. "
         "BANK-OM-007처럼 Git commit SHA는 여러 개가 될 수 있지만 Manifest는 하나입니다.",
         "",
         "## 사전환경 설정 순서",
@@ -325,7 +336,7 @@ def render() -> str:
             "",
             "| 항목 | 현재 등록 기준 | 검사에서 쓰는 방식 |",
             "|---|---|---|",
-            "| `allowed_changed_paths` | 최초 BANK-OM 커밋이 실제 변경한 모든 파일 | 목록 밖 파일을 같은 ID로 변경하면 차단하고, 목록 안 파일이 검사 대상 custom branch의 최종 코드에서 실제로 달라지지 않으면 검토를 요구 |",
+        "| `allowed_changed_paths` | 최초 BANK-OM 커밋이 실제 변경한 모든 파일 | 목록 밖 파일을 같은 ID로 변경하면 차단합니다. 목록 안 파일이 최종 코드에서 공식 원본과 같아진 경우에는 기능 생존 검사에서 검토를 요구합니다. |",
             "| `required_changed_paths` | 기능이 적용됐음을 판단하는 핵심 구현 파일 | 파일이 없거나 공식 원본과 같아지면 기능이 빠진 것으로 보고 차단 |",
             "| `candidate_additional_paths` | 같은 ID의 후속 커밋에서 처음 추가된 파일 | 사전 등록 없이 확장한 변경과 승인된 후속 변경을 구분 |",
             "| `upgrade_watch.paths` | 공식 버전 변경 비교 검사가 확인할 경로 | 공식 새 버전에서 해당 경로가 바뀌면 자동 통과하지 않고 재검토를 요구 |",
@@ -336,6 +347,9 @@ def render() -> str:
             "구현에 맞춰 해당 ID의 변경 범위 전체와 "
             "직접 수정하지 않았지만 기능이 의존하는 공식 파일을 함께 넣었습니다. "
             "따라서 watch에 있다고 해서 그 파일을 이 커밋이 반드시 수정했다는 뜻은 아닙니다.",
+            "",
+            "[Manifest의 `assurance`·`series`와 나머지 관리파일 필드까지 보는 전체 필드 사전]"
+            "(OM_TEMP_관리파일_필드_사전_미리보기.html)",
             "",
             "## 2. 검사 기준자료 등록",
             "",
@@ -607,8 +621,8 @@ def render() -> str:
             "- 공식 1.13.0 이력을 보존한 로컬 검사 branch 구성 완료",
             "- 소스 검사 8종 PASS 및 JSON 결과 저장 완료",
             "- 기능 담당자(owner)는 아직 미지정이므로 배포 준비 상태는 완료가 아님",
-            "- OM_TEMP 전체 코드 build, 업무 동작 test, 1.13.1 업그레이드 비교는 아직 실행 전",
-            "- 따라서 현재 결과는 **소스 검사 통과**이며 배포 승인 결과가 아님",
+            "- 이 1.13.0 등록 결과에는 전체 build, 업무 동작 test와 1.13.1 업그레이드 결과가 포함되지 않음",
+            "- 따라서 이 페이지의 결론은 **1.13.0 소스 검사 통과**이며 배포 승인 결과가 아님",
             "",
         ]
     )
@@ -626,9 +640,9 @@ def render_html() -> str:
       <small>전체 5개 중</small>
       <strong>3 · 검사 전 사전환경 설정</strong>
     </div>
-    <a class="guide-page-link is-next" href="공유문서/openmetadata-phase3-demo-preview.html" target="_top">
+    <a class="guide-page-link is-next" href="OM_TEMP_1.13.0_1.13.1_업그레이드_실행_가이드_미리보기.html" target="_top">
       <small>다음 가이드 →</small>
-      <strong>검사 결과와 책임자 판단</strong>
+      <strong>OM_TEMP 업그레이드 연습</strong>
     </a>
   </nav>
     """.strip()
@@ -898,6 +912,11 @@ main {{ width:min(1120px,calc(100% - 32px)); margin:32px auto 72px; }}
 .hero p {{ margin:6px 0; color:#e5edff; line-height:1.65; }}
 .status {{ display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; }}
 .status span {{ padding:7px 11px; border:1px solid #ffffff42; border-radius:999px; background:#ffffff16; font-size:13px; }}
+.page-scope {{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:18px 0; }}
+.page-scope>div {{ padding:14px 16px; border:1px solid var(--line); border-radius:14px; background:white; }}
+.page-scope strong {{ display:block; margin-bottom:6px; }}
+.page-scope p {{ margin:0; color:var(--muted); line-height:1.65; }}
+.internal-scope {{ margin:0 0 18px; padding:11px 13px; border-left:4px solid var(--orange); background:#fff7ed; color:var(--ink); }}
 .intro {{ margin:20px 0; padding:24px; border:1px solid var(--line); border-radius:18px; background:white; }}
 .intro h2 {{ margin:0 0 12px; font-size:20px; }}
 .intro p {{ margin:8px 0; line-height:1.7; }}
@@ -908,6 +927,8 @@ main {{ width:min(1120px,calc(100% - 32px)); margin:32px auto 72px; }}
 .artifact-table {{ width:100%; min-width:820px; border-collapse:collapse; font-size:14px; }}
 .artifact-table th,.artifact-table td {{ padding:11px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; line-height:1.55; }}
 .artifact-table th {{ color:#344054; background:#f8fafc; }}
+.field-dictionary-link {{ margin:0 18px 18px; }}
+.field-dictionary-link a {{ display:block; padding:12px 14px; border:1px solid #b8c8ee; border-radius:11px; color:var(--blue); background:#f7f9ff; text-decoration:none; font-weight:750; }}
 .id-table {{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }}
 .id-table div {{ padding:14px; border-radius:12px; background:var(--soft); }}
 .id-table strong {{ display:block; margin-bottom:5px; }}
@@ -983,6 +1004,7 @@ details.reference {{ margin:10px 0; border:1px solid var(--line); border-radius:
   .guide-pagination {{ grid-template-columns:1fr 1fr; }}
   .guide-page-current {{ grid-column:1 / -1; grid-row:1; }}
   .hero {{ padding:24px; border-radius:18px; }}
+  .page-scope {{ grid-template-columns:1fr; }}
   .id-table,.diff-grid,.manifest-fields,.explain-grid {{ grid-template-columns:1fr; }}
   .phase>summary {{ grid-template-columns:42px minmax(0,1fr) auto; padding:17px; }}
   .reference>summary {{ grid-template-columns:38px minmax(0,1fr) auto; }}
@@ -1000,11 +1022,17 @@ details.reference {{ margin:10px 0; border:1px solid var(--line); border-radius:
     <p>대상: easyseop/OM_TEMP · custom/om-1.13.0</p>
     <div class="status"><span>Manifest 7개</span><span>전체 변경 111개</span><span>공용 경로 37개</span><span>소스 검사 8종 PASS</span></div>
   </section>
+  <section class="page-scope" aria-label="이 페이지가 답하는 질문과 범위">
+    <div><strong>이 페이지가 답하는 질문</strong><p>Manifest·Registry·Contract를 언제 만들고, 실제 Git diff를 어떤 기준으로 등록하는가?</p></div>
+    <div><strong>여기서 답하지 않는 것</strong><p>공식 1.13.1 병합 충돌과 현재 후보의 판정은 4번에서 설명합니다.</p></div>
+    <div><strong>읽고 나면</strong><p>등록자료와 로컬 repository를 연결한 뒤 OM_TEMP 업그레이드 연습으로 이동합니다.</p></div>
+  </section>
+  <p class="internal-scope"><strong>우리 내부에서 만든 기준자료:</strong> Manifest·Registry·Contract와 BANK-OM ID는 OpenMetadata 공식 설정이 아니라 <code>easyseop/openmetadata-test</code>가 행내 변경을 검사하기 위해 정의한 관리 자료입니다.</p>
   <section class="intro">
     <h2>왜 먼저 설정해야 하나</h2>
     <p class="note"><strong>읽는 순서와 실행 순서는 다릅니다.</strong> 이 문서는 검사기 원리 다음에 읽지만, 실제 작업에서는 검사기를 실행하기 전에 아래 기준자료를 먼저 준비합니다. 검사기 설명을 먼저 배치한 이유는 Manifest·Registry·Contracts가 어느 검사에 사용되는지 이해한 뒤 설정할 수 있게 하기 위해서입니다.</p>
     <p>검사기는 코드만 보고 업무 기능의 정상 조건을 추측하지 않습니다. 어떤 BANK-OM을 검사하고, 어떤 파일과 동작을 정상으로 볼지 정한 자료를 먼저 등록해야 합니다.</p>
-    <p>Manifest는 BANK-OM ID마다 한 파일을 만듭니다. 같은 기능의 후속 보완은 Git commit SHA가 여러 개여도 Manifest 하나에 연결합니다.</p>
+    <p>Manifest는 BANK-OM ID마다 최초 등록 때 한 파일을 만듭니다. 같은 기능의 업그레이드 보완은 새 ID를 만들지 않고, 새 버전 등록 폴더에 기존 Manifest를 복사해 달라진 경로와 검증 기준만 갱신합니다. Git commit SHA가 여러 개여도 Manifest는 하나입니다.</p>
     <div class="id-table">
       <div><strong>BANK-OM ID</strong>사람이 발급하는 업무 기능 번호</div>
       <div><strong>Git commit SHA</strong>Git이 저장된 코드 변경에 자동 부여하는 값</div>
@@ -1025,19 +1053,20 @@ details.reference {{ margin:10px 0; border:1px solid var(--line); border-radius:
       <table class="artifact-table">
         <thead><tr><th>산출물</th><th>의미</th><th>핵심 요소</th><th>어디에 사용되나</th></tr></thead>
         <tbody>
-          <tr><td><strong>Manifest</strong></td><td>BANK-OM 한 기능의 코드 변경과 검증 기준</td><td>ID·상태·kind, allowed·required·추가 경로, watch, Contract·test 연결</td><td>T26·T40·T42·T93이 기능별 변경 범위와 영향 여부를 판단할 때 읽습니다.</td></tr>
-          <tr><td><strong>Registry</strong></td><td>검사해야 할 BANK-OM 전체 목록과 관리 상태</td><td>customization_id, title, owner·상태, criticality, Manifest·Contract 경로</td><td>T26·T31이 활성 ID, 미등록 ID, 담당자 지정 상태와 연결 자료를 확인할 때 읽습니다.</td></tr>
-          <tr><td><strong>Contracts</strong></td><td>파일 존재만으로 알 수 없는 업무 동작의 정상 조건</td><td>Contract ID, invariant, required_tests, customization_ids</td><td>T60-I가 test 코드 존재를, T61·T62가 제거본 반증과 실제 실행 결과를 확인할 때 읽습니다.</td></tr>
-          <tr><td><strong>공용 파일 소유정보</strong></td><td>한 파일을 여러 BANK-OM이 함께 변경했다는 명시적 관계</td><td>공용 파일 경로와 해당 BANK-OM ID 목록</td><td>T25-R 재구성에서 같은 파일의 변경을 한 ID에 잘못 귀속하지 않도록 사용합니다.</td></tr>
+          <tr><td><strong>Manifest</strong></td><td>BANK-OM 한 기능의 코드 변경과 검증 기준</td><td>ID·상태·kind, allowed·required·추가 경로, watch, Contract·test 연결</td><td>기능 생존, 변경 범위, 공식 업그레이드 영향과 실제 경로 일치 검사에 사용합니다.</td></tr>
+          <tr><td><strong>Registry</strong></td><td>검사해야 할 BANK-OM 전체 목록과 관리 상태</td><td>customization_id, title, owner·상태, criticality, Manifest·Contract 경로</td><td>활성·폐기 ID, 미등록 ID, 담당자와 연결 자료 누락을 확인할 때 사용합니다.</td></tr>
+          <tr><td><strong>Contracts</strong></td><td>파일 존재만으로 알 수 없는 업무 동작의 정상 조건</td><td>Contract ID, invariant, required_tests, customization_ids</td><td>필수 test 코드 존재, 커스터마이징 제거본의 실패, 실제 기능 실행 결과를 확인할 때 사용합니다.</td></tr>
+          <tr><td><strong>공용 파일 소유정보</strong></td><td>한 파일을 여러 BANK-OM이 함께 변경했다는 명시적 관계</td><td>공용 파일 경로와 해당 BANK-OM ID 목록</td><td>같은 파일의 변경을 한 BANK-OM에 잘못 귀속하지 않도록 재구성·범위 검사에 사용합니다.</td></tr>
           <tr><td><strong>전체 변경 목록</strong></td><td>공식 원본과 행내 snapshot 사이에서 실제로 달라진 모든 파일</td><td>root 기준 파일 경로 111개</td><td>Manifest 전체 범위가 실제 Git diff를 빠짐없이 설명하는지 사전검증할 때 사용합니다.</td></tr>
-          <tr><td><strong>Repository layout</strong></td><td>경로를 공식 코드·행내 정책·확장·미분류로 나누는 규칙</td><td>공식 기준 SHA, 경로 문법, 영역별 root, 미분류 처리 방식</td><td>T30·T41·T93이 변경 경로의 소유 영역과 미분류 경로를 판단할 때 읽습니다.</td></tr>
-          <tr><td><strong>Sensitive zones</strong></td><td>보안·인증·설정·DB 관련 경로의 위험 등급</td><td>frozen·protected·watched 경로 목록</td><td>T41이 변경을 BLOCK·APPROVAL·표시 대상으로 구분할 때 읽습니다.</td></tr>
-          <tr><td><strong>Candidate lock</strong></td><td>검사할 코드 상태를 움직이지 않는 SHA와 digest로 고정한 자료</td><td>공식 base·target SHA, 검사 대상 commit·tree, integration strategy, artifact digest</td><td>T25·T26·T62·T90·T91이 모두 같은 코드와 배포 파일을 검사했는지 연결할 때 읽습니다.</td></tr>
+          <tr><td><strong>Repository layout</strong></td><td>경로를 공식 코드·행내 정책·확장·미분류로 나누는 규칙</td><td>공식 기준 SHA, 경로 문법, 영역별 root, 미분류 처리 방식</td><td>커밋의 관리 대상 여부, 민감 경로와 미분류 새 모듈을 판단할 때 사용합니다.</td></tr>
+          <tr><td><strong>Sensitive zones</strong></td><td>보안·인증·설정·DB 관련 경로의 위험 등급</td><td>frozen·protected·watched 경로 목록</td><td>변경 경로를 즉시 차단, 담당자 승인 또는 결과 표시 대상으로 구분할 때 사용합니다.</td></tr>
+          <tr><td><strong>Candidate lock</strong></td><td>검사할 코드 상태를 움직이지 않는 SHA와 digest로 고정한 자료</td><td>공식 base·target SHA, 검사 대상 commit·tree, integration strategy, artifact digest</td><td>소스·test·업그레이드·배포 결과가 모두 같은 코드 상태를 가리키는지 확인할 때 사용합니다.</td></tr>
           <tr><td><strong>Patch-lock</strong> <small>(선택)</small></td><td>patch-replay 방식에서 적용할 commit과 순서를 고정한 자료</td><td>BANK-OM ID, revision, source commit 순서와 digest</td><td>재적용·복구·재현이 필요할 때 사용합니다. 현재 vendor-merge 소스 검사의 필수 자료는 아닙니다.</td></tr>
           <tr><td><strong>검사 결과 JSON·YAML</strong></td><td>검사 당시 입력과 각 판정을 나중에 다시 확인하는 증거</td><td>검사명, 입력 SHA·digest, verdict, reasons, 결과 digest</td><td>책임자 검토·인수인계와 T90·T91의 동일 대상 확인에 사용합니다.</td></tr>
         </tbody>
       </table>
     </div>
+    <p class="field-dictionary-link"><a href="OM_TEMP_관리파일_필드_사전_미리보기.html" target="_top">Manifest의 assurance·series와 나머지 관리파일 필드를 설명한 전체 필드 사전 열기 →</a></p>
   </details>
 
   <details class="phase" open>
@@ -1091,7 +1120,7 @@ details.reference {{ margin:10px 0; border:1px solid var(--line); border-radius:
     </div>
   </details>
 
-  <section class="foot"><strong>현재 상태:</strong> Registry 7개, Contract 7개·필수 test 9개, 공용 경로 37개, 전체 변경 111개를 생성했고 소스 검사 8종이 PASS했습니다. 담당자 지정, OpenMetadata 전체 build, Contract test 실제 실행, 1.13.1 업그레이드 비교와 배포 승인은 아직 완료하지 않았습니다.</section>
+  <section class="foot"><strong>이 페이지의 결론:</strong> 1.13.0 기준 Registry 7개, Contract 7개·필수 test 9개, 공용 경로 37개, 전체 변경 111개를 생성했고 소스 검사 8종이 PASS했습니다. 이 결과에는 담당자 지정, OpenMetadata 전체 build, Contract test 실제 실행, 1.13.1 업그레이드와 배포 승인이 포함되지 않습니다. 다음 페이지에서 별도로 수행한 1.13.1 코드 업그레이드 연습을 확인합니다.</section>
   <div class="guide-pagination-bottom">{pagination}</div>
 </main>
 </body>

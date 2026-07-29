@@ -26,12 +26,12 @@ PREVIEWS = (
     (
         ROOT
         / "docs/00-사용가이드/공유문서/openmetadata-phase3-demo-preview.html",
-        ("../OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html", "검사 전 사전환경 설정"),
         (
             "../OM_TEMP_1.13.0_1.13.1_업그레이드_실행_가이드_미리보기.html",
-            "1.13.0 → 1.13.1 실제 업그레이드",
+            "OM_TEMP 코드 업그레이드 연습",
         ),
-        "4 · 검사 결과와 책임자 판단",
+        None,
+        "부록 · 과거 참고 코드 검사",
     ),
 )
 DEFAULT = 'sandbox="allow-scripts"'
