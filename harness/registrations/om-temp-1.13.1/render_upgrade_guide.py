@@ -3,12 +3,15 @@
 
 from __future__ import annotations
 
+from html import escape
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
 MD = ROOT / "docs/00-사용가이드/OM_TEMP_1.13.0_1.13.1_업그레이드_실행_가이드.md"
 HTML = ROOT / "docs/00-사용가이드/OM_TEMP_1.13.0_1.13.1_업그레이드_실행_가이드_미리보기.html"
+EVIDENCE = ROOT / "harness/registrations/om-temp-1.13.1/conflict-evidence"
+RESOLUTION_DIFF = EVIDENCE / "BANK-OM-001_ko-kr_resolution.diff"
 
 
 ROWS = [
@@ -24,6 +27,7 @@ ROWS = [
 
 def markdown() -> str:
     rows = "\n".join(f"| {a} | `{b}` | {c} | {d} |" for a, b, c, d in ROWS)
+    resolution_diff = RESOLUTION_DIFF.read_text(encoding="utf-8").rstrip()
     return f"""# OM_TEMP 1.13.0 → 1.13.1 업그레이드 실행 가이드
 
 > 공식 기준: OpenMetadata `1.13.0-release` → `1.13.1-release`
@@ -40,12 +44,23 @@ def markdown() -> str:
 
 ## 2. 적용 전에 확인한 영향
 
-공식 1.13.0과 1.13.1 사이에서 834개 파일이 바뀌었습니다. 그중 Manifest의
-`upgrade_watch.paths`와 겹치는 경로가 7개 BANK-OM 모두에서 발견되어
-`APPROVAL` 결과가 나왔습니다.
+이 결과는 **공식 변경 영향 확인 검사(upgrade-watch, T42)**가 만들었습니다.
+검사기는 Git으로 공식 1.13.0과 1.13.1 사이에서 바뀐 834개 경로를 구하고,
+각 BANK-OM Manifest의 `upgrade_watch.paths`와 겹치는 경로를 찾습니다.
+7개 BANK-OM 모두에서 겹치는 경로가 발견되어 `APPROVAL` 결과가 나왔습니다.
 
 `APPROVAL`은 실패가 아닙니다. 자동 적용 전에 담당자가 영향 경로를 확인해야
 한다는 뜻입니다.
+
+`upgrade_watch.paths`는 이번 초안에서 **부분 자동 등록**했습니다.
+
+- Git이 해당 BANK-OM commit에서 실제 변경한 전체 경로는 자동으로 등록했습니다.
+- 행내에서 수정하지 않았지만 기능이 의존하는 경로는 담당자가
+  `watch_dependencies`에 직접 적었습니다.
+- 코드 의미를 분석해 숨은 의존 경로까지 자동으로 찾는 기능은 아직 없습니다.
+
+따라서 이번 영향 확인은 “Manifest에 이미 등록된 watch 경로가 공식 버전에서
+바뀌었는가?”를 검사합니다. 등록 자체가 빠진 의존 경로는 찾아내지 못합니다.
 
 | BANK-OM | 공식 버전에서 바뀐 감시 경로 |
 |---|---:|
@@ -68,6 +83,18 @@ git -C ../om-temp-1.13.1-upgrade switch -c custom/om-1.13.1
 `patch/om-1.13.1`은 공식 1.13.1 코드만 보관합니다. `custom/om-1.13.1`은
 그 위에 BANK-OM 커밋을 적용한 검사 대상 branch입니다. 두 branch는 현재 로컬에만
 있고 GitHub에는 아직 push하지 않았습니다.
+
+여기서 최종 검사 대상 commit `dee330ebd5...`는 공식 commit이나
+BANK-OM ID가 아닙니다. 공식 1.13.1 위에 BANK-OM-001~007의 8개 commit을 모두
+적용한 `custom/om-1.13.1` branch의 마지막 Git commit SHA입니다. 검사기는 이
+SHA를 지정해 “바로 이 코드 상태”의 Git 이력과 111개 변경 경로를 확인했습니다.
+
+```text
+공식 1.13.1 afcb2d2...
+  └─ BANK-OM-001 적용
+      └─ ...
+          └─ BANK-OM-007 후속 적용 dee330ebd5...  ← 최종 검사 대상
+```
 
 ## 4. 실제 충돌과 해결
 
@@ -115,27 +142,51 @@ Git이 자동으로 결정하지 못해 중단됐습니다. 공식 1.13.1이 JSO
 바꾸고 새 번역 항목도 추가한 상태에서 BANK-OM-001도 같은 JSON 객체에 번역 항목
 9개를 추가했기 때문입니다.
 
-대표 파일인 `ko-kr.json`에서 BANK-OM-001이 추가한 실제 항목은 다음과 같습니다.
+여기서 “공식 변경”과 “BANK-OM 추가 항목 9개”의 이름이 겹치지 않는데도
+충돌한 이유가 중요합니다. Git은 JSON의 의미를 이해하지 않고 줄 단위로
+병합합니다. 공식 1.13.1이 `label` 객체 전체의 들여쓰기를 바꿨고,
+BANK-OM-001도 같은 `label` 객체 안에 새 항목을 넣었기 때문에 Git은 객체
+전체를 하나의 충돌 구간으로 표시했습니다. 즉 **코드 의미상의 동일 항목 충돌은
+0개였지만, 텍스트 줄 기준 충돌은 발생**했습니다.
+
+대표 파일인 `ko-kr.json`의 전체 충돌 원문은 6,614줄입니다. 본문에는 결과를
+판단하는 데 필요한 실제 해결 diff 전체를 표시하고, 충돌 원문과 해결된 JSON은
+별도 파일로 보관했습니다.
 
 ```diff
-+ "code-group": "Code Group"
-+ "code-name": "Code Name"
-+ "code-value": "Code Value"
-+ "instance-code": "인스턴스 코드"
-+ "instance-code-lowercase-plural": "인스턴스 코드"
-+ "instance-code-plural": "인스턴스 코드"
-+ "sort-order": "Sort Order"
-+ "instance-code-description": "Manage common/reference codes..."
-+ "instance-code-group-description": "The code group contains..."
+{resolution_diff}
 ```
 
 해결 후에는 공식 1.13.1의 번역 항목과 형식을 유지하면서 위 9개 항목도 남아
 있음을 Git에서 다시 확인했습니다. 이 결과가 BANK-OM-001의 새 1.13.1 commit
 `83b1e0ac7d`에 기록됐습니다.
 
-전체 재현 기록은
-`harness/registrations/om-temp-1.13.1/conflict-replay-evidence.txt`에
-보관했습니다.
+전체 증거 파일:
+
+- 충돌 원문: `conflict-evidence/BANK-OM-001_ko-kr_full_conflict.txt`
+- 해결 diff: `conflict-evidence/BANK-OM-001_ko-kr_resolution.diff`
+- 해결된 전체 JSON: `conflict-evidence/BANK-OM-001_ko-kr_resolved.json`
+- commit과 18개 충돌 경로의 연결:
+  `conflict-evidence/BANK-OM-001_ko-kr_capture.json`
+
+### 충돌 로그에서 BANK-OM ID를 확인하는 방법
+
+현재 Git 원문은 `error: could not apply 4df83b311f...`까지만 보여주므로
+`BANK-OM-001`이 바로 보이지 않습니다. ID는 source commit `4df83b311f`의
+commit 본문에 있는 `Customization-ID: BANK-OM-001`에서 확인할 수 있습니다.
+즉, 현재는 commit SHA를 한 번 더 조회해야 하므로 운영 로그로는 불친절합니다.
+
+개선 방식은 적용 명령이 시작될 때 commit trailer를 읽어 다음처럼 ID를 함께
+출력하고, 결과 JSON에도 같은 값을 저장하는 것입니다.
+
+```text
+[BANK-OM-001] APPLY source=4df83b311f target=1.13.1-release
+[BANK-OM-001] CONFLICT files=18 representative=.../ko-kr.json
+[BANK-OM-001] RESOLVED result=83b1e0ac7d method=json-non-overlap
+```
+
+이 ID 표시 wrapper와 승인 기록 연결은 아직 구현되지 않았으며 추가 개발
+대상입니다.
 
 ### 이번에 사용한 해결 규칙과 승인 여부
 
@@ -154,12 +205,24 @@ Git이 자동으로 결정하지 못해 중단됐습니다. 공식 1.13.1이 JSO
   --repo ../om-temp-1.13.1-upgrade
 ```
 
-정식 운영에서는 다음 단계가 추가돼야 합니다.
+현재 흐름은 `watch 결과 확인 → 담당자가 cherry-pick 실행 → 충돌 발생 →
+JSON 항목이 겹치지 않으면 해결 도구가 바로 파일 작성 → cherry-pick 계속`입니다.
+누가 어떤 선택을 승인했는지는 별도 파일에 남지 않습니다.
 
-1. 검사기가 충돌 예상 파일과 양쪽 변경 항목을 먼저 보여줍니다.
-2. 담당자가 `겹치지 않는 항목만 자동 병합` 또는 `수동 해결`을 선택합니다.
-3. 자동 병합을 선택한 경우 승인자·대상 commit·결과를 기록합니다.
-4. 동일 항목이 겹치거나 JSON 이외의 충돌이면 `BLOCK`하고 수동 검토합니다.
+정식 운영 흐름은 다음처럼 명확히 고정하는 것이 좋습니다.
+
+1. **비교만 수행:** 공식·BANK-OM 변경 항목과 겹침 여부를 `plan.json`으로
+   출력하며 아직 코드를 수정하지 않습니다.
+2. **담당자 선택:** 기능 담당자가 `자동 병합 승인`, `수동 해결`, `적용 중단`
+   중 하나를 선택합니다.
+3. **승인 기록:** 승인자, BANK-OM ID, 공식 target SHA, source commit SHA,
+   선택한 방법과 시간을 `approval.yaml`에 남깁니다.
+4. **코드 적용:** 승인 파일과 plan의 digest가 일치할 때만 해결 도구가 파일을
+   작성합니다.
+5. **자동 차단:** 동일 JSON 항목이 겹치거나 JSON 외 코드가 충돌하면 선택과
+   관계없이 `BLOCK`하고 코드 담당자가 해결합니다.
+6. **적용 후 검사:** Manifest 범위 검사, build와 Contract test를 다시 실행해
+   최종 결과에 승인 기록을 연결합니다.
 
 ## 5. 1.13.1 기준자료 다시 생성
 
@@ -207,17 +270,28 @@ URL이 준비된 행내 환경에서 나머지 7개를 실행해야 합니다.
 
 ## 8. 현재 완료와 다음 단계
 
-- 완료: 공식 1.13.1 branch 생성, BANK-OM-001~007 적용, JSON 충돌 해결
-- 완료: 1.13.1 등록자료 생성 및 사전자료 검증 5종 PASS
-- 완료: 소스 검사 8종 PASS
-- 부분 완료: 소스로 실행 가능한 Contract 관련 test 3개 PASS, 환경이 필요한 7개 SKIP
-- 미완료: OpenMetadata 전체 build 환경 준비와 실제 build
-- 미완료: 기능 담당자 지정과 배포 승인
-- 미완료: GitHub push와 검증 tag 생성
+우리의 목적은 “공식 업그레이드 후 행내 커스터마이징이 코드에 빠짐없이
+적용됐고, 업무 동작까지 정상인지 확인한 뒤 배포 검토로 넘기는 것”입니다.
+
+| 목적에 필요한 확인 | 현재 결과 | 지금 말할 수 있는 범위 |
+|---|---|---|
+| 공식 변경이 커스터마이징에 영향을 주는지 | 충족 | upgrade-watch가 7개 BANK-OM을 검토 대상으로 표시 |
+| BANK-OM별 commit이 다시 적용됐는지 | 충족 | 8개 commit과 최종 SHA 확인 |
+| 실제 충돌과 해결 결과가 남았는지 | 충족 | 001~004 충돌, 18개 경로, 해결 commit 기록 |
+| Manifest와 최종 소스가 일치하는지 | 충족 | 사전자료 5종·소스 검사 8종 PASS |
+| 전체 코드가 build되는지 | 미충족 | Java·Maven·Yarn 환경이 없어 미실행 |
+| 실제 업무 기능이 정상 동작하는지 | 부분 충족 | 2개 PASS, 7개는 행내 서버·브라우저가 없어 SKIP |
+| 사람이 충돌 해결을 승인했는지 | 미충족 | 선택·승인자·승인 시각 기록 없음 |
+| 배포 가능한 상태인지 | 미충족 | build·남은 test·승인·검증 tag가 필요 |
+
+따라서 현재 검사기로는 **공식 변경 영향, BANK-OM commit 적용, 파일 범위,
+필수 구현 파일과 테스트 코드의 존재**까지 확인할 수 있습니다. 하지만
+**전체 build, 실제 화면·API 업무 동작, 사람의 승인과 배포 안전성**까지
+증명하지는 못합니다.
 
 다음 단계는 Java·Maven·Yarn과 행내 test URL을 준비해 build와 남은 Contract
-test를 수행한 뒤, 실제 Git 화면·터미널·검사 결과를 캡처해 시연 문서에
-추가하는 것입니다.
+test를 수행하고, 충돌 비교 plan과 승인 기록 기능을 추가한 뒤 실제 Git
+화면·터미널·검사 결과를 시연 문서에 추가하는 것입니다.
 """
 
 
@@ -226,6 +300,7 @@ def html_page() -> str:
         f"<tr><td>{a}</td><td><code>{b}</code></td><td>{c}</td><td>{d}</td></tr>"
         for a, b, c, d in ROWS
     )
+    resolution_diff = escape(RESOLUTION_DIFF.read_text(encoding="utf-8").rstrip())
     return f"""<!doctype html>
 <html lang="ko">
 <head>
@@ -253,6 +328,10 @@ code{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}} pre{{overflow:au
 .subhead{{margin:26px 0 8px;font-size:17px}} .warning{{padding:15px;border-left:4px solid var(--amber);border-radius:10px;background:#fff7ed;line-height:1.7}}
 .evidence{{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}} .evidence>div{{min-width:0;padding:15px;border:1px solid var(--line);border-radius:13px;background:#fbfcfe}}
 .evidence h4{{margin:0 0 10px}} .diff-add{{display:block;color:#b7f7d2;background:#123b2b;padding:2px 8px}} .label{{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800;background:#e8efff;color:var(--blue)}}
+.mini{{margin:10px 0;border-radius:13px;box-shadow:none}} .mini summary{{grid-template-columns:minmax(0,1fr) auto;padding:14px 16px}} .mini .body{{padding:14px 16px}}
+.artifact-links{{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}} .artifact-links a{{padding:8px 11px;border:1px solid #b8c8ee;border-radius:9px;color:var(--blue);background:#f7f9ff;text-decoration:none;font-weight:700;font-size:13px}}
+.steps{{display:grid;gap:9px;margin:14px 0}} .steps div{{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;padding:12px;border-radius:12px;background:#f7f9fc;line-height:1.65}} .steps b{{display:grid;place-items:center;width:25px;height:25px;border-radius:8px;background:var(--blue);color:white}}
+.status-ok{{color:var(--green);font-weight:850}} .status-part{{color:var(--amber);font-weight:850}} .status-no{{color:#b42318;font-weight:850}}
 @media(max-width:720px){{main{{width:min(100% - 18px,1100px);margin-top:9px}}.hero{{padding:24px;border-radius:18px}}.flow,.evidence{{grid-template-columns:1fr}}summary{{padding:16px}}}}
 </style>
 </head>
@@ -269,13 +348,22 @@ code{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}} pre{{overflow:au
 
 <details open><summary><span class="n">1</span><span class="title"><strong>업그레이드 전 영향 확인</strong><small>공식 변경과 upgrade_watch 비교</small></span></summary>
 <div class="body">
-  <p>공식 1.13.0→1.13.1에서 834개 파일이 바뀌었고 7개 BANK-OM 모두 감시 경로가 변경돼 <span class="approval">APPROVAL</span>이 나왔습니다. 실패가 아니라 적용 전에 검토하라는 결과입니다.</p>
+  <p><strong>공식 변경 영향 확인 검사(upgrade-watch, T42)</strong>가 Git으로 공식 1.13.0→1.13.1의 변경 경로 834개를 구하고, 각 BANK-OM Manifest의 <code>upgrade_watch.paths</code>와 비교했습니다. 7개 BANK-OM 모두 겹치는 경로가 있어 <span class="approval">APPROVAL</span>이 나왔습니다.</p>
+  <div class="flow"><div><b>입력 1</b>공식 버전 사이에서 바뀐 834개 경로</div><div><b>입력 2</b>Manifest의 BANK-OM별 watch 경로</div><div><b>비교</b>두 목록의 같은 경로 찾기</div><div><b>결과</b>7개 ID 모두 검토 필요</div></div>
+  <p class="note"><strong>APPROVAL의 뜻:</strong> 실패나 충돌 확정이 아니라, 공식 버전이 관련 경로를 바꿨으므로 커스터마이징을 적용하기 전에 담당자가 영향 내용을 확인하라는 뜻입니다.</p>
   <table><thead><tr><th>BANK-OM</th><th>변경된 감시 경로</th><th>대표 경로</th></tr></thead><tbody>
     <tr><td>001</td><td>22개</td><td>Entity.java</td></tr><tr><td>002</td><td>23개</td><td>Entity.java</td></tr>
     <tr><td>003</td><td>19개</td><td>번역 JSON</td></tr><tr><td>004</td><td>20개</td><td>SchemaTable.component.tsx</td></tr>
     <tr><td>005</td><td>1개</td><td>package.json</td></tr><tr><td>006</td><td>4개</td><td>ServiceIconUtils.ts</td></tr>
     <tr><td>007</td><td>1개</td><td>ServiceIconUtils.ts</td></tr>
   </tbody></table>
+  <h3 class="subhead">watch 경로는 어떻게 등록됐나?</h3>
+  <table><thead><tr><th>등록 내용</th><th>이번 자료의 방식</th><th>한계</th></tr></thead><tbody>
+    <tr><td>BANK-OM commit이 실제 변경한 경로</td><td><span class="status-ok">Git에서 자동 등록</span></td><td>파일 관계의 의미까지 이해하는 것은 아님</td></tr>
+    <tr><td>직접 수정하지 않았지만 기능이 의존하는 경로</td><td><span class="status-part">담당자가 watch_dependencies에 직접 등록</span></td><td>사람이 누락하면 현재 검사기가 새로 찾아내지 못함</td></tr>
+    <tr><td>숨은 코드 의존 관계</td><td><span class="status-no">자동 탐지 없음</span></td><td>향후 AST·import·호출 관계 기반 제안 기능 필요</td></tr>
+  </tbody></table>
+  <p>따라서 이번 watch는 <strong>부분 자동 등록</strong>입니다. 이미 등록된 경로의 공식 변경은 자동으로 찾지만, 등록되지 않은 의존 경로까지 자동으로 발굴하지는 않습니다.</p>
 </div></details>
 
 <details open><summary><span class="n">2</span><span class="title"><strong>branch 생성</strong><small>공식 코드와 커스터마이징 적용 코드를 분리</small></span></summary>
@@ -283,6 +371,9 @@ code{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}} pre{{overflow:au
   <div class="flow"><div><b>공식 tag</b>1.13.1-release</div><div><b>patch branch</b>patch/om-1.13.1</div><div><b>custom branch</b>custom/om-1.13.1</div><div><b>검사 대상</b>dee330ebd5...</div></div>
   <pre><code>git worktree add -b patch/om-1.13.1 ../om-temp-1.13.1-upgrade 1.13.1-release
 git -C ../om-temp-1.13.1-upgrade switch -c custom/om-1.13.1</code></pre>
+  <p><strong><code>dee330ebd5...</code>는 무엇인가?</strong> 공식 commit이나 BANK-OM ID가 아닙니다. 공식 1.13.1 위에 BANK-OM-001~007의 8개 commit을 모두 적용한 <code>custom/om-1.13.1</code> branch의 마지막 Git commit SHA입니다.</p>
+  <div class="flow"><div><b>공식 시작점</b><code>afcb2d2...</code><br>공식 1.13.1</div><div><b>순차 적용</b>BANK-OM-001~006</div><div><b>마지막 기능</b>BANK-OM-007과 후속 보완</div><div><b>최종 코드 상태</b><code>dee330ebd5...</code><br>검사기가 고정한 대상</div></div>
+  <p class="note">검사기는 이 SHA를 입력으로 받아 “그 시점의 전체 코드와 Git 이력”을 검사합니다. 이후 commit이 하나라도 추가되면 코드 상태가 달라지므로 다시 검사해야 합니다.</p>
   <p class="note">두 branch는 현재 로컬에만 있고 GitHub에는 아직 push하지 않았습니다.</p>
 </div></details>
 
@@ -304,6 +395,7 @@ error: could not apply 4df83b311f... add InstanceCode customization
 $ git diff --name-only --diff-filter=U | wc -l
 18</code></pre>
   <p><code>Entity.java</code>와 <code>CollectionDAO.java</code>는 자동 병합됐지만, 번역 JSON 18개는 Git이 자동으로 결정하지 못해 적용이 중단됐습니다.</p>
+  <p class="note"><strong>두 변경의 교집합이 없어 보이는데 왜 충돌했나?</strong> 공식 변경과 BANK-OM-001이 추가한 9개 항목의 이름은 겹치지 않았습니다. 하지만 Git은 JSON 의미가 아니라 텍스트 줄을 병합합니다. 공식 1.13.1이 <code>label</code> 객체 전체의 들여쓰기를 바꾸고, BANK-OM-001도 같은 객체에 항목을 추가했기 때문에 Git은 객체 전체를 하나의 충돌 구간으로 표시했습니다. 의미상의 동일 항목 충돌은 0개였지만 줄 기준 충돌은 발생한 것입니다.</p>
 
   <div class="evidence">
     <div>
@@ -330,19 +422,56 @@ Git 구분 표시: =======
     </div>
   </div>
   <p class="note"><strong>해결 결과:</strong> 공식 1.13.1의 번역과 형식을 유지하면서 BANK-OM-001의 9개 항목도 남겼습니다. 결과는 새 commit <code>83b1e0ac7d</code>에 기록됐습니다.</p>
-  <p>전체 재현 기록: <code>harness/registrations/om-temp-1.13.1/conflict-replay-evidence.txt</code></p>
+  <details class="mini"><summary><span class="title"><strong>실제 해결 diff 전체 보기</strong><small>공식 1.13.1과 해결 commit 83b1e0ac7d 비교 · 43줄</small></span></summary>
+    <div class="body"><pre><code>{resolution_diff}</code></pre></div>
+  </details>
+  <details class="mini"><summary><span class="title"><strong>전체 충돌 코드와 결과 파일</strong><small>ko-kr.json 충돌 원문 6,614줄은 별도 파일로 그대로 보관</small></span></summary>
+    <div class="body">
+      <p>전체 충돌 원문을 본문에 항상 펼쳐두면 가이드가 지나치게 길어지므로, 아래 파일을 누르면 원문 전체를 새 화면에서 확인할 수 있습니다.</p>
+      <div class="artifact-links">
+        <a href="../../harness/registrations/om-temp-1.13.1/conflict-evidence/BANK-OM-001_ko-kr_full_conflict.txt" target="_blank">전체 충돌 원문</a>
+        <a href="../../harness/registrations/om-temp-1.13.1/conflict-evidence/BANK-OM-001_ko-kr_resolution.diff" target="_blank">해결 diff 전체</a>
+        <a href="../../harness/registrations/om-temp-1.13.1/conflict-evidence/BANK-OM-001_ko-kr_resolved.json" target="_blank">해결된 JSON 전체</a>
+        <a href="../../harness/registrations/om-temp-1.13.1/conflict-evidence/BANK-OM-001_ko-kr_capture.json" target="_blank">ID·commit·18개 경로 기록</a>
+      </div>
+    </div>
+  </details>
+
+  <h3 class="subhead">현재 Git 로그에서 BANK-OM ID는 어떻게 찾나?</h3>
+  <p>현재 Git 원문은 <code>error: could not apply 4df83b311f...</code>처럼 source commit SHA만 보여주고 <code>BANK-OM-001</code>은 바로 표시하지 않습니다. commit 본문의 <code>Customization-ID: BANK-OM-001</code>을 한 번 더 조회해야 하므로 운영 로그로는 불친절합니다.</p>
+  <div class="evidence">
+    <div><h4>현재 로그</h4><pre><code>error: could not apply 4df83b311f...
+add InstanceCode customization</code></pre><p>commit SHA를 다시 조회해야 ID를 알 수 있습니다.</p></div>
+    <div><h4>개선할 로그</h4><pre><code>[BANK-OM-001] APPLY source=4df83b311f
+[BANK-OM-001] CONFLICT files=18
+[BANK-OM-001] RESOLVED result=83b1e0ac7d</code></pre><p>적용 명령이 commit trailer를 읽어 ID를 모든 로그와 결과 JSON에 붙입니다.</p></div>
+  </div>
+  <p class="warning"><strong>현재 상태:</strong> commit과 ID의 연결은 결과 파일에 기록했지만, 실제 적용 명령의 모든 로그에 ID를 자동 표시하는 wrapper는 아직 추가 개발 대상입니다.</p>
 
   <h3 class="subhead">현재 해결 도구와 승인 절차의 차이</h3>
   <p class="warning"><strong>정책 확정 전:</strong> 이 해결 규칙과 도구는 OpenMetadata의 기존 기능이 아니라 이번 업그레이드 연습을 위해 추가했습니다. 은행의 정식 승인 정책으로 확정된 상태가 아닙니다.</p>
-  <table><thead><tr><th>구분</th><th>현재 구현</th><th>정식 운영에 필요한 방식</th></tr></thead><tbody>
-    <tr><td>실행 전 확인</td><td>담당자가 명령을 직접 실행</td><td>충돌 파일과 양쪽 변경 항목을 먼저 표시</td></tr>
-    <tr><td>선택·승인</td><td>선택 화면과 승인 기록 없음</td><td>자동 병합 또는 수동 해결을 선택하고 승인자 기록</td></tr>
-    <tr><td>동일 항목 겹침</td><td>파일을 쓰지 않고 즉시 중단</td><td><span class="approval">BLOCK</span> 후 담당자가 수동 결정</td></tr>
-    <tr><td>JSON 외 충돌</td><td>즉시 중단</td><td><span class="approval">BLOCK</span> 후 코드 담당자가 수동 해결</td></tr>
-  </tbody></table>
+  <h4>지금은 이렇게 동작합니다</h4>
+  <div class="flow"><div><b>1. watch 결과</b>APPROVAL 확인</div><div><b>2. 담당자 실행</b>cherry-pick 직접 실행</div><div><b>3. 도구 판단</b>JSON 동일 항목 0개면 바로 파일 작성</div><div><b>4. 계속 진행</b>승인자 기록 없이 cherry-pick 계속</div></div>
+  <p>현재 <code>APPROVAL</code>은 “검토 필요” 표시일 뿐입니다. 누가 검토했고 자동 해결을 선택했는지 증명하는 승인 파일은 없습니다.</p>
   <pre><code>./.venv/bin/python harness/tools/resolve_nonoverlapping_json_conflicts.py \\
   --repo ../om-temp-1.13.1-upgrade</code></pre>
-  <p>정식 운영 전 추가 개발: <strong>① dry-run 비교 화면 ② 자동 병합/수동 해결 선택 ③ 승인자·commit·결과 기록 ④ BLOCK 결과 연결</strong></p>
+  <h4>정식 운영에서는 아래 순서로 고정합니다</h4>
+  <div class="steps">
+    <div><b>1</b><span><strong>비교만 수행:</strong> 공식 변경, BANK-OM 변경, 동일 항목을 <code>plan.json</code>으로 출력하고 아직 코드는 수정하지 않습니다.</span></div>
+    <div><b>2</b><span><strong>담당자 선택:</strong> 기능 담당자가 <code>자동 병합 승인</code>, <code>수동 해결</code>, <code>적용 중단</code> 중 하나를 선택합니다.</span></div>
+    <div><b>3</b><span><strong>승인 기록:</strong> 승인자, BANK-OM ID, 공식 target SHA, source commit SHA, 선택 방법과 시각을 <code>approval.yaml</code>에 남깁니다.</span></div>
+    <div><b>4</b><span><strong>승인 후 적용:</strong> 승인 파일과 비교 계획의 digest가 일치할 때만 해결 도구가 코드를 수정합니다.</span></div>
+    <div><b>5</b><span><strong>자동 차단:</strong> 동일 JSON 항목이 겹치거나 JSON 외 코드가 충돌하면 <span class="approval">BLOCK</span>하고 코드 담당자가 수동 해결합니다.</span></div>
+    <div><b>6</b><span><strong>적용 후 재검사:</strong> Manifest 범위, build, Contract test를 실행하고 결과에 승인 기록을 연결합니다.</span></div>
+  </div>
+  <pre><code>customization_id: BANK-OM-001
+target_sha: afcb2d2...
+source_commit: 4df83b311f...
+decision: approve_non_overlapping_json
+approved_by: 담당자 사번 또는 계정
+approved_at: 승인 시각
+plan_digest: sha256:...</code></pre>
+  <p>정식 운영 전 추가 개발: <strong>① dry-run plan 생성 ② 세 가지 선택 입력 ③ 승인 파일 검증 ④ ID 포함 로그 ⑤ BLOCK 결과와 재검사 연결</strong></p>
 </div></details>
 
 <details><summary><span class="n">4</span><span class="title"><strong>1.13.1 기준자료 생성</strong><small>버전별 SHA와 diff를 다시 고정</small></span></summary>
@@ -382,12 +511,20 @@ Git 구분 표시: =======
 
 <details><summary><span class="n">7</span><span class="title"><strong>현재 상태와 다음 단계</strong><small>완료와 미완료를 분리</small></span></summary>
 <div class="body">
-  <table><thead><tr><th>상태</th><th>항목</th></tr></thead><tbody>
-    <tr><td class="pass">완료</td><td>1.13.1 branch 생성, BANK-OM 적용, JSON 충돌 해결, 사전자료 5종 PASS, 소스 검사 8종 PASS</td></tr>
-    <tr><td class="approval">부분 완료</td><td>Contract 관련 test 3개 PASS, 환경이 필요한 필수 test 7개 SKIP</td></tr>
-    <tr><td class="approval">미완료</td><td>전체 build 환경과 실행, 남은 Contract test, 담당자 지정, GitHub push, 검증 tag, 배포 승인</td></tr>
+  <p><strong>우리의 목적:</strong> 공식 업그레이드 후 행내 커스터마이징이 코드에 빠짐없이 적용됐고, 업무 동작까지 정상인지 확인한 뒤 배포 검토로 넘기는 것입니다.</p>
+  <table><thead><tr><th>목적에 필요한 확인</th><th>현재 결과</th><th>지금 말할 수 있는 범위</th></tr></thead><tbody>
+    <tr><td>공식 변경의 영향 확인</td><td class="status-ok">충족</td><td>upgrade-watch가 7개 BANK-OM을 검토 대상으로 표시</td></tr>
+    <tr><td>BANK-OM별 commit 재적용</td><td class="status-ok">충족</td><td>8개 commit과 최종 SHA 확인</td></tr>
+    <tr><td>실제 충돌과 해결 기록</td><td class="status-ok">충족</td><td>001~004 충돌, 18개 경로, 해결 commit과 전체 원문 보관</td></tr>
+    <tr><td>Manifest와 최종 소스 일치</td><td class="status-ok">충족</td><td>사전자료 5종·소스 검사 8종 PASS</td></tr>
+    <tr><td>전체 코드 build</td><td class="status-no">미충족</td><td>Java·Maven·Yarn 환경이 없어 미실행</td></tr>
+    <tr><td>실제 업무 기능 동작</td><td class="status-part">부분 충족</td><td>필수 2개 PASS, 7개는 행내 서버·브라우저가 없어 SKIP</td></tr>
+    <tr><td>사람의 충돌 해결 승인</td><td class="status-no">미충족</td><td>선택·승인자·승인 시각 기록 없음</td></tr>
+    <tr><td>배포 가능한 상태</td><td class="status-no">미충족</td><td>build·남은 test·승인·검증 tag 필요</td></tr>
   </tbody></table>
-  <p>다음에는 Java·Maven·Yarn과 행내 test URL을 준비하고, 실제 Git 화면·터미널·검사 결과를 캡처해 시연 문서에 추가합니다.</p>
+  <p class="note"><strong>현재 검사기로 확인 가능한 범위:</strong> 공식 변경 영향, BANK-OM commit 적용, 변경 파일 범위, 필수 구현 파일과 테스트 코드의 존재입니다.</p>
+  <p class="warning"><strong>아직 증명하지 못한 범위:</strong> 전체 build 성공, 실제 화면·API 업무 동작, 사람의 승인과 배포 안전성입니다. 따라서 현재 결과는 <strong>소스 수준 업그레이드 검증 완료</strong>이지 <strong>배포 승인 완료</strong>가 아닙니다.</p>
+  <p>다음에는 Java·Maven·Yarn과 행내 test URL을 준비해 build와 남은 Contract test를 수행하고, 충돌 비교 plan과 승인 기록 기능을 추가한 뒤 실제 Git 화면·터미널·검사 결과를 시연 문서에 추가합니다.</p>
 </div></details>
 </main></body></html>"""
 

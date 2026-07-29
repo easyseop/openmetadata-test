@@ -1238,6 +1238,184 @@ html&gt;body{padding:0}&lt;/style&gt;
       }
     }
   &lt;/style&gt;
+  &lt;style&gt;
+    /* 1·2·업그레이드 가이드 공통 시각 체계 — 본문 내용은 변경하지 않음 */
+    #om-phase2 {
+      --guide-ink: #172033;
+      --guide-muted: #667085;
+      --guide-line: #d8dfeb;
+      --guide-blue: #2457d6;
+      width: min(1100px, calc(100% - 18px));
+      margin: 8px auto 48px;
+      padding: 20px;
+      color: var(--guide-ink);
+      border-radius: 26px;
+      background: #eef2f7;
+      font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Noto Sans KR&quot;, sans-serif;
+    }
+
+    #om-phase2 .p2-hero {
+      gap: 9px;
+      padding: 34px;
+      color: white;
+      border: 0;
+      border-radius: 24px;
+      background: linear-gradient(135deg, #172554, var(--guide-blue));
+      box-shadow: 0 20px 55px #193b7b2e;
+    }
+
+    #om-phase2 .p2-hero h1 {
+      margin: 10px 0 12px;
+      color: white;
+      font-size: clamp(28px, 4vw, 43px);
+      letter-spacing: -.04em;
+    }
+
+    #om-phase2 .p2-hero &gt; p {
+      color: #e5edff;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    #om-phase2 .viz-badge {
+      width: fit-content;
+      padding: 6px 10px;
+      color: white;
+      border: 1px solid #ffffff42;
+      border-radius: 999px;
+      background: #ffffff16;
+    }
+
+    #om-phase2 .p2-decision {
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 10px;
+      margin-top: 8px;
+      padding: 13px 15px;
+      color: #edf3ff;
+      border: 1px solid #ffffff32;
+      border-radius: 12px;
+      background: #ffffff12;
+    }
+
+    #om-phase2 .p2-section,
+    #om-phase2 .p2-details {
+      margin: 14px 0;
+      padding: 24px;
+      border: 1px solid var(--guide-line);
+      border-radius: 18px;
+      background: white;
+      box-shadow: 0 6px 22px #13234a0d;
+    }
+
+    #om-phase2 .p2-section h2 {
+      padding-bottom: 15px;
+      color: var(--guide-ink);
+      border-bottom: 1px solid var(--guide-line);
+      font-size: 22px;
+    }
+
+    #om-phase2 .p2-flow {
+      gap: 10px;
+      background: transparent;
+    }
+
+    #om-phase2 .p2-flow li {
+      padding: 15px;
+      border: 1px solid var(--guide-line);
+      border-radius: 13px;
+      background: #f7f9fc;
+    }
+
+    #om-phase2 .p2-flow li &gt; span {
+      color: white;
+      border-radius: 8px;
+      background: var(--guide-blue);
+      font-weight: 850;
+    }
+
+    #om-phase2 .p2-flow p,
+    #om-phase2 .p2-terms,
+    #om-phase2 .p2-table td:first-child span {
+      color: var(--guide-muted);
+    }
+
+    #om-phase2 .p2-terms,
+    #om-phase2 .p2-language {
+      padding: 14px;
+      border: 1px solid var(--guide-line);
+      border-radius: 12px;
+      background: #f8fafc;
+    }
+
+    #om-phase2 .table-responsive {
+      border: 1px solid var(--guide-line);
+      border-radius: 14px;
+      background: white;
+    }
+
+    #om-phase2 .p2-table {
+      margin: 0;
+      color: var(--guide-ink);
+      border-collapse: collapse;
+    }
+
+    #om-phase2 .p2-table thead th,
+    #om-phase2 .p2-group th {
+      color: var(--guide-ink);
+      background: #f4f6fa;
+    }
+
+    #om-phase2 .p2-table th,
+    #om-phase2 .p2-table td {
+      padding: 13px 12px;
+      border-color: var(--guide-line);
+      line-height: 1.65;
+    }
+
+    #om-phase2 .p2-table tbody tr:nth-child(even):not(.p2-group) td {
+      background: #fbfcfe;
+    }
+
+    #om-phase2 .p2-reinforce {
+      gap: 9px;
+      padding: 0;
+      list-style: none;
+    }
+
+    #om-phase2 .p2-reinforce li {
+      padding: 13px;
+      border: 1px solid var(--guide-line);
+      border-radius: 12px;
+      background: #f7f9fc;
+    }
+
+    #om-phase2 .p2-reinforce li strong {
+      color: var(--guide-blue);
+    }
+
+    #om-phase2 .p2-details summary {
+      color: var(--guide-ink);
+      font-weight: 800;
+    }
+
+    @media (max-width: 760px) {
+      #om-phase2 {
+        width: calc(100% - 8px);
+        padding: 8px;
+        border-radius: 18px;
+      }
+
+      #om-phase2 .p2-hero {
+        padding: 24px;
+        border-radius: 18px;
+      }
+
+      #om-phase2 .p2-section,
+      #om-phase2 .p2-details {
+        padding: 17px;
+      }
+    }
+  &lt;/style&gt;
 &lt;/div&gt;
 
 &lt;script src=&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;&gt;&lt;/script&gt;

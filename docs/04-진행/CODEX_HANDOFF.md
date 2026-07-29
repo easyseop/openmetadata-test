@@ -1,6 +1,6 @@
 # Codex 작업 인수인계
 
-> 갱신 기준: 2026-07-29 09:19 KST
+> 갱신 기준: 2026-07-29 09:44 KST
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
 > 문서 묶음 작성 전 기준 commit: `0a6d009107a18e69a2150388442adffb6332f08c`
@@ -39,6 +39,11 @@ BANK-OM 변경관리 정보와 검사기는 `easyseop/openmetadata-test`에 있�
 | 2차 | 검사 방법과 예외 가능성을 상세히 보강한 검토본이다. 사용자 최종 승인은 아직 받지 않았다. | `docs/00-사용가이드/공유문서/openmetadata-phase2-verifier-table-fragment.html`, `openmetadata-phase2-verifier-table-preview.html` | 사용자 피드백을 받은 뒤 문장 길이를 줄이되 검사 원리와 예외 설명은 유지 |
 | 3차 | 실제 제품 코드·BANK-OM-001 Manifest·Git 기록·소스 검사 결과와 책임자 판정표를 연결한 HTML 초안을 만들었다. 실제 Git 화면 시연 문서는 아니다. | `docs/00-사용가이드/공유문서/openmetadata-phase3-demo-fragment.html`, `openmetadata-phase3-demo-preview.html` | 사용자 검토를 반영해 검사 결과와 판정 구조를 먼저 확정 |
 | 4차 | 아직 만들지 않았다. 실제 Git 화면으로 병합 전 대상 확인, 공식·행내 diff, 병합·재적용, 검사 실행, 병합 결과와 검사 라벨을 순서대로 보여준다. | `docs/04-진행/SHARING_ARTIFACT_REQUIREMENTS.md` | 3차 확정 후 테스트할 공식 버전 구간을 정하고 실제 Git 작업·검사 화면 캡처 |
+
+2026-07-29 KST에 1차·2차 문서의 확정된 본문은 유지하고, 1.13.1 업그레이드
+가이드와 같은 파란색 헤더·흰색 카드·표·펼치기 디자인을 적용했다. 수정된
+fragment와 standalone preview를 함께 다시 생성했으며, 두 화면 모두 본문 폭
+1100px에서 가로 넘침이 없음을 확인했다.
 
 4차 업그레이드 시연 범위는 `1.13.0→1.13.1` 한 구간으로 좁혔다. 먼저 공식
 1.13.0 구조에 맞춰 BANK-OM-001~007을 재구현하고 검사한 뒤, 그 commit을 공식
@@ -344,6 +349,34 @@ build, 환경이 필요한 Contract test 7개, 담당자 지정, 검증 tag와 �
 해결 결과 commit `83b1e0ac7d`, 현재 구현과 정식 승인 절차의 차이를 추가했다.
 정식 운영 전 추가 개발 대상은 dry-run 비교, 자동 병합/수동 해결 선택,
 승인자·대상 commit·결과 기록, `BLOCK` 결과 연결이다.
+
+같은 시점에 `capture_conflict_replay.py`로 BANK-OM-001 충돌을 다시 재현하고
+다음 증거를 `harness/registrations/om-temp-1.13.1/conflict-evidence/`에
+보관했다.
+
+- `BANK-OM-001_ko-kr_full_conflict.txt`: Git 충돌 표식을 포함한 실제
+  `ko-kr.json` 6,614줄
+- `BANK-OM-001_ko-kr_resolution.diff`: 공식 1.13.1과 해결 commit의 실제
+  43줄 diff
+- `BANK-OM-001_ko-kr_resolved.json`: 해결 후 전체 JSON
+- `BANK-OM-001_ko-kr_capture.json`: BANK-OM ID, source commit, target tag,
+  해결 commit과 충돌 경로 18개
+
+업그레이드 가이드에는 다음 설명을 추가했다.
+
+- 업그레이드 전 영향 확인은 `upgrade-watch`(T42)가 담당하고, 이번 watch
+  자료는 Git 변경 경로 자동 등록과 담당자 의존 경로 수동 등록을 함께 쓰는
+  부분 자동 방식
+- 검사 대상 `dee330ebd5...`는 공식 commit이나 BANK-OM ID가 아니라
+  `custom/om-1.13.1`의 최종 Git commit SHA
+- 번역 항목 이름의 교집합은 0개였지만 공식 JSON의 전체 서식 변경과 BANK-OM
+  항목 추가가 같은 객체에 있어 Git의 줄 단위 충돌이 발생한 이유
+- 현재 Git 원문에는 source commit SHA만 나오며 BANK-OM ID 자동 표시는
+  추가 개발 대상
+- 현재 해결 도구에는 선택·승인자 기록이 없고, 정식 운영에는 dry-run plan,
+  담당자 선택, 승인 파일 검증, ID 포함 로그, BLOCK과 재검사 연결이 필요
+- 현재 검사기로 증명한 소스 수준 범위와 build·실제 업무 동작·사람 승인·배포
+  안전성처럼 아직 증명하지 못한 범위
 
 HTML 다시 생성:
 

@@ -1,0 +1,34 @@
+{
+  "customization_id": "BANK-OM-001",
+  "target": "1.13.1-release",
+  "source_commit": "4df83b311f1ec38156c9b992f34607b22224db85",
+  "resolved_commit": "83b1e0ac7dcb5caa4fe4ed2159b684fb4f8736e3",
+  "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json",
+  "unmerged_path_count": 18,
+  "unmerged_paths": [
+    "openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json",
+    "openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json",
+    "openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json",
+    "openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json",
+    "openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json",
+    "openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json",
+    "openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json",
+    "openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json",
+    "openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json",
+    "openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json",
+    "openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json",
+    "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json",
+    "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json",
+    "openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json",
+    "openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json",
+    "openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json",
+    "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json",
+    "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json"
+  ],
+  "cherry_pick_output": "Auto-merging openmetadata-service/src/main/java/org/openmetadata/service/Entity.java\nAuto-merging openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java\nAuto-merging openmetadata-spec/src/main/resources/elasticsearch/indexMapping.json\nAuto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json\nCONFLICT (content): Merge conflict in openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json\nAuto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json\nCONFLICT (content): Merge conflict in openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json\nAuto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json\nAuto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json\nCONFLICT (content): Merge conflict in openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json\nAuto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json\nCONFLICT (content): Merge conflict in openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json\nAuto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json\nCONFLICT (content): Merge conflict in openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json\nAuto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json\nCONFLICT (content): Merge conflict in openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json\nAuto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json\nCONFLICT (content): Merge conflict in openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json\nAuto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json\nCONFLICT (content): Merge conflict in openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json\nAuto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json\nCONFLICT (content): Merge conflict in openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json\nAuto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json\nCONFLICT (content): Merge conflict in openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json\nAuto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json\nCONFLICT (content): Merge conflict in openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json\nAuto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json\nCONFLICT (content): Merge conflict in openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json\nAuto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json\nCONFLICT (content): Merge conflict in openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json\nAuto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json\nCONFLICT (content): Merge conflict in openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json\nAuto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json\nCONFLICT (content): Merge conflict in openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json\nAuto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json\nCONFLICT (content): Merge conflict in openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json\nAuto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json\nCONFLICT (content): Merge conflict in openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json\nAuto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json\nCONFLICT (content): Merge conflict in openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json\nerror: could not apply 4df83b311f... add InstanceCode customization\nhint: After resolving the conflicts, mark them with\nhint: \"git add/rm <pathspec>\", then run\nhint: \"git cherry-pick --continue\".\nhint: You can instead skip this commit with \"git cherry-pick --skip\".\nhint: To abort and get back to the state before \"git cherry-pick\",\nhint: run \"git cherry-pick --abort\".\nhint: Disable this message with \"git config set advice.mergeConflict false\"",
+  "artifacts": {
+    "full_conflict": "BANK-OM-001_ko-kr_full_conflict.txt",
+    "resolved": "BANK-OM-001_ko-kr_resolved.json",
+    "resolution_diff": "BANK-OM-001_ko-kr_resolution.diff"
+  }
+}
