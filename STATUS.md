@@ -4,10 +4,10 @@
 > Branch: `codex/strict-manifest-gates`
 > Latest local implementation: `b63ce67bd303865224339a0dfe6e4becb252bea6`
 > Latest remotely verified head:
-> `23a8129e82a8754e830d62690ef7d0ddf9c171a6`
+> `7ee1fdb2dfdd4dd513f9df615aca9d332c094b9c`
 > Latest sharing/rehearsal CI:
-> [`30462316326`](https://github.com/easyseop/openmetadata-test/actions/runs/30462316326)
-> (`Source candidate`, success; 358 passed, 7 operational skips, source gates
+> [`30468709056`](https://github.com/easyseop/openmetadata-test/actions/runs/30468709056)
+> (`Source candidate`, success; 381 passed, 7 operational skips, source gates
 > and 2 source patch-kill experiments passed)
 > Last verified implementation commit: `5f54687`
 > Fixed-mirror CI compatibility fix: `f661796`
@@ -99,6 +99,14 @@ gates passed again with Candidate lock v2 digest
 `sha256:2c966250f31897d9aa6a6cee2d80a324c5997f258d02f0a2a6295b45d4f2fc14`.
 The local full harness suite is **341 passed, 37 environment-dependent
 skipped** out of 378. Skips are not counted as operational evidence.
+
+Remote fixed-mirror run
+[`30468709056`](https://github.com/easyseop/openmetadata-test/actions/runs/30468709056)
+also succeeded at `7ee1fdb...`: **381 passed, 7 operational skips**, all locked
+source gates passed, and two source-capable patch-kill experiments passed. Its
+90-day artifact `source-patch-kill-evidence-30468709056-1` has ID `8730765604`
+and SHA-256
+`d229c78dfd2d9739b057d2d82cf7eb3cc4c98daa4d951fec00bb0c319eb96189`.
 
 Remaining external inputs are the five watch decisions, real owner/approver
 identities, missing remote 1.13.1 branches, full build/runtime evidence,

@@ -53,6 +53,13 @@ skipped`다. 신규 준비·Git·Candidate 집중 test는 `38 passed`다. `py_co
 위키 JavaScript 구문 검사, 제안 결정론 diff, ZIP 무결성, `git diff --check`도
 통과했다.
 
+원격 fixed-mirror run
+[`30468709056`](https://github.com/easyseop/openmetadata-test/actions/runs/30468709056)은
+`7ee1fdb...`에서 `381 passed, 7 operational skips`로 성공했다. locked
+source gate와 source patch-kill 2건도 통과했다. 90일 보존 artifact
+`source-patch-kill-evidence-30468709056-1`은 ID `8730765604`, SHA-256
+`d229c78dfd2d9739b057d2d82cf7eb3cc4c98daa4d951fec00bb0c319eb96189`다.
+
 ### 다음 작업자가 해야 할 정확한 일
 
 1. 담당자에게 `review-required.yaml`의 5개 질문을 전달한다.

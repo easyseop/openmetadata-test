@@ -12,6 +12,10 @@
 > `sha256:502a6824bb60e02b0d6cf4a66043e9e5d9ec0b22ed70b2c3387437b738d278b7`다.
 > 승인·apply는 실행하지 않았다. 등록 5종과 source 8종은 새 source-tree
 > lock으로 PASS했고 전체 harness는 341 passed, 환경 의존 37 skipped다.
+> 원격 run `30468709056`도 `7ee1fdb...`에서 381 passed, 운영 의존
+> 7 skipped로 성공했다. source gate와 source patch-kill 2건이 통과했고
+> 90일 artifact ID는 `8730765604`, SHA-256은
+> `d229c78dfd2d9739b057d2d82cf7eb3cc4c98daa4d951fec00bb0c319eb96189`다.
 > 쉬운 절차는
 > `docs/00-사용가이드/OM_TEMP_검사전_준비도구_쉬운사용법.md`, 실제 제안은
 > `harness/preparation-plans/om-temp-1.13.0-20260730/`이 정본이다.

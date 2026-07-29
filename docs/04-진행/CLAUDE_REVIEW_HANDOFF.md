@@ -25,6 +25,10 @@
 
 사람 승인과 apply는 의도적으로 실행하지 않았다. 1.13.1 원격 branch, 조직
 owner, runtime 환경, 실제 build artifact와 운영 배포도 아직 외부 입력이다.
+구현 push의 원격 검증 run `30468709056`은 381 passed, 운영 의존 7 skipped,
+source gate와 source patch-kill 2건 통과로 성공했다. 보존 artifact ID는
+`8730765604`, SHA-256은
+`d229c78dfd2d9739b057d2d82cf7eb3cc4c98daa4d951fec00bb0c319eb96189`다.
 
 > **현재 공유문서 작업 안내:** 이 문서는 과거 구현 상세를 보존한다. 현재
 > `codex/strict-manifest-gates` 브랜치의 1차·2차·3차 공유문서 상태와 다음 작업은
