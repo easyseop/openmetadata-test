@@ -3,11 +3,11 @@
 > Updated: 2026-07-29 23:42 KST
 > Branch: `codex/strict-manifest-gates`
 > Latest local implementation: `2d017846b2cb4fb9883929f00b4f20bb8aa6c85a`
-> Latest remotely verified sharing/rehearsal head:
-> `10f864750173fccf22ef94d61d5f5e9f726dfaf5`
+> Latest remotely verified head:
+> `23a8129e82a8754e830d62690ef7d0ddf9c171a6`
 > Latest sharing/rehearsal CI:
-> [`30376209792`](https://github.com/easyseop/openmetadata-test/actions/runs/30376209792)
-> (`Source candidate`, success; 348 passed, 7 operational skips, source gates
+> [`30462316326`](https://github.com/easyseop/openmetadata-test/actions/runs/30462316326)
+> (`Source candidate`, success; 358 passed, 7 operational skips, source gates
 > and 2 source patch-kill experiments passed)
 > Last verified implementation commit: `5f54687`
 > Fixed-mirror CI compatibility fix: `f661796`
@@ -86,6 +86,14 @@ Local verification is **318 passed, 47 environment-dependent skipped** out of
 365 collected tests. Four user-facing HTML files have zero unclosed or
 mismatched tags, the phase 2 page has eight candidate-bound green checks, both
 result JSON files parse, and `git diff --check` passes.
+
+Remote fixed-mirror run
+[`30462316326`](https://github.com/easyseop/openmetadata-test/actions/runs/30462316326)
+also succeeded at `23a8129...`: **358 passed, 7 operational skips**, all locked
+source gates passed, and two source-capable patch-kill experiments passed. Its
+90-day artifact `source-patch-kill-evidence-30462316326-1` has ID `8728243380`
+and SHA-256
+`6e15ea0a3c4f33f7a22bee27602be0da86e70f7cb79de9c2f81b71f80b27745e`.
 
 Next safe implementation is stage 1: a read-only Git analyzer that pins
 patch/custom SHAs and proposes `commit-inventory.yaml` and

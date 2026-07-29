@@ -5,9 +5,9 @@
 > 작업 브랜치: `codex/strict-manifest-gates`
 > 이번 문서 개편 commit: 이 문서를 포함한 현재 branch의 최신 commit
 > (`git log -1 --oneline`으로 확인)
-> 직전 확인된 원격 검증: `10f8647...`의 `Source candidate` run
-> [`30376209792`](https://github.com/easyseop/openmetadata-test/actions/runs/30376209792)
-> 성공 (`348 passed, 7 operational skips`, source gates와 source
+> 직전 확인된 원격 검증: `23a8129...`의 `Source candidate` run
+> [`30462316326`](https://github.com/easyseop/openmetadata-test/actions/runs/30462316326)
+> 성공 (`358 passed, 7 operational skips`, source gates와 source
 > patch-kill 2건 통과)
 > 문서 묶음 작성 전 기준 commit: `0a6d009107a18e69a2150388442adffb6332f08c`
 > 제품 코드 상태: `easyseop/OpenMetadata` commit
@@ -61,6 +61,7 @@ Manifest·Registry·Contract 등 등록자료를 자동으로 준비하는
 ### 검증
 
 - 전체: 365개 중 `318 passed, 47 environment-dependent skipped`
+- 원격 fixed mirror: `358 passed, 7 operational skips`
 - phase 2 후보 결속 초록 체크: 8개
 - 사용자 HTML 4개: 여닫기 불일치·미종료 태그 0
 - 1.13.0 결과 JSON 2개: 문법 확인
@@ -68,6 +69,12 @@ Manifest·Registry·Contract 등 등록자료를 자동으로 준비하는
 
 47개 skip은 `/home/user/om-mirror`, 행내 OpenMetadata API, 브라우저 URL과
 제품 repository 같은 외부 실행 입력이 없기 때문이다. PASS로 세지 않는다.
+
+원격 run은
+[`30462316326`](https://github.com/easyseop/openmetadata-test/actions/runs/30462316326)이며
+90일 보존 artifact `source-patch-kill-evidence-30462316326-1`의 ID는
+`8728243380`, SHA-256은
+`6e15ea0a3c4f33f7a22bee27602be0da86e70f7cb79de9c2f81b71f80b27745e`다.
 
 ### 다음 정확한 작업
 

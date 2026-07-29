@@ -2252,6 +2252,13 @@ Manifest·Registry·Contract 준비를 자동화하는 `plan → 검토 → appl
 사용자 HTML 4개의 태그 불일치 0건, 결과 JSON 2개 문법 통과,
 `git diff --check` 통과다.
 
+원격 `Source candidate` run
+[`30462316326`](https://github.com/easyseop/openmetadata-test/actions/runs/30462316326)은
+`23a8129...`에서 `358 passed, 7 operational skips`로 성공했다. 잠긴 source
+gates와 source patch-kill 2건도 통과했다. 90일 artifact
+`source-patch-kill-evidence-30462316326-1`은 ID `8728243380`, SHA-256
+`6e15ea0a3c4f33f7a22bee27602be0da86e70f7cb79de9c2f81b71f80b27745e`다.
+
 다음 검토 대상은 1단계 읽기 전용 Git 분석기다. `plan`·`apply`, artifact
 kind 구분, bank-only watch 처리, symlink·submodule·LFS mode 차단과 1.13.1
 재검증은 아직 구현하지 않았다. 이 미구현 범위를 운영 완료로 해석하지 않는다.

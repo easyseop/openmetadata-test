@@ -7,6 +7,10 @@
 > 등록자료 분석 실패는 traceback 대신 `analysis_error` JSON으로 남는다.
 > OM_TEMP 1.13.0 결정론적 후보 `3a2811cf...`에서 등록 5종·소스 8종 PASS를
 > 다시 확인했다. 전체 로컬 suite는 365개 중 318 passed, 환경 의존 47 skipped다.
+> 원격 fixed-mirror run `30462316326`도 `23a8129...`에서 358 passed,
+> 운영 의존 7 skipped로 성공했고 source gates와 source patch-kill 2건을
+> 통과했다. 90일 artifact ID는 `8728243380`, SHA-256은
+> `6e15ea0a3c4f33f7a22bee27602be0da86e70f7cb79de9c2f81b71f80b27745e`다.
 > 원격에 1.13.1 후보 branch가 없어 T41은 재실행하지 못했으며 2차 공유 HTML의
 > 초록 체크를 9개에서 8개로 정정했다. 다음 작업은 쓰기 없는 1단계 Git
 > 분석기이며 `plan`·`apply` 자동화와 운영 배포는 아직 완료되지 않았다.
