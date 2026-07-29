@@ -3,7 +3,7 @@
   "candidate_lock": {
     "candidate": {
       "artifact_digest": "sha256:200b21a5b2b1096f2f1c398c66628f80cf7c9068b1fc0efba39014698ffaea39",
-      "commit_sha": "63820f88eb8db9e36f0398e7d41d77b96c5b8870",
+      "commit_sha": "3a2811cf6ec3bc172a59c307c6c70d14c3631b80",
       "repository": "easyseop/OM_TEMP",
       "tree_sha": "9495a31c99c888780ac72f3ee1bc7f7e729002de"
     },
@@ -17,15 +17,15 @@
       "target_tag": "1.13.0-release"
     }
   },
-  "candidate_lock_digest": "sha256:ffe457fece01b06f4e79cbe10a1c74758aeef948bec20f9a0fd3bc2bfe154ab6",
+  "candidate_lock_digest": "sha256:202051447fbdcca5eed7d45bf1ad65c448331393ca33fada006ea8055e202b36",
   "gates": [
     {
       "name": "vendor-ancestry",
       "reasons": [
-        "candidate=63820f88eb8db9e36f0398e7d41d77b96c5b8870",
+        "candidate=3a2811cf6ec3bc172a59c307c6c70d14c3631b80",
         "approved_target=f329dd4a7e47134a2bd5a06af6181b0ee527ddd9",
         "base_target_merge_base=f329dd4a7e47134a2bd5a06af6181b0ee527ddd9",
-        "candidate_lock_digest=sha256:ffe457fece01b06f4e79cbe10a1c74758aeef948bec20f9a0fd3bc2bfe154ab6"
+        "candidate_lock_digest=sha256:202051447fbdcca5eed7d45bf1ad65c448331393ca33fada006ea8055e202b36"
       ],
       "verdict": "pass"
     },

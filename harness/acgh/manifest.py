@@ -86,6 +86,24 @@ def declared_changed_paths(data: dict) -> list[str]:
     ]
 
 
+def declared_scope(
+    manifests_by_id: dict[str, dict],
+    customization_ids,
+) -> list[str]:
+    """Return the unique declared scope for the selected customizations.
+
+    Source and upgrade runners use this schema-aware helper instead of reading
+    v1 or v2 implementation path fields directly.
+    """
+    return sorted(
+        {
+            path
+            for customization_id in customization_ids
+            for path in declared_changed_paths(manifests_by_id[customization_id])
+        }
+    )
+
+
 def _semantic(data: dict, layout: L.Layout) -> None:
     kind = data["kind"]
     role = _KIND_ROLE[kind]

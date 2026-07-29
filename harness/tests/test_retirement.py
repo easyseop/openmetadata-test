@@ -31,6 +31,7 @@ def _registry_data():
             "title": "x",
             "owner": "team-x",
             "owner_status": "assigned",
+            "provenance": "source-snapshot",
             "status": "active",
             "criticality": "high",
             "manifest": "manifests/BANK-OM-001.yaml",

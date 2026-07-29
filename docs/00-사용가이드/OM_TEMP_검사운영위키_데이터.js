@@ -738,8 +738,8 @@ window.WIKI_FILES = {
       ["upstream.base_sha", "필수", "업그레이드 전 공식 commit", "공식 tag", "f329dd4a… (1.13.0)"],
       ["upstream.target_sha", "필수", "업그레이드할 공식 commit", "공식 tag", "afcb2d2… (1.13.1)"],
       ["candidate.repository", "필수", "검사 대상 행내 저장소", "자동", "easyseop/OM_TEMP"],
-      ["candidate.commit_sha", "필수", "모든 BANK-OM 변경을 포함한 최종 검사 대상 commit 하나", "Git 자동", "1.13.0 등록 검사 예: 63820f… · 1.13.1 진단 예: dee330ebd5…"],
-      ["candidate.tree_sha", "필수", "그 commit에서 보이는 전체 파일 내용의 식별값", "Git 자동", "da56c24d…"],
+      ["candidate.commit_sha", "필수", "모든 BANK-OM 변경을 포함한 최종 검사 대상 commit 하나", "Git 자동", "1.13.0 재검증 예: 3a2811cf… · 1.13.1 과거 진단 예: dee330ebd5…"],
+      ["candidate.tree_sha", "필수", "그 commit에서 보이는 전체 파일 내용의 식별값", "Git 자동", "9495a31c…"],
       ["candidate.artifact_digest", "필수", "소스 검사에서는 source tree 내용을 묶는 SHA-256, Runtime·배포 검사에서는 실제 이미지·패키지 SHA-256", "소스 검사기 또는 빌드 자동", "현재 소스 결과: source tree digest · 환경 실행 예시: image sha256:61a3…"],
       ["patch_source_lock_digest", "조건부", "patch-replay에서 사용한 Patch-lock 파일의 SHA-256", "자동", "patch-replay 예시: sha256:8ce1…"]
     ],
@@ -877,11 +877,11 @@ window.WIKI_TOPICS = {
       ["Commit 메시지", "변경 목적을 제목에 적고 본문에 `Customization-ID: BANK-OM-007`을 넣습니다. 생성기는 이 ID를 읽어 해당 commit의 변경 파일을 BANK-OM-007 Manifest에 연결합니다."],
       ["기능 변경 commit SHA", "코드를 commit할 때마다 Git이 자동 생성합니다. 예: 최초 Tibero 구현은 62e39da8…, 누락 파일 보완은 7d19c895…입니다. 사람이 두 SHA를 임의로 할당한 것이 아닙니다."],
       ["왜 최신 기능 SHA 하나로 줄이지 않는가", "7d19c895…만 남기면 최초 commit 62e39da8…에서 변경한 8개 파일의 근거가 사라집니다. 생성기는 두 commit을 모두 읽어 현재 BANK-OM-007의 changed_paths 10개를 만듭니다."],
-      ["최종 검사 대상 commit SHA", "모든 BANK-OM 변경이 반영된 custom branch 전체 상태는 SHA 하나로 검사합니다. 1.13.0 등록 검사에서는 63820f…, 1.13.1 커밋별 재적용 진단에서는 dee330ebd5…를 사용했습니다. 둘은 서로 다른 버전과 실행을 가리키며 BANK-OM-007만의 SHA가 아닙니다."],
+      ["최종 검사 대상 commit SHA", "모든 BANK-OM 변경이 반영된 custom branch 전체 상태는 SHA 하나로 검사합니다. 1.13.0은 결정론적으로 재구성한 3a2811cf…로 다시 검사했고, 1.13.1 과거 커밋별 재적용 진단은 dee330ebd5…를 사용했습니다. 둘은 서로 다른 버전과 실행을 가리키며 BANK-OM-007만의 SHA가 아닙니다."],
       ["Artifact digest", "최종 후보 코드로 만든 이미지·패키지 파일의 SHA-256입니다. 예: sha256:61a3…. Git SHA와 별개이며 실제 배포 파일이 검사한 파일과 같은지 확인할 때 사용합니다. 현재 OM_TEMP 문서의 digest 예시는 형식 설명이고 운영 이미지 생성 증거는 아직 없습니다."]
     ],
-    example: "git commit -m \"Tibero 연결 파일 누락 보완\" \\\n  -m \"Customization-ID: BANK-OM-007\"\n# Git이 새 SHA 7d19c895...를 자동 생성\n\nBANK-OM-007\n├─ 62e39da8...  최초 구현 8개 파일\n└─ 7d19c895...  누락 보완 2개 파일\n   → Manifest changed_paths = 현재 10개 파일\n\ncustom/om-1.13.0의 최종 후보 63820f...\n   → Candidate lock candidate.commit_sha = 63820f...\n   → 모든 BANK-OM을 포함한 검사 대상 하나",
-    resultExample: "기능 식별: BANK-OM-007\n기능 이력: 62e39da8… + 7d19c895…\n현재 기능 범위: changed_paths 10개\n1.13.0 등록 검사 대상: 63820f…\n1.13.1 커밋별 재적용 진단 대상: dee330ebd5…\n실제 vendor-merge 후보: 아직 만들지 않음",
+    example: "git commit -m \"Tibero 연결 파일 누락 보완\" \\\n  -m \"Customization-ID: BANK-OM-007\"\n# Git이 새 SHA 7d19c895...를 자동 생성\n\nBANK-OM-007\n├─ 62e39da8...  최초 구현 8개 파일\n└─ 7d19c895...  누락 보완 2개 파일\n   → Manifest changed_paths = 현재 10개 파일\n\n공식 1.13.0에서 결정론적으로 다시 만든 최종 후보 3a2811cf...\n   → Candidate lock candidate.commit_sha = 3a2811cf...\n   → 모든 BANK-OM을 포함한 검사 대상 하나",
+    resultExample: "기능 식별: BANK-OM-007\n기능 이력: 62e39da8… + 7d19c895…\n현재 기능 범위: changed_paths 10개\n1.13.0 재검증 대상: 3a2811cf…\n1.13.1 과거 커밋별 재적용 진단 대상: dee330ebd5…\n실제 vendor-merge 후보: 아직 만들지 않음",
     update: "기존 기능의 누락 보완이면 같은 ID로 새 commit을 만들고 Manifest의 series와 changed_paths를 갱신합니다. 독립 기능이면 새 ID를 발급합니다. 최종 custom branch SHA가 바뀌면 Candidate lock도 새로 만듭니다.",
     caution: "같은 문자열인 SHA가 기능의 마지막 commit과 현재 branch HEAD를 동시에 가리킬 수 있지만 역할은 다릅니다. 기능 이력 검사는 ID가 붙은 각 commit을 보고, 배포 전 검사는 custom branch의 최종 SHA 하나를 봅니다."
   },
@@ -1061,7 +1061,7 @@ window.WIKI_TOPICS = {
       ["사람 승인", "APPROVAL 사유, 운영 일정, rollback과 책임자를 확인한 뒤 최종 승인합니다."]
     ],
     example: "custom commit → Candidate lock → source/runtime/upgrade PASS\n→ verified tag → Release lock → T91 일치 확인 → 배포 승인",
-    resultExample: "현재 확인된 결과\n- 1.13.0 등록 검사 후보 63820f…: 소스 검사 PASS\n- 1.13.1 커밋별 재적용 진단 후보 dee330ebd5…: 소스 검사 PASS\n- 1.13.1 진단 branch·후보: 로컬 기록이며 easyseop/OM_TEMP 원격에 게시된 branch·tag가 아님\n- 실제 vendor-merge 후보, Runtime·업그레이드·배포 환경 결과: 아직 없음\n따라서 verified 배포 tag와 운영 배포 승인 완료로 표현하지 않음",
+    resultExample: "현재 확인된 결과\n- 1.13.0 결정론적 재검증 후보 3a2811cf…: 등록 검증 5종·소스 검사 8종 PASS\n- 1.13.1 과거 커밋별 재적용 진단 후보 dee330ebd5…: 당시 소스 검사 PASS\n- 1.13.1 진단 branch·후보: 로컬 기록이며 easyseop/OM_TEMP 원격에 게시된 branch·tag가 아님. 현재 Manifest v2 T41 결과는 재검증 필요\n- 실제 vendor-merge 후보, Runtime·업그레이드·배포 환경 결과: 아직 없음\n따라서 verified 배포 tag와 운영 배포 승인 완료로 표현하지 않음",
     update: "코드·artifact·Helm 중 하나라도 바뀌면 기존 tag·lock 결과를 재사용하지 않고 새 후보 revision과 검사를 만듭니다.",
     caution: "같은 소스에서 재빌드한 이미지라도 digest가 달라지면 검증한 artifact와 동일하지 않으므로 다시 검사해야 합니다."
   }

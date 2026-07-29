@@ -66,6 +66,30 @@ def test_valid_v2_core_patch_passes():
     assert M.declared_changed_paths(manifest) == [_AUTH]
 
 
+def test_declared_scope_reads_v1_and_v2_through_one_schema_aware_path():
+    legacy = good_core_patch()
+    legacy["customization_id"] = "BANK-OM-001"
+    legacy["implementation"]["candidate_additional_paths"] = [
+        "openmetadata-service/src/main/java/org/openmetadata/service/Entity.java"
+    ]
+    current = good_v2_core_patch()
+    current["customization_id"] = "BANK-OM-002"
+
+    assert M.declared_scope(
+        {
+            "BANK-OM-001": legacy,
+            "BANK-OM-002": current,
+        },
+        ("BANK-OM-001", "BANK-OM-002"),
+    ) == sorted(
+        [
+            _AUTH,
+            "openmetadata-service/src/main/java/org/openmetadata/service/Entity.java",
+            "openmetadata-service/src/main/java/org/openmetadata/service/security/**",
+        ]
+    )
+
+
 def test_v2_rejects_legacy_path_fields():
     manifest = good_v2_core_patch()
     manifest["implementation"]["allowed_changed_paths"] = [_AUTH]

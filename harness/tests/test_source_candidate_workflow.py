@@ -68,3 +68,17 @@ def test_source_candidate_workflow_pins_actions_and_runs_all_source_gates():
     assert upload["with"]["retention-days"] == "90"
     assert upload["with"]["overwrite"] == "false"
     assert upload["with"]["include-hidden-files"] == "false"
+
+
+def test_source_candidate_runner_uses_schema_aware_manifest_scope():
+    runner = (
+        _ROOT
+        / "harness"
+        / "registrations"
+        / "kb-openmetadata"
+        / "run_source_candidate_gates.py"
+    ).read_text(encoding="utf-8")
+
+    assert "manifest_module.declared_scope(" in runner
+    assert '"allowed_changed_paths"' not in runner
+    assert '"candidate_additional_paths"' not in runner

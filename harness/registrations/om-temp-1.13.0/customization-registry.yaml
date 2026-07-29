@@ -23,6 +23,7 @@ entries:
   manifest: manifests/BANK-OM-001.yaml
   contracts:
   - CONTRACT-INSTANCE-CODE
+  provenance: source-snapshot
 - customization_id: BANK-OM-002
   title: 쿼리 리포트(QueryReport)
   owner: UNASSIGNED
@@ -32,6 +33,7 @@ entries:
   manifest: manifests/BANK-OM-002.yaml
   contracts:
   - CONTRACT-QUERY-REPORT
+  provenance: source-snapshot
 - customization_id: BANK-OM-003
   title: 데이터 검증 결과(Data Assertions)
   owner: UNASSIGNED
@@ -41,6 +43,7 @@ entries:
   manifest: manifests/BANK-OM-003.yaml
   contracts:
   - CONTRACT-DATA-ASSERTIONS
+  provenance: source-snapshot
 - customization_id: BANK-OM-004
   title: 은행 컬럼 확장 표시
   owner: UNASSIGNED
@@ -50,6 +53,7 @@ entries:
   manifest: manifests/BANK-OM-004.yaml
   contracts:
   - CONTRACT-BANK-COLUMN-VIEW
+  provenance: source-snapshot
 - customization_id: BANK-OM-005
   title: 한글 입력 조합 보정
   owner: UNASSIGNED
@@ -59,6 +63,7 @@ entries:
   manifest: manifests/BANK-OM-005.yaml
   contracts:
   - CONTRACT-KOREAN-IME
+  provenance: source-snapshot
 - customization_id: BANK-OM-006
   title: Sybase 연결 유형
   owner: UNASSIGNED
@@ -68,6 +73,7 @@ entries:
   manifest: manifests/BANK-OM-006.yaml
   contracts:
   - CONTRACT-SYBASE-CONNECTOR
+  provenance: source-snapshot
 - customization_id: BANK-OM-007
   title: Tibero 연결 유형
   owner: UNASSIGNED
@@ -77,3 +83,4 @@ entries:
   manifest: manifests/BANK-OM-007.yaml
   contracts:
   - CONTRACT-TIBERO-CONNECTOR
+  provenance: source-snapshot

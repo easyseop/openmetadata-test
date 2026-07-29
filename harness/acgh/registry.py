@@ -29,7 +29,7 @@ class RegistryEntry:
     criticality: str
     manifest: str
     contracts: tuple[str, ...]
-    provenance: str = "source-snapshot"
+    provenance: str
 
 
 @dataclass(frozen=True)
@@ -94,7 +94,7 @@ def parse_registry(data: dict) -> Registry:
             criticality=item["criticality"],
             manifest=item["manifest"],
             contracts=tuple(item["contracts"]),
-            provenance=item.get("provenance", "source-snapshot"),
+            provenance=item["provenance"],
         )
         for item in data["entries"]
     )

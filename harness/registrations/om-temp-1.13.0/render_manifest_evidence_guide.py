@@ -615,7 +615,7 @@ def render() -> str:
             "원격 OM_TEMP의 변경 이력에는 “공식 1.13.0에서 시작했다”는 연결 기록이 없어 "
             "그대로는 공식 출발점 검사를 통과할 수 없습니다. 그래서 공식 `f329dd4a...`에서 시작해 같은 "
             "BANK-OM 변경을 순서대로 적용한 로컬 검사 branch를 만들었습니다. 로컬 "
-            "검사 대상 Git 번호 `63820f88...`의 최종 파일 내용은 원격 custom "
+            "검사 대상 Git 번호 `3a2811cf...`의 최종 파일 내용은 원격 custom "
             "`7d19c895...`와 같습니다. 즉, 코드는 바꾸지 않고 공식 1.13.0에서 "
             "시작했다는 이력만 확인할 수 있는 상태로 만들어 검사했습니다.",
             "",
@@ -893,7 +893,7 @@ OM_TEMP patch/om-1.13.0 Git 번호   2f4f3560...
           <div class="explain-grid">
             <p><b>왜 별도 연결했나</b>검사기는 파일 내용뿐 아니라 공식 1.13.0에서 시작한 코드인지도 확인합니다. 파일만 같고 시작 이력이 없으면 통과시킬 수 없습니다.</p>
             <p><b>연결 방법</b>공식 <code>f329dd4a...</code>에서 시작해 BANK-OM 변경을 같은 순서로 적용한 로컬 검사 branch를 만들었습니다.</p>
-            <p><b>내용 동일 확인</b>로컬 검사 대상 Git 번호 <code>63820f88...</code>와 원격 custom <code>7d19c895...</code>의 최종 파일 내용 확인값이 <code>9495a31c...</code>로 같습니다.</p>
+            <p><b>내용 동일 확인</b>결정론적으로 다시 만든 로컬 검사 대상 Git 번호 <code>3a2811cf...</code>와 원격 custom <code>7d19c895...</code>의 최종 파일 내용 확인값이 <code>9495a31c...</code>로 같습니다.</p>
             <p><b>결과</b>코드 내용은 바꾸지 않고 공식 1.13.0에서 시작했다는 이력을 확인할 수 있는 상태로 소스 검사를 실행했습니다.</p>
           </div>
         </div>
@@ -1165,7 +1165,7 @@ details.reference {{ margin:10px 0; border:1px solid var(--line); border-radius:
     </div>
   </details>
 
-  <section class="foot"><strong>이 페이지의 결론:</strong> 1.13.0 기준 Registry 7개, Contract 7개·필수 test 9개, 현재 공용 경로 37개, 과거 snapshot 경로 소유정보 111개와 전체 변경 111개를 생성했습니다. 소스 검사 8종 PASS는 원격 raw custom branch가 아니라 공식 1.13.0에서 BANK-OM 변경을 다시 구성한 로컬 후보 <code>63820f…</code>의 기록입니다. 이 결과에는 담당자 지정, OpenMetadata 전체 build, Contract test 실제 실행, 1.13.1 업그레이드와 배포 승인이 포함되지 않습니다. 다음 페이지에서 별도로 수행한 1.13.1 코드 업그레이드 연습을 확인합니다.</section>
+  <section class="foot"><strong>이 페이지의 결론:</strong> 1.13.0 기준 Registry 7개, Contract 7개·필수 test 9개, 현재 공용 경로 37개, 과거 snapshot 경로 소유정보 111개와 전체 변경 111개를 생성했습니다. 소스 검사 8종 PASS는 원격 raw custom branch가 아니라 공식 1.13.0에서 BANK-OM 변경을 결정론적으로 다시 구성한 로컬 후보 <code>3a2811cf…</code>의 기록입니다. 재현 명령과 전체 SHA는 등록 폴더의 <code>REPRODUCIBILITY.md</code>에 있습니다. 이 결과에는 담당자 지정, OpenMetadata 전체 build, Contract test 실제 실행, 1.13.1 업그레이드와 배포 승인이 포함되지 않습니다. 다음 페이지에서 별도로 수행한 1.13.1 코드 업그레이드 연습을 확인합니다.</section>
   <div class="guide-pagination-bottom">{pagination}</div>
 </main>
 </body>

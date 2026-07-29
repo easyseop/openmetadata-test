@@ -47,6 +47,7 @@ def main() -> int:
     from acgh import gitprim
     from acgh import invariants
     from acgh import layout
+    from acgh import manifest as manifest_module
     from acgh import policy_drift
     from acgh import survival
     from acgh import vendor_rebuild
@@ -98,18 +99,10 @@ def main() -> int:
         args.repo, target, head, manifests, repository_layout
     )
     t40 = drift.to_gate_result(t40_violations)
-    current_scope = sorted({
-        path
-        for customization_id in registry.active_ids()
-        for path in [
-            *manifests[customization_id]["implementation"].get(
-                "allowed_changed_paths", []
-            ),
-            *manifests[customization_id]["implementation"].get(
-                "candidate_additional_paths", []
-            ),
-        ]
-    })
+    current_scope = manifest_module.declared_scope(
+        manifests,
+        registry.active_ids(),
+    )
     t41 = zones.check_sensitive_zones(
         gitprim.net_changed_paths(args.repo, target, head),
         zones.load_zones(args.sensitive_zones),

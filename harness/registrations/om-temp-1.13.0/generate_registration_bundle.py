@@ -352,6 +352,7 @@ def main() -> None:
                 "criticality": item["criticality"],
                 "manifest": f"manifests/{item['customization_id']}.yaml",
                 "contracts": [item["contract"]],
+                "provenance": "source-snapshot",
             }
             for item in CUSTOMIZATIONS
         ],

@@ -12,7 +12,7 @@
     },
     {
       "detail": "111개 경로",
-      "name": "Git 전체 변경 목록",
+      "name": "공식 원본과 행내 custom 코드의 변경 경로",
       "verdict": "pass"
     },
     {

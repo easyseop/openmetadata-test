@@ -29,37 +29,78 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def emit_result(output: dict, output_path: Path | None) -> None:
+    rendered = json.dumps(output, ensure_ascii=False, indent=2, sort_keys=True)
+    print(rendered)
+    if output_path:
+        output_path.write_text(rendered + "\n", encoding="utf-8")
+
+
 def main() -> int:
     args = parse_args()
     harness = Path(__file__).resolve().parents[2]
     sys.path.insert(0, str(harness))
 
     from acgh import contracts
+    from acgh import gitprim
     from acgh import layout
     from acgh import manifest
     from acgh import registry
+    from acgh import verdict
     from acgh import vendor_rebuild
 
     registration_label = args.registration.as_posix()
     registration = args.registration.resolve()
-    repository_layout = layout.load_layout(args.layout)
-    registered, raw_manifests, inventory = (
-        vendor_rebuild.load_registration_bundle(registration)
-    )
-    manifests = {
-        customization_id: manifest.validate_manifest(data, repository_layout)
-        for customization_id, data in raw_manifests.items()
-    }
-    catalog = contracts.load_catalog(registration / "contracts.yaml")
-    registry.validate_references(registered, manifests, catalog)
-    plan = vendor_rebuild.build_reconstruction_plan(
-        registered,
-        manifests,
-        inventory,
-        source_path_owners=vendor_rebuild.load_source_snapshot_owners(
-            registration
-        ),
-    )
+    try:
+        repository_layout = layout.load_layout(args.layout)
+        registered, raw_manifests, inventory = (
+            vendor_rebuild.load_registration_bundle(registration)
+        )
+        manifests = {
+            customization_id: manifest.validate_manifest(
+                data,
+                repository_layout,
+            )
+            for customization_id, data in raw_manifests.items()
+        }
+        catalog = contracts.load_catalog(registration / "contracts.yaml")
+        registry.validate_references(registered, manifests, catalog)
+        plan = vendor_rebuild.build_reconstruction_plan(
+            registered,
+            manifests,
+            inventory,
+            source_path_owners=vendor_rebuild.load_source_snapshot_owners(
+                registration
+            ),
+        )
+    except (
+        OSError,
+        UnicodeError,
+        yaml.YAMLError,
+        contracts.ContractError,
+        gitprim.GitPrimitiveError,
+        layout.LayoutError,
+        manifest.ManifestError,
+        registry.RegistryError,
+        vendor_rebuild.ReconstructionError,
+    ) as exc:
+        output = {
+            "registration": registration_label,
+            "checks": [
+                {
+                    "name": "등록자료 분석",
+                    "verdict": verdict.ANALYSIS_ERROR,
+                    "detail": str(exc),
+                }
+            ],
+            "release_note": (
+                "등록자료를 신뢰할 수 있게 분석하지 못했다. "
+                "원인을 수정하고 처음부터 다시 검사해야 한다."
+            ),
+        }
+        emit_result(output, args.output)
+        return verdict.to_exit_code(verdict.ANALYSIS_ERROR)
+
     source_result = vendor_rebuild.inspect_source_inventory(args.repo, plan)
     test_result = contracts.check_required_test_implementations(
         harness.parent, catalog
@@ -112,10 +153,7 @@ def main() -> int:
             "코드 build, test 실행, 담당자 지정, 배포 승인은 별도 단계다."
         ),
     }
-    rendered = json.dumps(output, ensure_ascii=False, indent=2, sort_keys=True)
-    print(rendered)
-    if args.output:
-        args.output.write_text(rendered + "\n", encoding="utf-8")
+    emit_result(output, args.output)
 
     passed = (
         source_result.verdict == "pass"

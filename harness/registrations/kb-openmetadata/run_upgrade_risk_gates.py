@@ -62,11 +62,10 @@ def main() -> int:
     )
     if change_intent.get("allowed_from_active_manifests") is True:
         change_intent = {
-            "allowed": sorted({
-                path
-                for manifest in active.values()
-                for path in manifest_module.declared_changed_paths(manifest)
-            }),
+            "allowed": manifest_module.declared_scope(
+                manifests,
+                registry.active_ids(),
+            ),
             "forbidden": change_intent.get("forbidden", []),
         }
     findings = upgrade_watch.evaluate_upgrade_watch(

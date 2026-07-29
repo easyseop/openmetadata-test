@@ -1,6 +1,7 @@
 """T29 real kb_openmetadata registration integrity tests."""
 from pathlib import Path
 
+import pytest
 import yaml
 
 from acgh import contracts
@@ -45,6 +46,21 @@ def test_eleven_real_customizations_form_closed_registry():
     assert reg.by_id()["BANK-OM-010"].provenance == "candidate-follow-up"
     assert reg.by_id()["BANK-OM-011"].provenance == "candidate-follow-up"
     registry.validate_references(reg, manifests, catalog)
+
+
+def test_registry_requires_explicit_provenance():
+    data = yaml.safe_load(
+        (_REGISTRATION / "customization-registry.yaml").read_text(
+            encoding="utf-8"
+        )
+    )
+    del data["entries"][0]["provenance"]
+
+    with pytest.raises(
+        registry.RegistryError,
+        match="provenance.*required property",
+    ):
+        registry.parse_registry(data)
 
 
 def test_registration_pins_reproducible_source_comparison():

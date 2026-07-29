@@ -12,7 +12,7 @@
 | 커밋의 `Customization-ID` 검사 | 구현 완료 | T30·T31 |
 | 변경 파일 범위·필수 파일 검사 | 구현 완료 | T26·T40·T93 |
 | `upgrade_watch.paths` 비교 | 구현 완료 | T42 |
-| 실제 변경 경로의 `upgrade_watch.paths` 자동 포함 | 구현 완료 | OM_TEMP Manifest 생성기 |
+| 실제 변경 경로의 `upgrade_watch.paths` 자동 포함 | 부분 구현·보완 필요 | 현재 생성기는 행내 신규 파일도 포함해 영구 APPROVAL을 만들 수 있음 |
 | 직접 참조된 공식 변경 파일의 watch 후보 제안 | 구현 완료·담당자 검토 필요 | `watch_suggest.py` |
 | 담당자 `owner` 저장·검증 | 구현 완료·실제 배정 대기 | 별도 `customization-registry.yaml`, T29 |
 
@@ -92,6 +92,14 @@ upgrade_watch:
 같은 ID의 후속 commit에서 새 파일이 추가되면 기존 목록과 별도 필드로 나누지
 않고 현재 버전의 `changed_paths`에 합친다.
 
+독립 설계 검토에서 공식 upstream tree에 없는 행내 신규 파일까지 watch에
+넣으면 T93 정책 노후화 검사가 매번 `stale_pattern` APPROVAL을 만든다는
+문제를 확인했다. 새 자동화는 공식 upstream tree에 존재하는 변경 경로만
+watch 후보에 자동 포함해야 한다. 행내 신규 파일은 `changed_paths`로 계속
+검사하되 watch 자동 포함을 보류하고 담당자 판단 항목으로 표시한다. 이 보완은
+아직 구현되지 않았으므로 현재 watch 목록의 APPROVAL을 그대로 정책 노후화
+확정으로 해석하지 않는다.
+
 행내에서 직접 수정하지 않았지만 커스터마이징이 의존하는 경로는 담당자가
 `watch_dependencies`로 등록한다. 새 공식 버전에서 바뀐 파일 이름을
 커스터마이징 코드가 직접 참조하면 `watch_suggest.py`가 후보 경로와 참조한 파일을
@@ -114,7 +122,9 @@ T42는 이전 공식 버전과 새 공식 버전 사이의 Git 변경 경로를
    확인하고, 직접 수정하지 않은 의존 경로를 추가한다.
 5. 직접 참조 후보가 있으면 담당자가 근거를 검토해 반영 여부를 결정한다.
 6. 업무 계약과 실제 테스트를 `assurance`에 연결한다.
-7. 별도 Registry에 담당 조직과 상태를 기록한다.
+7. 별도 Registry에 담당 조직·상태와 `provenance`를 기록한다. 최초 source
+   snapshot에 있던 기능은 `source-snapshot`, snapshot 이후 새 기능은
+   `candidate-follow-up`을 명시한다.
 8. 제품 커밋 메시지에 `Customization-ID: BANK-OM-NNN`을 넣는다.
 9. patch-replay 전략을 사용할 때만 Git commit SHA와 적용 순서를 patch-lock에
    기록한다.

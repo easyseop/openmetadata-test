@@ -81,6 +81,7 @@ def _registry(target, snapshot):
             criticality="high",
             manifest="a.yaml",
             contracts=("CONTRACT-A",),
+            provenance="source-snapshot",
         ),
         R.RegistryEntry(
             customization_id="BANK-OM-002",
@@ -91,6 +92,7 @@ def _registry(target, snapshot):
             criticality="high",
             manifest="b.yaml",
             contracts=("CONTRACT-B",),
+            provenance="source-snapshot",
         ),
     )
     return R.Registry(
