@@ -70,11 +70,76 @@ git -C ../om-temp-1.13.1-upgrade switch -c custom/om-1.13.1
 공식 1.13.1 JSON을 유지하고 BANK-OM 키를 추가했습니다. 같은 키를 양쪽이 모두 바꿨다면
 자동 해결하지 않고 명령이 중단되도록 했습니다.
 
+이 규칙은 OpenMetadata의 기존 기능이나 확정된 행내 정책이 아니라, 이번
+업그레이드 연습에서 사용한 임시 규칙입니다. 아래에서 현재 구현과 정식 운영에
+필요한 승인 절차를 구분해 설명합니다.
+
+### 실제 Git 충돌을 다시 확인한 결과
+
+BANK-OM-001의 1.13.0 commit `4df83b311f`를 공식 1.13.1에 다시 적용해
+충돌을 재현했습니다.
+
+```text
+Auto-merging .../Entity.java
+Auto-merging .../CollectionDAO.java
+Auto-merging .../languages/ko-kr.json
+CONFLICT (content): Merge conflict in .../languages/ko-kr.json
+error: could not apply 4df83b311f... add InstanceCode customization
+
+$ git diff --name-only --diff-filter=U | wc -l
+18
+```
+
+`Entity.java`와 `CollectionDAO.java`는 자동으로 병합됐지만 번역 JSON 18개는
+Git이 자동으로 결정하지 못해 중단됐습니다. 공식 1.13.1이 JSON 전체의 들여쓰기를
+바꾸고 새 번역 항목도 추가한 상태에서 BANK-OM-001도 같은 JSON 객체에 번역 항목
+9개를 추가했기 때문입니다.
+
+대표 파일인 `ko-kr.json`에서 BANK-OM-001이 추가한 실제 항목은 다음과 같습니다.
+
+```diff
++ "code-group": "Code Group"
++ "code-name": "Code Name"
++ "code-value": "Code Value"
++ "instance-code": "인스턴스 코드"
++ "instance-code-lowercase-plural": "인스턴스 코드"
++ "instance-code-plural": "인스턴스 코드"
++ "sort-order": "Sort Order"
++ "instance-code-description": "Manage common/reference codes..."
++ "instance-code-group-description": "The code group contains..."
+```
+
+해결 후에는 공식 1.13.1의 번역 항목과 형식을 유지하면서 위 9개 항목도 남아
+있음을 Git에서 다시 확인했습니다. 이 결과가 BANK-OM-001의 새 1.13.1 commit
+`83b1e0ac7d`에 기록됐습니다.
+
+전체 재현 기록은
+`harness/registrations/om-temp-1.13.1/conflict-replay-evidence.txt`에
+보관했습니다.
+
+### 이번에 사용한 해결 규칙과 승인 여부
+
+이 해결 규칙은 OpenMetadata의 기존 기능이 아닙니다. **이번 업그레이드 연습을
+위해 추가한 임시 운영 규칙과 도구**이며, 현재 은행의 정식 승인 정책으로 확정된
+상태도 아닙니다.
+
+현재 도구는 선택 화면이나 승인 요청을 제공하지 않습니다. 담당자가 아래 명령을
+직접 실행하면, 동일한 JSON 항목이 겹치지 않을 때만 자동으로 파일을 작성합니다.
+동일 항목이 겹치거나 JSON 이외의 파일에서 충돌하면 아무것도 결정하지 않고
+중단합니다.
+
 ```bash
 ./.venv/bin/python \
   harness/tools/resolve_nonoverlapping_json_conflicts.py \
   --repo ../om-temp-1.13.1-upgrade
 ```
+
+정식 운영에서는 다음 단계가 추가돼야 합니다.
+
+1. 검사기가 충돌 예상 파일과 양쪽 변경 항목을 먼저 보여줍니다.
+2. 담당자가 `겹치지 않는 항목만 자동 병합` 또는 `수동 해결`을 선택합니다.
+3. 자동 병합을 선택한 경우 승인자·대상 commit·결과를 기록합니다.
+4. 동일 항목이 겹치거나 JSON 이외의 충돌이면 `BLOCK`하고 수동 검토합니다.
 
 ## 5. 1.13.1 기준자료 다시 생성
 

@@ -1,0 +1,69 @@
+OM_TEMP 1.13.1 conflict replay evidence
+========================================
+
+Replayed on: 2026-07-28
+Official target: 1.13.1-release (afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9)
+Applied 1.13.0 customization commit:
+  4df83b311f1ec38156c9b992f34607b22224db85
+  add InstanceCode customization
+  Customization-ID: BANK-OM-001
+
+Command
+-------
+git cherry-pick 4df83b311f1ec38156c9b992f34607b22224db85
+
+Observed Git output (representative lines)
+------------------------------------------
+Auto-merging openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
+Auto-merging openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java
+Auto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json
+Auto-merging openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+CONFLICT (content): Merge conflict in openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+error: could not apply 4df83b311f... add InstanceCode customization
+
+Observed status
+---------------
+- Entity.java and CollectionDAO.java were modified and merged automatically.
+- en-us.json was modified and merged automatically.
+- 18 locale JSON files were marked UU (unmerged).
+- The conflict was caused largely by the official 1.13.1 JSON reformat plus
+  official key changes occurring in the same JSON object where BANK-OM added keys.
+
+Representative BANK-OM-001 semantic additions in ko-kr.json
+------------------------------------------------------------
+label.code-group
+label.code-name
+label.code-value
+label.instance-code
+label.instance-code-lowercase-plural
+label.instance-code-plural
+label.sort-order
+message.instance-code-description
+message.instance-code-group-description
+
+Resolution rule used in this rehearsal
+---------------------------------------
+1. Read Git index stage 1 as the common 1.13.0 JSON.
+2. Read stage 2 as official 1.13.1 JSON.
+3. Read stage 3 as the BANK-OM JSON being applied.
+4. Compare semantic leaf paths, not formatted lines.
+5. If official and BANK-OM changed no identical leaf path, keep official 1.13.1
+   and add the BANK-OM leaf changes.
+6. If any identical leaf path overlaps, stop without writing that file.
+7. Any non-JSON conflict also stops and requires manual review.
+
+Result for BANK-OM-001
+----------------------
+Unmerged locale files: 18
+BANK-OM leaf changes per conflicted file: 9
+Identical leaf-path overlaps: 0
+Result commit on custom/om-1.13.1:
+  83b1e0ac7dcb5caa4fe4ed2159b684fb4f8736e3
+
+Governance status
+-----------------
+This resolver and rule were added for this rehearsal. They are not an original
+OpenMetadata function and are not yet an approved bank-wide operating policy.
+The current command does not display choices or collect an approver identity.
+It is fail-closed for overlapping keys and non-JSON conflicts, but approval
+recording and dry-run review are additional development items.

@@ -1,6 +1,6 @@
 # Codex 작업 인수인계
 
-> 갱신 기준: 2026-07-29 08:29 KST
+> 갱신 기준: 2026-07-29 09:19 KST
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
 > 문서 묶음 작성 전 기준 commit: `0a6d009107a18e69a2150388442adffb6332f08c`
@@ -306,6 +306,10 @@ OpenMetadata 전체 build, Contract test 실행, 담당자 지정, 1.13.1 업그
 - 실제 충돌: BANK-OM-001~004 적용 시 같은 번역 JSON 18개에서 반복 발생
 - 충돌 해결: 공식 변경 leaf key와 BANK-OM leaf key가 겹치지 않을 때만
   공식 JSON에 BANK-OM 키를 추가. 겹치면 자동 중단하는 도구 사용
+- 위 JSON 해결 도구는 OpenMetadata의 기존 기능이나 확정된 행내 정책이 아니다.
+  이번 업그레이드 연습에서 추가했으며 현재는 선택 화면·승인자 기록 없이
+  담당자가 명령을 직접 실행한다. 동일 항목 겹침과 JSON 외 충돌은 자동 해결하지
+  않고 중단한다.
 - BANK-OM-005~007: 충돌 없이 적용
 - 1.13.1 등록자료: Manifest 7개, Contract 7개, test selector 9개,
   전체 경로 111개, 공용 경로 37개
@@ -322,6 +326,7 @@ OpenMetadata 전체 build, Contract test 실행, 담당자 지정, 1.13.1 업그
 
 - `harness/registrations/om-temp-1.13.1/upgrade-watch-results.json`
 - `harness/registrations/om-temp-1.13.1/upgrade-application-results.json`
+- `harness/registrations/om-temp-1.13.1/conflict-replay-evidence.txt`
 - `harness/registrations/om-temp-1.13.1/registration-validation-results.json`
 - `harness/registrations/om-temp-1.13.1/source-gate-results.json`
 - `harness/registrations/om-temp-1.13.1/contract-test-results.json`
@@ -331,6 +336,14 @@ OpenMetadata 전체 build, Contract test 실행, 담당자 지정, 1.13.1 업그
 두 1.13.1 branch는 로컬에만 만들었고 아직 GitHub에 push하지 않았다. 전체
 build, 환경이 필요한 Contract test 7개, 담당자 지정, 검증 tag와 배포 승인은
 남아 있다. SKIP은 PASS로 계산하지 않는다.
+
+2026-07-29 KST에 BANK-OM-001의 원래 1.13.0 commit `4df83b311f`를 공식
+1.13.1에 다시 적용해 충돌을 재현했다. Git에서 `Entity.java`와
+`CollectionDAO.java`는 자동 병합됐고 번역 JSON 18개는 `UU`로 중단되는 것을
+확인했다. 가이드에는 실제 Git 출력, `ko-kr.json`의 BANK-OM 추가 항목 9개,
+해결 결과 commit `83b1e0ac7d`, 현재 구현과 정식 승인 절차의 차이를 추가했다.
+정식 운영 전 추가 개발 대상은 dry-run 비교, 자동 병합/수동 해결 선택,
+승인자·대상 commit·결과 기록, `BLOCK` 결과 연결이다.
 
 HTML 다시 생성:
 
