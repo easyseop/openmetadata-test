@@ -1,6 +1,6 @@
 # Codex 작업 인수인계
 
-> 갱신 기준: 2026-07-29 01:05 KST
+> 갱신 기준: 2026-07-30 01:54 KST
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
 > 이번 문서 개편 commit: `10f864750173fccf22ef94d61d5f5e9f726dfaf5`
@@ -757,3 +757,56 @@ git rev-parse HEAD
 `docs/04-진행/CODEX_HANDOFF.md` §12와
 `docs/04-진행/CLAUDE_REVIEW_HANDOFF.md` §15부터 읽는다. 새 clone이면
 `easyseop/openmetadata-test`를 clone한 뒤 같은 branch로 switch한다.
+
+## 13. 2026-07-30 공유문서 간소화·관리 파일 필드 사전
+
+### 이번에 확정한 문서 구조
+
+1. 1번 문서는 목적과 브랜치 전략만 남겼다. 뒤 페이지와 중복되던
+   `브랜치 전략을 이해하기 위한 사전 정보`, Q&A, 검사기·결과·향후 계획
+   반복 설명은 삭제했다.
+2. 2번의 T61 상태 `별도 후보 2건 확인`을
+   `과거 코드에서 2/5 확인`으로 바꾸고, BANK-OM-006·007의 과거
+   kb-openmetadata 후보 결과이며 현재 OM_TEMP 결과가 아니라는 점을
+   명시했다.
+3. 3번의 산출물 표는 T 번호만 나열하지 않고 `기능별 변경 관리`,
+   `검사 대상 관리`, `업무 동작 확인`, `검사 대상 고정`처럼 실제 사용
+   기능을 먼저 설명한다. T 번호는 보조 표기로만 남겼다.
+4. `assurance`를 포함한 관리 파일 필드를 찾을 수 있도록
+   `OM_TEMP_관리파일_필드_사전_미리보기.html`을 추가했다. Manifest,
+   Registry, Contracts, 공용 파일·전체 변경 목록, 경로·위험 정책,
+   Candidate lock·Patch-lock, 검사 결과의 필드별 의미·작성 시점·사용
+   검사·문제 시 결과를 실제 JSON Schema 기준으로 설명한다.
+5. 5번에서 `cherry-pick`을 운영 필수 절차로 표현하지 않는다. 이번
+   1.13.1 실행은 BANK-OM별 충돌을 분리하기 위한 commit 단위 진단이며,
+   실제 운영 전략이 `vendor-merge`라면 patch branch와 custom branch를
+   실제 방식으로 합친 뒤 검사기를 실행하는 운영경로 검증이 별도로
+   필요하다고 명시했다.
+6. 공식 버전 업그레이드 충돌을 해결할 때는 기존 BANK-OM ID를 유지한다.
+   새 버전 등록 폴더에는 같은 ID의 Manifest를 복사해 후보 기준으로 다시
+   검토하되, 기존 파일 안에서 해결됐다면 경로 목록을 바꾸지 않는다. 새
+   파일은 `candidate_additional_paths`, 별도 후속 commit은
+   `series.allowed: true`, 독립 업무 기능은 새 ID로 구분한다.
+
+### 정본과 생성물
+
+- `docs/00-사용가이드/공유문서/openmetadata-phase1-sharing-fragment.html`
+- `docs/00-사용가이드/공유문서/openmetadata-phase1-sharing-preview.html`
+- `docs/00-사용가이드/공유문서/openmetadata-phase2-verifier-table-fragment.html`
+- `docs/00-사용가이드/공유문서/openmetadata-phase2-verifier-table-preview.html`
+- `docs/00-사용가이드/OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html`
+- `docs/00-사용가이드/OM_TEMP_관리파일_필드_사전_fragment.html`
+- `docs/00-사용가이드/OM_TEMP_관리파일_필드_사전_미리보기.html`
+- `docs/00-사용가이드/OM_TEMP_1.13.0_1.13.1_업그레이드_실행_가이드.md`
+- `docs/00-사용가이드/OM_TEMP_1.13.0_1.13.1_업그레이드_실행_가이드_미리보기.html`
+
+### 검증
+
+- Manifest·Registry·Contracts·Candidate lock·Patch-lock·commit ID 규칙 관련
+  집중 테스트: `60 passed`
+- `git diff --check`: 통과
+- 인앱 브라우저에서 1번 중복·Q&A 제거, 2번 T61 상태, 3번 사용 기능 표,
+  필드 사전 첫 화면과 수평 overflow 없음, 5번 cherry-pick 진단 범위
+  문구를 확인했다.
+- 사용자 소유 Vim swap 파일
+  `docs/00-사용가이드/.비개발자_시연_가이드.md.swp`는 수정·추적하지 않는다.

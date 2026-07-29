@@ -87,7 +87,7 @@
         <div><span>C · 테스트와 실행</span><em class="p2-availability p2-partial">부분 실행</em></div>
         <strong>기능 누락과 새 오류를 잡는가</strong>
         <p><b>T60-I</b> 필수 테스트 코드 존재 · <b>T61</b> 커스터마이징 누락 탐지력 · <b>T62</b> 테스트 결과와 검사 대상 결속 · <b>T63</b> 공식 원본 대비 새 TypeScript 오류</p>
-        <small>T60-I는 현재 후보 결과가 있습니다. T61의 소스 기반 2건과 T63 결과는 다른 kb-openmetadata 후보에서만 확인했으며, 현재 OM_TEMP 후보의 T61·T62·T63 실행은 남아 있습니다.</small>
+        <small>T60-I는 현재 OM_TEMP 코드 결과가 있습니다. T61은 과거 <code>easyseop/OpenMetadata</code> 코드에서 Sybase·Tibero 2건만 확인했고, 현재 OM_TEMP 코드에서는 5건 모두 실행 전입니다. T62·T63도 현재 OM_TEMP 실행이 남아 있습니다.</small>
       </article>
       <article>
         <div><span>D · 승격과 배포</span><em class="p2-availability p2-pending">운영 미실행</em></div>
@@ -209,11 +209,12 @@
         </div>
       </details>
       <details class="p2-check">
-        <summary><b>T61 · 커스터마이징 누락 탐지력 확인</b><span>커스터마이징을 빼면 필수 테스트가 실제로 실패하는가</span><em class="p2-result-state p2-state-partial">별도 후보 2건 확인</em></summary>
+        <summary><b>T61 · 커스터마이징 누락 탐지력 확인</b><span>커스터마이징을 빼면 필수 테스트가 실제로 실패하는가</span><em class="p2-result-state p2-state-partial">과거 코드에서 2/5 확인</em></summary>
         <div class="p2-check-body">
           <div><strong>무엇을 확인하나</strong><p>커스터마이징을 제거했는데도 테스트가 통과하는 형식적인 테스트인지 확인합니다.</p></div>
           <div><strong>실제 검사</strong><p>해당 BANK-OM 변경이 없는 코드 버전을 별도로 만들고 같은 필수 테스트를 실행합니다. 이 버전에서 테스트가 명확한 실패로 끝나야 커스터마이징 누락을 잡는 테스트라고 판단합니다. 행내 환경에서는 API와 화면이 정상이라는 별도 확인을 전후에 실행하고 대상 테스트를 두 번 반복합니다.</p></div>
-          <div><strong>예외·보완</strong><p>테스트가 커스터마이징 누락이 아닌 다른 이유로 실패해도 현재 소스 검사는 성공으로 오인할 수 있습니다. 기대한 오류 종류와 핵심 메시지까지 확인하고, 커스터마이징이 있는 버전에서는 같은 테스트가 통과하는지 함께 비교해야 합니다. BANK-OM-006·007 소스 기반 2건은 kb-openmetadata 후보 결과이며 현재 OM_TEMP 후보 결과는 아닙니다.</p></div>
+          <div><strong>확인된 2건의 의미</strong><p>과거 <code>easyseop/OpenMetadata</code> 코드 상태 <code>849ae756...</code>를 검사했을 때, BANK-OM-006(Sybase)과 BANK-OM-007(Tibero)이 빠진 이전 commit에서 각각의 연결 스키마 테스트가 실패했습니다. 따라서 이 두 테스트는 해당 커스터마이징 누락을 탐지한다고 확인됐습니다. 현재 가이드가 따라가는 <code>OM_TEMP</code> 검사 결과는 아닙니다.</p></div>
+          <div><strong>남은 3건과 보완</strong><p>전체 확인 대상 5건 중 BANK-OM-001(InstanceCode), BANK-OM-002(QueryReport), BANK-OM-003(Data Assertions)은 제거본을 실제 테스트 환경에 배포해야 하므로 아직 실행하지 않았습니다. 또한 다른 장애를 커스터마이징 누락으로 오인하지 않도록, 커스터마이징 포함본은 통과하고 제거본은 예상한 오류 종류와 메시지로 실패하는지 함께 확인해야 합니다.</p></div>
         </div>
       </details>
       <details class="p2-check">
@@ -287,7 +288,7 @@
     <h3 class="p2-backlog-title">현재 OM_TEMP 결과가 없거나 완성되지 않은 검사기</h3>
     <ol class="p2-reinforce">
       <li><strong>T25-R<br><small>현재 후보 해당 없음</small></strong><span><b>현재 상태</b> ancestry가 있는 OM_TEMP 후보에는 T25를 사용합니다. T25-R 결과는 무관한 root snapshot을 재구성한 kb-openmetadata 후보에만 있습니다.<br><b>다음 판단</b> OM_TEMP에 억지로 실행하지 않습니다. 향후 ancestry 없는 snapshot을 새로 이관할 때만 별도 후보 SHA에 결속해 실행합니다.</span></li>
-      <li><strong>T43<br><small>유지 부담</small></strong><span><b>남은 일</b> 실제 cherry-pick·재적용 증거에서 충돌 파일 수와 전체 적용 수를 읽어 충돌률을 자동 계산하고, 근거 파일 digest를 결과에 연결합니다.<br><b>완료 기준</b> 사람이 숫자를 입력하지 않아도 동일 업그레이드 증거로 같은 T43 결과가 재현돼야 합니다.</span></li>
+      <li><strong>T43<br><small>유지 부담</small></strong><span><b>남은 일</b> 실제 branch 병합 또는 BANK-OM 재적용 증거에서 충돌 파일 수와 전체 적용 수를 읽어 충돌률을 자동 계산하고, 근거 파일 digest를 결과에 연결합니다.<br><b>완료 기준</b> 사람이 숫자를 입력하지 않아도 동일 업그레이드 증거로 같은 T43 결과가 재현돼야 합니다.</span></li>
       <li><strong>T61<br><small>누락 탐지력</small></strong><span><b>현재 상태</b> BANK-OM-006·007 소스 기반 2건은 kb-openmetadata 후보에서 확인했지만 현재 OM_TEMP 결과는 아닙니다.<br><b>남은 일</b> BANK-OM-001~003 제거본을 행내 환경에 배포하고 예상한 오류 종류·메시지로 실패하는지 확인합니다.<br><b>완료 기준</b> 커스터마이징 포함본은 통과하고 제거본은 의도한 이유로 실패하는 결과가 같은 OM_TEMP candidate SHA에 묶여야 합니다.</span></li>
       <li><strong>T62<br><small>실행 결과 결속</small></strong><span><b>남은 일</b> 실제 행내 URL·인증·fixture·배포 artifact digest를 준비해 대기 중인 Contract test 7개를 실행하고, DB·검색엔진·설정 환경 digest를 함께 기록합니다.<br><b>완료 기준</b> 필수 test에 실패·누락·SKIP이 없고 결과가 정확한 custom commit과 배포 artifact에 연결돼야 합니다.</span></li>
       <li><strong>T63<br><small>TypeScript 비교</small></strong><span><b>현재 상태</b> APPROVAL 결과는 kb-openmetadata 후보 <code>849ae756...</code>에만 있고 현재 OM_TEMP 후보에는 없습니다.<br><b>남은 일</b> 같은 Node·Yarn 환경에서 OM_TEMP의 공식 원본과 후보 전체 로그를 만들고 digest를 결속합니다.<br><b>완료 기준</b> 두 로그와 판정이 <code>dee330e...</code> 또는 새로 고정한 정확한 OM_TEMP candidate SHA를 가리켜야 합니다.</span></li>

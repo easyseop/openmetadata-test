@@ -1,0 +1,584 @@
+<main id="om-field-dictionary">
+  <header class="fd-hero">
+    <span class="viz-badge">3번 가이드 보조 문서 · 실제 스키마 기준</span>
+    <h1>OpenMetadata 커스터마이징 관리 파일 필드 사전</h1>
+    <p>Manifest와 Registry 같은 관리 파일에서 각 필드가 무엇을 뜻하고, 누가 언제 작성하며, 검사기가 어떤 판단에 사용하는지 설명합니다.</p>
+    <a class="btn" href="OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html">← 3번 · 검사 전 사전환경 설정으로 돌아가기</a>
+  </header>
+
+  <section class="fd-scope" aria-label="문서 사용 범위">
+    <article class="card">
+      <strong>기준 코드</strong>
+      <p><code>harness/acgh/schema</code>의 실제 JSON Schema와 <code>om-temp-1.13.0</code> 등록 파일을 기준으로 작성했습니다.</p>
+    </article>
+    <article class="card">
+      <strong>읽는 방법</strong>
+      <p>필드의 뜻만 보지 말고 <b>작성 시점</b>, <b>실제 사용</b>, <b>문제 시 결과</b>를 함께 확인합니다.</p>
+    </article>
+    <article class="card">
+      <strong>자동·수동 구분</strong>
+      <p>Git이 계산하는 SHA·변경 경로와 담당자가 판단하는 업무 조건·담당자·중요도를 구분합니다.</p>
+    </article>
+  </section>
+
+  <nav class="fd-toc" aria-label="필드 사전 목차">
+    <a href="#manifest">Manifest</a>
+    <a href="#registry">Registry</a>
+    <a href="#contracts">Contracts</a>
+    <a href="#inventory">변경 목록·공용 파일</a>
+    <a href="#policy">경로·위험 정책</a>
+    <a href="#locks">Candidate·Patch lock</a>
+    <a href="#results">검사 결과</a>
+  </nav>
+
+  <section class="fd-section" id="manifest">
+    <div class="fd-heading">
+      <span>01</span>
+      <div>
+        <h2>Manifest</h2>
+        <p>BANK-OM 한 기능의 코드 변경 범위, 업그레이드 감시 범위, 동작 검사 연결과 여러 commit 사용 정책을 기록합니다.</p>
+      </div>
+    </div>
+
+    <div class="fd-example">
+      <strong>BANK-OM-001 실제 구조</strong>
+      <pre><code>schema_version: 1
+customization_id: BANK-OM-001
+status: active
+kind: core-patch
+title: 기준코드(InstanceCode)
+
+implementation:
+  allowed_changed_paths: [...]
+  required_changed_paths: [...]
+
+upgrade_watch:
+  paths: [...]
+
+assurance:
+  contracts: [CONTRACT-INSTANCE-CODE]
+  direct_tests: []
+
+series:
+  allowed: false
+  depends_on: []</code></pre>
+    </div>
+
+    <details class="fd-group" open>
+      <summary>기본 식별 필드</summary>
+      <div class="fd-fields">
+        <article>
+          <h3><code>schema_version</code> <span>필수</span></h3>
+          <p><b>의미</b> 관리 파일 형식의 버전입니다. 현재 허용값은 숫자 <code>1</code>뿐입니다.</p>
+          <p><b>작성</b> 파일을 처음 만들 때 생성기가 기록하며, 담당자가 임의로 올리지 않습니다.</p>
+          <p><b>사용·결과</b> 검사기가 어떤 스키마로 읽을지 결정합니다. 값이 다르면 파일 구조 검증이 실패합니다.</p>
+        </article>
+        <article>
+          <h3><code>customization_id</code> <span>필수</span></h3>
+          <p><b>의미</b> 하나의 업무 기능을 코드·Manifest·Contract·검사 결과에서 같은 대상으로 연결하는 번호입니다.</p>
+          <p><b>작성</b> 관리 담당자가 미사용 번호를 발급합니다. 형식은 <code>BANK-OM-001</code>처럼 최소 세 자리 숫자입니다.</p>
+          <p><b>사용·결과</b> Registry와 commit 메시지의 ID를 대조합니다. 미등록·불일치·중복이면 검사를 중단합니다.</p>
+        </article>
+        <article>
+          <h3><code>status</code> <span>현재 명시</span></h3>
+          <p><b>의미</b> 기능을 현재 검사·유지할지 나타냅니다. 값은 <code>active</code> 또는 <code>retired</code>입니다.</p>
+          <p><b>작성</b> 최초 등록은 보통 <code>active</code>, 기능 폐기 승인 뒤 <code>retired</code>로 바꿉니다.</p>
+          <p><b>사용·결과</b> Registry의 상태와 같아야 합니다. 서로 다르면 등록자료 연결 검증이 실패합니다.</p>
+        </article>
+        <article>
+          <h3><code>kind</code> <span>필수</span></h3>
+          <p><b>의미</b> 변경 유형입니다. <code>core-patch</code>는 공식 코드 결합 변경, <code>extension</code>은 분리 확장, <code>governance</code>는 검사기·정책 변경입니다.</p>
+          <p><b>작성</b> 코드 구조를 확인한 개발자와 관리 담당자가 선택합니다.</p>
+          <p><b>사용·결과</b> 허용된 세 값 외의 문자열은 스키마 검증에서 실패합니다.</p>
+        </article>
+        <article>
+          <h3><code>title</code> <span>설명</span></h3>
+          <p><b>의미</b> 사람이 BANK-OM 기능을 알아보기 위한 이름입니다.</p>
+          <p><b>작성</b> 업무 기능을 처음 등록할 때 정합니다. 예: <code>기준코드(InstanceCode)</code>.</p>
+          <p><b>사용·결과</b> 보고서와 검토 화면의 설명에 사용합니다. ID나 코드 검사를 대신하지 않습니다.</p>
+        </article>
+      </div>
+    </details>
+
+    <details class="fd-group" open>
+      <summary><code>implementation</code> · 실제 코드 변경 범위</summary>
+      <div class="fd-intro">
+        <p><code>implementation</code>은 “이 BANK-OM이 실제로 어떤 파일을 변경했는가”를 묶는 상위 항목입니다. 직접 파일 경로를 쓰는 자리가 아니라 아래 세 목록을 담습니다.</p>
+      </div>
+      <div class="fd-fields">
+        <article>
+          <h3><code>allowed_changed_paths</code> <span>필수</span></h3>
+          <p><b>의미</b> 최초 등록 기준에서 이 BANK-OM commit이 실제로 변경한 파일 전체입니다.</p>
+          <p><b>작성</b> Git diff로 자동 추출한 뒤 기능별 소유 관계를 사람이 검토합니다. 현재 OM_TEMP 등록은 폴더가 아니라 실제 파일 경로를 사용합니다.</p>
+          <p><b>사용·결과</b> 실제 commit이 목록 밖 파일을 바꾸면 BLOCK, 목록의 파일이 최종 코드에서 공식 원본과 같으면 담당자 확인이 필요합니다.</p>
+        </article>
+        <article>
+          <h3><code>required_changed_paths</code> <span>운영상 필수</span></h3>
+          <p><b>의미</b> 해당 파일이 없거나 공식 원본과 같으면 커스터마이징의 필수 구현이 빠졌다고 즉시 판단할 수 있는 파일입니다.</p>
+          <p><b>작성</b> Git이 자동 결정하지 않습니다. 개발자와 기능 책임자가 전용 Resource·Schema처럼 역할이 명확한 파일을 선택합니다.</p>
+          <p><b>사용·결과</b> 파일 소실 또는 공식 원본과 동일하면 BLOCK입니다. 활성 Manifest에서 목록이 비어 있어도 현재 유지 검사에서 BLOCK입니다.</p>
+        </article>
+        <article>
+          <h3><code>candidate_additional_paths</code> <span>필요할 때</span></h3>
+          <p><b>의미</b> 최초 snapshot 등록 뒤 같은 BANK-OM ID의 후속 commit이 새로 변경한 파일입니다.</p>
+          <p><b>작성</b> 후속 commit diff에서 생성하고 같은 기능의 연장인지 사람이 승인합니다. 별도 기능이면 새 BANK-OM ID를 발급합니다.</p>
+          <p><b>사용·결과</b> 최초 snapshot 재구성에서는 제외하지만 현재 후보의 변경 범위·유지 검사에는 포함합니다. BANK-OM-007은 후속 파일 2개가 등록돼 있습니다.</p>
+        </article>
+      </div>
+    </details>
+
+    <details class="fd-group" open>
+      <summary><code>upgrade_watch</code> · 공식 버전 변경 영향 확인</summary>
+      <div class="fd-intro">
+        <p><code>upgrade_watch</code>는 새 공식 버전에서 무엇이 바뀌면 이 BANK-OM을 다시 검토해야 하는지 기록하는 상위 항목입니다.</p>
+      </div>
+      <div class="fd-fields">
+        <article>
+          <h3><code>paths</code></h3>
+          <p><b>의미</b> 공식 업그레이드 전후에 변경 여부를 비교할 파일 경로입니다.</p>
+          <p><b>작성</b> Manifest 생성기가 실제 변경 경로를 포함하고, 커스터마이징이 직접 의존하지만 수정하지 않은 파일은 제안 결과를 사람이 검토해 추가합니다.</p>
+          <p><b>사용·결과</b> 새 공식 버전에서 경로가 바뀌면 자동 통과시키지 않고 담당자 검토 대상으로 표시합니다.</p>
+        </article>
+        <article>
+          <h3><code>configuration_keys</code></h3>
+          <p><b>의미</b> 파일 전체가 아니라 특정 설정 이름의 구조·값 변화를 살필 때 사용합니다.</p>
+          <p><b>작성</b> 커스터마이징이 특정 설정 키에 의존할 때 개발자가 추가합니다.</p>
+          <p><b>사용·결과</b> 키가 삭제되거나 값의 자료형이 바뀌면 업그레이드 영향 검토가 필요합니다.</p>
+        </article>
+        <article>
+          <h3><code>dependencies</code></h3>
+          <p><b>의미</b> 라이브러리·모듈 등 코드 경로 외의 의존 대상을 기록합니다.</p>
+          <p><b>작성</b> 의존성 변경이 기능 동작에 영향을 줄 수 있을 때 개발자가 추가합니다.</p>
+          <p><b>사용·결과</b> 새 공식 버전에서 의존 대상이 바뀌면 담당자 검토 대상으로 표시합니다.</p>
+        </article>
+      </div>
+    </details>
+
+    <details class="fd-group" open>
+      <summary><code>assurance</code> · 동작 검사 연결</summary>
+      <div class="fd-callout">
+        <strong>assurance는 무엇인가?</strong>
+        <p>코드 파일이 남았다는 사실만으로는 기능 정상 여부를 알 수 없으므로, 어떤 업무 Contract와 기술 test로 정상 동작을 확인할지 연결하는 상위 항목입니다. 제품 코드를 수정하는 설정은 아닙니다.</p>
+      </div>
+      <div class="fd-fields">
+        <article>
+          <h3><code>contracts</code></h3>
+          <p><b>의미</b> <code>contracts.yaml</code>에 정의한 업무 정상 조건의 ID 목록입니다.</p>
+          <p><b>작성</b> 기능 책임자가 정상 조건을 정하고 개발자가 해당 Contract ID를 연결합니다. 예: <code>CONTRACT-INSTANCE-CODE</code>.</p>
+          <p><b>사용·결과</b> 존재하지 않는 Contract, Registry와 다른 연결, Contract의 역방향 BANK-OM 연결 누락은 BLOCK입니다. 활성 기능에 Contract가 없으면 현재 유지 검사도 BLOCK합니다.</p>
+        </article>
+        <article>
+          <h3><code>direct_tests</code></h3>
+          <p><b>의미</b> 업무 Contract에서 파생된 test가 아닌 별도 기술 test 목록입니다.</p>
+          <p><b>작성</b> 업무 조건과 직접 연결되지 않는 회귀·구조 검사가 필요할 때 개발자가 추가합니다. 현재 OM_TEMP 7개 Manifest는 빈 목록입니다.</p>
+          <p><b>사용·결과</b> 실제 실행 대상은 <code>direct_tests</code>와 Contract의 <code>required_tests</code>를 합친 목록입니다. 같은 test를 양쪽에 중복 등록하면 BLOCK입니다.</p>
+        </article>
+      </div>
+      <div class="fd-formula">
+        실제 필수 test = <code>assurance.direct_tests</code> + 연결된 Contract의 <code>required_tests</code>
+      </div>
+    </details>
+
+    <details class="fd-group">
+      <summary><code>series</code> · 같은 ID의 여러 commit과 선행 관계</summary>
+      <div class="fd-fields">
+        <article>
+          <h3><code>allowed</code></h3>
+          <p><b>의미</b> 같은 BANK-OM ID가 여러 commit으로 이어지는 것을 허용할지 나타냅니다.</p>
+          <p><b>작성</b> 단일 commit이면 <code>false</code>, 같은 기능의 후속 보완을 별도 commit으로 유지해야 하면 검토 후 <code>true</code>로 둡니다.</p>
+          <p><b>사용·결과</b> <code>false</code>인데 같은 ID commit이 여러 개면 적용 이력 검사가 실패합니다.</p>
+        </article>
+        <article>
+          <h3><code>depends_on</code></h3>
+          <p><b>의미</b> 이 기능보다 먼저 적용돼야 하는 다른 BANK-OM ID입니다.</p>
+          <p><b>작성</b> 실제 코드 선행 관계가 있을 때 개발자가 등록합니다.</p>
+          <p><b>사용·결과</b> 미등록 ID, 자기 자신 참조, 순환 의존, 선행 순서 오류가 있으면 적용 순서 검사가 실패합니다. 실제 commit SHA와 적용 순서는 Patch-lock에 기록합니다.</p>
+        </article>
+      </div>
+    </details>
+
+    <details class="fd-group" open>
+      <summary>공식 버전 업그레이드 때 기존 Manifest를 어떻게 처리하나?</summary>
+      <div class="fd-callout">
+        <strong>결론</strong>
+        <p>기존 업무 기능을 새 공식 버전에 맞춘 것이라면 BANK-OM ID는 유지합니다. 새 버전 등록 폴더에는 같은 ID의 Manifest를 복사해 새 후보 기준으로 다시 검토하지만, 새 기능 ID를 발급하거나 빈 Manifest를 처음부터 다시 만드는 것은 아닙니다.</p>
+      </div>
+      <div class="fd-fields">
+        <article>
+          <h3>기존 파일 안에서 충돌만 해결</h3>
+          <p><b>ID</b> 기존 <code>BANK-OM-001</code>을 그대로 사용합니다.</p>
+          <p><b>Manifest</b> 변경 경로·필수 파일·Contract가 그대로라면 내용도 그대로 유지합니다. 실제 OM_TEMP의 1.13.0과 1.13.1 BANK-OM-001 Manifest는 동일합니다.</p>
+          <p><b>commit</b> 해결된 commit 메시지에 <code>Customization-ID: BANK-OM-001</code>을 남깁니다.</p>
+        </article>
+        <article>
+          <h3>해결하면서 새 파일이 추가됨</h3>
+          <p><b>같은 기능이면</b> 같은 ID를 유지하고 새 경로를 <code>candidate_additional_paths</code>에 추가합니다.</p>
+          <p><b>필수 파일이면</b> <code>required_changed_paths</code>에도 추가하고, 공식 변경 영향을 다시 볼 경로는 <code>upgrade_watch.paths</code>에 반영합니다.</p>
+          <p><b>동작 조건이 달라지면</b> 연결된 Contract와 test를 갱신합니다.</p>
+        </article>
+        <article>
+          <h3>같은 ID의 별도 후속 commit을 추가</h3>
+          <p><b>정책</b> 동일 후보 이력에 같은 ID commit이 둘 이상 남으면 <code>series.allowed: true</code>가 필요합니다.</p>
+          <p><b>주의</b> 충돌을 해결한 뒤 <code>git cherry-pick --continue</code>로 하나의 적용 commit이 만들어진 것만으로는 별도 후속 commit이 하나 더 생긴 것이 아닙니다.</p>
+          <p><b>patch-replay일 때</b> Patch-lock의 revision과 <code>source_commits</code>, 충돌 해결 기록도 함께 갱신합니다.</p>
+        </article>
+        <article>
+          <h3>새 ID가 필요한 경우</h3>
+          <p>충돌 해결을 넘어 독립적인 업무 기능·독립 배포·독립 Contract가 생긴 경우에만 새 BANK-OM ID와 새 Manifest를 만듭니다.</p>
+          <p>하나의 해결 commit에 여러 BANK-OM ID를 함께 넣지 않습니다. 현재 검사는 제품 코드 commit마다 정확히 하나의 <code>Customization-ID</code>를 요구합니다.</p>
+        </article>
+      </div>
+    </details>
+  </section>
+
+  <section class="fd-section" id="registry">
+    <div class="fd-heading">
+      <span>02</span>
+      <div>
+        <h2>Registry</h2>
+        <p>검사 대상 BANK-OM 전체와 기준 소스, 담당자, 중요도, Manifest·Contract 연결을 한곳에서 관리합니다.</p>
+      </div>
+    </div>
+    <details class="fd-group" open>
+      <summary><code>source</code> · 등록 기준 코드</summary>
+      <div class="fd-fields">
+        <article><h3><code>repository</code>·<code>snapshot_sha</code></h3><p><b>의미</b> 행내 변경을 분석한 저장소와 고정 commit SHA입니다.</p><p><b>작성</b> Git에서 자동 확인합니다.</p><p><b>결과</b> 다른 SHA를 검사 결과와 섞지 않도록 기준을 고정합니다.</p></article>
+        <article><h3><code>upstream_repository</code>·<code>upstream_tag</code>·<code>upstream_sha</code></h3><p><b>의미</b> 비교 기준 공식 OpenMetadata 저장소·버전·commit입니다.</p><p><b>작성</b> 공식 tag가 가리키는 SHA를 확인해 기록합니다.</p><p><b>결과</b> 공식 기준을 찾지 못하거나 후보 이력과 맞지 않으면 검사할 수 없습니다.</p></article>
+        <article><h3><code>changed_path_count</code>·<code>diff_inventory</code></h3><p><b>의미</b> 공식 원본과 행내 snapshot 사이의 전체 변경 파일 수와 파일 목록 경로입니다.</p><p><b>작성</b> Git diff로 생성합니다.</p><p><b>결과</b> 실제 diff와 목록·Manifest가 다르면 등록자료 검증이 실패합니다.</p></article>
+        <article><h3><code>ancestry_preserved</code></h3><p><b>의미</b> 행내 snapshot의 Git 이력 안에 공식 원본 commit이 실제 조상으로 남아 있는지 나타냅니다.</p><p><b>작성</b> Git 포함 관계로 계산합니다.</p><p><b>결과</b> <code>false</code>이면 일반 조상 기반 검사 대신 snapshot 재구성 절차가 필요하며 Registry 준비 상태는 배포 승인을 차단합니다.</p></article>
+        <article><h3><code>unregistered_findings</code></h3><p><b>의미</b> 어느 BANK-OM에도 아직 귀속하지 못한 변경 파일과 처리 방안입니다.</p><p><b>작성</b> 자동 발견 뒤 담당자가 분류·사유·조치를 정합니다.</p><p><b>결과</b> <code>remove</code>·<code>register</code>·<code>block</code> 상태가 남아 있으면 준비 검사가 BLOCK입니다.</p></article>
+        <article><h3><code>limitations</code></h3><p><b>의미</b> 현재 등록자료로 증명하지 못하는 범위를 기록합니다.</p><p><b>작성</b> 분석 담당자가 사실에 근거해 작성합니다.</p><p><b>결과</b> 자동 판정값은 아니지만 책임자가 결과 범위를 과대해석하지 않도록 함께 읽습니다.</p></article>
+      </div>
+    </details>
+    <details class="fd-group" open>
+      <summary><code>entries</code> · BANK-OM별 관리 항목</summary>
+      <div class="fd-fields">
+        <article><h3><code>customization_id</code>·<code>title</code></h3><p>Manifest와 같은 ID, 사람이 이해할 기능 이름입니다. ID 중복 또는 Manifest ID 불일치는 실패합니다.</p></article>
+        <article><h3><code>owner</code>·<code>owner_status</code></h3><p>기능과 결과를 책임지는 조직·담당자와 배정 여부입니다. <code>pending</code>이면 Registry 준비 검사가 BLOCK합니다. 현재 OM_TEMP 7개는 아직 <code>UNASSIGNED</code>입니다.</p></article>
+        <article><h3><code>status</code>·<code>criticality</code></h3><p>활성·폐기 상태와 장애 영향도입니다. 중요도는 <code>low</code>·<code>medium</code>·<code>high</code>·<code>critical</code> 중 하나이며 test 재시도 승인 기준 등에 사용됩니다.</p></article>
+        <article><h3><code>manifest</code>·<code>contracts</code></h3><p>해당 ID의 Manifest 파일 경로와 Contract ID 목록입니다. Manifest·Registry·Contracts의 양방향 연결이 다르면 실패합니다.</p></article>
+        <article><h3><code>provenance</code></h3><p><code>source-snapshot</code>은 최초 snapshot에 있던 기능, <code>candidate-follow-up</code>은 이후 후보 보강입니다. 최초 재구성과 현재 후보 검사 범위를 구분할 때 사용합니다.</p></article>
+      </div>
+    </details>
+  </section>
+
+  <section class="fd-section" id="contracts">
+    <div class="fd-heading">
+      <span>03</span>
+      <div>
+        <h2>Contracts</h2>
+        <p>기능이 정상이라고 판단할 업무 조건과 이를 확인할 필수 Python pytest를 연결합니다.</p>
+      </div>
+    </div>
+    <div class="fd-example">
+      <pre><code>- id: CONTRACT-INSTANCE-CODE
+  title: InstanceCode CRUD, search, and index round-trip
+  invariant: CRUD와 재색인 뒤에도 codeGroup/codeValue가 동일하다.
+  required_tests:
+    - tests/bank/contracts/test_instance_code.py::test_crud_search_roundtrip
+  customization_ids: [BANK-OM-001]</code></pre>
+    </div>
+    <div class="fd-fields">
+      <article><h3><code>id</code></h3><p>Contract의 고유 번호입니다. <code>CONTRACT-...</code> 형식을 사용하며 중복되면 실패합니다.</p></article>
+      <article><h3><code>title</code></h3><p>검토 화면에서 Contract를 식별하는 이름입니다. 판정 조건 자체는 <code>invariant</code>에 적습니다.</p></article>
+      <article><h3><code>invariant</code></h3><p>버전이 바뀌어도 반드시 유지돼야 하는 업무 동작을 한 문장으로 적습니다. Git이 생성하지 못하며 기능 책임자가 정의합니다.</p></article>
+      <article><h3><code>required_tests</code></h3><p>정상 조건을 확인할 pytest 파일·함수 선택자입니다. 파일이나 함수가 없으면 BLOCK, Python 문법을 읽지 못하면 ANALYSIS ERROR입니다. 실제 실행 성공은 별도 검사에서 확인합니다.</p></article>
+      <article><h3><code>customization_ids</code></h3><p>이 Contract가 보호하는 BANK-OM ID 목록입니다. Manifest에서 Contract를 참조했는데 이 역방향 목록에 ID가 없으면 BLOCK입니다.</p></article>
+    </div>
+  </section>
+
+  <section class="fd-section" id="inventory">
+    <div class="fd-heading">
+      <span>04</span>
+      <div><h2>공용 파일 소유정보와 전체 변경 목록</h2><p>여러 기능이 함께 수정한 파일과 공식 원본 대비 모든 변경 경로를 기록합니다.</p></div>
+    </div>
+    <div class="fd-fields">
+      <article>
+        <h3><code>shared-path-owners.yaml</code></h3>
+        <p><b>구조</b> 파일 경로를 key로, 해당 파일을 수정한 BANK-OM ID 목록을 value로 적습니다.</p>
+        <p><b>예시</b> <code>Entity.java: [BANK-OM-001, BANK-OM-002]</code></p>
+        <p><b>사용·결과</b> 한 공용 파일을 한 기능에 잘못 귀속하지 않도록 합니다. 실제 중복 소유와 목록이 다르면 snapshot 재구성 검사가 실패합니다.</p>
+      </article>
+      <article>
+        <h3><code>source-diff-paths.txt</code></h3>
+        <p><b>구조</b> 공식 원본과 행내 snapshot 사이에서 다른 root 기준 파일 경로를 한 줄에 하나씩 적습니다.</p>
+        <p><b>작성</b> Git diff로 생성합니다. OM_TEMP 1.13.0 등록본은 111개입니다.</p>
+        <p><b>사용·결과</b> 실제 diff, 모든 Manifest 범위, 공용 파일 소유정보가 전체 변경을 빠짐없이 설명하는지 확인합니다.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="fd-section" id="policy">
+    <div class="fd-heading">
+      <span>05</span>
+      <div><h2>Repository layout과 Sensitive zones</h2><p>변경 파일이 어느 영역에 속하고 어느 수준의 검토가 필요한지 정하는 경로 정책입니다.</p></div>
+    </div>
+    <details class="fd-group" open>
+      <summary><code>repository-layout.yaml</code></summary>
+      <div class="fd-fields">
+        <article><h3><code>upstream_base_sha</code></h3><p>경로 정책을 작성한 공식 기준 commit입니다. 다른 공식 버전에서는 경로 체계를 다시 검토합니다.</p></article>
+        <article><h3><code>path_grammar</code></h3><p>root 상대경로, 대소문자, Unicode 정규화, symlink·submodule·LFS 처리처럼 경로 해석 방식을 고정합니다.</p></article>
+        <article><h3><code>upstream_owned_roots</code></h3><p>공식 OpenMetadata 제품 코드 영역입니다. 예: <code>openmetadata-service/**</code>.</p></article>
+        <article><h3><code>bank_governance_roots</code></h3><p>행내 검사 정책·test·문서 영역입니다. 제품 코드 커스터마이징과 분리합니다.</p></article>
+        <article><h3><code>platform_extension_roots</code></h3><p>공식 코드와 분리한 행내 확장 영역입니다.</p></article>
+        <article><h3><code>unknown_path_policy</code></h3><p>어느 영역에도 속하지 않는 경로를 처리하는 방식입니다. 현재는 추측하지 않고 <code>analysis_error</code>로 중단합니다.</p></article>
+      </div>
+    </details>
+    <details class="fd-group" open>
+      <summary><code>sensitive-zones.yaml</code></summary>
+      <div class="fd-fields">
+        <article><h3><code>frozen</code></h3><p>일반 변경에서 금지한 경로입니다. 변경하면 BLOCK입니다.</p></article>
+        <article><h3><code>protected</code></h3><p>보안·인증·설정처럼 별도 승인이 필요한 경로입니다. 변경하면 APPROVAL 대상입니다.</p></article>
+        <article><h3><code>watched</code></h3><p>DB migration·ingestion처럼 주의 깊게 봐야 할 경로입니다. 변경 사실을 결과에 표시해 담당자가 확인합니다.</p></article>
+      </div>
+    </details>
+  </section>
+
+  <section class="fd-section" id="locks">
+    <div class="fd-heading">
+      <span>06</span>
+      <div><h2>Candidate lock과 Patch-lock</h2><p>검사 대상을 고정하는 자료와 patch-replay 방식의 재적용 순서를 고정하는 자료입니다.</p></div>
+    </div>
+    <details class="fd-group" open>
+      <summary>Candidate lock · 모든 전략에서 검사 대상 고정</summary>
+      <div class="fd-fields">
+        <article><h3><code>integration_strategy</code></h3><p><code>vendor-merge</code> 또는 <code>patch-replay</code> 중 이번 업그레이드 방식을 기록합니다. Manifest마다 쓰지 않고 후보 전체에 한 번 기록합니다.</p></article>
+        <article><h3><code>upstream.repository</code>·<code>base_sha</code>·<code>target_sha</code></h3><p>어느 공식 저장소의 어느 버전에서 어느 버전으로 올리는지 고정합니다.</p></article>
+        <article><h3><code>candidate.repository</code>·<code>commit_sha</code>·<code>tree_sha</code></h3><p>검사할 행내 저장소와 정확한 commit·전체 파일 상태를 고정합니다.</p></article>
+        <article><h3><code>candidate.artifact_digest</code></h3><p>검사 대상 코드로 만든 이미지·패키지의 SHA-256입니다. Git SHA와 다른 값이며 실제 배포 산출물 일치 확인에 사용합니다.</p></article>
+        <article><h3><code>patch_source_lock_digest</code></h3><p><code>patch-replay</code>일 때만 필수입니다. 어떤 Patch-lock을 사용했는지 digest로 고정합니다.</p></article>
+      </div>
+    </details>
+    <details class="fd-group">
+      <summary>Patch-lock · patch-replay 선택 시에만 사용</summary>
+      <div class="fd-fields">
+        <article><h3><code>source_release_tag</code>·<code>source_release_sha</code></h3><p>커스터마이징 commit을 가져올 이전 행내 릴리스 기준을 고정합니다.</p></article>
+        <article><h3><code>patch_series[].id</code>·<code>revision</code></h3><p>적용할 BANK-OM ID와 해당 변경 묶음의 개정 번호입니다.</p></article>
+        <article><h3><code>source_commits</code></h3><p>그 ID에 속한 실제 Git commit SHA를 적용 순서대로 기록합니다. branch 이름이나 latest를 사용하지 않습니다.</p></article>
+        <article><h3><code>depends_on</code></h3><p>먼저 적용돼야 하는 BANK-OM ID입니다. 목록 자체가 적용 순서이므로 선행 ID가 앞에 있어야 합니다.</p></article>
+      </div>
+      <p class="fd-note">현재 OM_TEMP의 기본 전략은 vendor-merge이므로 Patch-lock은 초기 등록 필수 파일이 아닙니다.</p>
+    </details>
+  </section>
+
+  <section class="fd-section" id="results">
+    <div class="fd-heading">
+      <span>07</span>
+      <div><h2>검사 결과 JSON·YAML</h2><p>어떤 입력으로 어떤 검사를 실행했고 왜 그 판정이 나왔는지 나중에 다시 확인할 수 있게 보존합니다.</p></div>
+    </div>
+    <div class="fd-fields">
+      <article><h3><code>canonical_payload.verdict</code></h3><p>전체 기계 판정입니다. 값은 <code>pass</code>·<code>approval</code>·<code>block</code>·<code>analysis_error</code>입니다.</p></article>
+      <article><h3><code>gates[].name</code>·<code>verdict</code>·<code>reasons</code></h3><p>각 검사 이름, 개별 판정과 구체적인 이유입니다. 책임자는 번호보다 이 이유를 보고 조치합니다.</p></article>
+      <article><h3><code>inputs</code></h3><p>검사한 저장소·commit·tree·artifact와 정책 digest 등 판정 입력입니다. 현재 코드와 다른 결과를 재사용하지 못하게 합니다.</p></article>
+      <article><h3><code>harness_version</code></h3><p>결과를 만든 검사기 코드 버전입니다.</p></article>
+      <article><h3><code>result_digest</code></h3><p>판정 본문이 바뀌지 않았는지 확인하는 SHA-256입니다. 설정 파일 digest나 배포 artifact digest와 서로 다른 값입니다.</p></article>
+      <article><h3><code>observational_metadata.run_id</code></h3><p>실행을 찾기 위한 실행 번호입니다. 판정 본문 digest에는 포함되지 않는 관찰 정보입니다.</p></article>
+      <article><h3><code>expected_exit_code</code></h3><p>자동화가 반환해야 할 종료 코드입니다. 0·1·2·3 중 하나이며 결과 파일의 verdict와 명령 종료 상태를 맞추는 데 사용합니다.</p></article>
+    </div>
+  </section>
+
+  <footer class="fd-footer">
+    <strong>관리 원칙</strong>
+    <p>Git은 SHA와 변경 경로를 계산할 수 있지만, 업무 정상 조건·담당자·중요도·필수 파일은 결정하지 못합니다. 자동 생성값은 Git 근거로 재생성하고, 업무 판단값은 담당자 승인 기록과 함께 관리합니다.</p>
+    <a class="btn" href="OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html">← 3번 가이드로 돌아가기</a>
+  </footer>
+</main>
+
+<style>
+  #om-field-dictionary {
+    width: 100%;
+    color: var(--foreground);
+  }
+
+  #om-field-dictionary h1,
+  #om-field-dictionary h2,
+  #om-field-dictionary h3,
+  #om-field-dictionary p {
+    margin-top: 0;
+  }
+
+  #om-field-dictionary p {
+    color: var(--muted-foreground);
+  }
+
+  #om-field-dictionary .fd-hero {
+    display: grid;
+    gap: 10px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  #om-field-dictionary .fd-hero h1,
+  #om-field-dictionary .fd-hero p {
+    margin-bottom: 0;
+  }
+
+  #om-field-dictionary .fd-hero .btn,
+  #om-field-dictionary .fd-footer .btn {
+    justify-self: start;
+  }
+
+  #om-field-dictionary .fd-scope {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 18px 0;
+  }
+
+  #om-field-dictionary .fd-scope .card {
+    display: grid;
+    gap: 6px;
+  }
+
+  #om-field-dictionary .fd-scope p {
+    margin-bottom: 0;
+  }
+
+  #om-field-dictionary .fd-toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 10px 0;
+    background: var(--background);
+  }
+
+  #om-field-dictionary .fd-toc a {
+    padding: 7px 11px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--foreground);
+    text-decoration: none;
+  }
+
+  #om-field-dictionary .fd-section {
+    padding: 30px 0;
+    border-bottom: 1px solid var(--border);
+    scroll-margin-top: 64px;
+  }
+
+  #om-field-dictionary .fd-heading {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  #om-field-dictionary .fd-heading > span {
+    color: var(--muted-foreground);
+  }
+
+  #om-field-dictionary .fd-heading h2,
+  #om-field-dictionary .fd-heading p {
+    margin-bottom: 4px;
+  }
+
+  #om-field-dictionary .fd-example,
+  #om-field-dictionary .fd-callout,
+  #om-field-dictionary .fd-formula,
+  #om-field-dictionary .fd-note {
+    margin: 12px 0;
+    padding: 14px;
+    border-left: 4px solid var(--viz-series-1);
+    background: color-mix(in srgb, var(--viz-series-1) 7%, var(--card));
+  }
+
+  #om-field-dictionary .fd-callout {
+    border-left-color: var(--viz-series-2);
+    background: color-mix(in srgb, var(--viz-series-2) 8%, var(--card));
+  }
+
+  #om-field-dictionary .fd-example pre {
+    margin: 10px 0 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  #om-field-dictionary .fd-group {
+    margin-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  #om-field-dictionary .fd-group > summary {
+    padding: 14px 0;
+    color: var(--foreground);
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  #om-field-dictionary .fd-intro {
+    padding: 0 0 8px;
+  }
+
+  #om-field-dictionary .fd-intro p,
+  #om-field-dictionary .fd-callout p,
+  #om-field-dictionary .fd-note {
+    margin-bottom: 0;
+  }
+
+  #om-field-dictionary .fd-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding-bottom: 10px;
+  }
+
+  #om-field-dictionary .fd-fields article {
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--card);
+  }
+
+  #om-field-dictionary .fd-fields h3 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  #om-field-dictionary .fd-fields h3 span {
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--muted);
+    color: var(--muted-foreground);
+    font-size: 0.78rem;
+    font-weight: 400;
+  }
+
+  #om-field-dictionary .fd-fields p {
+    margin-bottom: 7px;
+  }
+
+  #om-field-dictionary .fd-fields p:last-child {
+    margin-bottom: 0;
+  }
+
+  #om-field-dictionary code {
+    overflow-wrap: anywhere;
+  }
+
+  #om-field-dictionary .fd-footer {
+    display: grid;
+    gap: 8px;
+    padding: 24px 0 8px;
+  }
+
+  #om-field-dictionary .fd-footer p {
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 820px) {
+    #om-field-dictionary .fd-scope,
+    #om-field-dictionary .fd-fields {
+      grid-template-columns: 1fr;
+    }
+
+    #om-field-dictionary .fd-toc {
+      position: static;
+    }
+  }
+</style>
