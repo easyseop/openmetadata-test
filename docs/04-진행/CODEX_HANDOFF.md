@@ -1,14 +1,15 @@
 # Codex 작업 인수인계
 
-> 갱신 기준: 2026-07-29 10:26 KST
+> 갱신 기준: 2026-07-29 10:32 KST
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
 > 문서 묶음 작성 전 기준 commit: `0a6d009107a18e69a2150388442adffb6332f08c`
 > 제품 코드 상태: `easyseop/OpenMetadata` commit
 > `849ae756cd238f218b5e3a6c795a392305cb32ee`
 > 공유문서·스킬 최초 로컬 commit: `becb18e` (이후 보강은 현재 브랜치의 `git log`로 확인)
-> 원격 push: 거버넌스 저장소의 이전 작업은 `2e67f91`까지 push 완료. 사용자가
-> 만든 `easyseop/OM_TEMP`에는 1.13.0 시연용 제품 코드 두 브랜치를 push함
+> 원격 push: `easyseop/openmetadata-test`의 `codex/strict-manifest-gates`
+> branch는 이번 공유문서·스킬·검사자료 배치까지 push 완료. 사용자가 만든
+> `easyseop/OM_TEMP`에는 1.13.0 시연용 제품 코드 두 branch를 push함
 
 이 문서는 다른 노트북이나 새 작업에서 바로 이어가기 위한 현재 정본이다.
 과거 Claude 작업의 상세 기록은
