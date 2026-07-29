@@ -172,6 +172,11 @@ def render() -> str:
         "",
         "## 이 자료가 필요한 이유",
         "",
+        "이 문서는 전체 가이드에서 검사기 원리를 설명한 다음에 읽습니다. 다만 실제 "
+        "작업 순서는 반대가 아닙니다. **검사기를 실행하기 전에 이 기준자료를 먼저 "
+        "준비해야 합니다.** 검사기 설명을 먼저 읽는 이유는 각 자료가 어느 검사에 "
+        "사용되는지 이해한 뒤 설정할 수 있게 하기 위해서입니다.",
+        "",
         "검사기는 Git의 실제 코드만 읽는 것이 아니라, 어떤 BANK-OM을 검사하고 "
         "어떤 파일·동작을 정상으로 판단할지 정한 기준자료와 비교합니다. 이 자료는 "
         "검사 전에 준비할 Manifest와 검사 기준자료, 로컬 OM_TEMP 연결 방법을 "
@@ -611,6 +616,22 @@ def render() -> str:
 
 
 def render_html() -> str:
+    pagination = """
+  <nav class="guide-pagination" aria-label="가이드 페이지 이동">
+    <a class="guide-page-link" href="공유문서/openmetadata-phase2-verifier-table-preview.html" target="_top">
+      <small>← 이전 가이드</small>
+      <strong>검사기 원리</strong>
+    </a>
+    <div class="guide-page-current">
+      <small>전체 5개 중</small>
+      <strong>3 · 검사 전 사전환경 설정</strong>
+    </div>
+    <a class="guide-page-link is-next" href="공유문서/openmetadata-phase3-demo-preview.html" target="_top">
+      <small>다음 가이드 →</small>
+      <strong>검사 결과와 책임자 판단</strong>
+    </a>
+  </nav>
+    """.strip()
     sections = []
     for item in ITEMS:
         commit_blocks = []
@@ -864,6 +885,14 @@ OM_TEMP patch/om-1.13.0 commit   2f4f3560...
 * {{ box-sizing:border-box; }}
 body {{ margin:0; background:#eef2f7; color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif; }}
 main {{ width:min(1120px,calc(100% - 32px)); margin:32px auto 72px; }}
+.guide-pagination {{ display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:10px; align-items:stretch; margin:0 0 16px; }}
+.guide-pagination-bottom {{ margin:18px 0 0; }}
+.guide-page-link,.guide-page-current {{ display:flex; flex-direction:column; justify-content:center; min-width:0; padding:12px 14px; border:1px solid var(--line); border-radius:13px; background:white; }}
+.guide-page-link {{ color:var(--blue); text-decoration:none; }}
+.guide-page-link.is-next {{ text-align:right; }}
+.guide-page-current {{ align-items:center; text-align:center; background:#e8efff; }}
+.guide-pagination small {{ margin-bottom:3px; color:var(--muted); font-size:12px; }}
+.guide-pagination strong {{ overflow-wrap:anywhere; }}
 .hero {{ padding:34px; border-radius:24px; color:white; background:linear-gradient(135deg,#172554,#2457d6); box-shadow:0 20px 55px #193b7b2e; }}
 .hero h1 {{ margin:0 0 12px; font-size:clamp(28px,4vw,44px); letter-spacing:-.04em; }}
 .hero p {{ margin:6px 0; color:#e5edff; line-height:1.65; }}
@@ -872,6 +901,13 @@ main {{ width:min(1120px,calc(100% - 32px)); margin:32px auto 72px; }}
 .intro {{ margin:20px 0; padding:24px; border:1px solid var(--line); border-radius:18px; background:white; }}
 .intro h2 {{ margin:0 0 12px; font-size:20px; }}
 .intro p {{ margin:8px 0; line-height:1.7; }}
+.artifact-map {{ margin:18px 0; border:1px solid var(--line); border-radius:18px; background:white; overflow:hidden; }}
+.artifact-map>summary {{ padding:18px 20px; cursor:pointer; font-size:18px; font-weight:800; }}
+.artifact-map[open]>summary {{ border-bottom:1px solid var(--line); }}
+.artifact-table-wrap {{ padding:0 18px 18px; overflow-x:auto; }}
+.artifact-table {{ width:100%; min-width:820px; border-collapse:collapse; font-size:14px; }}
+.artifact-table th,.artifact-table td {{ padding:11px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; line-height:1.55; }}
+.artifact-table th {{ color:#344054; background:#f8fafc; }}
 .id-table {{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }}
 .id-table div {{ padding:14px; border-radius:12px; background:var(--soft); }}
 .id-table strong {{ display:block; margin-bottom:5px; }}
@@ -944,6 +980,8 @@ details.reference {{ margin:10px 0; border:1px solid var(--line); border-radius:
 .foot {{ margin-top:22px; padding:20px; border-radius:16px; background:#fff7e6; border:1px solid #f1d49b; line-height:1.65; }}
 @media (max-width:720px) {{
   main {{ width:min(100% - 20px,1120px); margin-top:10px; }}
+  .guide-pagination {{ grid-template-columns:1fr 1fr; }}
+  .guide-page-current {{ grid-column:1 / -1; grid-row:1; }}
   .hero {{ padding:24px; border-radius:18px; }}
   .id-table,.diff-grid,.manifest-fields,.explain-grid {{ grid-template-columns:1fr; }}
   .phase>summary {{ grid-template-columns:42px minmax(0,1fr) auto; padding:17px; }}
@@ -955,6 +993,7 @@ details.reference {{ margin:10px 0; border:1px solid var(--line); border-radius:
 </head>
 <body>
 <main>
+  {pagination}
   <section class="hero">
     <h1>OM_TEMP 검사 전 사전환경 설정 가이드</h1>
     <p>검사기가 실제 코드를 어떤 기준자료와 비교하는지, 그 자료를 언제 만들고 어떻게 사용하는지 실제 1.13.0 예시로 확인합니다.</p>
@@ -963,6 +1002,7 @@ details.reference {{ margin:10px 0; border:1px solid var(--line); border-radius:
   </section>
   <section class="intro">
     <h2>왜 먼저 설정해야 하나</h2>
+    <p class="note"><strong>읽는 순서와 실행 순서는 다릅니다.</strong> 이 문서는 검사기 원리 다음에 읽지만, 실제 작업에서는 검사기를 실행하기 전에 아래 기준자료를 먼저 준비합니다. 검사기 설명을 먼저 배치한 이유는 Manifest·Registry·Contracts가 어느 검사에 사용되는지 이해한 뒤 설정할 수 있게 하기 위해서입니다.</p>
     <p>검사기는 코드만 보고 업무 기능의 정상 조건을 추측하지 않습니다. 어떤 BANK-OM을 검사하고, 어떤 파일과 동작을 정상으로 볼지 정한 자료를 먼저 등록해야 합니다.</p>
     <p>Manifest는 BANK-OM ID마다 한 파일을 만듭니다. 같은 기능의 후속 보완은 Git commit SHA가 여러 개여도 Manifest 하나에 연결합니다.</p>
     <div class="id-table">
@@ -978,6 +1018,27 @@ details.reference {{ margin:10px 0; border:1px solid var(--line); border-radius:
       </tbody>
     </table>
   </section>
+
+  <details class="artifact-map" open>
+    <summary>검사에 사용하는 산출물과 핵심 요소</summary>
+    <div class="artifact-table-wrap">
+      <table class="artifact-table">
+        <thead><tr><th>산출물</th><th>의미</th><th>핵심 요소</th><th>어디에 사용되나</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Manifest</strong></td><td>BANK-OM 한 기능의 코드 변경과 검증 기준</td><td>ID·상태·kind, allowed·required·추가 경로, watch, Contract·test 연결</td><td>T26·T40·T42·T93이 기능별 변경 범위와 영향 여부를 판단할 때 읽습니다.</td></tr>
+          <tr><td><strong>Registry</strong></td><td>검사해야 할 BANK-OM 전체 목록과 관리 상태</td><td>customization_id, title, owner·상태, criticality, Manifest·Contract 경로</td><td>T26·T31이 활성 ID, 미등록 ID, 담당자 지정 상태와 연결 자료를 확인할 때 읽습니다.</td></tr>
+          <tr><td><strong>Contracts</strong></td><td>파일 존재만으로 알 수 없는 업무 동작의 정상 조건</td><td>Contract ID, invariant, required_tests, customization_ids</td><td>T60-I가 test 코드 존재를, T61·T62가 제거본 반증과 실제 실행 결과를 확인할 때 읽습니다.</td></tr>
+          <tr><td><strong>공용 파일 소유정보</strong></td><td>한 파일을 여러 BANK-OM이 함께 변경했다는 명시적 관계</td><td>공용 파일 경로와 해당 BANK-OM ID 목록</td><td>T25-R 재구성에서 같은 파일의 변경을 한 ID에 잘못 귀속하지 않도록 사용합니다.</td></tr>
+          <tr><td><strong>전체 변경 목록</strong></td><td>공식 원본과 행내 snapshot 사이에서 실제로 달라진 모든 파일</td><td>root 기준 파일 경로 111개</td><td>Manifest 전체 범위가 실제 Git diff를 빠짐없이 설명하는지 사전검증할 때 사용합니다.</td></tr>
+          <tr><td><strong>Repository layout</strong></td><td>경로를 공식 코드·행내 정책·확장·미분류로 나누는 규칙</td><td>공식 기준 SHA, 경로 문법, 영역별 root, 미분류 처리 방식</td><td>T30·T41·T93이 변경 경로의 소유 영역과 미분류 경로를 판단할 때 읽습니다.</td></tr>
+          <tr><td><strong>Sensitive zones</strong></td><td>보안·인증·설정·DB 관련 경로의 위험 등급</td><td>frozen·protected·watched 경로 목록</td><td>T41이 변경을 BLOCK·APPROVAL·표시 대상으로 구분할 때 읽습니다.</td></tr>
+          <tr><td><strong>Candidate lock</strong></td><td>검사할 코드 상태를 움직이지 않는 SHA와 digest로 고정한 자료</td><td>공식 base·target SHA, 검사 대상 commit·tree, integration strategy, artifact digest</td><td>T25·T26·T62·T90·T91이 모두 같은 코드와 배포 파일을 검사했는지 연결할 때 읽습니다.</td></tr>
+          <tr><td><strong>Patch-lock</strong> <small>(선택)</small></td><td>patch-replay 방식에서 적용할 commit과 순서를 고정한 자료</td><td>BANK-OM ID, revision, source commit 순서와 digest</td><td>재적용·복구·재현이 필요할 때 사용합니다. 현재 vendor-merge 소스 검사의 필수 자료는 아닙니다.</td></tr>
+          <tr><td><strong>검사 결과 JSON·YAML</strong></td><td>검사 당시 입력과 각 판정을 나중에 다시 확인하는 증거</td><td>검사명, 입력 SHA·digest, verdict, reasons, 결과 digest</td><td>책임자 검토·인수인계와 T90·T91의 동일 대상 확인에 사용합니다.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
 
   <details class="phase" open>
     <summary>
@@ -1031,6 +1092,7 @@ details.reference {{ margin:10px 0; border:1px solid var(--line); border-radius:
   </details>
 
   <section class="foot"><strong>현재 상태:</strong> Registry 7개, Contract 7개·필수 test 9개, 공용 경로 37개, 전체 변경 111개를 생성했고 소스 검사 8종이 PASS했습니다. 담당자 지정, OpenMetadata 전체 build, Contract test 실제 실행, 1.13.1 업그레이드 비교와 배포 승인은 아직 완료하지 않았습니다.</section>
+  <div class="guide-pagination-bottom">{pagination}</div>
 </main>
 </body>
 </html>

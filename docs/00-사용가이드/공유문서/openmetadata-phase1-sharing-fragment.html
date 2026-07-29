@@ -1,12 +1,27 @@
 <div id="om-guide-v3" data-artifact-status="review-draft">
+  <nav class="guide-pagination" aria-label="가이드 페이지 이동">
+    <span class="guide-page-link is-disabled" aria-disabled="true">
+      <small>← 이전 가이드</small>
+      <strong>첫 페이지</strong>
+    </span>
+    <div class="guide-page-current">
+      <small>전체 5개 중</small>
+      <strong>1 · 목적과 브랜치 전략</strong>
+    </div>
+    <a class="guide-page-link is-next" href="openmetadata-phase2-verifier-table-preview.html" target="_top">
+      <small>다음 가이드 →</small>
+      <strong>검사기 원리</strong>
+    </a>
+  </nav>
+
   <header class="om-hero">
     <span class="viz-badge">1차 공유문서 검토본</span>
     <h1>공식 업그레이드 뒤에도 행내 기능을 잃지 않는 방법</h1>
     <p>공식 원본 위에 BANK-OM 변경을 다시 적용하고, 검사기로 누락·혼합·동작 여부를 단계별 확인합니다.</p>
     <div class="om-now" role="status">
-      <span><strong>이번 검토 범위</strong> 목적 · 사전 설정 · 브랜치 전략</span>
+      <span><strong>이번 검토 범위</strong> 목적 · 브랜치 전략</span>
       <span><strong>대표 사례</strong> BANK-OM-001 · InstanceCode</span>
-      <span class="text-destructive"><strong>T42 검사기 완료</strong> 수동 watch 비교는 동작 중 · allowed 공식 파일 자동 포함만 개선 예정</span>
+      <span><strong>다음 페이지</strong> 검사기가 무엇을 판단하는지 먼저 확인</span>
     </div>
   </header>
 
@@ -18,8 +33,8 @@
     </article>
     <article>
       <span>1차 · 검토 중</span>
-      <strong>무엇을 미리 등록하나</strong>
-      <p>BANK-OM ID, 변경 파일 명단, 실제 코드와 커밋 메시지를 하나로 연결합니다.</p>
+      <strong>무엇을 관리해야 하나</strong>
+      <p>BANK-OM ID와 변경 기록이 branch 전략에서 어떤 역할을 하는지 먼저 봅니다.</p>
     </article>
     <article>
       <span>1차 · 검토 중</span>
@@ -30,7 +45,7 @@
 
   <nav class="viz-controls om-toc" aria-label="가이드 목차">
     <a class="btn" href="#purpose">1. 우리의 목적</a>
-    <a class="btn" href="#branch">2. 사전 설정과 브랜치 전략</a>
+    <a class="btn" href="#branch">2. 브랜치 전략</a>
     <a class="btn" href="#appendix">부록 · 가장 많이 묻는 질문</a>
   </nav>
 
@@ -93,8 +108,9 @@
       </div>
     </div>
 
-    <div class="om-preflight-diagram" aria-label="브랜치 작업 전 사전 설정">
-      <strong>사전 설정</strong>
+    <div class="om-preflight-diagram" aria-label="브랜치 전략을 이해하기 위한 사전 정보">
+      <strong>브랜치 전략을 이해하기 위한 사전 정보</strong>
+      <p class="om-reading-order-note">여기서는 BANK-OM ID·변경관리표·커밋 메시지가 branch 흐름에 어떻게 연결되는지만 간단히 봅니다. 실제 작성 기준과 등록 절차는 <a href="../OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html" target="_top">3번 · 검사 전 사전환경 설정</a>에서 설명합니다. 그 전에 2번에서 검사기 원리를 먼저 읽는 이유는 각 설정값이 어느 검사에 사용되는지 이해하기 위해서입니다.</p>
       <div class="om-preflight-row">
         <details class="om-preflight-step">
           <summary><span>1</span><b>BANK-OM ID 발급</b></summary>
@@ -330,70 +346,94 @@ Customization-ID: BANK-OM-001</code></pre>
     </div>
 
     <div class="om-branch-legend" aria-label="브랜치 색상 구분">
-      <span class="om-swatch om-core-swatch"></span><span>제품 작업 브랜치 안의 공식 Core 파일 수정</span>
-      <span class="om-swatch om-custom-swatch"></span><span>같은 브랜치 안의 행내 전용 파일 추가</span>
+      <span class="om-swatch om-core-swatch"></span><span>공식 버전과 patch branch · 공식 코드만 유지</span>
+      <span class="om-swatch om-custom-swatch"></span><span>BANK-OM 변경과 custom branch · 행내 변경 적용</span>
     </div>
 
     <div class="om-branch-visual">
-      <svg class="om-branch-svg" viewBox="0 0 820 710" role="img" aria-labelledby="om-branch-title om-branch-desc">
-        <title id="om-branch-title">OpenMetadata 행내 변경 브랜치와 검사 흐름</title>
-        <desc id="om-branch-desc">승인한 공식 원본에 코어 패치와 행내 전용 변경을 순서대로 적용해 하나의 후보를 만든다. 검사에 실패하면 원인이 있는 코어 패치, 행내 코드 또는 환경 설정만 보완해 다시 검사하고, 통과하면 승인 후 행내 환경에 반영한다.</desc>
+      <svg class="om-branch-svg" viewBox="0 0 940 830" role="img" aria-labelledby="om-branch-title om-branch-desc">
+        <title id="om-branch-title">OpenMetadata 버전별 커스터마이징 반복 Cycle</title>
+        <desc id="om-branch-desc">공식 새 버전으로 patch branch를 만들고 같은 코드에서 custom branch를 시작한다. custom branch에 BANK-OM commit을 다시 적용할 때 Git 충돌이 발생할 수 있으며, 충돌은 custom branch에서 해결하고 재적용을 계속한다. 적용 완료 commit을 검사한 뒤 통과하면 검증 tag를 붙여 배포하고 다음 공식 버전에서 반복한다.</desc>
+        <defs>
+          <marker id="om-arrow-core" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+            <path d="M0,0 L9,4.5 L0,9 z" fill="var(--viz-series-1)"/>
+          </marker>
+          <marker id="om-arrow-custom" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+            <path d="M0,0 L9,4.5 L0,9 z" fill="var(--viz-series-2)"/>
+          </marker>
+          <marker id="om-arrow-pass" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+            <path d="M0,0 L9,4.5 L0,9 z" fill="var(--viz-series-2)"/>
+          </marker>
+          <marker id="om-arrow-fail" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+            <path d="M0,0 L9,4.5 L0,9 z" fill="var(--destructive)"/>
+          </marker>
+        </defs>
 
-        <path class="om-svg-path om-svg-core-line" d="M238 82 L238 177"/>
+        <path class="om-svg-path om-svg-core-line" marker-end="url(#om-arrow-core)" d="M460 92 L460 134"/>
+        <path class="om-svg-path om-svg-core-line" marker-end="url(#om-arrow-core)" d="M460 212 L460 252"/>
+        <path class="om-svg-path om-svg-custom-line" marker-end="url(#om-arrow-custom)" d="M460 330 L460 365"/>
+        <path class="om-svg-path om-svg-custom-line" marker-end="url(#om-arrow-custom)" d="M688 420 L560 420"/>
+        <path class="om-svg-path om-svg-custom-line" marker-end="url(#om-arrow-custom)" d="M460 475 L460 510"/>
+        <path class="om-svg-path om-svg-neutral-line" marker-end="url(#om-arrow-core)" d="M460 580 L460 618"/>
+        <path class="om-svg-path om-svg-pass-line" marker-end="url(#om-arrow-pass)" d="M460 708 L460 740"/>
+        <path class="om-svg-path om-svg-core-line" marker-end="url(#om-arrow-core)" d="M605 772 C868 772 920 640 920 376 C920 135 758 60 590 60"/>
 
-        <ellipse class="om-svg-node om-svg-neutral-node" cx="238" cy="52" rx="68" ry="30"/>
-        <text class="om-svg-label om-svg-center" x="238" y="48">공식 원본</text>
-        <text class="om-svg-muted om-svg-center" x="238" y="66">새 버전</text>
+        <rect class="om-svg-node om-svg-neutral-node" x="330" y="24" width="260" height="68" rx="24"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="460" y="54">① 공식 새 버전</text>
+        <text class="om-svg-muted om-svg-center" x="460" y="76">업그레이드 기준 코드</text>
 
-        <ellipse class="om-svg-node om-svg-core-node" cx="238" cy="224" rx="102" ry="47"/>
-        <text class="om-svg-label om-svg-center om-svg-strong" x="238" y="219">Core 패치</text>
-        <text class="om-svg-muted om-svg-center" x="238" y="239">공용 파일 최소 수정</text>
-        <text class="om-svg-caption om-svg-core-text" x="238" y="292">예: Entity.java</text>
+        <rect class="om-svg-node om-svg-core-node" x="320" y="134" width="280" height="78" rx="24"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="460" y="166">② patch branch</text>
+        <text class="om-svg-muted om-svg-center" x="460" y="190">공식 코드만 유지 · 행내 변경 없음</text>
 
-        <text class="om-svg-muted om-svg-center" x="582" y="62">사전에 관리한 BANK-OM 변경 묶음</text>
-        <path class="om-svg-path om-svg-custom-line om-svg-loop" d="M582 82 L582 177"/>
-        <circle class="om-svg-custom-dot" cx="582" cy="92" r="5"/>
-        <circle class="om-svg-custom-dot" cx="582" cy="112" r="5"/>
-        <circle class="om-svg-custom-dot" cx="582" cy="132" r="5"/>
-        <ellipse class="om-svg-node om-svg-custom-node" cx="582" cy="224" rx="112" ry="47"/>
-        <text class="om-svg-label om-svg-center om-svg-strong" x="582" y="219">행내 전용</text>
-        <text class="om-svg-muted om-svg-center" x="582" y="239">신규 코드 추가</text>
-        <text class="om-svg-caption om-svg-custom-text" x="582" y="292">Resource · Mapper · Repository</text>
+        <rect class="om-svg-node om-svg-custom-node" x="300" y="252" width="320" height="78" rx="24"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="460" y="284">③ custom branch 시작</text>
+        <text class="om-svg-muted om-svg-center" x="460" y="308">patch와 같은 공식 코드에서 branch 생성</text>
 
-        <path class="om-svg-path om-svg-core-line" d="M238 271 C238 369 352 365 390 405"/>
-        <path class="om-svg-path om-svg-custom-line" d="M582 271 C582 369 468 365 430 405"/>
-        <text class="om-svg-muted om-svg-center" x="238" y="334">① Core 패치 적용</text>
-        <text class="om-svg-muted om-svg-center" x="582" y="334">② 행내 변경 적용</text>
-        <ellipse class="om-svg-node om-svg-candidate-node" cx="410" cy="433" rx="94" ry="43"/>
-        <text class="om-svg-label om-svg-center om-svg-strong" x="410" y="428">적용 후보</text>
-        <text class="om-svg-muted om-svg-center" x="410" y="447">원본 + 행내 변경</text>
+        <polygon class="om-svg-node om-svg-candidate-node" points="460,365 560,420 460,475 360,420"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="460" y="409">④ BANK-OM</text>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="460" y="430">commit 재적용</text>
+        <text class="om-svg-fail-text" x="460" y="452">Git 충돌 발생 지점</text>
 
-        <path class="om-svg-path om-svg-neutral-line" d="M410 476 L410 508"/>
-        <polygon class="om-svg-node om-svg-verifier-node" points="410,508 465,553 410,598 355,553"/>
-        <text class="om-svg-label om-svg-center om-svg-strong" x="410" y="549">검사기</text>
-        <text class="om-svg-muted om-svg-center" x="410" y="567">변경·동작 확인</text>
+        <rect class="om-svg-node om-svg-custom-node" x="688" y="376" width="210" height="88" rx="24"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="793" y="407">BANK-OM 변경 이력</text>
+        <text class="om-svg-muted om-svg-center" x="793" y="431">ID별 commit을 순서대로</text>
+        <text class="om-svg-muted om-svg-center" x="793" y="451">custom branch에 다시 적용</text>
 
-        <path class="om-svg-path om-svg-fail-line" d="M355 553 C315 553 285 574 266 607"/>
-        <ellipse class="om-svg-node om-svg-fail-node" cx="235" cy="633" rx="112" ry="31"/>
-        <text class="om-svg-label om-svg-center om-svg-strong" x="235" y="629">실패 · 원인 확인</text>
-        <text class="om-svg-muted om-svg-center" x="235" y="646">원인이 있는 항목만 보완</text>
-        <path class="om-svg-path om-svg-fail-line om-svg-loop" d="M123 633 C68 633 78 525 355 553"/>
-        <text class="om-svg-fail-text" x="182" y="528">보완 후 검사기로 돌아감</text>
-        <text class="om-svg-muted om-svg-center" x="235" y="681">Core 패치 · 행내 코드 · 환경 설정 중 해당 항목</text>
+        <path class="om-svg-path om-svg-fail-line" marker-end="url(#om-arrow-fail)" d="M360 420 L258 420"/>
+        <rect class="om-svg-node om-svg-fail-node" x="26" y="376" width="232" height="88" rx="24"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="142" y="407">충돌 해결 commit</text>
+        <text class="om-svg-muted om-svg-center" x="142" y="431">custom branch에서 코드 선택·수정</text>
+        <text class="om-svg-muted om-svg-center" x="142" y="451">해결 뒤 다음 BANK-OM 재적용</text>
+        <path class="om-svg-path om-svg-fail-line om-svg-loop" marker-end="url(#om-arrow-fail)" d="M142 376 C142 300 284 286 300 286"/>
 
-        <path class="om-svg-path om-svg-pass-line" d="M465 553 C505 553 535 574 554 607"/>
-        <ellipse class="om-svg-node om-svg-pass-node" cx="585" cy="633" rx="58" ry="31"/>
-        <text class="om-svg-label om-svg-center om-svg-strong" x="585" y="629">통과</text>
-        <text class="om-svg-muted om-svg-center" x="585" y="646">승인</text>
-        <path class="om-svg-path om-svg-pass-line" d="M616 633 L702 633"/>
-        <text class="om-svg-label om-svg-strong" x="713" y="629">행내 반영</text>
-        <text class="om-svg-muted" x="713" y="648">배포·운영</text>
+        <rect class="om-svg-node om-svg-candidate-node" x="310" y="510" width="300" height="70" rx="24"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="460" y="539">⑤ 적용 완료 custom commit</text>
+        <text class="om-svg-muted om-svg-center" x="460" y="562">patch 공식 코드 + BANK-OM 변경</text>
+
+        <polygon class="om-svg-node om-svg-verifier-node" points="460,618 524,663 460,708 396,663"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="460" y="659">⑥ 검사기</text>
+        <text class="om-svg-muted om-svg-center" x="460" y="679">등록 기준·동작 확인</text>
+
+        <path class="om-svg-path om-svg-fail-line om-svg-loop" marker-end="url(#om-arrow-fail)" d="M396 663 C310 712 250 650 310 556"/>
+        <text class="om-svg-fail-text" x="192" y="716">검사 BLOCK → custom 보완 → 재검사</text>
+
+        <rect class="om-svg-node om-svg-pass-node" x="315" y="740" width="290" height="56" rx="22"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="460" y="764">⑦ 검증 tag · 배포</text>
+        <text class="om-svg-muted om-svg-center" x="460" y="784">통과한 custom 최종 commit 고정</text>
+        <text class="om-svg-core-text om-svg-center" x="790" y="724">다음 공식 버전에서 Cycle 반복</text>
       </svg>
+    </div>
+
+    <div class="om-branch-after">
+      <p><strong>Git 충돌은 어디서 발생하나?</strong> <code>patch</code>와 같은 코드에서 시작한 <code>custom</code> branch에 BANK-OM commit을 다시 적용하는 ④ 단계에서 발생합니다. 해결 코드는 <code>custom</code> branch에 commit으로 남기고 다음 BANK-OM 재적용을 계속합니다.</p>
+      <p><strong>검사 BLOCK은 무엇이 다른가?</strong> 모든 BANK-OM commit 적용이 끝난 ⑤ 상태를 검사한 뒤 기준을 통과하지 못한 경우입니다. 이때도 <code>custom</code> branch를 보완하지만, Git이 코드를 합치지 못한 충돌과는 다른 문제입니다.</p>
+      <p><strong>다음 버전은 어떻게 이어지나?</strong> 검사에 통과한 마지막 <code>custom</code> commit에 검증 tag를 붙여 배포 대상을 고정합니다. 다음 공식 버전에서는 새 <code>patch</code>와 새 <code>custom</code> branch를 만든 뒤 같은 Cycle을 반복합니다. 공식 코드만 담는 <code>patch</code>에는 충돌 해결이나 검사 보완 commit을 합치지 않습니다.</p>
     </div>
 
     <details class="om-details">
       <summary>왜 이 구조가 필요한가?</summary>
-      <p>색상은 별도 제품이나 반드시 유지해야 하는 장기 브랜치 두 개가 아니라, 하나의 제품 작업 브랜치 안에서 변경의 역할을 구분합니다. Core 패치는 공식 공용 파일을 수정하는 변경이고, 행내 전용 변경은 신규 Resource·Mapper·Repository 등을 추가합니다. BANK-OM-001처럼 한 업무 기능이 두 역할을 모두 사용하면 같은 BANK-OM ID로 연결해 추적합니다.</p>
+      <p>Cycle의 파란색은 공식 버전과 <code>patch</code> branch, 주황색은 BANK-OM 변경 이력과 <code>custom</code> branch를 뜻합니다. BANK-OM 변경에는 공식 공용 Core 파일의 최소 수정과 신규 Resource·Mapper·Repository 같은 행내 전용 파일 추가가 함께 들어갈 수 있습니다. BANK-OM-001처럼 한 업무 기능이 두 역할을 모두 사용하면 같은 BANK-OM ID로 연결해 추적합니다.</p>
     </details>
   </section>
 
@@ -740,6 +780,21 @@ Customization-ID: BANK-OM-001</code></pre>
       </div>
     </div>
   </section>
+
+  <nav class="guide-pagination guide-pagination-bottom" aria-label="가이드 페이지 이동">
+    <span class="guide-page-link is-disabled" aria-disabled="true">
+      <small>← 이전 가이드</small>
+      <strong>첫 페이지</strong>
+    </span>
+    <div class="guide-page-current">
+      <small>전체 5개 중</small>
+      <strong>1 · 목적과 브랜치 전략</strong>
+    </div>
+    <a class="guide-page-link is-next" href="openmetadata-phase2-verifier-table-preview.html" target="_top">
+      <small>다음 가이드 →</small>
+      <strong>검사기 원리</strong>
+    </a>
+  </nav>
 </div>
 
 <style>
@@ -1192,6 +1247,23 @@ Customization-ID: BANK-OM-001</code></pre>
     text-anchor: middle;
   }
 
+  #om-guide-v3 .om-branch-after {
+    margin: 14px 0 0;
+    padding: 14px 16px;
+    border-left: 4px solid var(--viz-series-2);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--viz-series-2) 9%, var(--background));
+    line-height: 1.7;
+  }
+
+  #om-guide-v3 .om-branch-after p {
+    margin: 0;
+  }
+
+  #om-guide-v3 .om-branch-after p + p {
+    margin-top: 8px;
+  }
+
   #om-guide-v3 .om-details,
   #om-guide-v3 .om-file-diff {
     margin-top: 12px;
@@ -1598,6 +1670,60 @@ Customization-ID: BANK-OM-001</code></pre>
     box-shadow: 0 6px 22px #13234a0d;
   }
 
+  #om-guide-v3 .guide-pagination {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 10px;
+    align-items: stretch;
+    margin: 0 0 16px;
+  }
+
+  #om-guide-v3 .guide-pagination-bottom {
+    margin: 18px 0 0;
+  }
+
+  #om-guide-v3 .guide-page-link,
+  #om-guide-v3 .guide-page-current {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    padding: 12px 14px;
+    border: 1px solid var(--guide-line);
+    border-radius: 13px;
+    background: white;
+  }
+
+  #om-guide-v3 .guide-page-link {
+    color: var(--guide-blue);
+    text-decoration: none;
+  }
+
+  #om-guide-v3 .guide-page-link.is-next {
+    text-align: right;
+  }
+
+  #om-guide-v3 .guide-page-link.is-disabled {
+    color: var(--guide-muted);
+    opacity: .55;
+  }
+
+  #om-guide-v3 .guide-page-current {
+    align-items: center;
+    text-align: center;
+    background: #e8efff;
+  }
+
+  #om-guide-v3 .guide-pagination small {
+    margin-bottom: 3px;
+    color: var(--guide-muted);
+    font-size: 12px;
+  }
+
+  #om-guide-v3 .guide-pagination strong {
+    overflow-wrap: anywhere;
+  }
+
   #om-guide-v3 .om-progress article {
     padding: 18px;
     border-top: 4px solid var(--guide-blue);
@@ -1735,5 +1861,15 @@ Customization-ID: BANK-OM-001</code></pre>
     #om-guide-v3 #appendix {
       padding: 17px;
     }
+
+    #om-guide-v3 .guide-pagination {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    #om-guide-v3 .guide-page-current {
+      grid-column: 1 / -1;
+      grid-row: 1;
+    }
+
   }
 </style>

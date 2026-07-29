@@ -9,7 +9,7 @@
 <style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
 </head>
 <body>
-<iframe sandbox="allow-scripts" referrerpolicy="no-referrer" title="Openmetadata Phase3 Demo Fragment" srcdoc="&lt;!doctype html&gt;
+<iframe sandbox="allow-scripts allow-top-navigation-by-user-activation" referrerpolicy="no-referrer" title="Openmetadata Phase3 Demo Fragment" srcdoc="&lt;!doctype html&gt;
 &lt;html lang=&quot;en&quot;&gt;
 &lt;head&gt;
 &lt;meta charset=&quot;utf-8&quot;&gt;
@@ -875,16 +875,31 @@ html&gt;body{padding:0}&lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
 &lt;div id=&quot;om-phase3&quot; data-artifact-status=&quot;review-draft&quot;&gt;
+  &lt;nav class=&quot;guide-pagination&quot; aria-label=&quot;가이드 페이지 이동&quot;&gt;
+    &lt;a class=&quot;guide-page-link&quot; href=&quot;../OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html&quot; target=&quot;_top&quot;&gt;
+      &lt;small&gt;← 이전 가이드&lt;/small&gt;
+      &lt;strong&gt;검사 전 사전환경 설정&lt;/strong&gt;
+    &lt;/a&gt;
+    &lt;div class=&quot;guide-page-current&quot;&gt;
+      &lt;small&gt;전체 5개 중&lt;/small&gt;
+      &lt;strong&gt;4 · 검사 결과와 책임자 판단&lt;/strong&gt;
+    &lt;/div&gt;
+    &lt;a class=&quot;guide-page-link is-next&quot; href=&quot;../OM_TEMP_1.13.0_1.13.1_업그레이드_실행_가이드_미리보기.html&quot; target=&quot;_top&quot;&gt;
+      &lt;small&gt;다음 가이드 →&lt;/small&gt;
+      &lt;strong&gt;1.13.0 → 1.13.1 실제 업그레이드&lt;/strong&gt;
+    &lt;/a&gt;
+  &lt;/nav&gt;
+
   &lt;header class=&quot;p3-hero&quot;&gt;
     &lt;span class=&quot;viz-badge&quot;&gt;3차 검사결과 검토본&lt;/span&gt;
-    &lt;h1&gt;현재 소스 검사 결과와 책임자 판단 기준&lt;/h1&gt;
-    &lt;p&gt;실제 제품 소스와 로컬 검사 결과를 연결해 설명합니다. 실제 Git 화면으로 병합 전후 전체 과정을 보여주는 시연은 3차를 확정한 뒤 4차에서 별도로 진행합니다.&lt;/p&gt;
+    &lt;h1&gt;기존 제품 후보의 소스 검사 결과와 책임자 판단 기준&lt;/h1&gt;
+    &lt;p&gt;&lt;code&gt;easyseop/OpenMetadata&lt;/code&gt;의 기존 후보 &lt;code&gt;849ae756…&lt;/code&gt;에 대해 수행한 소스 검사 결과입니다. 뒤의 5번째 가이드는 이 문서와 다른 대상인 &lt;code&gt;OM_TEMP&lt;/code&gt;에서 1.13.0→1.13.1 업그레이드를 실제 연습한 결과입니다.&lt;/p&gt;
     &lt;div class=&quot;p3-final&quot; role=&quot;status&quot;&gt;
       &lt;div&gt;
-        &lt;span&gt;현재 최종 판단&lt;/span&gt;
+        &lt;span&gt;이 후보의 최종 판단&lt;/span&gt;
         &lt;strong&gt;BLOCK · 운영 배포 진행 불가&lt;/strong&gt;
       &lt;/div&gt;
-      &lt;p&gt;소스 변경 검사는 통과했지만 실제 공식 업그레이드, 행내 API·화면·DB 테스트와 배포본 일치 검사가 남아 있습니다.&lt;/p&gt;
+      &lt;p&gt;이 후보는 소스 변경 검사를 통과했지만 공식 업그레이드 재적용, 행내 API·화면·DB 테스트와 배포본 일치 검사를 수행하지 않아 배포할 수 없습니다.&lt;/p&gt;
     &lt;/div&gt;
   &lt;/header&gt;
 
@@ -913,9 +928,9 @@ html&gt;body{padding:0}&lt;/style&gt;
             &lt;td&gt;BANK-OM-001~011이 적용된 소스 검사 대상이며 운영 배포 완료 상태는 아님&lt;/td&gt;
           &lt;/tr&gt;
           &lt;tr&gt;
-            &lt;td&gt;다음 공식 버전&lt;/td&gt;
-            &lt;td&gt;&lt;strong&gt;아직 지정하지 않음&lt;/strong&gt;&lt;/td&gt;
-            &lt;td&gt;실제 업그레이드 비교와 충돌 측정은 아직 실행할 수 없음&lt;/td&gt;
+            &lt;td&gt;이 검사 당시 업그레이드 대상&lt;/td&gt;
+            &lt;td&gt;&lt;strong&gt;지정하지 않았음&lt;/strong&gt;&lt;/td&gt;
+            &lt;td&gt;따라서 이 후보의 결과에는 공식 버전 업그레이드와 충돌 측정이 포함되지 않음&lt;/td&gt;
           &lt;/tr&gt;
         &lt;/tbody&gt;
       &lt;/table&gt;
@@ -926,8 +941,8 @@ html&gt;body{padding:0}&lt;/style&gt;
     &lt;div class=&quot;p3-heading&quot;&gt;
       &lt;span&gt;02&lt;/span&gt;
       &lt;div&gt;
-        &lt;h2 id=&quot;p3-flow-title&quot;&gt;현재 단계별 증거 상태&lt;/h2&gt;
-        &lt;p&gt;완료된 소스 검사와 아직 다음 공식 버전·행내 환경이 필요한 단계를 구분합니다.&lt;/p&gt;
+        &lt;h2 id=&quot;p3-flow-title&quot;&gt;이 후보의 단계별 증거 상태&lt;/h2&gt;
+        &lt;p&gt;이 후보에서 완료한 소스 검사와 공식 업그레이드·행내 환경이 없어 수행하지 못한 단계를 구분합니다.&lt;/p&gt;
       &lt;/div&gt;
     &lt;/div&gt;
     &lt;ol class=&quot;p3-flow&quot;&gt;
@@ -1192,8 +1207,8 @@ exact-scope-history          pass&lt;/code&gt;&lt;/pre&gt;
     &lt;div class=&quot;p3-heading&quot;&gt;
       &lt;span&gt;07&lt;/span&gt;
       &lt;div&gt;
-        &lt;h2 id=&quot;p3-next-title&quot;&gt;현재 완료 범위와 다음 작업&lt;/h2&gt;
-        &lt;p&gt;소스 검사 통과와 운영 배포 승인을 구분합니다.&lt;/p&gt;
+        &lt;h2 id=&quot;p3-next-title&quot;&gt;이 후보의 완료 범위와 이후 진행&lt;/h2&gt;
+        &lt;p&gt;기존 후보의 소스 검사 결과와 이후 OM_TEMP 업그레이드 연습을 구분합니다.&lt;/p&gt;
       &lt;/div&gt;
     &lt;/div&gt;
     &lt;div class=&quot;p3-next&quot;&gt;
@@ -1206,17 +1221,32 @@ exact-scope-history          pass&lt;/code&gt;&lt;/pre&gt;
         &lt;/ul&gt;
       &lt;/div&gt;
       &lt;div&gt;
-        &lt;strong&gt;다음 작업&lt;/strong&gt;
+        &lt;strong&gt;이후 진행&lt;/strong&gt;
         &lt;ol&gt;
-          &lt;li&gt;업그레이드할 다음 공식 OpenMetadata 버전 지정&lt;/li&gt;
-          &lt;li&gt;새 공식 버전에 BANK-OM 커스터마이징 재적용&lt;/li&gt;
-          &lt;li&gt;T42·T43을 실제 업그레이드 입력으로 다시 실행&lt;/li&gt;
-          &lt;li&gt;행내 환경에서 T61·T62·T63·T90·T91 실행&lt;/li&gt;
-          &lt;li&gt;3차 내용을 확정한 뒤 4차에서 실제 Git 병합·검사 화면을 캡처&lt;/li&gt;
+          &lt;li&gt;&lt;strong&gt;별도 OM_TEMP 연습 완료:&lt;/strong&gt; 공식 1.13.0→1.13.1에 BANK-OM-001~007 재적용&lt;/li&gt;
+          &lt;li&gt;&lt;strong&gt;별도 OM_TEMP 연습 완료:&lt;/strong&gt; T42 영향 확인과 소스 검사 8종 실행&lt;/li&gt;
+          &lt;li&gt;&lt;strong&gt;남은 작업:&lt;/strong&gt; 행내 환경에서 T61·T62·T63·T90·T91 실행&lt;/li&gt;
+          &lt;li&gt;&lt;strong&gt;남은 작업:&lt;/strong&gt; 담당자 승인과 검증 tag·배포본 일치 확인&lt;/li&gt;
+          &lt;li&gt;&lt;strong&gt;최종 시연:&lt;/strong&gt; 병합 전후 Git 화면·터미널·검사 결과를 순서대로 캡처&lt;/li&gt;
         &lt;/ol&gt;
       &lt;/div&gt;
     &lt;/div&gt;
   &lt;/section&gt;
+
+  &lt;nav class=&quot;guide-pagination guide-pagination-bottom&quot; aria-label=&quot;가이드 페이지 이동&quot;&gt;
+    &lt;a class=&quot;guide-page-link&quot; href=&quot;../OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html&quot; target=&quot;_top&quot;&gt;
+      &lt;small&gt;← 이전 가이드&lt;/small&gt;
+      &lt;strong&gt;검사 전 사전환경 설정&lt;/strong&gt;
+    &lt;/a&gt;
+    &lt;div class=&quot;guide-page-current&quot;&gt;
+      &lt;small&gt;전체 5개 중&lt;/small&gt;
+      &lt;strong&gt;4 · 검사 결과와 책임자 판단&lt;/strong&gt;
+    &lt;/div&gt;
+    &lt;a class=&quot;guide-page-link is-next&quot; href=&quot;../OM_TEMP_1.13.0_1.13.1_업그레이드_실행_가이드_미리보기.html&quot; target=&quot;_top&quot;&gt;
+      &lt;small&gt;다음 가이드 →&lt;/small&gt;
+      &lt;strong&gt;1.13.0 → 1.13.1 실제 업그레이드&lt;/strong&gt;
+    &lt;/a&gt;
+  &lt;/nav&gt;
 
   &lt;style&gt;
     #om-phase3 {
@@ -1488,7 +1518,186 @@ exact-scope-history          pass&lt;/code&gt;&lt;/pre&gt;
       padding-left: 22px;
     }
 
+    #om-phase3 .guide-pagination {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: 10px;
+      align-items: stretch;
+      margin: 0 0 16px;
+      color: #172033;
+    }
+
+    #om-phase3 .guide-pagination-bottom {
+      margin: 18px 0 0;
+    }
+
+    #om-phase3 .guide-page-link,
+    #om-phase3 .guide-page-current {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+      padding: 12px 14px;
+      border: 1px solid #d8dfeb;
+      border-radius: 13px;
+      background: white;
+    }
+
+    #om-phase3 .guide-page-link {
+      color: #2457d6;
+      text-decoration: none;
+    }
+
+    #om-phase3 .guide-page-link.is-next {
+      text-align: right;
+    }
+
+    #om-phase3 .guide-page-current {
+      align-items: center;
+      text-align: center;
+      background: #e8efff;
+    }
+
+    #om-phase3 .guide-pagination small {
+      margin-bottom: 3px;
+      color: #667085;
+      font-size: 12px;
+    }
+
+    #om-phase3 .guide-pagination strong {
+      overflow-wrap: anywhere;
+    }
+
+    /* 1·2·5차 가이드와 같은 공유용 카드 디자인 */
+    #om-phase3 {
+      width: min(1180px, calc(100% - 24px));
+      margin: 12px auto;
+      padding: 16px;
+      color: #172033;
+      border-radius: 24px;
+      background: #eef2f7;
+    }
+
+    #om-phase3 .p3-hero {
+      gap: 12px;
+      padding: 32px;
+      color: white;
+      border: 0;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #16234f 0%, #315bd8 100%);
+      box-shadow: 0 14px 32px #1725541f;
+    }
+
+    #om-phase3 .p3-hero &gt; p {
+      color: #e9efff;
+    }
+
+    #om-phase3 .p3-hero .viz-badge {
+      justify-self: start;
+      padding: 5px 9px;
+      color: #edf3ff;
+      border: 1px solid #ffffff42;
+      border-radius: 999px;
+      background: #ffffff12;
+    }
+
+    #om-phase3 .p3-final {
+      margin-top: 8px;
+      padding: 14px;
+      border: 1px solid #ffffff38;
+      border-radius: 14px;
+      background: #ffffff10;
+    }
+
+    #om-phase3 .p3-final p {
+      color: #edf3ff;
+    }
+
+    #om-phase3 .p3-final strong {
+      color: #ffd7aa;
+    }
+
+    #om-phase3 .p3-section {
+      margin-top: 16px;
+      padding: 24px;
+      border: 1px solid #d8dfeb;
+      border-radius: 18px;
+      background: white;
+      box-shadow: 0 6px 22px #13234a0d;
+    }
+
+    #om-phase3 .p3-heading {
+      padding-bottom: 14px;
+      border-bottom: 1px solid #d8dfeb;
+    }
+
+    #om-phase3 .p3-heading &gt; span {
+      width: 38px;
+      height: 38px;
+      color: white;
+      border-radius: 11px;
+      background: #2457d6;
+      font-weight: 800;
+    }
+
+    #om-phase3 .p3-details {
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid #d8dfeb;
+      border-radius: 14px;
+      background: #f8fafc;
+    }
+
+    #om-phase3 .p3-details &gt; summary {
+      padding: 15px 17px;
+      background: white;
+      font-weight: 800;
+    }
+
+    #om-phase3 .p3-details[open] &gt; summary {
+      border-bottom: 1px solid #d8dfeb;
+    }
+
+    #om-phase3 .p3-details &gt; :not(summary) {
+      margin-right: 17px;
+      margin-left: 17px;
+    }
+
+    #om-phase3 .p3-details &gt; .p3-diff {
+      margin-right: 17px;
+      margin-bottom: 17px;
+      margin-left: 17px;
+    }
+
+    #om-phase3 pre {
+      border-radius: 11px;
+      background: #101827;
+    }
+
+    #om-phase3 table {
+      background: white;
+    }
+
+    #om-phase3 th {
+      background: #f4f6fa;
+    }
+
     @media (max-width: 700px) {
+      #om-phase3 {
+        width: calc(100% - 8px);
+        padding: 8px;
+        border-radius: 18px;
+      }
+
+      #om-phase3 .p3-hero {
+        padding: 24px;
+        border-radius: 18px;
+      }
+
+      #om-phase3 .p3-section {
+        padding: 17px;
+      }
+
       #om-phase3 .p3-final,
       #om-phase3 .p3-relation,
       #om-phase3 .p3-diff,
@@ -1504,6 +1713,15 @@ exact-scope-history          pass&lt;/code&gt;&lt;/pre&gt;
 
       #om-phase3 .p3-console &gt; div {
         grid-template-columns: 1fr;
+      }
+
+      #om-phase3 .guide-pagination {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      #om-phase3 .guide-page-current {
+        grid-column: 1 / -1;
+        grid-row: 1;
       }
     }
   &lt;/style&gt;
