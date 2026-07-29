@@ -1,6 +1,7 @@
 # 세션 상태 / 인수인계 (SESSION_STATE)
 
 > **2026-07-30 최신 작업:** 검사 전 등록자료 준비 자동화를 구현했다.
+> 구현 commit은 `b63ce67bd303865224339a0dfe6e4becb252bea6`이다.
 > `harness/prepare_registration.py`는 읽기 전용 `plan`, 미승인 template,
 > digest 결속 `apply`를 제공한다. Git 사실만 자동 계산하고 owner·required
 > path·Contract·승인자는 추측하지 않는다. dirty/unrelated/merge/ID 오류,

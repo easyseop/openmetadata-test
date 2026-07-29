@@ -4,6 +4,7 @@
 
 사전준비 자동화 설계 검토 후속 구현이 완료됐다. Claude는 아래를 우선
 재검토하면 된다.
+구현 기준 commit은 `b63ce67bd303865224339a0dfe6e4becb252bea6`이다.
 
 1. `registration_prep.build_plan()`의 Git 사실과 사람 정책 경계
 2. `REVIEW_REQUIRED`인데 `apply_ready: true`인 제안이 exact decision set

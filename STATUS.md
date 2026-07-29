@@ -2,7 +2,7 @@
 
 > Updated: 2026-07-30 KST
 > Branch: `codex/strict-manifest-gates`
-> Latest local implementation: `2d017846b2cb4fb9883929f00b4f20bb8aa6c85a`
+> Latest local implementation: `b63ce67bd303865224339a0dfe6e4becb252bea6`
 > Latest remotely verified head:
 > `23a8129e82a8754e830d62690ef7d0ddf9c171a6`
 > Latest sharing/rehearsal CI:
@@ -61,6 +61,8 @@ nondeveloper guide is updated in the same coherent batch.
 ### 2026-07-30 registration preparation automation
 
 The reviewed `plan → human approval → apply` workflow is now implemented.
+Implementation commit:
+`b63ce67bd303865224339a0dfe6e4becb252bea6`.
 `harness/prepare_registration.py` pins patch/custom refs, inventories every
 BANK-OM commit and touched path, compares them with registration policy, and
 writes an immutable proposal outside the registration directory. It does not

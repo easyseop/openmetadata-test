@@ -3,6 +3,7 @@
 ## 0-latest. 2026-07-30 검사 전 준비 자동화 구현
 
 독립 검토를 받은 등록자료 준비 설계의 0~6단계를 구현했다.
+구현 commit은 `b63ce67bd303865224339a0dfe6e4becb252bea6`이다.
 
 ### 구현 파일과 방식
 
@@ -63,7 +64,7 @@ skipped`다. 신규 준비·Git·Candidate 집중 test는 `38 passed`다. `py_co
 owner·승인자·1.13.1 SHA·비밀값·실제 산출물은 추측하지 않는다. 전체 build,
 행내 runtime, 산출물 승격, 운영 배포는 여전히 외부 입력 대기다.
 
-> 갱신 기준: 2026-07-29 23:42 KST
+> 갱신 기준: 2026-07-30 01:00 KST
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
 > 이번 문서 개편 commit: 이 문서를 포함한 현재 branch의 최신 commit
