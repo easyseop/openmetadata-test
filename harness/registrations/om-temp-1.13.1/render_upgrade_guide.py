@@ -60,7 +60,7 @@ def markdown() -> str:
 ## 3. branch 생성과 커스터마이징 적용
 
 ```bash
-git worktree add -b patch/om-1.13.1 \
+git worktree add -b patch/om-1.13.1 \\
   ../om-temp-1.13.1-upgrade 1.13.1-release
 git -C ../om-temp-1.13.1-upgrade switch -c custom/om-1.13.1
 ```
@@ -86,13 +86,13 @@ git -C ../om-temp-1.13.1-upgrade switch -c custom/om-1.13.1
 3. 적용 중인 BANK-OM JSON
 
 여기서 leaf key는 `label.instance-code`처럼 JSON에서 실제 값을 담는 마지막
-항목 이름입니다. 공식 변경 키와 BANK-OM 변경 키가 하나도 겹치지 않은 경우에만 공식 1.13.1
-JSON을 유지하고 BANK-OM 키를 추가했습니다. 같은 키를 양쪽이 모두 바꿨다면
+항목 이름입니다. 공식 변경 키와 BANK-OM 변경 키가 하나도 겹치지 않은 경우에만
+공식 1.13.1 JSON을 유지하고 BANK-OM 키를 추가했습니다. 같은 키를 양쪽이 모두 바꿨다면
 자동 해결하지 않고 명령이 중단되도록 했습니다.
 
 ```bash
-./.venv/bin/python \
-  harness/tools/resolve_nonoverlapping_json_conflicts.py \
+./.venv/bin/python \\
+  harness/tools/resolve_nonoverlapping_json_conflicts.py \\
   --repo ../om-temp-1.13.1-upgrade
 ```
 
@@ -123,18 +123,36 @@ SHA·전체 diff·공용 경로·정책 파일은 1.13.1 기준으로 다시 생
 | 민감 경로 | 별도 정책을 위반하지 않았는지 | PASS |
 | 커밋별 실제 경로 일치 | 실제 변경 파일과 Manifest가 같은지 | PASS |
 
-## 7. 현재 완료와 다음 단계
+## 7. Contract test와 build 환경 확인
+
+로컬 1.13.1 코드를 연결해 Contract test 10개를 수집했습니다.
+
+| 구분 | 결과 | 해석 |
+|---|---:|---|
+| 필수 Contract test | 2 PASS · 7 SKIP | Sybase·Tibero는 PASS, 서버·브라우저가 필요한 7개는 실행되지 않음 |
+| 추가 소스 검사 | 1 PASS | 한글 입력 처리 코드가 남았는지 확인 |
+| 실패 | 0 | 실행된 test에서는 실패가 없었음 |
+
+`SKIP`은 성공이 아닙니다. `OPENMETADATA_BASE_URL`과 세 가지 브라우저 검사용
+URL이 준비된 행내 환경에서 나머지 7개를 실행해야 합니다.
+
+전체 build도 실행 전입니다. 현재 노트북에는 Java Runtime·Maven·Yarn과 UI
+`node_modules`가 없어 build 명령을 시작할 수 없었습니다. 이는 코드가 build에
+성공했다거나 실패했다는 결과가 아니라 **build 환경 준비가 필요하다**는 뜻입니다.
+
+## 8. 현재 완료와 다음 단계
 
 - 완료: 공식 1.13.1 branch 생성, BANK-OM-001~007 적용, JSON 충돌 해결
 - 완료: 1.13.1 등록자료 생성 및 사전자료 검증 5종 PASS
 - 완료: 소스 검사 8종 PASS
-- 미완료: OpenMetadata 전체 build
-- 미완료: Contract test 실제 실행
+- 부분 완료: 소스로 실행 가능한 Contract 관련 test 3개 PASS, 환경이 필요한 7개 SKIP
+- 미완료: OpenMetadata 전체 build 환경 준비와 실제 build
 - 미완료: 기능 담당자 지정과 배포 승인
 - 미완료: GitHub push와 검증 tag 생성
 
-다음 단계는 전체 build와 실행 가능한 Contract test를 수행한 뒤, 실제 Git
-화면·터미널·검사 결과를 캡처해 시연 문서에 추가하는 것입니다.
+다음 단계는 Java·Maven·Yarn과 행내 test URL을 준비해 build와 남은 Contract
+test를 수행한 뒤, 실제 Git 화면·터미널·검사 결과를 캡처해 시연 문서에
+추가하는 것입니다.
 """
 
 
@@ -178,7 +196,7 @@ code{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}} pre{{overflow:au
 </section>
 <section class="summary">
   <strong>결론:</strong> BANK-OM-001~007은 공식 1.13.1에 다시 적용됐고 소스 검사 8종을 통과했습니다.
-  다만 전체 build, Contract test 실행, 담당자 지정과 배포 승인은 아직 남아 있습니다.
+  다만 전체 build, 환경이 필요한 Contract test 7개, 담당자 지정과 배포 승인은 아직 남아 있습니다.
 </section>
 
 <details open><summary><span class="n">1</span><span class="title"><strong>업그레이드 전 영향 확인</strong><small>공식 변경과 upgrade_watch 비교</small></span></summary>
@@ -233,13 +251,25 @@ git -C ../om-temp-1.13.1-upgrade switch -c custom/om-1.13.1</code></pre>
   <p class="note">소스 검사 PASS는 build와 업무 동작 test 성공을 대신하지 않습니다.</p>
 </div></details>
 
-<details><summary><span class="n">6</span><span class="title"><strong>현재 상태와 다음 단계</strong><small>완료와 미완료를 분리</small></span></summary>
+<details><summary><span class="n">6</span><span class="title"><strong>Contract test와 build 환경</strong><small>실행 결과와 SKIP 이유</small></span></summary>
+<div class="body">
+  <table><thead><tr><th>구분</th><th>결과</th><th>해석</th></tr></thead><tbody>
+    <tr><td>필수 Contract test</td><td><span class="pass">2 PASS</span> · 7 SKIP</td><td>Sybase·Tibero PASS, 서버·브라우저가 필요한 7개는 미실행</td></tr>
+    <tr><td>추가 소스 검사</td><td class="pass">1 PASS</td><td>한글 입력 처리 코드가 남았는지 확인</td></tr>
+    <tr><td>실패</td><td>0</td><td>실행된 test에서 실패 없음</td></tr>
+  </tbody></table>
+  <p class="note">SKIP은 성공이 아닙니다. 행내 서버와 브라우저 test URL을 준비해 7개를 다시 실행해야 합니다.</p>
+  <p>전체 build는 Java Runtime·Maven·Yarn과 UI <code>node_modules</code>가 없어 시작하지 못했습니다. 코드 build 성공이나 실패 결과가 아니라, build 환경 준비가 필요한 상태입니다.</p>
+</div></details>
+
+<details><summary><span class="n">7</span><span class="title"><strong>현재 상태와 다음 단계</strong><small>완료와 미완료를 분리</small></span></summary>
 <div class="body">
   <table><thead><tr><th>상태</th><th>항목</th></tr></thead><tbody>
     <tr><td class="pass">완료</td><td>1.13.1 branch 생성, BANK-OM 적용, JSON 충돌 해결, 사전자료 5종 PASS, 소스 검사 8종 PASS</td></tr>
-    <tr><td class="approval">미완료</td><td>전체 build, Contract test 실행, 담당자 지정, GitHub push, 검증 tag, 배포 승인</td></tr>
+    <tr><td class="approval">부분 완료</td><td>Contract 관련 test 3개 PASS, 환경이 필요한 필수 test 7개 SKIP</td></tr>
+    <tr><td class="approval">미완료</td><td>전체 build 환경과 실행, 남은 Contract test, 담당자 지정, GitHub push, 검증 tag, 배포 승인</td></tr>
   </tbody></table>
-  <p>다음에는 build와 실행 가능한 test를 수행하고, 실제 Git 화면·터미널·검사 결과를 캡처해 시연 문서에 추가합니다.</p>
+  <p>다음에는 Java·Maven·Yarn과 행내 test URL을 준비하고, 실제 Git 화면·터미널·검사 결과를 캡처해 시연 문서에 추가합니다.</p>
 </div></details>
 </main></body></html>"""
 

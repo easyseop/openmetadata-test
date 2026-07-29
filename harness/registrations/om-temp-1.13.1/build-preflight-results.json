@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "candidate_commit": "dee330ebd5abfe33e1ac61e1ca31879746a1b423",
+  "status": "environment_pending",
+  "checks": [
+    {
+      "tool": "Java Runtime",
+      "available": false,
+      "required_for": "OpenMetadata Java service compilation and Maven build"
+    },
+    {
+      "tool": "Maven",
+      "available": false,
+      "required_for": "OpenMetadata Java module build"
+    },
+    {
+      "tool": "Yarn and UI node_modules",
+      "available": false,
+      "required_for": "OpenMetadata UI build and Jest execution"
+    }
+  ],
+  "interpretation": "The full build was not executed. This is an environment prerequisite gap, not evidence that the source build passed or failed."
+}

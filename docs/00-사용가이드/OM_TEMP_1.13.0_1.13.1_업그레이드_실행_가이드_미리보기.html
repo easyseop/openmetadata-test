@@ -33,7 +33,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace} pre{overflow:auto;
 </section>
 <section class="summary">
   <strong>결론:</strong> BANK-OM-001~007은 공식 1.13.1에 다시 적용됐고 소스 검사 8종을 통과했습니다.
-  다만 전체 build, Contract test 실행, 담당자 지정과 배포 승인은 아직 남아 있습니다.
+  다만 전체 build, 환경이 필요한 Contract test 7개, 담당자 지정과 배포 승인은 아직 남아 있습니다.
 </section>
 
 <details open><summary><span class="n">1</span><span class="title"><strong>업그레이드 전 영향 확인</strong><small>공식 변경과 upgrade_watch 비교</small></span></summary>
@@ -88,12 +88,24 @@ git -C ../om-temp-1.13.1-upgrade switch -c custom/om-1.13.1</code></pre>
   <p class="note">소스 검사 PASS는 build와 업무 동작 test 성공을 대신하지 않습니다.</p>
 </div></details>
 
-<details><summary><span class="n">6</span><span class="title"><strong>현재 상태와 다음 단계</strong><small>완료와 미완료를 분리</small></span></summary>
+<details><summary><span class="n">6</span><span class="title"><strong>Contract test와 build 환경</strong><small>실행 결과와 SKIP 이유</small></span></summary>
+<div class="body">
+  <table><thead><tr><th>구분</th><th>결과</th><th>해석</th></tr></thead><tbody>
+    <tr><td>필수 Contract test</td><td><span class="pass">2 PASS</span> · 7 SKIP</td><td>Sybase·Tibero PASS, 서버·브라우저가 필요한 7개는 미실행</td></tr>
+    <tr><td>추가 소스 검사</td><td class="pass">1 PASS</td><td>한글 입력 처리 코드가 남았는지 확인</td></tr>
+    <tr><td>실패</td><td>0</td><td>실행된 test에서 실패 없음</td></tr>
+  </tbody></table>
+  <p class="note">SKIP은 성공이 아닙니다. 행내 서버와 브라우저 test URL을 준비해 7개를 다시 실행해야 합니다.</p>
+  <p>전체 build는 Java Runtime·Maven·Yarn과 UI <code>node_modules</code>가 없어 시작하지 못했습니다. 코드 build 성공이나 실패 결과가 아니라, build 환경 준비가 필요한 상태입니다.</p>
+</div></details>
+
+<details><summary><span class="n">7</span><span class="title"><strong>현재 상태와 다음 단계</strong><small>완료와 미완료를 분리</small></span></summary>
 <div class="body">
   <table><thead><tr><th>상태</th><th>항목</th></tr></thead><tbody>
     <tr><td class="pass">완료</td><td>1.13.1 branch 생성, BANK-OM 적용, JSON 충돌 해결, 사전자료 5종 PASS, 소스 검사 8종 PASS</td></tr>
-    <tr><td class="approval">미완료</td><td>전체 build, Contract test 실행, 담당자 지정, GitHub push, 검증 tag, 배포 승인</td></tr>
+    <tr><td class="approval">부분 완료</td><td>Contract 관련 test 3개 PASS, 환경이 필요한 필수 test 7개 SKIP</td></tr>
+    <tr><td class="approval">미완료</td><td>전체 build 환경과 실행, 남은 Contract test, 담당자 지정, GitHub push, 검증 tag, 배포 승인</td></tr>
   </tbody></table>
-  <p>다음에는 build와 실행 가능한 test를 수행하고, 실제 Git 화면·터미널·검사 결과를 캡처해 시연 문서에 추가합니다.</p>
+  <p>다음에는 Java·Maven·Yarn과 행내 test URL을 준비하고, 실제 Git 화면·터미널·검사 결과를 캡처해 시연 문서에 추가합니다.</p>
 </div></details>
 </main></body></html>

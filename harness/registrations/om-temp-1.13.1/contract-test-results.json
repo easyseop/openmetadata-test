@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "candidate_commit": "dee330ebd5abfe33e1ac61e1ca31879746a1b423",
+  "command": "OPENMETADATA_PRODUCT_REPO=../om-temp-1.13.1-upgrade ./.venv/bin/pytest tests/bank/contracts -vv -ra",
+  "collected": 10,
+  "passed": 3,
+  "skipped": 7,
+  "failed": 0,
+  "required_contract_tests": {
+    "registered": 9,
+    "passed": [
+      "tests/bank/contracts/test_sybase.py::test_connection_schema_roundtrip",
+      "tests/bank/contracts/test_tibero.py::test_connection_schema_roundtrip"
+    ],
+    "skipped": 7
+  },
+  "additional_source_guard_tests": {
+    "passed": [
+      "tests/bank/contracts/test_korean_ime.py::test_hangul_composition_source_guard"
+    ]
+  },
+  "skip_requirements": [
+    "OPENMETADATA_BASE_URL for live API contracts",
+    "BANK_COLUMN_UI_URL for bank-column browser contract",
+    "BANK_DATA_ASSERTIONS_URL for data-assertions browser contract",
+    "BANK_IME_EDITOR_URL for Korean IME browser contract"
+  ],
+  "interpretation": "No executed test failed. Seven required runtime/browser tests did not execute and therefore are not PASS."
+}

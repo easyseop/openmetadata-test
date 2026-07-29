@@ -311,6 +311,12 @@ OpenMetadata 전체 build, Contract test 실행, 담당자 지정, 1.13.1 업그
   전체 경로 111개, 공용 경로 37개
 - 1.13.1 사전자료 검증 5종 PASS
 - 1.13.1 소스 검사 8종 PASS
+- Contract test 수집 10개: 필수 Contract test 2개 PASS·7개 SKIP,
+  추가 한글 입력 소스 검사 1개 PASS, 실패 0개
+- SKIP 사유: `OPENMETADATA_BASE_URL`, `BANK_COLUMN_UI_URL`,
+  `BANK_DATA_ASSERTIONS_URL`, `BANK_IME_EDITOR_URL` 미설정
+- 전체 build 사전확인: 현재 노트북에 Java Runtime·Maven·Yarn·UI
+  `node_modules`가 없어 실행 전(`environment_pending`)
 
 상세 결과:
 
@@ -318,10 +324,13 @@ OpenMetadata 전체 build, Contract test 실행, 담당자 지정, 1.13.1 업그
 - `harness/registrations/om-temp-1.13.1/upgrade-application-results.json`
 - `harness/registrations/om-temp-1.13.1/registration-validation-results.json`
 - `harness/registrations/om-temp-1.13.1/source-gate-results.json`
+- `harness/registrations/om-temp-1.13.1/contract-test-results.json`
+- `harness/registrations/om-temp-1.13.1/build-preflight-results.json`
 - `docs/00-사용가이드/OM_TEMP_1.13.0_1.13.1_업그레이드_실행_가이드_미리보기.html`
 
 두 1.13.1 branch는 로컬에만 만들었고 아직 GitHub에 push하지 않았다. 전체
-build, Contract test 실제 실행, 담당자 지정, 검증 tag와 배포 승인은 남아 있다.
+build, 환경이 필요한 Contract test 7개, 담당자 지정, 검증 tag와 배포 승인은
+남아 있다. SKIP은 PASS로 계산하지 않는다.
 
 HTML 다시 생성:
 
