@@ -129,6 +129,14 @@ error: could not apply 4df83b311f... add InstanceCode customization</span>
 $ git diff --name-only --diff-filter=U | wc -l
 18</code></pre>
   <p><code>Entity.java</code>와 <code>CollectionDAO.java</code>는 자동 병합됐지만, 번역 JSON 18개는 Git이 자동으로 결정하지 못해 적용이 중단됐습니다.</p>
+  <p><strong>왜 서로 다른 번역 항목인데 충돌했나?</strong> Git은 JSON 항목의 의미가 아니라 줄 위치를 비교합니다. 공통 기준인 공식 1.13.0에서 출발해, 공식 1.13.1은 같은 <code>label</code>·<code>message</code> 객체의 형식과 공식 항목을 변경했고 BANK-OM-001은 그 객체의 끝에 행내 항목 9개를 추가했습니다. 두 변경이 같은 줄 주변을 함께 바꿨기 때문에 Git이 자동 조립을 중단했습니다.</p>
+  <div class="flow">
+    <div><b>공통 기준</b>공식 1.13.0<br>행내 번역 없음</div>
+    <div><b>공식 변경</b>1.13.1<br>같은 JSON 객체 형식·항목 변경</div>
+    <div><b>행내 변경</b>BANK-OM-001<br>같은 객체 끝에 9개 추가</div>
+    <div><b>Git 판단</b>같은 줄 주변이 함께 변경됨<br>자동 병합 중단</div>
+  </div>
+  <p class="note">항목 이름별로 다시 비교한 결과 공식 1.13.1과 BANK-OM-001이 동시에 바꾼 동일 항목은 0개였습니다. 즉, 의미상 같은 값을 서로 다르게 고친 충돌이 아니라 JSON 형식과 삽입 위치가 겹쳐 발생한 줄 단위 충돌입니다.</p>
 
   <div class="evidence">
     <div class="conflict-current">
@@ -159,7 +167,7 @@ $ git diff --name-only --diff-filter=U | wc -l
 <span class="conflict-line">&gt;&gt;&gt;&gt;&gt;&gt;&gt; 4df83b311f</span></code></pre>
     </div>
   </div>
-  <p class="warning"><strong>이것이 실제 충돌입니다.</strong> 위 파란 영역과 주황 영역이 한 JSON 파일 안에 동시에 남았고, Git은 어느 쪽을 최종 코드로 쓸지 정하지 못해 멈췄습니다. 공식 1.13.1이 <code>label</code> 객체 전체의 들여쓰기를 바꾼 상태에서 BANK-OM-001도 같은 객체 안에 항목을 추가했기 때문에, 항목 이름이 겹치지 않아도 줄 기준 충돌이 발생했습니다.</p>
+  <p class="warning"><strong>이것이 실제 충돌입니다.</strong> 위 두 칸은 같은 줄을 일대일로 비교하는 화면이 아니라, Git이 선택하지 못하고 남긴 공식 버전과 BANK-OM 버전의 대표 부분입니다. 두 버전이 한 JSON 파일 안에 동시에 남았고, Git은 어느 쪽을 최종 코드로 쓸지 정하지 못해 멈췄습니다.</p>
 
   <h3 class="subhead">2. 충돌을 해결한 결과</h3>
   <p>한쪽 전체를 선택하면 공식 변경이나 BANK-OM 변경 중 하나를 잃을 수 있습니다. 공식 1.13.1의 번역과 형식을 유지한 뒤 BANK-OM-001의 새 항목 9개만 추가했습니다.</p>

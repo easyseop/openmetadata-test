@@ -121,9 +121,9 @@ series:
         </article>
         <article>
           <h3><code>candidate_additional_paths</code> <span>필요할 때</span></h3>
-          <p><b>의미</b> 최초 snapshot 등록 뒤 같은 BANK-OM ID의 후속 commit이 새로 변경한 파일입니다.</p>
-          <p><b>작성</b> 후속 commit diff에서 생성하고 같은 기능의 연장인지 사람이 승인합니다. 별도 기능이면 새 BANK-OM ID를 발급합니다.</p>
-          <p><b>사용·결과</b> 최초 snapshot 재구성에서는 제외하지만 현재 후보의 변경 범위·유지 검사에는 포함합니다. BANK-OM-007은 후속 파일 2개가 등록돼 있습니다.</p>
+          <p><b>언제 쓰나</b> 기존 BANK-OM ID로 후속 commit을 만들었고, 그 commit이 최초 등록 목록에 없던 <em>새 파일 경로</em>까지 변경했을 때만 씁니다. 최초 목록의 기존 파일을 다시 수정한 경우에는 추가하지 않습니다.</p>
+          <p><b>왜 분리하나</b> 최초 등록 당시의 파일 범위를 보존하면서 현재 후보에서 승인한 확장 범위도 검사하기 위해서입니다. 별도 기능을 추가한 것이라면 이 항목에 넣지 않고 새 BANK-OM ID를 발급합니다.</p>
+          <p><b>검사에서 사용</b> 최초 snapshot 재구성은 <code>allowed_changed_paths</code>만 비교하고, 현재 후보 검사는 두 목록을 합쳐 비교합니다. BANK-OM-007은 최초 8개와 후속 신규 2개로 구분돼 있습니다.</p>
         </article>
       </div>
     </details>
@@ -213,7 +213,7 @@ series:
         </article>
         <article>
           <h3>해결하면서 새 파일이 추가됨</h3>
-          <p><b>같은 기능이면</b> 같은 ID를 유지하고 새 경로를 <code>candidate_additional_paths</code>에 추가합니다.</p>
+          <p><b>같은 기능이면</b> 같은 ID를 유지합니다. 최초 Manifest에 없던 새 파일 경로까지 변경한 경우에만 그 새 경로를 <code>candidate_additional_paths</code>에 추가합니다. 기존 등록 파일의 내용만 다시 수정했다면 Manifest 경로 목록은 그대로 둡니다.</p>
           <p><b>필수 파일이면</b> <code>required_changed_paths</code>에도 추가하고, 공식 변경 영향을 다시 볼 경로는 <code>upgrade_watch.paths</code>에 반영합니다.</p>
           <p><b>동작 조건이 달라지면</b> 연결된 Contract와 test를 갱신합니다.</p>
         </article>
@@ -228,6 +228,13 @@ series:
           <p>충돌 해결을 넘어 독립적인 업무 기능·독립 배포·독립 Contract가 생긴 경우에만 새 BANK-OM ID와 새 Manifest를 만듭니다.</p>
           <p>하나의 해결 commit에 여러 BANK-OM ID를 함께 넣지 않습니다. 현재 검사는 공식 원본 이후의 각 행내 코드 commit마다 정확히 하나의 <code>Customization-ID</code>를 요구합니다.</p>
         </article>
+      </div>
+      <div class="fd-callout">
+        <strong>두 번째 commit부터 실제로 어떻게 처리하나?</strong>
+        <p>기존 파일만 다시 수정하든 새 파일을 추가하든, 같은 업무 기능의 보완이면 commit 메시지에 기존 ID를 그대로 남깁니다.</p>
+        <pre><code>git commit -m "Tibero 서비스 연결 처리 보완" \
+  -m "Customization-ID: BANK-OM-007"</code></pre>
+        <p>생성기는 이 ID와 Git diff를 읽습니다. 기존 등록 파일만 다시 수정했다면 Manifest 경로 목록은 바꾸지 않습니다. 최초 목록에 없던 새 파일이 보이면 <code>candidate_additional_paths</code> 초안을 만들고, 실제 변경 파일은 <code>upgrade_watch.paths</code>에도 포함합니다. 새 파일이 기능 필수 요소인지, 같은 기능의 연장인지, Contract를 바꿔야 하는지는 담당자가 승인합니다.</p>
       </div>
     </details>
   </section>

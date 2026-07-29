@@ -89,8 +89,13 @@ Manifest 전체 필드 설명은 3번 본문을 늘리지 않도록
   등록 묶음으로 복사해 달라진 경로·검증 기준만 갱신한다고 설명한다.
 - `allowed_changed_paths`는 해당 BANK-OM commit의 전체 실제 변경,
   `required_changed_paths`는 빠지면 즉시 기능 미적용으로 판단할 핵심 구현,
-  `candidate_additional_paths`는 같은 ID 후속 commit의 새 경로,
+  `candidate_additional_paths`는 같은 ID 후속 commit에서 최초 등록 범위에
+  새로 들어온 경로,
   `upgrade_watch`는 다음 공식 버전과 비교할 변경·의존 경로라고 설명한다.
+- 같은 ID의 후속 commit은 commit 메시지에 기존
+  `Customization-ID: BANK-OM-NNN`을 그대로 사용한다. 기존 등록 파일만 다시
+  수정하면 Manifest 경로 목록은 유지하고, 새 파일이 생긴 경우에만 생성기가
+  `candidate_additional_paths` 초안을 만든다는 실제 예시를 포함한다.
 - Registry, Contracts, 공용 파일 소유정보, 전체 변경 목록, Repository layout,
   Sensitive zones, Candidate lock, 선택적 Patch-lock과 결과 파일의 의미·작성
   시점·사용 검사를 설명한다.
@@ -107,6 +112,10 @@ Manifest 전체 필드 설명은 3번 본문을 늘리지 않도록
   분리해 기록한 이번 진단 방법이라고 설명한다.
 - 충돌 표식 `<<<<<<<`, `=======`, `>>>>>>>`와 공식 영역·BANK-OM 영역,
   해결 후 추가 항목을 색과 설명으로 구분한다.
+- 공식 1.13.1과 BANK-OM이 같은 JSON 항목 값을 다르게 고친 것이 아니라,
+  공통 기준에서 같은 JSON 객체의 같은 줄 주변을 각각 변경해 Git의 줄 단위
+  병합이 중단됐다는 원인을 먼저 설명한다. 좌우 발췌는 일대일 줄 비교 화면이
+  아니라 Git이 선택하지 못한 두 버전의 대표 부분임을 명시한다.
 - JSON 충돌 보조 도구가 실제로 존재하는지, 어떤 입력을 읽고 무엇을 수정하며
   어떤 경우 중단하는지, 자동 보고서·승인 기록을 만들지 않는 현재 한계를
   설명한다.
