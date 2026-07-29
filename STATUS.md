@@ -1,7 +1,8 @@
 # Current implementation status
 
-> Updated: 2026-07-29 01:05 KST
+> Updated: 2026-07-29 23:42 KST
 > Branch: `codex/strict-manifest-gates`
+> Latest local implementation: `2d017846b2cb4fb9883929f00b4f20bb8aa6c85a`
 > Latest remotely verified sharing/rehearsal head:
 > `10f864750173fccf22ef94d61d5f5e9f726dfaf5`
 > Latest sharing/rehearsal CI:
@@ -56,6 +57,41 @@ When user-visible status, inputs, terminology, or operating steps change, the
 nondeveloper guide is updated in the same coherent batch.
 
 ## Outcome
+
+### 2026-07-29 precheck automation review baseline recovery
+
+Claude's independent review of the registration-preparation automation design
+was accepted. The write-capable `plan`/`apply` tool is deliberately not
+implemented yet; the existing evidence baseline was repaired first.
+
+Commit `2d017846...` makes T41 read Manifest v1/v2 scope through the shared
+schema-aware `manifest.declared_scope()` path, requires explicit Registry
+`provenance`, and converts registration reconstruction failures into
+structured `analysis_error` JSON with exit code 3.
+
+OM_TEMP 1.13.0 was rebuilt deterministically from official
+`f329dd4a...` plus the eight remote BANK-OM commits. The reproducible candidate
+is `3a2811cf6ec3bc172a59c307c6c70d14c3631b80`, its tree is
+`9495a31c99c888780ac72f3ee1bc7f7e729002de`, registration validation has five
+PASS results, and source gates have eight PASS results. Exact inputs and
+commands are recorded in
+[`harness/registrations/om-temp-1.13.0/REPRODUCIBILITY.md`](harness/registrations/om-temp-1.13.0/REPRODUCIBILITY.md).
+
+The OM_TEMP 1.13.1 candidate branches are not present on the remote, so its T41
+result was not silently reused. The phase 2 shared page now marks T41 as
+`현재 후보 재검증 필요`, reducing candidate-bound green checks from nine to
+eight. This is an evidence correction, not a product regression.
+
+Local verification is **318 passed, 47 environment-dependent skipped** out of
+365 collected tests. Four user-facing HTML files have zero unclosed or
+mismatched tags, the phase 2 page has eight candidate-bound green checks, both
+result JSON files parse, and `git diff --check` passes.
+
+Next safe implementation is stage 1: a read-only Git analyzer that pins
+patch/custom SHAs and proposes `commit-inventory.yaml` and
+`current-diff-paths.txt` without writing registration files. Approval/apply,
+artifact-kind binding, bank-only watch policy, path-mode checks, actual runtime
+tests, owner assignment, and production deployment remain incomplete.
 
 ### 2026-07-29 phase 2 verifier status presentation
 

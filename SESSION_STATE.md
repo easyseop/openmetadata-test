@@ -1,5 +1,20 @@
 # 세션 상태 / 인수인계 (SESSION_STATE)
 
+> **2026-07-29 23:42 KST 최신 작업:** 사전준비 자동화 설계의 독립 검토를
+> 반영해 먼저 0단계 기준선을 복구했다. 구현 commit은
+> `2d017846b2cb4fb9883929f00b4f20bb8aa6c85a`다. T41은 Manifest v1/v2를
+> 공용 `manifest.declared_scope()`로 읽고, Registry `provenance`는 필수이며,
+> 등록자료 분석 실패는 traceback 대신 `analysis_error` JSON으로 남는다.
+> OM_TEMP 1.13.0 결정론적 후보 `3a2811cf...`에서 등록 5종·소스 8종 PASS를
+> 다시 확인했다. 전체 로컬 suite는 365개 중 318 passed, 환경 의존 47 skipped다.
+> 원격에 1.13.1 후보 branch가 없어 T41은 재실행하지 못했으며 2차 공유 HTML의
+> 초록 체크를 9개에서 8개로 정정했다. 다음 작업은 쓰기 없는 1단계 Git
+> 분석기이며 `plan`·`apply` 자동화와 운영 배포는 아직 완료되지 않았다.
+> 상세 변경·재현 명령·남은 차단 조건은
+> `docs/04-진행/PREP_AUTOMATION_DESIGN_REVIEW_RESPONSE_20260729.md`,
+> `harness/registrations/om-temp-1.13.0/REPRODUCIBILITY.md`,
+> `docs/04-진행/CODEX_HANDOFF.md`의 최신 절을 따른다.
+
 > **2026-07-29 현재 공유문서 작업 정본:** 작업 브랜치는
 > `codex/strict-manifest-gates`다. 1차·2차 HTML, 3차 시연 요구사항, 검사기별
 > 예외 검토와 다른 노트북 재개 절차는

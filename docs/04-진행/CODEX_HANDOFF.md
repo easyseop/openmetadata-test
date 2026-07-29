@@ -1,6 +1,6 @@
 # Codex 작업 인수인계
 
-> 갱신 기준: 2026-07-30 02:27 KST
+> 갱신 기준: 2026-07-29 23:42 KST
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
 > 이번 문서 개편 commit: 이 문서를 포함한 현재 branch의 최신 commit
@@ -27,6 +27,63 @@ GitHub 서버 시각을 기준으로 한다.
 1차·2차·3차·4차 작업은 이 문서와
 [`SHARING_ARTIFACT_REQUIREMENTS.md`](SHARING_ARTIFACT_REQUIREMENTS.md)를 먼저
 따른다.
+
+## 0-current. 사전준비 자동화 설계 검토 반영과 기준선 복구
+
+### 이번에 무엇을 검토받았나
+
+사용자가 전달한 `PREP_AUTOMATION_DESIGN_REVIEW_20260729.md`는 검사 실행 전에
+Manifest·Registry·Contract 등 등록자료를 자동으로 준비하는
+`plan → 검토 → apply` 설계에 대한 독립 검토다. 실제 제품 업그레이드나 운영
+배포 승인 검토가 아니다.
+
+검토는 쓰기 자동화 전에 기존 T41 Manifest v2 범위 오류, Registry 출처 필드,
+분석 실패 표현, 승인 후 입력 변경 차단과 Git edge case를 먼저 보완하라고
+권고했다. 응답 정본은
+[`PREP_AUTOMATION_DESIGN_REVIEW_RESPONSE_20260729.md`](PREP_AUTOMATION_DESIGN_REVIEW_RESPONSE_20260729.md)다.
+
+### 구현 완료
+
+- 구현 commit: `2d017846b2cb4fb9883929f00b4f20bb8aa6c85a`
+- T41 소스·업그레이드 실행기는 `manifest.declared_scope()`로 Manifest v1/v2
+  범위를 읽는다.
+- Registry entry는 `source-snapshot` 또는 `candidate-follow-up` provenance를
+  반드시 명시한다.
+- 등록자료 재구성 실패는 `analysis_error` JSON과 exit code 3으로 끝난다.
+- OM_TEMP 1.13.0을 공식 `f329dd4a...`에서 결정론적으로 다시 구성했다.
+  후보 `3a2811cf...`, tree `9495a31c...`, 등록 5종·소스 8종 PASS다.
+- 1.13.1은 원격 후보 branch가 없어 T41을 재실행하지 않았다. 2차 공유 HTML은
+  이 항목을 `현재 후보 재검증 필요`로 표시하고 후보 결속 초록 체크를 8개로
+  정정했다.
+- 비개발자 가이드, 설계서, 운영 위키 데이터와 독립 검토용 HTML을 같은
+  증거 경계로 갱신했다.
+
+### 검증
+
+- 전체: 365개 중 `318 passed, 47 environment-dependent skipped`
+- phase 2 후보 결속 초록 체크: 8개
+- 사용자 HTML 4개: 여닫기 불일치·미종료 태그 0
+- 1.13.0 결과 JSON 2개: 문법 확인
+- `git diff --check`: 통과
+
+47개 skip은 `/home/user/om-mirror`, 행내 OpenMetadata API, 브라우저 URL과
+제품 repository 같은 외부 실행 입력이 없기 때문이다. PASS로 세지 않는다.
+
+### 다음 정확한 작업
+
+1. `prepare_registration.py plan`의 1단계 읽기 전용 Git 분석기를 구현한다.
+2. patch/custom ref를 SHA로 고정하고 BANK-OM별 commit·경로를 계산한다.
+3. 실제 등록 폴더를 쓰지 않고 제안 폴더에 `commit-inventory.yaml`과
+   `current-diff-paths.txt`만 만든다.
+4. 무관 이력, merge, ID 누락·중복, rename·한글 경로 등 차단 test를 먼저
+   추가한다.
+5. 위 판정이 안정된 뒤 proposal/review-required, 마지막에 digest 승인과
+   원자적 apply를 구현한다.
+
+아직 구현하지 않은 것은 source/build artifact 종류 구분, upstream에 없는
+행내 경로의 watch 분리 코드, symlink·submodule·LFS mode 차단, OM_TEMP 1.13.1
+재검증, 실제 runtime/build/deploy와 조직 owner·승인자 지정이다. 원격
+`patch/om-1.13.1`·`custom/om-1.13.1`, 비밀값, owner를 추측하지 않는다.
 
 ## 0-0. 2026-07-29 Claude 위키 검토 반영
 

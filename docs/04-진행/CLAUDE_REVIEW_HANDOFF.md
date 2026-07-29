@@ -2230,3 +2230,28 @@ gates 8개와 source patch-kill 2건을 통과했다. 90일 증거 artifact는
 `source-patch-kill-evidence-30376209792-1`, ID `8695135853`, GitHub
 SHA-256
 `465b509049c81782de6100d499411e845b33bac4b0b9a4afccf431f0a7ffde3c`다.
+
+## 16. 2026-07-29 사전준비 자동화 설계 검토 반영
+
+사용자 전달 `PREP_AUTOMATION_DESIGN_REVIEW_20260729.md`는
+Manifest·Registry·Contract 준비를 자동화하는 `plan → 검토 → apply` 설계를
+검토했다. 실제 vendor-merge, 전체 build, Runtime test 또는 운영 배포 승인
+검토가 아니다.
+
+검토 지적을 수용해 쓰기 자동화 전의 0단계 기준선을
+`2d017846b2cb4fb9883929f00b4f20bb8aa6c85a`에서 복구했다.
+
+- T41 Manifest v2 범위 계산을 `manifest.declared_scope()`로 통일
+- Registry provenance 명시적 필수화
+- 등록자료 재구성 실패를 구조화된 `analysis_error`로 변환
+- OM_TEMP 1.13.0 결정론적 후보 `3a2811cf...`에 등록 5종·소스 8종 결과 재결속
+- 원격 후보가 없는 1.13.1 T41 초록 체크 해제
+- 비개발자 가이드·2차 HTML·위키·설계서·재현 문서 동기화
+
+검증은 365개 중 `318 passed, 47 environment-dependent skipped`,
+사용자 HTML 4개의 태그 불일치 0건, 결과 JSON 2개 문법 통과,
+`git diff --check` 통과다.
+
+다음 검토 대상은 1단계 읽기 전용 Git 분석기다. `plan`·`apply`, artifact
+kind 구분, bank-only watch 처리, symlink·submodule·LFS mode 차단과 1.13.1
+재검증은 아직 구현하지 않았다. 이 미구현 범위를 운영 완료로 해석하지 않는다.
