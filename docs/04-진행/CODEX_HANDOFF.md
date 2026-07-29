@@ -1,6 +1,6 @@
 # Codex 작업 인수인계
 
-> 갱신 기준: 2026-07-29 10:43 KST
+> 갱신 기준: 2026-07-29 10:49 KST
 > 거버넌스 저장소: `easyseop/openmetadata-test`
 > 작업 브랜치: `codex/strict-manifest-gates`
 > 문서 묶음 작성 전 기준 commit: `0a6d009107a18e69a2150388442adffb6332f08c`
@@ -60,10 +60,14 @@ font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
 
 이번 배치에서 추가로 반영한 내용은 다음과 같다.
 
-- 1차 branch SVG를 `공식 새 버전 → patch branch → custom branch 시작 →
-  BANK-OM commit 재적용 → 적용 완료 commit → 검사 → 검증 tag·배포`의
-  Cycle로 다시 구성했다.
-- 실제 Git 충돌은 BANK-OM commit 재적용 단계에서 발생한다고 표시했다. 충돌
+- 1차 branch SVG는 왼쪽 `patch` branch의 공식 코드와 오른쪽의 BANK-OM
+  commit이 중앙의 새 `custom` branch로 합류하는 구조를 먼저 보여준 뒤,
+  `적용 완료 commit → 검사 → 검증 tag·배포`로 이어지는 Cycle로 구성했다.
+- 두 입력 화살표 설명은 별도 라벨 안에 넣고, 합류 지점은 긴 설명이 들어가는
+  둥근 사각형으로 바꿨다. 충돌 해결 복귀선은 설명 아래쪽으로 우회시켜 화살표와
+  글자 겹침을 제거했다.
+- 실제 Git 충돌은 BANK-OM commit이 새 `custom` branch에 합류하는 단계에서
+  발생한다고 표시했다. 충돌
   해결 commit을 `custom` branch에 남기고 다시 재적용하는 loop와, 적용 완료 후
   검사 BLOCK 때문에 `custom`을 보완하고 재검사하는 loop를 서로 분리했다.
 - `custom` branch는 `patch`의 공식 코드에서 시작하고, 사전에 관리한 BANK-OM

@@ -336,9 +336,9 @@ Customization-ID: BANK-OM-001</code></pre>
     </div>
 
     <div class="om-branch-visual">
-      <svg class="om-branch-svg" viewBox="0 0 940 830" role="img" aria-labelledby="om-branch-title om-branch-desc">
+      <svg class="om-branch-svg" viewBox="0 0 940 800" role="img" aria-labelledby="om-branch-title om-branch-desc">
         <title id="om-branch-title">OpenMetadata 버전별 커스터마이징 반복 Cycle</title>
-        <desc id="om-branch-desc">공식 새 버전으로 patch branch를 만들고 같은 코드에서 custom branch를 시작한다. custom branch에 BANK-OM commit을 다시 적용할 때 Git 충돌이 발생할 수 있으며, 충돌은 custom branch에서 해결하고 재적용을 계속한다. 적용 완료 commit을 검사한 뒤 통과하면 검증 tag를 붙여 배포하고 다음 공식 버전에서 반복한다.</desc>
+        <desc id="om-branch-desc">왼쪽 patch branch의 공식 코드와 오른쪽의 사전 관리 BANK-OM commit이 새 custom branch에서 합쳐진다. 이 합류 지점에서 Git 충돌이 발생할 수 있으며, 충돌은 custom branch에서 해결한다. 적용 완료 custom commit을 검사한 뒤 통과하면 검증 tag를 붙여 배포하고 다음 공식 버전에서 반복한다.</desc>
         <defs>
           <marker id="om-arrow-core" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
             <path d="M0,0 L9,4.5 L0,9 z" fill="var(--viz-series-1)"/>
@@ -354,65 +354,66 @@ Customization-ID: BANK-OM-001</code></pre>
           </marker>
         </defs>
 
-        <path class="om-svg-path om-svg-core-line" marker-end="url(#om-arrow-core)" d="M460 92 L460 134"/>
-        <path class="om-svg-path om-svg-core-line" marker-end="url(#om-arrow-core)" d="M460 212 L460 252"/>
-        <path class="om-svg-path om-svg-custom-line" marker-end="url(#om-arrow-custom)" d="M460 330 L460 365"/>
-        <path class="om-svg-path om-svg-custom-line" marker-end="url(#om-arrow-custom)" d="M688 420 L560 420"/>
-        <path class="om-svg-path om-svg-custom-line" marker-end="url(#om-arrow-custom)" d="M460 475 L460 510"/>
-        <path class="om-svg-path om-svg-neutral-line" marker-end="url(#om-arrow-core)" d="M460 580 L460 618"/>
-        <path class="om-svg-path om-svg-pass-line" marker-end="url(#om-arrow-pass)" d="M460 708 L460 740"/>
-        <path class="om-svg-path om-svg-core-line" marker-end="url(#om-arrow-core)" d="M605 772 C868 772 920 640 920 376 C920 135 758 60 590 60"/>
+        <path class="om-svg-path om-svg-core-line" marker-end="url(#om-arrow-core)" d="M410 92 C360 106 304 116 270 135"/>
+        <path class="om-svg-path om-svg-core-line" marker-end="url(#om-arrow-core)" d="M270 213 C270 260 358 278 400 295"/>
+        <path class="om-svg-path om-svg-custom-line" marker-end="url(#om-arrow-custom)" d="M680 223 C680 260 572 278 530 295"/>
+        <path class="om-svg-path om-svg-custom-line" marker-end="url(#om-arrow-custom)" d="M465 415 L465 455"/>
+        <path class="om-svg-path om-svg-neutral-line" marker-end="url(#om-arrow-core)" d="M465 525 L465 565"/>
+        <path class="om-svg-path om-svg-pass-line" marker-end="url(#om-arrow-pass)" d="M465 655 L465 690"/>
+        <path class="om-svg-path om-svg-core-line" marker-end="url(#om-arrow-core)" d="M610 722 C858 722 916 615 916 348 C916 132 760 60 590 60"/>
 
         <rect class="om-svg-node om-svg-neutral-node" x="330" y="24" width="260" height="68" rx="24"/>
         <text class="om-svg-label om-svg-center om-svg-strong" x="460" y="54">① 공식 새 버전</text>
         <text class="om-svg-muted om-svg-center" x="460" y="76">업그레이드 기준 코드</text>
 
-        <rect class="om-svg-node om-svg-core-node" x="320" y="134" width="280" height="78" rx="24"/>
-        <text class="om-svg-label om-svg-center om-svg-strong" x="460" y="166">② patch branch</text>
-        <text class="om-svg-muted om-svg-center" x="460" y="190">공식 코드만 유지 · 행내 변경 없음</text>
+        <rect class="om-svg-node om-svg-core-node" x="110" y="135" width="320" height="78" rx="24"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="270" y="167">② patch branch</text>
+        <text class="om-svg-muted om-svg-center" x="270" y="191">공식 새 버전 전체 코드 · 행내 변경 없음</text>
 
-        <rect class="om-svg-node om-svg-custom-node" x="300" y="252" width="320" height="78" rx="24"/>
-        <text class="om-svg-label om-svg-center om-svg-strong" x="460" y="284">③ custom branch 시작</text>
-        <text class="om-svg-muted om-svg-center" x="460" y="308">patch와 같은 공식 코드에서 branch 생성</text>
+        <rect class="om-svg-node om-svg-custom-node" x="520" y="135" width="320" height="88" rx="24"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="680" y="168">사전에 관리한 BANK-OM commit</text>
+        <text class="om-svg-muted om-svg-center" x="680" y="192">이전 custom branch의 행내 변경을</text>
+        <text class="om-svg-muted om-svg-center" x="680" y="212">ID별 commit으로 보존</text>
 
-        <polygon class="om-svg-node om-svg-candidate-node" points="460,365 560,420 460,475 360,420"/>
-        <text class="om-svg-label om-svg-center om-svg-strong" x="460" y="409">④ BANK-OM</text>
-        <text class="om-svg-label om-svg-center om-svg-strong" x="460" y="430">commit 재적용</text>
-        <text class="om-svg-fail-text" x="460" y="452">Git 충돌 발생 지점</text>
+        <rect class="om-svg-input-pill om-svg-core-node" x="198" y="235" width="164" height="34" rx="17"/>
+        <text class="om-svg-core-text om-svg-center" x="280" y="258">공식 코드 입력</text>
+        <rect class="om-svg-input-pill om-svg-custom-node" x="578" y="235" width="164" height="34" rx="17"/>
+        <text class="om-svg-custom-text om-svg-center" x="660" y="258">행내 변경 입력</text>
 
-        <rect class="om-svg-node om-svg-custom-node" x="688" y="376" width="210" height="88" rx="24"/>
-        <text class="om-svg-label om-svg-center om-svg-strong" x="793" y="407">BANK-OM 변경 이력</text>
-        <text class="om-svg-muted om-svg-center" x="793" y="431">ID별 commit을 순서대로</text>
-        <text class="om-svg-muted om-svg-center" x="793" y="451">custom branch에 다시 적용</text>
+        <rect class="om-svg-node om-svg-candidate-node" x="285" y="295" width="360" height="120" rx="28"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="465" y="332">③ custom branch에서 합침</text>
+        <text class="om-svg-muted om-svg-center" x="465" y="363">patch 기준 코드 + BANK-OM commit</text>
+        <text class="om-svg-fail-text" x="465" y="393">Git 충돌이 발생할 수 있는 지점</text>
 
-        <path class="om-svg-path om-svg-fail-line" marker-end="url(#om-arrow-fail)" d="M360 420 L258 420"/>
-        <rect class="om-svg-node om-svg-fail-node" x="26" y="376" width="232" height="88" rx="24"/>
-        <text class="om-svg-label om-svg-center om-svg-strong" x="142" y="407">충돌 해결 commit</text>
-        <text class="om-svg-muted om-svg-center" x="142" y="431">custom branch에서 코드 선택·수정</text>
-        <text class="om-svg-muted om-svg-center" x="142" y="451">해결 뒤 다음 BANK-OM 재적용</text>
-        <path class="om-svg-path om-svg-fail-line om-svg-loop" marker-end="url(#om-arrow-fail)" d="M142 376 C142 300 284 286 300 286"/>
+        <path class="om-svg-path om-svg-fail-line" marker-end="url(#om-arrow-fail)" d="M285 355 L255 355"/>
+        <rect class="om-svg-node om-svg-fail-node" x="25" y="311" width="230" height="88" rx="24"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="140" y="342">충돌 해결 commit</text>
+        <text class="om-svg-muted om-svg-center" x="140" y="366">custom branch에서 코드 선택·수정</text>
+        <text class="om-svg-muted om-svg-center" x="140" y="386">해결 뒤 남은 BANK-OM 계속 적용</text>
+        <path class="om-svg-path om-svg-fail-line om-svg-loop" marker-end="url(#om-arrow-fail)" d="M140 399 C140 443 236 443 285 408"/>
 
-        <rect class="om-svg-node om-svg-candidate-node" x="310" y="510" width="300" height="70" rx="24"/>
-        <text class="om-svg-label om-svg-center om-svg-strong" x="460" y="539">⑤ 적용 완료 custom commit</text>
-        <text class="om-svg-muted om-svg-center" x="460" y="562">patch 공식 코드 + BANK-OM 변경</text>
+        <rect class="om-svg-node om-svg-candidate-node" x="315" y="455" width="300" height="70" rx="24"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="465" y="484">④ 적용 완료 custom commit</text>
+        <text class="om-svg-muted om-svg-center" x="465" y="507">공식 코드와 행내 변경이 함께 있는 상태</text>
 
-        <polygon class="om-svg-node om-svg-verifier-node" points="460,618 524,663 460,708 396,663"/>
-        <text class="om-svg-label om-svg-center om-svg-strong" x="460" y="659">⑥ 검사기</text>
-        <text class="om-svg-muted om-svg-center" x="460" y="679">등록 기준·동작 확인</text>
+        <polygon class="om-svg-node om-svg-verifier-node" points="465,565 529,610 465,655 401,610"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="465" y="606">⑤ 검사기</text>
+        <text class="om-svg-muted om-svg-center" x="465" y="626">등록 기준·동작 확인</text>
 
-        <path class="om-svg-path om-svg-fail-line om-svg-loop" marker-end="url(#om-arrow-fail)" d="M396 663 C310 712 250 650 310 556"/>
-        <text class="om-svg-fail-text" x="192" y="716">검사 BLOCK → custom 보완 → 재검사</text>
+        <path class="om-svg-path om-svg-fail-line om-svg-loop" marker-end="url(#om-arrow-fail)" d="M401 610 C313 661 252 594 315 501"/>
+        <text class="om-svg-fail-text" x="196" y="665">검사 BLOCK → custom 보완 → 재검사</text>
 
-        <rect class="om-svg-node om-svg-pass-node" x="315" y="740" width="290" height="56" rx="22"/>
-        <text class="om-svg-label om-svg-center om-svg-strong" x="460" y="764">⑦ 검증 tag · 배포</text>
-        <text class="om-svg-muted om-svg-center" x="460" y="784">통과한 custom 최종 commit 고정</text>
-        <text class="om-svg-core-text om-svg-center" x="790" y="724">다음 공식 버전에서 Cycle 반복</text>
+        <rect class="om-svg-node om-svg-pass-node" x="320" y="690" width="290" height="56" rx="22"/>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="465" y="714">⑥ 검증 tag · 배포</text>
+        <text class="om-svg-muted om-svg-center" x="465" y="734">통과한 custom 최종 commit 고정</text>
+        <text class="om-svg-core-text om-svg-center" x="790" y="672">다음 공식 버전에서 Cycle 반복</text>
       </svg>
     </div>
 
     <div class="om-branch-after">
-      <p><strong>Git 충돌은 어디서 발생하나?</strong> <code>patch</code>와 같은 코드에서 시작한 <code>custom</code> branch에 BANK-OM commit을 다시 적용하는 ④ 단계에서 발생합니다. 해결 코드는 <code>custom</code> branch에 commit으로 남기고 다음 BANK-OM 재적용을 계속합니다.</p>
-      <p><strong>검사 BLOCK은 무엇이 다른가?</strong> 모든 BANK-OM commit 적용이 끝난 ⑤ 상태를 검사한 뒤 기준을 통과하지 못한 경우입니다. 이때도 <code>custom</code> branch를 보완하지만, Git이 코드를 합치지 못한 충돌과는 다른 문제입니다.</p>
+      <p><strong>그림에서 무엇과 무엇이 합쳐지나?</strong> 왼쪽 <code>patch</code> branch의 공식 코드와 오른쪽 BANK-OM commit이 새 <code>custom</code> branch에서 합쳐집니다. 이미 존재하는 두 branch를 마지막에 통째로 merge하는 구조는 아닙니다.</p>
+      <p><strong>Git 충돌은 어디서 발생하나?</strong> 새 <code>custom</code> branch에 BANK-OM commit을 다시 적용하는 ③ 합류 지점에서 발생합니다. 해결 코드는 <code>custom</code> branch에 commit으로 남기고 다음 BANK-OM 재적용을 계속합니다.</p>
+      <p><strong>검사 BLOCK은 무엇이 다른가?</strong> 모든 BANK-OM commit 적용이 끝난 ④ 상태를 검사한 뒤 기준을 통과하지 못한 경우입니다. 이때도 <code>custom</code> branch를 보완하지만, Git이 코드를 합치지 못한 충돌과는 다른 문제입니다.</p>
       <p><strong>다음 버전은 어떻게 이어지나?</strong> 검사에 통과한 마지막 <code>custom</code> commit에 검증 tag를 붙여 배포 대상을 고정합니다. 다음 공식 버전에서는 새 <code>patch</code>와 새 <code>custom</code> branch를 만든 뒤 같은 Cycle을 반복합니다. 공식 코드만 담는 <code>patch</code>에는 충돌 해결이나 검사 보완 commit을 합치지 않습니다.</p>
     </div>
 
@@ -1121,6 +1122,10 @@ Customization-ID: BANK-OM-001</code></pre>
 
   #om-guide-v3 .om-svg-node {
     stroke-width: 2;
+  }
+
+  #om-guide-v3 .om-svg-input-pill {
+    stroke-width: 1;
   }
 
   #om-guide-v3 .om-svg-neutral-line {
