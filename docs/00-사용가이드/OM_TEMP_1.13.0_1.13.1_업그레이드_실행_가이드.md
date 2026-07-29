@@ -198,6 +198,51 @@ Git이 한 파일 안에서 자동으로 합치지 못한 **두 개의 큰 충�
 공식 1.13.0의 더 긴 기존 형식을 유지했기 때문입니다. 실제 BANK-OM-001 추가는
 9개 항목입니다.
 
+#### 실제 충돌 파일에서 발췌한 코드
+
+아래는 설명을 위해 새로 만든 예시가 아니라
+`BANK-OM-001_ko-kr_full_conflict.txt`의 실제 행입니다. 첫 블록은 충돌 시작과
+두 버전의 경계, 두 번째 블록은 BANK 쪽 충돌 블록 안에 실제로 들어 있던
+9개 추가 항목의 위치를 보여줍니다. 서로 떨어진 행 사이에는 `[중간 생략]`을
+표시했습니다.
+
+```text
+   1 │ {
+   2 │ <<<<<<< HEAD
+   3 │     "label": {
+   4 │         "-with-colon": "{{text}}:",
+     │         [공식 1.13.1 쪽 충돌 내용 중간 생략]
+2374 │         "zoom-in": "확대",
+2375 │         "zoom-out": "축소"
+2376 │ =======
+2377 │   "label": {
+2378 │     "-with-colon": "{{text}}:",
+     │     [BANK-OM-001 쪽 충돌 내용 계속]
+```
+
+```text
+2676 │     "code-group": "Code Group",
+2677 │     "code-name": "Code Name",
+2678 │     "code-value": "Code Value",
+     │     [중간 생략]
+3441 │     "instance-code": "인스턴스 코드",
+3442 │     "instance-code-lowercase-plural": "인스턴스 코드",
+3443 │     "instance-code-plural": "인스턴스 코드",
+     │     [중간 생략]
+4300 │     "sort-order": "Sort Order",
+     │     [중간 생략]
+5112 │     "instance-code-description": "Manage common/reference codes used as shared master data across the platform.",
+5113 │     "instance-code-group-description": "The {{codeGroupName}} code group contains {{count}} registered code(s).",
+     │     [BANK 쪽 충돌 내용 계속]
+5555 │ >>>>>>> 4df83b311f (add InstanceCode customization)
+5556 │     },
+5557 │     "message": {
+```
+
+즉, Git이 `zoom-out` 한 줄과 `label` 한 줄 중 하나를 고르라는 의미가 아닙니다.
+2~5,555행에 걸친 큰 충돌 구간 안에서 공식 쪽과 BANK 쪽 내용을 모두 남긴
+것이며, BANK의 9개 항목도 그 BANK 쪽 블록의 서로 다른 위치에 들어 있었습니다.
+
 ### 이번 충돌을 해결한 방법
 
 한쪽 전체를 선택하면 공식 1.13.1 변경이나 BANK-OM 변경 중 하나를 잃을 수

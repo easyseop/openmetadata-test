@@ -222,6 +222,51 @@ Git이 한 파일 안에서 자동으로 합치지 못한 **두 개의 큰 충�
 공식 1.13.0의 더 긴 기존 형식을 유지했기 때문입니다. 실제 BANK-OM-001 추가는
 9개 항목입니다.
 
+#### 실제 충돌 파일에서 발췌한 코드
+
+아래는 설명을 위해 새로 만든 예시가 아니라
+`BANK-OM-001_ko-kr_full_conflict.txt`의 실제 행입니다. 첫 블록은 충돌 시작과
+두 버전의 경계, 두 번째 블록은 BANK 쪽 충돌 블록 안에 실제로 들어 있던
+9개 추가 항목의 위치를 보여줍니다. 서로 떨어진 행 사이에는 `[중간 생략]`을
+표시했습니다.
+
+```text
+   1 │ {{
+   2 │ <<<<<<< HEAD
+   3 │     "label": {{
+   4 │         "-with-colon": "{{{{text}}}}:",
+     │         [공식 1.13.1 쪽 충돌 내용 중간 생략]
+2374 │         "zoom-in": "확대",
+2375 │         "zoom-out": "축소"
+2376 │ =======
+2377 │   "label": {{
+2378 │     "-with-colon": "{{{{text}}}}:",
+     │     [BANK-OM-001 쪽 충돌 내용 계속]
+```
+
+```text
+2676 │     "code-group": "Code Group",
+2677 │     "code-name": "Code Name",
+2678 │     "code-value": "Code Value",
+     │     [중간 생략]
+3441 │     "instance-code": "인스턴스 코드",
+3442 │     "instance-code-lowercase-plural": "인스턴스 코드",
+3443 │     "instance-code-plural": "인스턴스 코드",
+     │     [중간 생략]
+4300 │     "sort-order": "Sort Order",
+     │     [중간 생략]
+5112 │     "instance-code-description": "Manage common/reference codes used as shared master data across the platform.",
+5113 │     "instance-code-group-description": "The {{{{codeGroupName}}}} code group contains {{{{count}}}} registered code(s).",
+     │     [BANK 쪽 충돌 내용 계속]
+5555 │ >>>>>>> 4df83b311f (add InstanceCode customization)
+5556 │     }},
+5557 │     "message": {{
+```
+
+즉, Git이 `zoom-out` 한 줄과 `label` 한 줄 중 하나를 고르라는 의미가 아닙니다.
+2~5,555행에 걸친 큰 충돌 구간 안에서 공식 쪽과 BANK 쪽 내용을 모두 남긴
+것이며, BANK의 9개 항목도 그 BANK 쪽 블록의 서로 다른 위치에 들어 있었습니다.
+
 ### 이번 충돌을 해결한 방법
 
 한쪽 전체를 선택하면 공식 1.13.1 변경이나 BANK-OM 변경 중 하나를 잃을 수
@@ -460,6 +505,9 @@ code{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}} p code,li code,t
 .conflict-structure{{margin:16px 0;padding:18px;border:2px solid #f0a35f;border-radius:16px;background:#fff9f3}}
 .conflict-structure h4{{margin:0 0 8px;color:#8f3608}} .conflict-structure p{{margin:8px 0 12px}}
 .conflict-structure pre{{margin:10px 0;background:#111827}} .conflict-structure .source-note{{font-size:14px;color:#4b5563}}
+.actual-conflict-excerpt{{margin:16px 0;padding:18px;border:1px solid #d8dfeb;border-radius:16px;background:#fff}}
+.actual-conflict-excerpt h4{{margin:0 0 8px}} .actual-conflict-excerpt p{{margin:8px 0 12px}}
+.line-no{{color:#9fb0c9}} .omitted{{color:#f9c97c;font-style:italic}} .raw-evidence{{display:block;width:100%;height:480px;border:1px solid var(--line);border-radius:10px;background:white}}
 .tool-output{{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}} .tool-output>div{{padding:14px;border:1px solid var(--line);border-radius:12px;background:#f8fafc;line-height:1.6}} .tool-output b{{display:block;margin-bottom:5px;color:var(--blue)}}
 .mini{{margin:10px 0;border-radius:13px;box-shadow:none}} .mini summary{{grid-template-columns:minmax(0,1fr) auto;padding:14px 16px}} .mini .body{{padding:14px 16px}}
 .artifact-links{{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}} .artifact-links a{{padding:8px 11px;border:1px solid #b8c8ee;border-radius:9px;color:var(--blue);background:#f7f9ff;text-decoration:none;font-weight:700;font-size:13px}}
@@ -561,6 +609,47 @@ $ git diff --name-only --diff-filter=U | wc -l
     <p class="source-note">실제 원문은 6,614행입니다. 충돌 표시는 2~5,555행에 있고, 1행과 5,556~6,614행은 Git이 자동으로 맞춘 영역입니다.</p>
     <p class="note">BANK 쪽 충돌 내용이 약 805줄 더 긴 주된 이유는 행내 항목을 805줄 추가했기 때문이 아니라 1.13.0의 더 긴 기존 형식을 유지했기 때문입니다. 실제 BANK-OM-001 추가는 9개 항목입니다.</p>
   </div>
+
+  <div class="actual-conflict-excerpt">
+    <h4>실제 충돌 파일에서 발췌한 코드</h4>
+    <p>설명을 위해 새로 만든 예시가 아니라 <code>BANK-OM-001_ko-kr_full_conflict.txt</code>의 실제 행입니다. 서로 떨어진 행 사이에는 <span class="omitted">[중간 생략]</span>을 표시했습니다.</p>
+    <pre><code><span class="line-no">   1 │</span> {{
+<span class="line-no">   2 │</span> <span class="conflict-line">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
+<span class="line-no">   3 │</span>     "label": {{
+<span class="line-no">   4 │</span>         "-with-colon": "{{{{text}}}}:",
+<span class="omitted">     │         [공식 1.13.1 쪽 충돌 내용 중간 생략]</span>
+<span class="line-no">2374 │</span>         "zoom-in": "확대",
+<span class="line-no">2375 │</span>         "zoom-out": "축소"
+<span class="line-no">2376 │</span> <span class="conflict-line">=======</span>
+<span class="line-no">2377 │</span>   "label": {{
+<span class="line-no">2378 │</span>     "-with-colon": "{{{{text}}}}:",
+<span class="omitted">     │     [BANK-OM-001 쪽 충돌 내용 계속]</span></code></pre>
+
+    <pre><code><span class="line-no">2676 │</span>     "code-group": "Code Group",
+<span class="line-no">2677 │</span>     "code-name": "Code Name",
+<span class="line-no">2678 │</span>     "code-value": "Code Value",
+<span class="omitted">     │     [중간 생략]</span>
+<span class="line-no">3441 │</span>     "instance-code": "인스턴스 코드",
+<span class="line-no">3442 │</span>     "instance-code-lowercase-plural": "인스턴스 코드",
+<span class="line-no">3443 │</span>     "instance-code-plural": "인스턴스 코드",
+<span class="omitted">     │     [중간 생략]</span>
+<span class="line-no">4300 │</span>     "sort-order": "Sort Order",
+<span class="omitted">     │     [중간 생략]</span>
+<span class="line-no">5112 │</span>     "instance-code-description": "Manage common/reference codes used as shared master data across the platform.",
+<span class="line-no">5113 │</span>     "instance-code-group-description": "The {{{{codeGroupName}}}} code group contains {{{{count}}}} registered code(s).",
+<span class="omitted">     │     [BANK 쪽 충돌 내용 계속]</span>
+<span class="line-no">5555 │</span> <span class="conflict-line">&gt;&gt;&gt;&gt;&gt;&gt;&gt; 4df83b311f (add InstanceCode customization)</span>
+<span class="line-no">5556 │</span>     }},
+<span class="line-no">5557 │</span>     "message": {{</code></pre>
+    <p class="note">Git이 <code>zoom-out</code> 한 줄과 <code>label</code> 한 줄 중 하나를 고르라는 의미가 아닙니다. 2~5,555행에 걸친 큰 충돌 구간 안에서 두 버전을 모두 남긴 것이며, BANK의 9개 항목도 BANK 쪽 블록의 서로 다른 위치에 들어 있었습니다.</p>
+  </div>
+
+  <details class="mini"><summary><span class="title"><strong>실제 충돌 원문 6,614행 전체 보기</strong><small>행 번호 없이 저장된 Git 충돌 파일 · 내부 스크롤</small></span></summary>
+    <div class="body">
+      <p>아래 창은 저장소의 실제 충돌 원문을 그대로 표시합니다. <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</code>, <code>=======</code>, <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt; 4df83b311f</code>를 검색하면 각 경계를 바로 찾을 수 있습니다.</p>
+      <iframe class="raw-evidence" title="BANK-OM-001 ko-kr JSON 전체 충돌 원문" src="../../harness/registrations/om-temp-1.13.1/conflict-evidence/BANK-OM-001_ko-kr_full_conflict.txt"></iframe>
+    </div>
+  </details>
 
   <h3 class="subhead">2. 충돌을 해결한 결과</h3>
   <p>위 충돌 블록 중 한쪽만 선택하면 공식 변경이나 BANK-OM 변경 중 하나를 잃을 수 있습니다. 공식 1.13.1의 번역과 형식을 유지한 뒤 BANK-OM-001의 새 항목 9개만 추가했습니다. 실제 위치는 <code>label</code> 7개와 <code>message</code> 2개로 나뉩니다.</p>
