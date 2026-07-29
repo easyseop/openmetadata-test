@@ -92,23 +92,23 @@ font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
 |---|---|---|
 | 행내 배포용 OpenMetadata 소스 | `easyseop/OpenMetadata` 브랜치 `codex/bank-vendor-1.13.1-rebuild` | 공식 원본 위에 BANK-OM-001~011 코드가 적용된 검토 상태. 008~011 ID는 사용자 확정 전 |
 | 현재 로컬 제품 검토 브랜치 | `codex/strict-gate-validation` | remote 이름이 `product`인 위 제품 브랜치를 추적하며 검사에 사용 |
-| 변경관리·검사 저장소 | `easyseop/openmetadata-test` 브랜치 `codex/strict-manifest-gates` | BANK-OM 변경관리표, 검사기, 테스트, 공유문서와 인수인계를 관리 |
+| 변경관리·검사 저장소 | `easyseop/openmetadata-test` 브랜치 `codex/strict-manifest-gates` | BANK-OM Manifest, 검사기, 테스트, 공유문서와 인수인계를 관리 |
 | 공식 원본 | `open-metadata/OpenMetadata` `1.13.1-release` commit `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9` | 현재 커스터마이징 적용 기준 |
 | 업그레이드 시연 제품 저장소 | `easyseop/OM_TEMP` | Manifest 없이 1.13.0 공식 코드와 001~007 재구현 코드까지만 준비 |
 
 `easyseop/OpenMetadata`의 기본 브랜치에 행내 커스터마이징이 보이지 않는 것은
 이상 상태가 아니다. 현재 커스터마이징은 위의 별도 제품 브랜치에 있으며,
-BANK-OM 변경관리 정보와 검사기는 `easyseop/openmetadata-test`에 있다.
+BANK-OM Manifest와 검사기는 `easyseop/openmetadata-test`에 있다.
 
 ## 2. 공유문서 진행 상태
 
 | 페이지 | 현재 상태 | 저장된 파일 | 남은 일 |
 |---|---|---|---|
-| 1 · 목적과 브랜치 전략 | 목적·두 branch 원칙과 버전 반복 흐름을 같은 SVG에서 설명하는 검토본 | `docs/00-사용가이드/공유문서/openmetadata-phase1-sharing-fragment.html`, `openmetadata-phase1-sharing-preview.html` | 최종 부서 공유 전 문장과 도식 최종 승인 |
-| 2 · 검사기 원리 | 검사기별 입력·판단·출력·실패 조건과 예외를 설명하는 검토본 | `docs/00-사용가이드/공유문서/openmetadata-phase2-verifier-table-fragment.html`, `openmetadata-phase2-verifier-table-preview.html` | 최종 부서 공유 전 검사명·한계 최종 승인 |
-| 3 · 검사 전 사전환경 설정 | 실제 OM_TEMP commit 캡처와 Manifest 7개, 검사 기준자료의 의미·시점·사용 예시를 연결한 검토본 | `docs/00-사용가이드/OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html` | 담당자 지정과 선택적 Patch-lock 여부 확정 |
-| 4 · 검사 결과와 책임자 판단 | 기존 `easyseop/OpenMetadata` 후보 `849ae756...`의 검사 결과를 설명하는 검토본 | `docs/00-사용가이드/공유문서/openmetadata-phase3-demo-fragment.html`, `openmetadata-phase3-demo-preview.html` | OM_TEMP 결과와 혼동 없는지 최종 승인 |
-| 5 · 실제 업그레이드 | 실제 OM_TEMP `1.13.0 → 1.13.1` 적용·충돌·해결·검사 결과를 설명하는 검토본 | `docs/00-사용가이드/OM_TEMP_1.13.0_1.13.1_업그레이드_실행_가이드_미리보기.html` | 환경 test, 담당자 승인, 검증 tag와 배포 화면 추가 |
+| 1 · 목적과 브랜치 전략 | 목적·두 branch 원칙과 버전 반복 흐름을 같은 SVG에서 설명하는 현행본 | `docs/00-사용가이드/공유문서/openmetadata-phase1-sharing-fragment.html`, `openmetadata-phase1-sharing-preview.html` | 내용 승인 완료, 최종 부서 공유 시 문서 책임자만 확인 |
+| 2 · 검사기 원리 | 검사기별 입력·판단·출력·실패 조건과 예외를 설명하는 현행본 | `docs/00-사용가이드/공유문서/openmetadata-phase2-verifier-table-fragment.html`, `openmetadata-phase2-verifier-table-preview.html` | 검사기 구현 변경 시 함께 갱신 |
+| 3 · 검사 전 사전환경 설정 | 실제 OM_TEMP commit 캡처와 등록된 Manifest 7개, 검사 기준자료의 의미·시점·사용 예시를 연결한 현행본 | `docs/00-사용가이드/OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html` | 담당자 지정과 선택적 Patch-lock 여부 확정 |
+| 4 · 검사 결과와 책임자 판단 | 기존 `easyseop/OpenMetadata` 후보 `849ae756...`의 검사 결과를 설명하는 현행본 | `docs/00-사용가이드/공유문서/openmetadata-phase3-demo-fragment.html`, `openmetadata-phase3-demo-preview.html` | OM_TEMP 결과와 구분 유지 |
+| 5 · 실제 업그레이드 | 실제 OM_TEMP `1.13.0 → 1.13.1` 적용·충돌·해결·검사 결과를 설명하는 현행본 | `docs/00-사용가이드/OM_TEMP_1.13.0_1.13.1_업그레이드_실행_가이드_미리보기.html` | 환경 test, 담당자 승인, 검증 tag와 배포 화면 추가 |
 
 2026-07-29 KST에 1차·2차 문서의 확정된 본문은 유지하고, 1.13.1 업그레이드
 가이드와 같은 파란색 헤더·흰색 카드·표·펼치기 디자인을 적용했다. 수정된
@@ -147,7 +147,7 @@ OM_TEMP patch tree가
 2026-07-29 KST에 실제 OM_TEMP commit을 기준으로 다음 작업을 추가했다.
 
 - `harness/registrations/om-temp-1.13.0/manifests/`에 BANK-OM-001~007
-  Manifest 초안 7개 생성
+  Manifest 등록본 7개 생성
 - `generate_manifest_drafts.py`로 각 commit의 전체 변경 파일을 다시 추출할 수
   있도록 자동화
 - BANK-OM-007의 최초 8개 경로와 후속 commit의 추가 2개 경로를 분리 등록
@@ -172,12 +172,12 @@ patch-replay를 선택할 때만 생성한다. `candidate/...` branch는 설계�
 
 Manifest 작성 절차는
 [`OM_TEMP_Manifest_작성_단계별_가이드.md`](../00-사용가이드/OM_TEMP_Manifest_작성_단계별_가이드.md)에
-정리했다. 각 commit 캡처와 실제 Manifest 초안 전체는
+정리했다. 각 commit 캡처와 실제 Manifest 등록본 전체는
 [`OM_TEMP_커밋별_Manifest_등록_가이드.md`](../00-사용가이드/OM_TEMP_커밋별_Manifest_등록_가이드.md),
 화면 미리보기는
 [`OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html`](../00-사용가이드/OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html)에
 있다. 기존 `harness/registrations/kb-openmetadata/`는 1.13.1 기준이므로
-수정하지 않았고, 1.13.0 초안은 별도 등록 묶음으로 생성했다.
+수정하지 않았고, 1.13.0 등록본은 별도 등록 묶음으로 생성했다.
 
 향후 태그는 `patch/om-1.13.0` snapshot에
 `baseline/om-1.13.0`, 검사에 사용한 정확한 `custom/om-1.13.0` SHA에
@@ -210,8 +210,10 @@ Manifest 작성 절차는
   전체 파일 목록이다.
 - `required_changed_paths`는 그중 최종 코드에서 실제 변경이 확인되지 않으면
   해당 커스터마이징이 빠졌다고 판단할 핵심 파일 목록이다.
-- `upgrade_watch`는 행내에서 직접 수정하지 않았더라도 커스터마이징이 의존하기
-  때문에 공식 업그레이드 때 변경 여부를 다시 확인할 파일·설정·라이브러리 목록이다.
+- `upgrade_watch`는 공식 업그레이드 때 다시 비교할 파일·설정·라이브러리
+  목록이다. Manifest 생성기가 BANK-OM 커밋의 실제 변경 파일을 Git에서 자동
+  포함하고, 직접 수정하지 않은 의존 파일은 담당자 등록과 직접 참조 후보 제안을
+  함께 사용한다.
 - 폴더 전체를 넓게 허용하지 않고 현재 확인된 파일을 개별 경로로 등록하는 것이
   기본 원칙이다.
 
@@ -248,7 +250,7 @@ Java JUnit·TypeScript Jest를 직접 등록하고 실행하려면 언어·도�
 | T31 | 여러 커밋 사용 허용, 연속성, 폐기 ID, 선행 관계 순환을 확인한다. | 누락된 업무 선행 관계는 사람이 등록 |
 | T40 | 커밋별 전체 변경 파일과 최종 필수 변경 파일을 양방향으로 비교한다. | 파일 내부의 잘못된 줄은 코드 리뷰와 테스트로 확인 |
 | T41 | AST가 아니라 민감 경로 규칙과 실제 변경 파일을 비교한다. | 정적 보안 분석과 보안 담당자 리뷰 추가 |
-| T42 | 새 공식 버전의 Git 차이와 `upgrade_watch`를 비교한다. | 감시 대상 누락을 줄이는 자동 제안과 담당자 확인 |
+| T42 | 새 공식 버전의 Git 차이와 `upgrade_watch`를 비교한다. 실제 변경 경로 자동 포함과 직접 참조 후보 제시는 구현돼 있다. | 간접 호출·런타임 설정처럼 이름이 드러나지 않는 의존 관계는 담당자 확인 |
 | T43 | 커스터마이징 수·변경 줄·공유 파일 수·충돌률을 정책 한도와 비교한다. | 충돌률을 명령 인자가 아니라 실제 재적용 결과에서 자동 계산 |
 | T93 | ID별 실제 변경 파일과 등록 파일을 비교하고, 새 공식 버전에서 감시 규칙이 유효한지 확인한다. | 민감 경로 규칙도 노후화 검사에 포함 |
 | T61 | 커스터마이징이 없는 버전에서 필수 테스트가 실패하는지 확인한다. | 누락 때문에 실패했는지 오류 종류와 메시지까지 확인 |
@@ -266,8 +268,9 @@ Java JUnit·TypeScript Jest를 직접 등록하고 실행하려면 언어·도�
   정식 커스터마이징 ID로 확정하기 전에는 승인된 11개라고 표현하지 않는다.
 - 소스 검사: T25·T26·T60-I·T30·T31·T40·T41·T93 통과
 - T60-I: 등록한 필수 Python 테스트 함수 9개 확인
-- T42: 같은 버전을 양쪽에 넣은 연결 확인만 했으며 실제 다음 공식 버전
-  업그레이드 증거는 없음
+- T42: 이 `849ae756...` 기존 후보만 놓고 보면 같은 1.13.1을 양쪽에 넣은
+  연결 확인이므로 실제 업그레이드 증거가 아니다. 별도 OM_TEMP 연습에서는
+  공식 1.13.0→1.13.1 비교를 실제 수행했다.
 - T43: 실제 업그레이드 충돌률이 아니라 연결 확인용 입력을 사용했으므로 실제
   업그레이드 승인 근거가 아님
 - T61: 소스에서 실행 가능한 2개만 확인했으며 전체 5개 중 나머지 3개는 행내
@@ -277,7 +280,7 @@ Java JUnit·TypeScript Jest를 직접 등록하고 실행하려면 언어·도�
   남아 있어 담당자 승인 필요
 - T90·T91: 실제 행내 업그레이드와 배포 승격을 실행하지 않음
 - 결론: 소스 커스터마이징 관리 검사는 진행됐지만 운영 배포 승인 상태는 아님
-- 3차 초안 작성 시 소스 검사 명령을 다시 실행해 T25·T26·T60-I·T30·T31·
+- 4번 결과 문서 작성 시 소스 검사 명령을 다시 실행해 T25·T26·T60-I·T30·T31·
   T40·T41·T93 통과를 확인했다. 이 실행은 다음 공식 버전 업그레이드나 행내
   운영 환경 검사가 아니다.
 
@@ -429,9 +432,10 @@ build, 환경이 필요한 Contract test 7개, 담당자 지정, 검증 tag와 �
 
 업그레이드 가이드에는 다음 설명을 추가했다.
 
-- 업그레이드 전 영향 확인은 `upgrade-watch`(T42)가 담당하고, 이번 watch
-  자료는 Git 변경 경로 자동 등록과 담당자 의존 경로 수동 등록을 함께 쓰는
-  부분 자동 방식
+- 업그레이드 전 영향 확인은 `upgrade-watch`(T42)가 담당한다. 현재 Manifest
+  생성기는 Git의 실제 변경 경로를 watch에 자동 포함하고, 검사기는 새 공식
+  변경 파일의 직접 참조 후보를 제시한다. 미수정·간접 의존 경로는 담당자가
+  확인해 등록한다.
 - 검사 대상 `dee330ebd5...`는 공식 commit이나 BANK-OM ID가 아니라
   `custom/om-1.13.1`의 최종 Git commit SHA
 - 번역 항목 이름의 교집합은 0개였지만 공식 JSON의 전체 서식 변경과 BANK-OM
@@ -464,6 +468,25 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
 다른 노트북에서 위 절대 경로가 다르면 설치된 `visualize` 스킬의
 `scripts/render.py` 경로를 찾아 바꾼다.
 
+### 2026-07-29 문서 현행화 및 시각 검수
+
+- 1~5번 문서에서 과거 용어 `변경관리표`를 현재 정식 용어 `Manifest`로
+  통일했다.
+- watch 설명은 현재 구현과 일치하도록 수정했다. 커밋의 실제 변경 경로는
+  Manifest 생성기가 Git에서 watch에 자동 포함하고, 새 공식 변경 파일의 직접
+  참조 후보는 검사기가 결과에 제시한다. 간접 의존 관계는 담당자가 확인한다.
+- “watch 자동 등록은 향후 개선”이라는 오래된 문구를 제거했다. 자동 제안이
+  Manifest를 임의로 수정하거나 승인하는 기능은 아니라는 한계는 유지했다.
+- 1번의 흰 배경 보조문구 색을 진하게 조정하고, 첫 `왜 필요한가` 카드의
+  글자·테두리 대비를 높였다.
+- 4번(기존 3차 결과 문서)의 코드 비교 박스에 짙은 배경, 밝은 글자, 초록색
+  추가 코드 표시와 줄바꿈을 적용했다.
+- 다섯 페이지의 상·하단 이전/다음 링크와 가로 넘침 여부를 브라우저에서
+  확인했다.
+- 관련 watch 단위 테스트:
+  `test_watch_suggest.py`, `test_upgrade_watch.py`, `test_impact.py` 통과
+  (환경이 필요한 항목은 기존 표시대로 skip).
+
 ## 7. 다른 노트북에서 재개하는 순서
 
 1. `easyseop/openmetadata-test`의 `codex/strict-manifest-gates` 브랜치를 받는다.
@@ -495,6 +518,44 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
 - `docs/00-사용가이드/.비개발자_시연_가이드.md.swp`는 사용자의 편집기 임시
   파일이다. 수정하거나 stage하지 않는다.
 - 비밀값, 인증 토큰, 행내 URL과 실제 데이터는 문서나 Git에 넣지 않는다.
+
+## 9. 2026-07-29 11:17 KST 긴급 원격 인수인계
+
+사용자가 노트북을 종료하기 전에 현재 작업을 보존하도록 요청해 이 상태를
+커밋·푸시한다.
+
+### 이번에 완료한 내용
+
+- `clarity-preflight-review` 스킬에 문맥 없이 남은 질문·용어·전환 문장을
+  차단하는 기준을 추가하고 저장소 안의 휴대용 스킬에도 반영했다.
+- 1번 문서의 저장소 역할을 다음처럼 다시 썼다.
+  - `easyseop/OpenMetadata`: 처음 분석할 때 참고한 과거 커스터마이징 코드
+    보관본이며 현재 업그레이드·배포 대상이 아님
+  - `easyseop/OM_TEMP`: 현재 1.13.0→1.13.1 업그레이드와 검사를 재현하는
+    코드 저장소
+  - `easyseop/openmetadata-test`: Manifest·검사기·결과·가이드·인수인계
+    저장소
+- 2번 문서의 `행내 배포용 OpenMetadata` 표현을 실제 입력인 `검사할 custom
+  branch` 또는 `검사한 custom commit`으로 바꿨다.
+- 4번 문서에서 `easyseop/OpenMetadata`를 배포 준비 코드가 아닌 과거 구현
+  참고 코드로 정정했다. BANK-OM-001~007 업무 커스터마이징과 008~011 기술
+  보완 코드를 구분했다.
+- 5번 문서는 실제 cherry-pick 충돌 발생 화면 → 충돌 원문 → 해결 diff →
+  JSON 충돌 보조 도구의 입력·출력·한계 → 정식 승인 절차 순서로 다시 구성했다.
+  보조 도구는 충돌 JSON 파일을 수정하고 터미널 건수만 출력하며 별도 보고서나
+  승인 파일을 만들지 않는다는 점을 명시했다.
+- 1~5번 미리보기의 이전·다음 이동 링크를 다시 생성했다.
+
+### 다음 작업에서 먼저 확인할 내용
+
+1. 다섯 페이지를 브라우저에서 한 번씩 열어 가로 넘침, 흐린 글자, 코드 박스,
+   이전·다음 링크를 최종 확인한다.
+2. `candidate_additional_paths`처럼 실제 스키마 이름은 유지하되, 처음 등장하는
+   위치에 “같은 BANK-OM의 후속 커밋에서 처음 추가된 파일”이라는 설명이
+   붙어 있는지 재확인한다.
+3. 5번 페이지의 충돌 전·해결 후 색상 구분과 전체 diff 펼치기를 화면 크기별로
+   최종 확인한다.
+4. 관련 단위 테스트와 `git diff --check`를 다시 실행한다.
 - 공유문서 묶음은 로컬 commit으로 계속 저장한다. 최초 묶음은 `becb18e`이며
   최신 보강 commit은 현재 브랜치의 `git log`로 확인한다. 원격
   `https://github.com/easyseop/openmetadata-test.git`에 행내 커스터마이징 구조를

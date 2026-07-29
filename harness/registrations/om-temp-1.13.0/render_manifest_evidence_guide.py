@@ -218,7 +218,7 @@ def render() -> str:
         "## 1. Manifest 등록",
         "",
         "각 BANK-OM 제목을 펼치면 실제 GitHub commit, 기능 단위로 묶은 이유, "
-        "Manifest 초안 전체를 확인할 수 있습니다.",
+        "등록된 Manifest 전체를 확인할 수 있습니다.",
         "",
     ]
 
@@ -306,7 +306,7 @@ def render() -> str:
         lines.extend(
             [
                 "<details>",
-                f"<summary><strong>{customization_id} Manifest 초안 전체 보기</strong></summary>",
+                f"<summary><strong>{customization_id} Manifest 등록본 전체 보기</strong></summary>",
                 "",
                 "```yaml",
                 manifest_text(customization_id),
@@ -323,7 +323,7 @@ def render() -> str:
         [
             "### Manifest 네 목록을 읽는 기준",
             "",
-            "| 항목 | 이 초안에 들어간 기준 | 검사에서 쓰는 방식 |",
+            "| 항목 | 현재 등록 기준 | 검사에서 쓰는 방식 |",
             "|---|---|---|",
             "| `allowed_changed_paths` | 최초 BANK-OM 커밋이 실제 변경한 모든 파일 | 목록 밖 파일을 같은 ID로 변경하면 차단하고, 목록 안 파일이 검사 대상 custom branch의 최종 코드에서 실제로 달라지지 않으면 검토를 요구 |",
             "| `required_changed_paths` | 기능이 적용됐음을 판단하는 핵심 구현 파일 | 파일이 없거나 공식 원본과 같아지면 기능이 빠진 것으로 보고 차단 |",
@@ -600,8 +600,8 @@ def render() -> str:
             "",
             "## 현재 상태",
             "",
-            "- BANK-OM-001~007 Manifest 초안 7개 생성 완료",
-            "- 실제 Git commit의 변경 파일 목록을 초안에 반영 완료",
+            "- BANK-OM-001~007 Manifest 등록본 7개 생성 완료",
+            "- 실제 Git commit의 변경 파일 목록을 Manifest에 반영 완료",
             "- 현재 Manifest 스키마 및 기본 의미 검사 7개 통과",
             "- Registry 7개, Contract 7개·필수 test 9개, 공용 경로 37개, 전체 경로 111개 생성 완료",
             "- 공식 1.13.0 이력을 보존한 로컬 검사 branch 구성 완료",
@@ -692,7 +692,7 @@ def render_html() -> str:
                 </section>
                 {full_diff}
                 <details class="sub manifest">
-                  <summary>{item['id']} Manifest 초안 전체 보기</summary>
+                  <summary>{item['id']} Manifest 등록본 전체 보기</summary>
                   <pre><code>{manifest}</code></pre>
                 </details>
               </div>
@@ -1046,7 +1046,7 @@ details.reference {{ margin:10px 0; border:1px solid var(--line); border-radius:
       <span class="phase-title"><strong>Manifest 등록</strong><small>실제 commit diff를 BANK-OM 기능과 연결</small></span>
     </summary>
     <div class="phase-body">
-      <p class="phase-lead">각 제목을 펼치면 실제 GitHub commit, 하나의 기능으로 묶은 이유와 Manifest 초안 전체를 볼 수 있습니다.</p>
+      <p class="phase-lead">각 제목을 펼치면 실제 GitHub commit, 하나의 기능으로 묶은 이유와 현재 등록된 Manifest 전체를 볼 수 있습니다.</p>
       {''.join(sections)}
       <h3>Manifest 네 목록을 읽는 기준</h3>
       <div class="manifest-fields">

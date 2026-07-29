@@ -927,17 +927,17 @@ svg {
 html&gt;body{padding:0}&lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
-&lt;div id=&quot;om-phase3&quot; data-artifact-status=&quot;review-draft&quot;&gt;
+&lt;div id=&quot;om-phase3&quot; data-artifact-status=&quot;current&quot;&gt;
   &lt;header class=&quot;p3-hero&quot;&gt;
-    &lt;span class=&quot;viz-badge&quot;&gt;3차 검사결과 검토본&lt;/span&gt;
-    &lt;h1&gt;기존 제품 후보의 소스 검사 결과와 책임자 판단 기준&lt;/h1&gt;
-    &lt;p&gt;&lt;code&gt;easyseop/OpenMetadata&lt;/code&gt;의 기존 후보 &lt;code&gt;849ae756…&lt;/code&gt;에 대해 수행한 소스 검사 결과입니다. 뒤의 5번째 가이드는 이 문서와 다른 대상인 &lt;code&gt;OM_TEMP&lt;/code&gt;에서 1.13.0→1.13.1 업그레이드를 실제 연습한 결과입니다.&lt;/p&gt;
+    &lt;span class=&quot;viz-badge&quot;&gt;4번 · 기존 코드 검사결과 현행본&lt;/span&gt;
+    &lt;h1&gt;기존 행내 코드의 소스 검사 결과와 책임자 판단 기준&lt;/h1&gt;
+    &lt;p&gt;&lt;code&gt;easyseop/OpenMetadata&lt;/code&gt;의 Git commit &lt;code&gt;849ae756…&lt;/code&gt;에 저장된 코드 상태를 검사한 결과입니다. 이 검사는 Manifest와 Git 기록이 맞는지 확인했지만 공식 버전을 올리는 작업은 하지 않았습니다. 5번째 가이드에서 별도 저장소 &lt;code&gt;OM_TEMP&lt;/code&gt;의 실제 1.13.0→1.13.1 업그레이드 결과를 설명합니다.&lt;/p&gt;
     &lt;div class=&quot;p3-final&quot; role=&quot;status&quot;&gt;
       &lt;div&gt;
-        &lt;span&gt;이 후보의 최종 판단&lt;/span&gt;
+        &lt;span&gt;이 코드 상태의 최종 판단&lt;/span&gt;
         &lt;strong&gt;BLOCK · 운영 배포 진행 불가&lt;/strong&gt;
       &lt;/div&gt;
-      &lt;p&gt;이 후보는 소스 변경 검사를 통과했지만 공식 업그레이드 재적용, 행내 API·화면·DB 테스트와 배포본 일치 검사를 수행하지 않아 배포할 수 없습니다.&lt;/p&gt;
+      &lt;p&gt;소스 변경 검사는 통과했지만 공식 업그레이드 재적용, 행내 API·화면·DB 테스트와 배포본 일치 검사를 수행하지 않아 이 코드 상태를 운영에 배포할 수 없습니다.&lt;/p&gt;
     &lt;/div&gt;
   &lt;/header&gt;
 
@@ -961,14 +961,14 @@ html&gt;body{padding:0}&lt;/style&gt;
             &lt;td&gt;행내 커스터마이징을 적용하기 전 기준 코드&lt;/td&gt;
           &lt;/tr&gt;
           &lt;tr&gt;
-            &lt;td&gt;행내 배포 준비 코드&lt;/td&gt;
+            &lt;td&gt;과거 구현 참고 코드&lt;/td&gt;
             &lt;td&gt;&lt;code&gt;easyseop/OpenMetadata&lt;/code&gt;&lt;br&gt;&lt;code&gt;codex/bank-vendor-1.13.1-rebuild · 849ae756…&lt;/code&gt;&lt;/td&gt;
-            &lt;td&gt;BANK-OM-001~011이 적용된 소스 검사 대상이며 운영 배포 완료 상태는 아님&lt;/td&gt;
+            &lt;td&gt;BANK-OM-001~007 업무 커스터마이징과 008~011 기술 보완 코드가 함께 있는 소스 검사 대상. 현재 업그레이드 실습이나 운영 배포 대상은 아님&lt;/td&gt;
           &lt;/tr&gt;
           &lt;tr&gt;
             &lt;td&gt;이 검사 당시 업그레이드 대상&lt;/td&gt;
             &lt;td&gt;&lt;strong&gt;지정하지 않았음&lt;/strong&gt;&lt;/td&gt;
-            &lt;td&gt;따라서 이 후보의 결과에는 공식 버전 업그레이드와 충돌 측정이 포함되지 않음&lt;/td&gt;
+            &lt;td&gt;따라서 이 검사 결과에는 공식 버전 업그레이드와 충돌 측정이 포함되지 않음&lt;/td&gt;
           &lt;/tr&gt;
         &lt;/tbody&gt;
       &lt;/table&gt;
@@ -979,8 +979,8 @@ html&gt;body{padding:0}&lt;/style&gt;
     &lt;div class=&quot;p3-heading&quot;&gt;
       &lt;span&gt;02&lt;/span&gt;
       &lt;div&gt;
-        &lt;h2 id=&quot;p3-flow-title&quot;&gt;이 후보의 단계별 증거 상태&lt;/h2&gt;
-        &lt;p&gt;이 후보에서 완료한 소스 검사와 공식 업그레이드·행내 환경이 없어 수행하지 못한 단계를 구분합니다.&lt;/p&gt;
+        &lt;h2 id=&quot;p3-flow-title&quot;&gt;이 코드 상태의 단계별 증거&lt;/h2&gt;
+        &lt;p&gt;완료한 소스 검사와 공식 업그레이드·행내 환경이 없어 수행하지 못한 단계를 구분합니다.&lt;/p&gt;
       &lt;/div&gt;
     &lt;/div&gt;
     &lt;ol class=&quot;p3-flow&quot;&gt;
@@ -999,7 +999,7 @@ html&gt;body{padding:0}&lt;/style&gt;
       &lt;span&gt;03&lt;/span&gt;
       &lt;div&gt;
         &lt;h2 id=&quot;p3-code-title&quot;&gt;실제 코드가 어떻게 달라졌나&lt;/h2&gt;
-        &lt;p&gt;실제 Git diff에서 BANK-OM-001의 InstanceCode 관련 부분을 발췌해 설명용 좌우 비교로 배치했습니다. 전체 11개 커스터마이징 중 한 사례입니다.&lt;/p&gt;
+        &lt;p&gt;실제 Git diff에서 업무 커스터마이징 BANK-OM-001의 InstanceCode 관련 부분을 발췌해 설명용 좌우 비교로 배치했습니다.&lt;/p&gt;
       &lt;/div&gt;
     &lt;/div&gt;
 
@@ -1068,7 +1068,7 @@ public class InstanceCodeResource
     &lt;div class=&quot;p3-heading&quot;&gt;
       &lt;span&gt;04&lt;/span&gt;
       &lt;div&gt;
-        &lt;h2 id=&quot;p3-record-title&quot;&gt;변경관리표와 Git 기록이 어떻게 연결되나&lt;/h2&gt;
+        &lt;h2 id=&quot;p3-record-title&quot;&gt;Manifest와 Git 기록이 어떻게 연결되나&lt;/h2&gt;
         &lt;p&gt;BANK-OM ID는 업무 기능 번호이고, Git commit SHA는 해당 코드 상태를 식별하는 값입니다.&lt;/p&gt;
       &lt;/div&gt;
     &lt;/div&gt;
@@ -1245,8 +1245,8 @@ exact-scope-history          pass&lt;/code&gt;&lt;/pre&gt;
     &lt;div class=&quot;p3-heading&quot;&gt;
       &lt;span&gt;07&lt;/span&gt;
       &lt;div&gt;
-        &lt;h2 id=&quot;p3-next-title&quot;&gt;이 후보의 완료 범위와 이후 진행&lt;/h2&gt;
-        &lt;p&gt;기존 후보의 소스 검사 결과와 이후 OM_TEMP 업그레이드 연습을 구분합니다.&lt;/p&gt;
+        &lt;h2 id=&quot;p3-next-title&quot;&gt;현재 완료 범위와 이후 진행&lt;/h2&gt;
+        &lt;p&gt;기존 행내 코드의 소스 검사 결과와 이후 OM_TEMP 업그레이드 연습 결과를 구분합니다.&lt;/p&gt;
       &lt;/div&gt;
     &lt;/div&gt;
     &lt;div class=&quot;p3-next&quot;&gt;
@@ -1392,7 +1392,7 @@ exact-scope-history          pass&lt;/code&gt;&lt;/pre&gt;
     #om-phase3 .p3-relation span,
     #om-phase3 .p3-caption,
     #om-phase3 .p3-record-grid p {
-      color: var(--muted-foreground);
+      color: #475467;
     }
 
     #om-phase3 .p3-details {
@@ -1436,12 +1436,15 @@ exact-scope-history          pass&lt;/code&gt;&lt;/pre&gt;
     #om-phase3 pre {
       overflow-x: auto;
       padding: 12px;
+      color: #e6edf7;
       background: var(--muted);
     }
 
     #om-phase3 mark {
-      color: var(--foreground);
-      background: color-mix(in srgb, var(--viz-series-1) 24%, transparent);
+      padding: 1px 3px;
+      color: #081b12;
+      border-radius: 3px;
+      background: #7ee2a8;
     }
 
     #om-phase3 .p3-record-grid,
@@ -1698,8 +1701,27 @@ exact-scope-history          pass&lt;/code&gt;&lt;/pre&gt;
     }
 
     #om-phase3 pre {
+      color: #e6edf7;
+      border: 1px solid #263754;
       border-radius: 11px;
       background: #101827;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    #om-phase3 pre code {
+      color: inherit;
+    }
+
+    #om-phase3 .p3-diff &gt; div {
+      border-radius: 10px;
+      background: #f8fafc;
+    }
+
+    #om-phase3 .p3-diff span {
+      color: #334155;
+      background: #eef2f7;
+      font-weight: 750;
     }
 
     #om-phase3 table {

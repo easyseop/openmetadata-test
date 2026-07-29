@@ -39,7 +39,7 @@ Manifest는 **BANK-OM ID마다 한 파일**을 만듭니다. 같은 기능을 �
 
 ## 1. Manifest 등록
 
-각 BANK-OM 제목을 펼치면 실제 GitHub commit, 기능 단위로 묶은 이유, Manifest 초안 전체를 확인할 수 있습니다.
+각 BANK-OM 제목을 펼치면 실제 GitHub commit, 기능 단위로 묶은 이유, 등록된 Manifest 전체를 확인할 수 있습니다.
 
 <details>
 <summary><strong>BANK-OM-001 · 기준코드(InstanceCode)</strong></summary>
@@ -65,7 +65,7 @@ Manifest는 **BANK-OM ID마다 한 파일**을 만듭니다. 같은 기능을 �
 InstanceCode라는 새 데이터 유형을 정의하고, 저장·검색·API·화면 연결까지 한 번에 추가한 변경입니다. 파일은 여러 개지만 모두 InstanceCode 기능을 동작시키기 위한 한 묶음이므로 BANK-OM-001 하나로 관리합니다.
 
 <details>
-<summary><strong>BANK-OM-001 Manifest 초안 전체 보기</strong></summary>
+<summary><strong>BANK-OM-001 Manifest 등록본 전체 보기</strong></summary>
 
 ```yaml
 schema_version: 1
@@ -213,7 +213,7 @@ series:
 QueryReport 데이터 유형, 저장소, API, 검색과 화면 연결을 함께 추가한 변경입니다. BANK-OM-001과 같은 공용 파일도 수정하지만, diff 안의 QUERY_REPORT 연결은 별도 업무 기능이므로 BANK-OM-002로 분리합니다.
 
 <details>
-<summary><strong>BANK-OM-002 Manifest 초안 전체 보기</strong></summary>
+<summary><strong>BANK-OM-002 Manifest 등록본 전체 보기</strong></summary>
 
 ```yaml
 schema_version: 1
@@ -376,7 +376,7 @@ series:
 데이터 검증 결과를 조회하는 전용 화면, API 호출, 경로와 메뉴를 함께 추가한 변경입니다. 이 화면 흐름을 한 기능으로 보고 BANK-OM-003으로 등록합니다.
 
 <details>
-<summary><strong>BANK-OM-003 Manifest 초안 전체 보기</strong></summary>
+<summary><strong>BANK-OM-003 Manifest 등록본 전체 보기</strong></summary>
 
 ```yaml
 schema_version: 1
@@ -480,7 +480,7 @@ series:
 테이블 컬럼 화면에 은행용 표시 항목과 관련 타입·문구를 추가한 변경입니다. 화면에 보이는 결과와 이를 전달하는 타입 변경을 함께 BANK-OM-004로 관리합니다.
 
 <details>
-<summary><strong>BANK-OM-004 Manifest 초안 전체 보기</strong></summary>
+<summary><strong>BANK-OM-004 Manifest 등록본 전체 보기</strong></summary>
 
 ```yaml
 schema_version: 1
@@ -623,7 +623,7 @@ SchemaEditor.tsx 한 파일에서 한글 조합 시작·종료 처리를 추가�
 </details>
 
 <details>
-<summary><strong>BANK-OM-005 Manifest 초안 전체 보기</strong></summary>
+<summary><strong>BANK-OM-005 Manifest 등록본 전체 보기</strong></summary>
 
 ```yaml
 schema_version: 1
@@ -677,7 +677,7 @@ series:
 Sybase 연결 스키마, 생성 타입, 아이콘과 연결 선택 로직을 함께 추가한 변경입니다. 하나의 DB 연결 유형을 완성하는 파일들을 BANK-OM-006으로 묶습니다.
 
 <details>
-<summary><strong>BANK-OM-006 Manifest 초안 전체 보기</strong></summary>
+<summary><strong>BANK-OM-006 Manifest 등록본 전체 보기</strong></summary>
 
 ```yaml
 schema_version: 1
@@ -781,7 +781,7 @@ series:
 두 커밋 모두 Tibero 연결 유형 하나를 완성합니다. 최초 8개 파일은 allowed_changed_paths에, 후속 커밋에서 처음 추가된 2개 파일은 candidate_additional_paths에 등록합니다. Git commit SHA는 두 개지만 업무 기능 ID와 Manifest는 BANK-OM-007 하나입니다.
 
 <details>
-<summary><strong>BANK-OM-007 Manifest 초안 전체 보기</strong></summary>
+<summary><strong>BANK-OM-007 Manifest 등록본 전체 보기</strong></summary>
 
 ```yaml
 schema_version: 1
@@ -832,7 +832,7 @@ series:
 
 ### Manifest 네 목록을 읽는 기준
 
-| 항목 | 이 초안에 들어간 기준 | 검사에서 쓰는 방식 |
+| 항목 | 현재 등록 기준 | 검사에서 쓰는 방식 |
 |---|---|---|
 | `allowed_changed_paths` | 최초 BANK-OM 커밋이 실제 변경한 모든 파일 | 목록 밖 파일을 같은 ID로 변경하면 차단하고, 목록 안 파일이 검사 대상 custom branch의 최종 코드에서 실제로 달라지지 않으면 검토를 요구 |
 | `required_changed_paths` | 기능이 적용됐음을 판단하는 핵심 구현 파일 | 파일이 없거나 공식 원본과 같아지면 기능이 빠진 것으로 보고 차단 |
@@ -1044,8 +1044,8 @@ OM_TEMP patch/om-1.13.0 commit: 2f4f3560...
 
 ## 현재 상태
 
-- BANK-OM-001~007 Manifest 초안 7개 생성 완료
-- 실제 Git commit의 변경 파일 목록을 초안에 반영 완료
+- BANK-OM-001~007 Manifest 등록본 7개 생성 완료
+- 실제 Git commit의 변경 파일 목록을 Manifest에 반영 완료
 - 현재 Manifest 스키마 및 기본 의미 검사 7개 통과
 - Registry 7개, Contract 7개·필수 test 9개, 공용 경로 37개, 전체 경로 111개 생성 완료
 - 공식 1.13.0 이력을 보존한 로컬 검사 branch 구성 완료

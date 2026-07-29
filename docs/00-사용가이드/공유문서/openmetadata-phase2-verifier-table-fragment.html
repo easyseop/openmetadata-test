@@ -1,8 +1,8 @@
-<div id="om-phase2" data-artifact-status="review-draft">
+<div id="om-phase2" data-artifact-status="current">
   <header class="p2-hero">
-    <span class="viz-badge">2차 공유문서 검토본</span>
+    <span class="viz-badge">2차 공유문서 · 현행본</span>
     <h1>각 검사기는 무엇을 읽고, 어떻게 판단하는가</h1>
-    <p>이 문서는 검사 결과가 아니라 검사 방법을 설명합니다. 현재 검사 결과와 책임자 판정 라벨은 3차에서, 실제 Git 병합·검사 화면과 연결한 결과는 4차 시연에서 보여줍니다.</p>
+    <p>이 문서는 검사 결과가 아니라 검사 방법을 설명합니다. 3번에서 검사 기준자료를 준비한 뒤, 4번에서 기존 행내 코드의 소스 검사 결과를 보고 5번에서 실제 1.13.0→1.13.1 업그레이드 결과를 확인합니다.</p>
     <div class="p2-decision" role="status">
       <strong>검토 결론</strong>
       <span>현재 검사기는 소스 변경을 관리하는 데는 유효하지만, 경로 기반 검사와 외부 입력에 의존하는 부분이 있어 행내 동작·보안·배포 검사를 함께 사용해야 합니다.</span>
@@ -15,11 +15,11 @@
       <li>
         <span>1</span>
         <strong>코드 버전 지정</strong>
-        <p>공식 원본과 행내 배포용 OpenMetadata의 Git commit SHA를 지정합니다.</p>
+        <p>공식 원본과 검사할 <code>custom</code> branch의 Git commit SHA를 지정합니다.</p>
       </li>
       <li>
         <span>2</span>
-        <strong>변경관리표 입력</strong>
+        <strong>Manifest 입력</strong>
         <p>활성 BANK-OM ID별 파일 범위, 필수 파일, 감시 파일과 테스트를 읽습니다.</p>
       </li>
       <li>
@@ -39,6 +39,22 @@
       </li>
     </ol>
     <p class="p2-terms"><strong>Git commit SHA</strong>는 저장된 코드 버전을 식별하는 값입니다. <strong>SHA-256 digest</strong>는 파일 내용이 같은지 비교하기 위해 계산한 값입니다.</p>
+    <details class="p2-details">
+      <summary>뒤의 표에 나오는 기준자료 이름</summary>
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead><tr><th>이름</th><th>무엇을 기록하나</th><th>어디에 사용하나</th></tr></thead>
+          <tbody>
+            <tr><td>Manifest</td><td>BANK-OM ID별 실제 변경 파일, 필수 파일, 업그레이드 비교 경로, 테스트</td><td>파일 누락·범위 이탈·공식 변경 영향을 판단</td></tr>
+            <tr><td>Registry</td><td>사용 중인 BANK-OM ID, 이름, 상태, 담당자</td><td>미등록·폐기 ID 사용과 담당자 누락을 판단</td></tr>
+            <tr><td>Contract</td><td>기능이 정상이라고 판단할 업무 동작과 연결된 테스트</td><td>테스트 코드 존재와 실제 실행 결과를 확인</td></tr>
+            <tr><td>검사 대상 잠금<br><code>candidate-lock.yaml</code></td><td>검사할 Git commit SHA와 전체 파일 상태</td><td>검사 중 코드가 바뀌거나 다른 결과가 섞이는 것을 차단</td></tr>
+            <tr><td>테스트 실행 목록<br><code>test-run-set.yaml</code></td><td>실제로 실행할 테스트와 마지막 결과</td><td>필수 테스트 누락·SKIP·실패를 판단</td></tr>
+            <tr><td>배포 잠금<br><code>release lock</code></td><td>승인한 코드·이미지·Helm·검사 결과의 digest</td><td>검사한 파일과 실제 배포할 파일이 같은지 확인</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
     <div class="p2-language">
       <strong>프론트엔드와 백엔드에 같은 검사기를 쓸 수 있나?</strong>
       <p><b>Git 커밋과 파일 변경을 확인하는 검사는 언어에 상관없이 그대로 사용할 수 있습니다.</b> T25-R·T25·T26·T30·T31·T40·T41·T42·T43·T93은 Java·TypeScript·Python·JSON·YAML·SQL 등 파일 종류와 관계없이 Git 이력, 각 커밋에서 바뀐 파일 경로와 공식 원본 대비 최종 파일 상태를 확인합니다. 따라서 프론트엔드와 백엔드 파일을 같은 방식으로 관리할 수 있습니다. 다만 이 공통 검사는 파일 내부 코드의 의미나 실행 동작까지 언어에 관계없이 이해하는 검사가 아닙니다.</p>
@@ -56,7 +72,7 @@
         </thead>
         <tbody>
           <tr><td><strong>T25-R</strong></td><td>공식 target SHA, 과거 snapshot SHA, Manifest, 전체 변경 목록, 공용 파일 소유정보</td><td>재구성 계획과 digest, 파일별 소유·제외 목록, 판정</td><td>PASS면 공식 원본 위에서 같은 행내 변경을 재현할 근거가 맞다는 뜻입니다.</td></tr>
-          <tr><td><strong>T25</strong></td><td>공식 base·target SHA, 검사 대상 SHA·tree를 기록한 candidate lock, Git 이력</td><td>공식 commit 포함 여부와 candidate 일치 여부, 판정</td><td>PASS는 공식 버전에서 시작했다는 뜻이며 기능 정상까지 뜻하지 않습니다.</td></tr>
+          <tr><td><strong>T25</strong></td><td>공식 base·target SHA, 검사 대상 SHA·tree를 기록한 검사 대상 잠금, Git 이력</td><td>공식 commit 포함 여부와 잠근 검사 대상의 일치 여부, 판정</td><td>PASS는 공식 버전에서 시작했다는 뜻이며 기능 정상까지 뜻하지 않습니다.</td></tr>
           <tr><td><strong>T26</strong></td><td>활성 BANK-OM Registry, Manifest, Contract 목록, 공식 target과 검사 대상 tree</td><td>ID별 필수 파일·Contract·test 연결 상태와 누락 사유, 판정</td><td>필수 상태가 없으면 BLOCK, 필수가 아닌 등록 파일 이상은 담당자 확인 대상입니다.</td></tr>
           <tr><td><strong>T60-I</strong></td><td><code>contracts.yaml</code>의 Python pytest 경로·함수명과 실제 test 소스</td><td>test 파일·함수 존재 및 Python 문법 분석 결과, 판정</td><td>PASS는 test 코드가 존재한다는 뜻이며 실제 실행 성공은 T62가 확인합니다.</td></tr>
           <tr><td><strong>T30</strong></td><td>공식 원본 이후 모든 commit, commit 메시지, commit별 변경 경로, 저장소 경로 분류</td><td>commit SHA별 ID 누락·복수 ID·혼합 변경 등의 위반 목록, 판정</td><td>위반이 있으면 해당 commit을 고친 뒤 다시 검사해야 합니다.</td></tr>
@@ -64,13 +80,13 @@
           <tr><td><strong>T40</strong></td><td>commit별 실제 변경 경로, 공식 원본 대비 최종 diff, Manifest의 allowed·required</td><td>허용 범위 밖 변경과 최종 diff에서 빠진 required 경로 목록, 판정</td><td>하나라도 있으면 BLOCK입니다. 파일 내부 코드의 정확성은 판단하지 않습니다.</td></tr>
           <tr><td><strong>T41</strong></td><td>실제 변경 경로, <code>sensitive-zones.yaml</code>, 변경 의도의 허용·금지 경로</td><td>경로별 위험 등급과 사유, 전체 판정</td><td>금지·동결 경로는 BLOCK, 보호 경로는 APPROVAL, 입력 정책이 없으면 ANALYSIS ERROR입니다.</td></tr>
           <tr><td><strong>T42</strong></td><td>공식 이전·새 버전 Git ref와 Manifest의 watch 경로·설정 키·의존성</td><td>BANK-OM ID별 공식 변경과 겹친 watch 항목, PASS 또는 APPROVAL</td><td>APPROVAL은 충돌 확정이 아니라 커스터마이징 재적용 전 영향 검토가 필요하다는 뜻입니다.</td></tr>
-          <tr><td><strong>T43</strong></td><td>공식 원본 대비 코드 diff, 활성 core-patch Manifest, 실제 재적용 충돌률, 기준값</td><td>core patch 수·변경 줄·충돌률·공유 집중도와 기준 초과 사유</td><td>soft 기준 초과는 APPROVAL, hard 기준 초과는 BLOCK입니다.</td></tr>
+          <tr><td><strong>T43</strong></td><td>공식 원본 대비 코드 diff, 활성 core-patch Manifest, 실제 재적용 충돌률, 기준값</td><td>core patch 수·변경 줄·충돌률·공유 집중도와 기준 초과 사유</td><td>검토 기준을 넘으면 APPROVAL, 차단 기준을 넘으면 BLOCK입니다.</td></tr>
           <tr><td><strong>T93</strong></td><td>새 공식 버전 tree, watch·민감 경로 정책, 저장소 경로 분류, BANK-OM별 실제 Git 이력과 Manifest</td><td>더 이상 파일과 맞지 않는 정책, 미분류 새 모듈, 실제 경로와 등록 경로의 불일치</td><td>정책 노후화는 APPROVAL, 미분류 경로나 실제 미등록 변경은 통과시키지 않습니다.</td></tr>
-          <tr><td><strong>T61</strong></td><td>해당 BANK-OM을 제거한 코드·배포본, 필수 test, patch-kill plan과 실행 결과</td><td><code>proven</code>·<code>shell_test</code>·<code>inconclusive</code>·<code>infra_error</code> 상태와 판정</td><td>커스터마이징이 없을 때 test가 실패해야 PASS입니다. 그대로 통과하면 BLOCK입니다.</td></tr>
-          <tr><td><strong>T62</strong></td><td>candidate lock, 배포 artifact digest, Contract test 목록, 환경값과 실제 pytest 실행 결과</td><td><code>candidate-lock.yaml</code>, <code>test-run-set.yaml</code>, <code>acgh-result.yaml</code></td><td>필수 test의 실패·누락·SKIP은 통과가 아니며, 코드 SHA와 artifact가 다르면 ANALYSIS ERROR입니다.</td></tr>
+          <tr><td><strong>T61</strong></td><td>해당 BANK-OM을 제거한 코드·배포본, 필수 test, 커스터마이징 제거 시험 계획과 실행 결과</td><td>제거 효과 확인(<code>proven</code>), 셸 명령 검사(<code>shell_test</code>), 판단 불가(<code>inconclusive</code>), 환경 오류(<code>infra_error</code>)</td><td>커스터마이징이 없을 때 test가 실패해야 PASS입니다. 그대로 통과하면 BLOCK입니다.</td></tr>
+          <tr><td><strong>T62</strong></td><td>검사 대상 잠금, 배포 artifact digest, Contract test 목록, 환경값과 실제 pytest 실행 결과</td><td><code>candidate-lock.yaml</code>, <code>test-run-set.yaml</code>, <code>acgh-result.yaml</code></td><td>필수 test의 실패·누락·SKIP은 통과가 아니며, 코드 SHA와 artifact가 다르면 ANALYSIS ERROR입니다.</td></tr>
           <tr><td><strong>T63</strong></td><td>같은 환경에서 실행한 공식 원본·검사 대상의 전체 TypeScript 로그와 종료 코드</td><td>오류 건수·경로·오류 코드·fingerprint 차이와 판정</td><td>새 오류는 BLOCK, 기존 오류가 남은 기준선은 APPROVAL, 로그가 모순되면 ANALYSIS ERROR입니다.</td></tr>
-          <tr><td><strong>T90</strong></td><td>12단계 업그레이드 실행 결과, candidate lock, artifact digest, T62 test-run set</td><td>단계별 상태와 동일 대상 연결 여부, 전체 판정과 결과 digest</td><td>필수 단계가 없거나 실패했거나 다른 candidate 결과가 섞이면 BLOCK 또는 ANALYSIS ERROR입니다.</td></tr>
-          <tr><td><strong>T91</strong></td><td>검사한 candidate·결과 digest, test-run set, 이미지·Helm·정책 digest와 승인 기록</td><td>release lock과 실제 승격 대상의 동일 여부, 판정</td><td>검사한 파일과 배포할 파일이 정확히 같을 때만 승격 검토를 계속할 수 있습니다.</td></tr>
+          <tr><td><strong>T90</strong></td><td>12단계 업그레이드 실행 결과, 검사 대상 잠금, artifact digest, T62 테스트 실행 목록</td><td>단계별 상태와 동일 대상 연결 여부, 전체 판정과 결과 digest</td><td>필수 단계가 없거나 실패했거나 다른 코드의 결과가 섞이면 BLOCK 또는 ANALYSIS ERROR입니다.</td></tr>
+          <tr><td><strong>T91</strong></td><td>검사한 코드·결과 digest, 테스트 실행 목록, 이미지·Helm·정책 digest와 승인 기록</td><td>배포 잠금과 실제 승격 대상의 동일 여부, 판정</td><td>검사한 파일과 배포할 파일이 정확히 같을 때만 승격 검토를 계속할 수 있습니다.</td></tr>
         </tbody>
       </table>
     </div>
@@ -100,13 +116,13 @@
           </tr>
           <tr>
             <td><strong>T25</strong><br><span>공식 원본 포함</span></td>
-            <td>행내 배포용 OpenMetadata가 승인된 공식 버전의 코드를 실제 Git 이력에 포함하는지 확인합니다.</td>
+            <td>검사할 <code>custom</code> branch가 지정한 공식 버전에서 시작했는지 확인합니다.</td>
             <td>Git의 공통 조상과 포함 관계를 조회해 공식 버전의 commit SHA가 행내 코드의 조상인지 확인합니다. 동시에 검사 대상 commit SHA와 전체 파일 상태가 사전에 기록한 검사 대상과 같은지도 확인합니다.</td>
             <td>공식 코드가 이력에 포함됐다는 사실만 증명하며, 충돌을 올바르게 해결했는지 또는 기능이 정상인지까지 증명하지는 않습니다. 그래서 T26·T40과 행내 동작 검사가 함께 필요합니다.</td>
           </tr>
           <tr>
             <td><strong>T26</strong><br><span>활성 커스터마이징 확인</span></td>
-            <td>변경관리표에서 상태가 <code>active</code>인 모든 BANK-OM ID의 커스터마이징이 검사 대상 코드에 남아 있는지 확인합니다.</td>
+            <td>Manifest와 Registry에서 상태가 <code>active</code>인 모든 BANK-OM ID의 커스터마이징이 검사 대상 코드에 남아 있는지 확인합니다.</td>
             <td>각 활성 BANK-OM ID의 필수 파일이 존재하고 공식 원본과 실제로 다른지 확인합니다. 전체 등록 파일 중 필수가 아닌 파일이 없어졌거나 공식 원본과 같아지면 담당자 확인 대상으로 분류하며, 업무 계약과 연결된 테스트 목록도 함께 확인합니다.</td>
             <td>파일이 존재하고 공식 원본과 다르더라도 기능이 올바르게 동작한다고 단정할 수는 없습니다. 실제 테스트 코드의 존재는 T60-I가, 실제 실행 결과는 T62가 따로 확인합니다.</td>
           </tr>
@@ -125,8 +141,8 @@
           <tr>
             <td><strong>T31</strong><br><span>커밋 순서와 ID 사용</span></td>
             <td>같은 BANK-OM ID를 여러 커밋에 사용할 수 있는지, 커밋이 연속되어 있는지, ID 간 선행 관계가 순환하지 않는지 확인합니다.</td>
-            <td>Git 커밋을 오래된 순서부터 나열한 뒤 같은 ID의 위치를 비교합니다. 여러 커밋 사용이 변경관리표에서 허용됐는지, 다른 ID가 중간에 끼지 않았는지, 폐기한 ID를 다시 쓰지 않았는지 확인합니다.</td>
-            <td>선행 관계 자체를 빠뜨린 경우에는 검사기가 업무 관계를 새로 추론하지 못합니다. 커스터마이징 설계자가 선행 BANK-OM ID를 변경관리표에 등록하고 리뷰하는 절차가 필요합니다.</td>
+            <td>Git 커밋을 오래된 순서부터 나열한 뒤 같은 ID의 위치를 비교합니다. 여러 커밋 사용이 Manifest에서 허용됐는지, 다른 ID가 중간에 끼지 않았는지, 폐기한 ID를 다시 쓰지 않았는지 확인합니다.</td>
+            <td>선행 관계 자체를 빠뜨린 경우에는 검사기가 업무 관계를 새로 추론하지 못합니다. 커스터마이징 설계자가 선행 BANK-OM ID를 Manifest에 등록하고 리뷰하는 절차가 필요합니다.</td>
           </tr>
           <tr>
             <td><strong>T40</strong><br><span>변경 파일 범위</span></td>
@@ -142,7 +158,7 @@
           </tr>
           <tr>
             <td><strong>T93 · 변경범위</strong><br><span>등록 파일과 실제 이력 일치</span></td>
-            <td>각 BANK-OM ID가 실제로 변경한 파일 목록과 변경관리표에 등록한 정확한 파일 목록이 같은지 확인합니다.</td>
+            <td>각 BANK-OM ID가 실제로 변경한 파일 목록과 Manifest에 등록한 정확한 파일 목록이 같은지 확인합니다.</td>
             <td>Git 커밋 이력을 BANK-OM ID별로 다시 모아 실제 변경 파일 목록을 만듭니다. 실제로 변경했지만 등록하지 않은 파일은 중단하고, 등록했지만 해당 ID가 변경하지 않은 파일은 담당자 확인 대상으로 분류합니다.</td>
             <td>파일 목록이 같아도 파일 안의 어떤 줄을 누가 변경했는지는 알 수 없습니다. 공유 파일은 별도 소유 관계와 코드 리뷰가 필요하며, 폴더 전체 같은 넓은 패턴은 정확 비교가 불가능하므로 현재 검사는 개별 파일 경로만 허용합니다.</td>
           </tr>
@@ -152,9 +168,9 @@
           </tr>
           <tr>
             <td><strong>T42</strong><br><span>감시 파일 변경 확인</span></td>
-            <td>행내에서 직접 수정하지 않았지만 커스터마이징이 의존하는 공식 파일·설정·라이브러리가 새 공식 버전에서 바뀌었는지 확인합니다.</td>
-            <td>기존 공식 버전과 새 공식 버전의 Git 차이를 구하고, 각 BANK-OM 변경관리표의 <code>upgrade_watch</code>에 등록한 경로·설정 키·라이브러리 이름과 비교합니다. 하나라도 일치하면 자동 통과하지 않고 담당자 확인을 요구합니다.</td>
-            <td>질문하신 감시 파일의 실제 검사 기능이 T42입니다. 다만 감시 대상을 누락하면 변경이 있어도 통과할 수 있으므로 자동 제안 기능과 담당자 검토가 필요합니다.</td>
+            <td>Manifest의 watch에 등록된 파일·설정·라이브러리가 새 공식 버전에서 바뀌었는지 확인합니다. 여기에는 BANK-OM이 직접 수정한 경로와, 수정하지 않았지만 기능이 의존하는 경로가 함께 포함됩니다.</td>
+            <td>기존 공식 버전과 새 공식 버전의 Git 차이를 구하고, 각 BANK-OM Manifest의 <code>upgrade_watch</code>에 등록한 경로·설정 키·라이브러리 이름과 비교합니다. 하나라도 일치하면 자동 통과하지 않고 담당자 확인을 요구합니다.</td>
+            <td>실제 변경 경로는 Manifest 생성기가 Git에서 watch에 포함합니다. 새 공식 버전의 변경 파일을 커스터마이징 코드가 직접 참조하면 추가 watch 경로와 참조 근거도 제시합니다. 다만 간접 호출처럼 이름이 코드에 드러나지 않는 의존 관계는 담당자가 추가해야 합니다.</td>
           </tr>
           <tr>
             <td><strong>T43</strong><br><span>관리 부담 증가</span></td>
@@ -181,7 +197,7 @@
           <tr>
             <td><strong>T62</strong><br><span>결과와 코드 연결</span></td>
             <td>테스트 결과가 정확히 어떤 소스 코드와 배포 파일, 어떤 검사기와 테스트 코드에서 나온 것인지 확인합니다.</td>
-            <td>테스트 결과에 행내 배포용 OpenMetadata commit SHA, 배포 파일의 SHA-256 digest, 검사기 버전, 테스트 묶음 버전을 함께 저장합니다. 필수 테스트가 빠졌거나 마지막 실행이 실패하면 중단하고, 중요 테스트가 재실행 후에만 통과하면 담당자 승인을 요구합니다.</td>
+            <td>테스트 결과에 검사한 <code>custom</code> commit SHA, 배포 파일의 SHA-256 digest, 검사기 버전, 테스트 묶음 버전을 함께 저장합니다. 필수 테스트가 빠졌거나 마지막 실행이 실패하면 중단하고, 중요 테스트가 재실행 후에만 통과하면 담당자 승인을 요구합니다.</td>
             <td>현재 결과 형식에는 실행 환경의 설정과 버전을 식별하는 값이 없습니다. 같은 코드라도 DB·검색엔진·설정이 다르면 결과가 달라질 수 있으므로 환경 정보의 digest와 신뢰할 수 있는 실행 시스템의 서명을 추가해야 합니다.</td>
           </tr>
           <tr>
@@ -193,13 +209,13 @@
           <tr>
             <td><strong>T90</strong><br><span>구·신 버전 동작 비교</span></td>
             <td>실제 데이터와 행내 환경에서 업그레이드, DB·검색·권한·API·수집·복구가 모두 정상인지 확인합니다.</td>
-            <td>운영 스냅샷 복원부터 롤백 연습까지 정해진 12단계의 결과가 모두 통과인지 확인하고, 결과 문서를 행내 배포용 OpenMetadata commit SHA·배포 파일 digest·T62 결과와 연결합니다.</td>
+            <td>운영 스냅샷 복원부터 롤백 연습까지 정해진 12단계의 결과가 모두 통과인지 확인하고, 결과 문서를 검사한 <code>custom</code> commit SHA·배포 파일 digest·T62 결과와 연결합니다.</td>
             <td>현재 T90 코드는 12단계 결과 문서의 형식과 상태만 판단하며 각 단계를 직접 실행하거나 증거 파일의 내용을 검증하지 않습니다. 신뢰할 수 있는 실행 시스템이 각 단계의 실제 로그를 보관하고 서명하도록 보완해야 합니다.</td>
           </tr>
           <tr>
             <td><strong>T91</strong><br><span>검사본과 배포본 일치</span></td>
             <td>검사를 마친 소스와 이미지·Helm 설정을 다시 만들지 않고 그대로 배포하는지 확인합니다.</td>
-            <td>승인 시점에 행내 배포용 OpenMetadata commit SHA, 컨테이너 이미지 digest, Helm 파일 digest, 검사 결과 digest를 고정합니다. 배포 시 관측한 값이 하나라도 다르거나 중간에 다시 빌드했으면 중단합니다.</td>
+            <td>승인 시점에 배포할 <code>custom</code> commit SHA, 컨테이너 이미지 digest, Helm 파일 digest, 검사 결과 digest를 고정합니다. 배포 시 관측한 값이 하나라도 다르거나 중간에 다시 빌드했으면 중단합니다.</td>
             <td>digest를 어디에서 읽었는지가 신뢰할 수 있어야 합니다. T91만으로는 외부망에서 내부망으로 옮기는 과정의 서명이나 내부망 재검증까지 보장하지 않으므로 별도의 반입 검증이 필요합니다.</td>
           </tr>
         </tbody>
@@ -211,7 +227,7 @@
     <h2 id="p2-reinforce-title">운영 적용 전에 우선 보완할 항목</h2>
     <ol class="p2-reinforce">
       <li><strong>T41</strong><span>경로 비교에 정적 보안 분석과 보안 담당자 리뷰를 추가합니다.</span></li>
-      <li><strong>T42·T93</strong><span>감시 파일 자동 제안과 민감 경로 규칙의 노후화 검사를 함께 실행합니다.</span></li>
+      <li><strong>T42·T93</strong><span>검사기가 제시한 직접 참조 경로와 담당자가 등록한 경로를 함께 검토하고, 간접 의존 관계 및 민감 경로 규칙의 누락 여부를 확인합니다.</span></li>
       <li><strong>T43</strong><span>충돌률을 사람이 입력하지 않고 실제 업그레이드 재적용 결과에서 자동 계산합니다.</span></li>
       <li><strong>T60-I</strong><span>Python 외에 Java JUnit·TypeScript Jest를 등록할 수 있게 하고 <code>direct_tests</code>의 실제 코드 존재도 확인합니다.</span></li>
       <li><strong>T61</strong><span>단순 실패가 아니라 커스터마이징 누락 때문에 발생한 실패인지 오류 종류와 메시지까지 확인합니다.</span></li>

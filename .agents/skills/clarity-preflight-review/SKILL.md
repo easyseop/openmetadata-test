@@ -49,6 +49,14 @@ workflow step when it belongs inside that step.
 - Every sentence must make the actor, object, action, condition, and result clear.
 - Replace vague references such as 이것, 후보, 제품, 현재, or 적용 when more than
   one interpretation is possible.
+- Detect contextless transitions: a question, answer, warning, example, or term must
+  not appear unless the immediately preceding flow makes clear what it refers to.
+  Remove orphaned phrases such as "왜 임시 기준인가?", "이 규칙은", "여기서",
+  or "그 결과" when the sentence that introduced the 기준, 규칙, place, or result
+  was deleted, moved, or renamed.
+- Treat a newly appearing word as unexplained even if it is defined later. Either
+  introduce it at the point where the process first needs it, or remove it from the
+  main flow and keep the internal detail in a collapsed section.
 - State whether a finding causes pass, review, block, or no automated decision.
 - Use an actual example when a definition alone can be misread.
 
@@ -94,6 +102,8 @@ Do not share until every answer is yes:
 - Can a first-time reader explain the purpose without guessing?
 - Can the reader follow purpose, preparation, process, checks, result, and next step?
 - Is every term familiar or defined?
+- Does every question, warning, pronoun, and transition have an explicit referent in
+  the immediately visible context?
 - Is each concept explained only once in the main flow?
 - Are current and future behavior impossible to confuse?
 - Does every status claim match the actual implementation and evidence?
