@@ -18,7 +18,7 @@ h1{margin:0 0 12px;font-size:clamp(28px,4vw,43px);letter-spacing:-.04em} .hero p
 .page-scope{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}
 .page-scope>div{padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:white}
 .page-scope strong{display:block;margin-bottom:6px} .page-scope p{margin:0;color:var(--muted);line-height:1.65}
-.internal-scope{margin:0 0 18px;padding:11px 13px;border-left:4px solid var(--orange);background:#fff7ed;color:var(--ink)}
+.internal-scope{margin:0 0 18px;padding:11px 13px;border-left:4px solid var(--amber);background:#fff7ed;color:var(--ink)}
 .summary{margin:18px 0;padding:22px;border:1px solid var(--line);border-radius:18px;background:white;line-height:1.7}
 details{margin:14px 0;border:1px solid var(--line);border-radius:18px;background:white;overflow:hidden;box-shadow:0 6px 22px #13234a0d}
 summary{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:12px;align-items:center;padding:19px 21px;cursor:pointer;list-style:none}
@@ -29,20 +29,22 @@ summary::-webkit-details-marker{display:none} summary::after{content:"펼치기"
 table{width:100%;min-width:620px;border-collapse:collapse;margin:16px 0;font-size:14px} th,td{padding:11px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;line-height:1.5} th{background:#f8fafc}
 code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace} p code,li code,td code,summary code{overflow-wrap:anywhere;word-break:break-word} pre{overflow:auto;padding:16px;border-radius:11px;color:#e6edf7;background:#101827;font-size:12px;line-height:1.6}
 .pass{color:var(--green);font-weight:850} .approval{color:var(--amber);font-weight:850} .note{padding:13px 15px;border-radius:11px;background:#eef4ff}
+.mobile-table-note{display:none;margin:8px 0;color:var(--muted);font-size:13px}
 .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0} .flow div{padding:15px;border-radius:13px;background:#f5f7fb;line-height:1.55} .flow b{display:block;color:var(--blue);margin-bottom:5px}
 .subhead{margin:26px 0 8px;font-size:17px} .warning{padding:15px;border-left:4px solid var(--amber);border-radius:10px;background:#fff7ed;line-height:1.7}
 .evidence{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0} .evidence>div{min-width:0;padding:15px;border:1px solid var(--line);border-radius:13px;background:#fbfcfe}
 .evidence h4{margin:0 0 10px} .diff-add{display:block;color:#b7f7d2;background:#123b2b;padding:2px 8px} .label{display:inline-flex;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:800;background:#e8efff;color:var(--blue)}
 .term-ok{color:#b7f7d2} .term-conflict{display:block;margin:3px -6px;padding:2px 6px;color:#ffd4d2;background:#5d2020;font-weight:800}
-.conflict-current{border-color:#9dbaf8!important;background:#f4f7ff!important} .conflict-incoming{border-color:#f5b27a!important;background:#fff8f1!important}
-.conflict-current .label{background:#dce8ff;color:#1746ad} .conflict-incoming .label{background:#ffead8;color:#a33b00}
-.conflict-current pre,.conflict-incoming pre{min-height:238px} .conflict-line{display:block;margin:0 -6px;padding:1px 6px;background:#5d2020;color:#ffd4d2;font-weight:800}
+.conflict-line{display:block;margin:0 -6px;padding:1px 6px;background:#5d2020;color:#ffd4d2;font-weight:800}
+.conflict-structure{margin:16px 0;padding:18px;border:2px solid #f0a35f;border-radius:16px;background:#fff9f3}
+.conflict-structure h4{margin:0 0 8px;color:#8f3608} .conflict-structure p{margin:8px 0 12px}
+.conflict-structure pre{margin:10px 0;background:#111827} .conflict-structure .source-note{font-size:14px;color:#4b5563}
 .tool-output{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0} .tool-output>div{padding:14px;border:1px solid var(--line);border-radius:12px;background:#f8fafc;line-height:1.6} .tool-output b{display:block;margin-bottom:5px;color:var(--blue)}
 .mini{margin:10px 0;border-radius:13px;box-shadow:none} .mini summary{grid-template-columns:minmax(0,1fr) auto;padding:14px 16px} .mini .body{padding:14px 16px}
 .artifact-links{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0} .artifact-links a{padding:8px 11px;border:1px solid #b8c8ee;border-radius:9px;color:var(--blue);background:#f7f9ff;text-decoration:none;font-weight:700;font-size:13px}
 .steps{display:grid;gap:9px;margin:14px 0} .steps div{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;padding:12px;border-radius:12px;background:#f7f9fc;line-height:1.65} .steps b{display:grid;place-items:center;width:25px;height:25px;border-radius:8px;background:var(--blue);color:white}
 .status-ok{color:var(--green);font-weight:850} .status-part{color:var(--amber);font-weight:850} .status-no{color:#b42318;font-weight:850}
-@media(max-width:720px){main{width:min(100% - 18px,1100px);margin-top:9px}.guide-pagination{grid-template-columns:1fr 1fr}.guide-page-current{grid-column:1 / -1;grid-row:1}.hero{padding:24px;border-radius:18px}.page-scope,.flow,.evidence,.tool-output{grid-template-columns:1fr}summary{padding:16px}}
+@media(max-width:720px){main{width:min(100% - 18px,1100px);margin-top:9px}.guide-pagination{grid-template-columns:1fr 1fr}.guide-page-current{grid-column:1 / -1;grid-row:1}.hero{padding:24px;border-radius:18px}.page-scope,.flow,.evidence,.tool-output{grid-template-columns:1fr}summary{padding:16px}.mobile-table-note{display:block}}
 </style>
 </head>
 <body><main>
@@ -63,7 +65,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace} p code,li code,td 
 <section class="hero">
   <h1>1.13.0 → 1.13.1 코드 업그레이드 연습</h1>
   <p>BANK-OM별 충돌을 분리해 보기 위해 공식 1.13.1 위에 커밋을 하나씩 적용하고 소스 검사를 수행한 결과입니다.</p>
-  <div class="chips"><span>공식 변경 834개 파일</span><span>번역 JSON 18개 충돌</span><span>등록 경로 111개</span><span>소스 검사 8종 PASS</span></div>
+  <div class="chips"><span>공식 변경 834개 파일</span><span>번역 JSON 18개 충돌</span><span>소스 검사 8종 PASS</span><span>Contract test 7개 SKIP</span><span>전체 build 미실행</span></div>
 </section>
 <section class="page-scope" aria-label="이 페이지가 답하는 질문과 범위">
   <div><strong>이 페이지가 답하는 질문</strong><p>커밋별 재적용 진단에서 어떤 충돌이 발생했고 검사기로 어디까지 확인했는가?</p></div>
@@ -75,9 +77,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace} p code,li code,td 
   <strong>결론:</strong> 커밋별 재적용으로 만든 후보에서 BANK-OM-001~007의 소스 범위는 확인했습니다.
   그러나 실제 vendor-merge 기록, 전체 build, Contract test 7개, 담당자 승인과 배포 검증은 남아 있습니다.
 </section>
+<p class="mobile-table-note">작은 화면에서는 표를 좌우로 밀어 모든 열을 확인하세요.</p>
 
 <details open><summary><span class="n">1</span><span class="title"><strong>업그레이드 전 영향 확인</strong><small>공식 변경과 upgrade_watch 비교</small></span></summary>
 <div class="body">
+  <p><strong>Manifest</strong>는 BANK-OM별 변경 경로, 반드시 유지할 구현 경로, 공식 업그레이드 때 확인할 경로와 연결 test를 기록한 커스터마이징 등록 문서입니다.</p>
   <p><strong>공식 변경 영향 확인 검사(upgrade-watch, T42)</strong>가 Git으로 공식 1.13.0→1.13.1의 변경 경로 834개를 구하고, 각 BANK-OM Manifest의 <code>upgrade_watch.paths</code>와 비교했습니다. 7개 BANK-OM 모두 겹치는 경로가 있어 <span class="approval">APPROVAL</span>이 나왔습니다.</p>
   <div class="flow"><div><b>입력 1</b>공식 버전 사이에서 바뀐 834개 경로</div><div><b>입력 2</b>Manifest의 BANK-OM별 watch 경로</div><div><b>비교</b>두 목록의 같은 경로 찾기</div><div><b>결과</b>7개 ID 모두 검토 필요</div></div>
   <p class="note"><strong>APPROVAL의 뜻:</strong> 실패나 충돌 확정이 아니라, 공식 버전이 관련 경로를 바꿨으므로 커스터마이징을 적용하기 전에 담당자가 영향 내용을 확인하라는 뜻입니다.</p>
@@ -116,7 +120,7 @@ git -C ../om-temp-1.13.1-upgrade switch -c custom/om-1.13.1</code></pre>
   <div class="flow"><div><b>이전 버전</b>1.13.0의 BANK-OM commit</div><div><b>이번 진단 방법</b>공식 1.13.1에 commit별 적용</div><div><b>충돌 없음</b>해당 BANK-OM 적용 완료</div><div><b>충돌 발생</b>Git이 멈추고 해결 대기</div></div>
   <p class="note"><strong>왜 cherry-pick을 썼나?</strong> 충돌을 만들기 위해 필요한 명령이라서가 아니라, 충돌을 BANK-OM ID별로 분리해 기록하기 쉬웠기 때문입니다. branch merge나 rebase도 같은 코드 구간이 겹치면 충돌할 수 있습니다. 따라서 아래는 commit별 진단 결과이며 vendor-merge 운영경로 전체 결과가 아닙니다.</p>
   <table><thead><tr><th>BANK-OM</th><th>1.13.1 commit</th><th>실제 충돌</th><th>처리</th></tr></thead><tbody><tr><td>BANK-OM-001</td><td><code>83b1e0ac7d</code></td><td>번역 JSON 18개</td><td>각 파일에 행내 번역 항목 9개 추가</td></tr><tr><td>BANK-OM-002</td><td><code>8b368af0a2</code></td><td>번역 JSON 18개</td><td>각 파일에 행내 번역 항목 11개 추가</td></tr><tr><td>BANK-OM-003</td><td><code>e1d181d728</code></td><td>번역 JSON 18개</td><td>각 파일에 행내 번역 항목 5개 추가</td></tr><tr><td>BANK-OM-004</td><td><code>ed870cd63d</code></td><td>번역 JSON 18개</td><td>각 파일에 행내 번역 항목 9개 추가</td></tr><tr><td>BANK-OM-005</td><td><code>dfd3ad5e1c</code></td><td>충돌 없음</td><td>자동 적용</td></tr><tr><td>BANK-OM-006</td><td><code>15b85814f5</code></td><td>충돌 없음</td><td>자동 적용</td></tr><tr><td>BANK-OM-007</td><td><code>e7e4ba67b6 + dee330ebd5</code></td><td>충돌 없음</td><td>두 커밋을 순서대로 적용</td></tr></tbody></table>
-  <p>001~004는 매번 같은 18개 번역 JSON에서 충돌했습니다. 72개 다른 파일이 아니라 <strong>18개 고유 파일에서 네 번 발생한 충돌</strong>입니다.</p>
+  <p>001~004는 각각 번역 JSON 18개에서 충돌한 것으로 기록됐습니다. BANK-OM-001은 18개 상세 경로까지 보관했지만 002~004는 건수만 보관했으므로, 네 차례의 파일 목록이 완전히 같다고 단정하지 않습니다.</p>
 
   <h3 class="subhead">1. 실제로 충돌이 발생한 순간</h3>
   <p>BANK-OM-001의 1.13.0 변경 <code>4df83b311f</code>를 공식 1.13.1에 하나의 기능 단위로 적용했습니다. 실제 명령은 <code>git cherry-pick 4df83b311f</code>였고, Git이 아래 지점에서 자동 적용을 중단했습니다.</p>
@@ -129,60 +133,32 @@ error: could not apply 4df83b311f... add InstanceCode customization</span>
 $ git diff --name-only --diff-filter=U | wc -l
 18</code></pre>
   <p><code>Entity.java</code>와 <code>CollectionDAO.java</code>는 자동 병합됐지만, 번역 JSON 18개는 Git이 자동으로 결정하지 못해 적용이 중단됐습니다.</p>
-  <p><strong>왜 서로 다른 번역 항목인데 충돌했나?</strong> Git은 JSON 항목의 의미가 아니라 줄 위치를 비교합니다. 공통 기준인 공식 1.13.0에서 출발해, 공식 1.13.1은 같은 <code>label</code>·<code>message</code> 객체의 형식과 공식 항목을 변경했고 BANK-OM-001은 그 객체의 끝에 행내 항목 9개를 추가했습니다. 두 변경이 같은 줄 주변을 함께 바꿨기 때문에 Git이 자동 조립을 중단했습니다.</p>
+  <p><strong>왜 서로 다른 번역 항목인데 충돌했나?</strong> 두 변경 모두 공식 1.13.0에서 출발했습니다. 공식 1.13.1은 JSON 파일의 형식과 항목 배치를 크게 바꾸고 공식 번역 항목도 변경했습니다. BANK-OM-001은 1.13.0의 기존 형식을 유지한 채 같은 JSON 객체에 행내 번역 항목 9개를 추가했습니다. Git은 JSON의 의미가 아니라 줄 단위 차이를 계산하므로 충돌 구간의 두 결과를 자동으로 조립하지 못했습니다.</p>
   <div class="flow">
     <div><b>공통 기준</b>공식 1.13.0<br>행내 번역 없음</div>
-    <div><b>공식 변경</b>1.13.1<br>같은 JSON 객체 형식·항목 변경</div>
-    <div><b>행내 변경</b>BANK-OM-001<br>같은 객체 끝에 9개 추가</div>
-    <div><b>Git 판단</b>같은 줄 주변이 함께 변경됨<br>자동 병합 중단</div>
+    <div><b>공식 쪽 결과</b>1.13.1<br>파일 형식·배치와 공식 항목 변경</div>
+    <div><b>BANK 쪽 결과</b>BANK-OM-001<br>1.13.0 형식에 행내 항목 9개 추가</div>
+    <div><b>Git 판단</b>파일의 큰 충돌 구간을 줄 단위로 조립할 수 없음<br>자동 병합 중단</div>
   </div>
-  <p class="note">항목 이름별로 다시 비교한 결과 공식 1.13.1과 BANK-OM-001이 동시에 바꾼 동일 항목은 0개였습니다. 즉, 의미상 같은 값을 서로 다르게 고친 충돌이 아니라 JSON 형식과 삽입 위치가 겹쳐 발생한 줄 단위 충돌입니다.</p>
+  <p class="note">항목 이름별로 다시 비교한 결과 공식 1.13.1과 BANK-OM-001이 동시에 바꾼 동일 항목은 0개였습니다. 즉, 같은 번역 값을 서로 다르게 고친 충돌이 아닙니다. 파일 형식과 항목 배치가 크게 달라져 Git의 줄 단위 자동 병합이 실패한 충돌입니다.</p>
 
-  <div class="evidence">
-    <div class="conflict-current">
-      <h4><span class="label">공식 1.13.1 영역</span> Git의 현재 변경</h4>
-      <p><code>HEAD</code>는 지금 기준으로 삼은 공식 1.13.1 코드입니다.</p>
-      <pre><code><span class="conflict-line">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
-        "yes": "예",
-        "yes-comma-confirm": "예, 확인합니다",
-        "yesterday": "어제",
-        "your-entity": "당신의 {{entity}}",
-        "z-to-a": "Z에서 A",
-        "zoom-in": "확대",
-        "zoom-out": "축소"</code></pre>
-    </div>
-    <div class="conflict-incoming">
-      <h4><span class="label">BANK-OM-001 영역</span> 적용하려는 변경</h4>
-      <p>아래는 실제 BANK-OM 쪽 충돌 영역에서 추가 항목만 발췌한 것입니다.</p>
-      <pre><code><span class="conflict-line">=======</span>
-  "label": {
-    ...
-    "code-group": "Code Group",
-    "code-name": "Code Name",
-    "code-value": "Code Value",
-    ...
-    "instance-code": "인스턴스 코드",
-    ...
-    "sort-order": "Sort Order"
+  <div class="conflict-structure">
+    <h4>Git이 충돌 파일에 실제로 남긴 구조</h4>
+    <p><strong>HEAD는 현재 작업 branch의 코드</strong>를 뜻하며, 이번 실행에서는 공식 1.13.1입니다. 아래 두 영역은 같은 줄의 왼쪽·오른쪽 코드가 아니라, Git이 한 파일 안에서 자동으로 합치지 못한 <strong>두 개의 큰 충돌 블록</strong>입니다.</p>
+    <pre><code><span class="conflict-line">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
+[공식 1.13.1 쪽 충돌 내용 약 2,373줄]
+<span class="conflict-line">=======</span>
+[공식 1.13.0 형식에 BANK-OM-001을 추가한 쪽 충돌 내용 약 3,178줄]
 <span class="conflict-line">&gt;&gt;&gt;&gt;&gt;&gt;&gt; 4df83b311f</span></code></pre>
-    </div>
+    <p class="source-note">실제 원문은 6,614행입니다. 충돌 표시는 2~5,555행에 있고, 1행과 5,556~6,614행은 Git이 자동으로 맞춘 영역입니다.</p>
+    <p class="note">BANK 쪽 충돌 내용이 약 805줄 더 긴 주된 이유는 행내 항목을 805줄 추가했기 때문이 아니라 1.13.0의 더 긴 기존 형식을 유지했기 때문입니다. 실제 BANK-OM-001 추가는 9개 항목입니다.</p>
   </div>
-  <p class="warning"><strong>이것이 실제 충돌입니다.</strong> 위 두 칸은 같은 줄을 일대일로 비교하는 화면이 아니라, Git이 선택하지 못하고 남긴 공식 버전과 BANK-OM 버전의 대표 부분입니다. 두 버전이 한 JSON 파일 안에 동시에 남았고, Git은 어느 쪽을 최종 코드로 쓸지 정하지 못해 멈췄습니다.</p>
 
   <h3 class="subhead">2. 충돌을 해결한 결과</h3>
-  <p>한쪽 전체를 선택하면 공식 변경이나 BANK-OM 변경 중 하나를 잃을 수 있습니다. 공식 1.13.1의 번역과 형식을 유지한 뒤 BANK-OM-001의 새 항목 9개만 추가했습니다.</p>
-  <div class="evidence">
-    <div>
-      <h4><span class="label">해결 전</span> Git이 중단된 상태</h4>
-      <pre><code><span class="conflict-line">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
-공식 1.13.1 전체 JSON
-<span class="conflict-line">=======</span>
-BANK-OM-001 전체 JSON
-<span class="conflict-line">&gt;&gt;&gt;&gt;&gt;&gt;&gt; 4df83b311f</span></code></pre>
-    </div>
-    <div>
+  <p>위 충돌 블록 중 한쪽만 선택하면 공식 변경이나 BANK-OM 변경 중 하나를 잃을 수 있습니다. 공식 1.13.1의 번역과 형식을 유지한 뒤 BANK-OM-001의 새 항목 9개만 추가했습니다. 실제 위치는 <code>label</code> 7개와 <code>message</code> 2개로 나뉩니다.</p>
+  <div class="conflict-structure">
       <h4><span class="label">해결 후</span> 공식 형식 + BANK-OM 항목</h4>
-      <pre><code>    "label": {
+      <pre><code>"label": {
         ... 공식 1.13.1 번역 유지 ...
 <span class="diff-add">+ "code-group": "Code Group"</span>
 <span class="diff-add">+ "code-name": "Code Name"</span>
@@ -191,10 +167,13 @@ BANK-OM-001 전체 JSON
 <span class="diff-add">+ "instance-code-lowercase-plural": "인스턴스 코드"</span>
 <span class="diff-add">+ "instance-code-plural": "인스턴스 코드"</span>
 <span class="diff-add">+ "sort-order": "Sort Order"</span>
+}
+
+"message": {
+        ... 공식 1.13.1 번역 유지 ...
 <span class="diff-add">+ "instance-code-description": "Manage common/reference codes..."</span>
 <span class="diff-add">+ "instance-code-group-description": "The code group contains..."</span>
-    }</code></pre>
-    </div>
+}</code></pre>
   </div>
   <details class="mini"><summary><span class="title"><strong>실제 해결 diff 전체 보기</strong><small>공식 1.13.1과 해결 commit 83b1e0ac7d 비교 · 43줄</small></span></summary>
     <div class="body"><pre><code>diff --git a/openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json b/openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
@@ -270,6 +249,7 @@ resolved .../languages/ko-kr.json: BANK-OM leaf changes=9</code></pre>
         <a href="../../harness/registrations/om-temp-1.13.1/conflict-evidence/BANK-OM-001_ko-kr_resolved.json" target="_blank">해결된 JSON 전체</a>
         <a href="../../harness/registrations/om-temp-1.13.1/conflict-evidence/BANK-OM-001_ko-kr_capture.json" target="_blank">ID·commit·18개 경로 기록</a>
       </div>
+      <p class="source-note">저장소 경로: <code>harness/registrations/om-temp-1.13.1/conflict-evidence/</code>. HTML만 따로 복사하면 위 상대 링크가 열리지 않으므로 공유 묶음에는 이 폴더를 함께 포함해야 합니다.</p>
     </div>
   </details>
 
@@ -291,7 +271,7 @@ add InstanceCode customization</code></pre><p>commit SHA를 다시 조회해야 
     <div><b>2</b><span><strong>담당자 선택:</strong> 기능 담당자가 <code>자동 병합 승인</code>, <code>수동 해결</code>, <code>적용 중단</code> 중 하나를 선택합니다.</span></div>
     <div><b>3</b><span><strong>승인 기록:</strong> 승인자, BANK-OM ID, 공식 target SHA, source commit SHA, 선택 방법과 시각을 <code>approval.yaml</code>에 남깁니다.</span></div>
     <div><b>4</b><span><strong>승인 후 적용:</strong> 승인 파일과 비교 계획의 digest가 일치할 때만 해결 도구가 코드를 수정합니다.</span></div>
-    <div><b>5</b><span><strong>자동 차단:</strong> 동일 JSON 항목이 겹치거나 JSON 외 코드가 충돌하면 <span class="approval">BLOCK</span>하고 코드 담당자가 수동 해결합니다.</span></div>
+    <div><b>5</b><span><strong>자동 차단:</strong> 동일 JSON 항목이 겹치거나 JSON 외 코드가 충돌하면 <span class="status-no">BLOCK</span>하고 코드 담당자가 수동 해결합니다. BLOCK은 자동 진행을 멈추고 사람이 원인을 확인해야 한다는 판정입니다.</span></div>
     <div><b>6</b><span><strong>적용 후 재검사:</strong> Manifest 범위, build, Contract test를 실행하고 결과에 승인 기록을 연결합니다.</span></div>
   </div>
   <pre><code>customization_id: BANK-OM-001
@@ -329,7 +309,7 @@ plan_digest: sha256:...</code></pre>
   <p class="note">소스 검사 PASS는 build와 업무 동작 test 성공을 대신하지 않습니다.</p>
 </div></details>
 
-<details><summary><span class="n">6</span><span class="title"><strong>Contract test와 build 환경</strong><small>실행 결과와 SKIP 이유</small></span></summary>
+<details open><summary><span class="n">6</span><span class="title"><strong>Contract test와 build 환경</strong><small>실행 결과와 SKIP 이유</small></span></summary>
 <div class="body">
   <table><thead><tr><th>구분</th><th>결과</th><th>해석</th></tr></thead><tbody>
     <tr><td>필수 Contract test</td><td><span class="pass">2 PASS</span> · 7 SKIP</td><td>Sybase·Tibero PASS, 서버·브라우저가 필요한 7개는 미실행</td></tr>
@@ -340,7 +320,7 @@ plan_digest: sha256:...</code></pre>
   <p>전체 build는 Java Runtime·Maven·Yarn과 UI <code>node_modules</code>가 없어 시작하지 못했습니다. 코드 build 성공이나 실패 결과가 아니라, build 환경 준비가 필요한 상태입니다.</p>
 </div></details>
 
-<details><summary><span class="n">7</span><span class="title"><strong>현재 상태와 다음 단계</strong><small>완료와 미완료를 분리</small></span></summary>
+<details open><summary><span class="n">7</span><span class="title"><strong>현재 상태와 다음 단계</strong><small>완료와 미완료를 분리</small></span></summary>
 <div class="body">
   <p><strong>우리의 목적:</strong> 공식 업그레이드 후 행내 커스터마이징이 코드에 빠짐없이 적용됐고, 업무 동작까지 정상인지 확인한 뒤 배포 검토로 넘기는 것입니다.</p>
   <table><thead><tr><th>목적에 필요한 확인</th><th>현재 결과</th><th>지금 말할 수 있는 범위</th></tr></thead><tbody>
