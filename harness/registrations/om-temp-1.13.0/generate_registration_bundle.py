@@ -205,20 +205,45 @@ def main() -> None:
         required=True,
         help="Local repository containing official and OM_TEMP commit objects",
     )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path(__file__).resolve().parent,
+        help="Registration directory containing manifests/ and receiving outputs",
+    )
+    parser.add_argument("--upstream-sha", default=UPSTREAM_SHA)
+    parser.add_argument("--upstream-tag", default=UPSTREAM_TAG)
+    parser.add_argument("--source-snapshot-sha", default=SOURCE_SNAPSHOT_SHA)
+    parser.add_argument("--final-sha", default=FINAL_REMOTE_SHA)
+    parser.add_argument("--repository", default="easyseop/OM_TEMP")
+    parser.add_argument(
+        "--patch-ref",
+        default="patch/om-1.13.0",
+        help="Local patch branch/tag whose tree must equal upstream-sha",
+    )
+    parser.add_argument(
+        "--ancestry-preserved",
+        action="store_true",
+        help="Set only when the registered source snapshot descends from upstream-sha",
+    )
     args = parser.parse_args()
 
     repo = args.repo.resolve()
-    root = Path(__file__).resolve().parent
+    root = args.output_dir.resolve()
     manifests = load_manifests(root)
 
-    for commit in (UPSTREAM_SHA, SOURCE_SNAPSHOT_SHA, FINAL_REMOTE_SHA):
+    for commit in (
+        args.upstream_sha,
+        args.source_snapshot_sha,
+        args.final_sha,
+    ):
         git(repo, "cat-file", "-e", f"{commit}^{{commit}}")
 
-    upstream_tree = git(repo, "rev-parse", f"{UPSTREAM_SHA}^{{tree}}")
-    patch_tree = git(repo, "rev-parse", "om-temp/patch/om-1.13.0^{tree}")
+    upstream_tree = git(repo, "rev-parse", f"{args.upstream_sha}^{{tree}}")
+    patch_tree = git(repo, "rev-parse", f"{args.patch_ref}^{{tree}}")
     if upstream_tree != patch_tree:
         raise ValueError(
-            "OM_TEMP patch tree is not identical to official OpenMetadata 1.13.0"
+            f"{args.patch_ref} tree does not equal {args.upstream_tag} upstream tree"
         )
 
     source_paths = sorted(
@@ -228,7 +253,7 @@ def main() -> None:
                 repo,
                 "diff",
                 "--name-only",
-                f"{UPSTREAM_SHA}..{SOURCE_SNAPSHOT_SHA}",
+                f"{args.upstream_sha}..{args.source_snapshot_sha}",
             ).splitlines(),
         )
     )
@@ -239,7 +264,7 @@ def main() -> None:
                 repo,
                 "diff",
                 "--name-only",
-                f"{UPSTREAM_SHA}..{FINAL_REMOTE_SHA}",
+                f"{args.upstream_sha}..{args.final_sha}",
             ).splitlines(),
         )
     )
@@ -270,19 +295,26 @@ def main() -> None:
     registry = {
         "schema_version": 1,
         "source": {
-            "repository": "easyseop/OM_TEMP",
-            "snapshot_sha": SOURCE_SNAPSHOT_SHA,
+            "repository": args.repository,
+            "snapshot_sha": args.source_snapshot_sha,
             "upstream_repository": "open-metadata/OpenMetadata",
-            "upstream_tag": UPSTREAM_TAG,
-            "upstream_sha": UPSTREAM_SHA,
+            "upstream_tag": args.upstream_tag,
+            "upstream_sha": args.upstream_sha,
             "changed_path_count": len(source_paths),
-            "ancestry_preserved": False,
+            "ancestry_preserved": args.ancestry_preserved,
             "diff_inventory": "source-diff-paths.txt",
             "unregistered_findings": [],
             "limitations": [
-                (
-                    "OM_TEMP remote source commits are independent snapshots and "
-                    "do not preserve official OpenMetadata ancestry."
+                *(
+                    []
+                    if args.ancestry_preserved
+                    else [
+                        (
+                            "OM_TEMP remote source commits are independent "
+                            "snapshots and do not preserve official "
+                            "OpenMetadata ancestry."
+                        )
+                    ]
                 ),
                 (
                     "The source snapshot stops before the BANK-OM-007 follow-up; "
@@ -324,7 +356,7 @@ def main() -> None:
     print(f"Contracts: {len(CONTRACTS)}")
     print(f"Source diff paths: {len(source_paths)}")
     print(f"Shared paths: {len(shared_owners)}")
-    print(f"Official/OM_TEMP patch tree: {upstream_tree}")
+    print(f"Official upstream tree: {upstream_tree}")
 
 
 if __name__ == "__main__":

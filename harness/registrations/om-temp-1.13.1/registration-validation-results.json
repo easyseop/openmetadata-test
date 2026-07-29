@@ -1,0 +1,32 @@
+{
+  "checks": [
+    {
+      "detail": "7개 Manifest",
+      "name": "Manifest 구조와 작성 규칙",
+      "verdict": "pass"
+    },
+    {
+      "detail": "7개 BANK-OM",
+      "name": "Registry·Manifest·Contract 연결",
+      "verdict": "pass"
+    },
+    {
+      "detail": "111개 경로",
+      "name": "Git 전체 변경 목록",
+      "verdict": "pass"
+    },
+    {
+      "detail": "37개 공용 경로",
+      "name": "공용 파일 소유정보",
+      "verdict": "pass"
+    },
+    {
+      "detail": "9개 Python pytest",
+      "name": "필수 테스트 코드 존재",
+      "verdict": "pass"
+    }
+  ],
+  "reconstruction_plan_digest": "sha256:4b85b46e83f759784e3c052d38b572e7e5d642e5cb0230e4e05552ffeae8530b",
+  "registration": "harness/registrations/om-temp-1.13.1",
+  "release_note": "이 결과는 검사 입력자료가 서로 일치한다는 뜻이다. 코드 build, test 실행, 담당자 지정, 배포 승인은 별도 단계다."
+}

@@ -1,0 +1,83 @@
+{
+  "artifact_note": "artifact_digest binds the source Git tree identity; binary/image release artifacts are not built yet",
+  "candidate_lock": {
+    "candidate": {
+      "artifact_digest": "sha256:a84765c384f412ebf3a2eb01d5f0d613e87beec5eaae2ecbf19d340a29d002ae",
+      "commit_sha": "dee330ebd5abfe33e1ac61e1ca31879746a1b423",
+      "repository": "easyseop/OM_TEMP",
+      "tree_sha": "e490ed82dd9cfe58833b2050a233aae7496541ab"
+    },
+    "integration_strategy": "vendor-merge",
+    "schema_version": 1,
+    "upstream": {
+      "base_sha": "afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9",
+      "base_tag": "1.13.1-release",
+      "repository": "open-metadata/OpenMetadata",
+      "target_sha": "afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9",
+      "target_tag": "1.13.1-release"
+    }
+  },
+  "candidate_lock_digest": "sha256:841c14d968c46c9b773def6d1e05afca7da0b86e810dcb1914faaf0f94118e14",
+  "gates": [
+    {
+      "name": "vendor-ancestry",
+      "reasons": [
+        "candidate=dee330ebd5abfe33e1ac61e1ca31879746a1b423",
+        "approved_target=afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9",
+        "base_target_merge_base=afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9",
+        "candidate_lock_digest=sha256:841c14d968c46c9b773def6d1e05afca7da0b86e810dcb1914faaf0f94118e14"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "name": "customization-survival",
+      "reasons": [
+        "BANK-OM-001: expected_paths=48, required_paths=2, contracts=1, effective_tests=1",
+        "BANK-OM-002: expected_paths=55, required_paths=2, contracts=1, effective_tests=1",
+        "BANK-OM-003: expected_paths=25, required_paths=2, contracts=1, effective_tests=2",
+        "BANK-OM-004: expected_paths=33, required_paths=1, contracts=1, effective_tests=2",
+        "BANK-OM-005: expected_paths=1, required_paths=1, contracts=1, effective_tests=1",
+        "BANK-OM-006: expected_paths=18, required_paths=1, contracts=1, effective_tests=1",
+        "BANK-OM-007: expected_paths=10, required_paths=1, contracts=1, effective_tests=1"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "name": "required-test-implementations",
+      "reasons": [
+        "implemented_required_tests=9"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "name": "commit-invariants",
+      "reasons": [],
+      "verdict": "pass"
+    },
+    {
+      "name": "id-invariants",
+      "reasons": [],
+      "verdict": "pass"
+    },
+    {
+      "name": "drift",
+      "reasons": [],
+      "verdict": "pass"
+    },
+    {
+      "name": "sensitive-zones",
+      "reasons": [
+        "bootstrap/sql/migrations/native/1.13.0/mysql/schemaChanges.sql: zone=watched visibility_only -> pass",
+        "bootstrap/sql/migrations/native/1.13.0/postgres/schemaChanges.sql: zone=watched visibility_only -> pass"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "name": "exact-scope-history",
+      "reasons": [
+        "declared exact scopes equal observed per-ID history"
+      ],
+      "verdict": "pass"
+    }
+  ]
+}

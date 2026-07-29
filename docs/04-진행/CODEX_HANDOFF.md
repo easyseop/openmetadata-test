@@ -291,6 +291,38 @@ Java JUnit·TypeScript Jest를 직접 등록하고 실행하려면 언어·도�
 OpenMetadata 전체 build, Contract test 실행, 담당자 지정, 1.13.1 업그레이드,
 운영 배포 승인은 아직 수행하지 않았다.
 
+### OM_TEMP 1.13.0 → 1.13.1 실제 업그레이드
+
+1.13.1 업그레이드는 2026-07-28 로컬에서 실제 수행했다.
+
+- 공식 기준: `1.13.1-release`
+  (`afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9`)
+- 공식 코드 branch: `patch/om-1.13.1`
+- 커스터마이징 적용 branch: `custom/om-1.13.1`
+- 최종 검사 대상 commit:
+  `dee330ebd5abfe33e1ac61e1ca31879746a1b423`
+- 공식 1.13.0→1.13.1 변경: 834개 파일
+- `upgrade_watch` 결과: BANK-OM-001~007 모두 영향 경로가 있어 `approval`
+- 실제 충돌: BANK-OM-001~004 적용 시 같은 번역 JSON 18개에서 반복 발생
+- 충돌 해결: 공식 변경 leaf key와 BANK-OM leaf key가 겹치지 않을 때만
+  공식 JSON에 BANK-OM 키를 추가. 겹치면 자동 중단하는 도구 사용
+- BANK-OM-005~007: 충돌 없이 적용
+- 1.13.1 등록자료: Manifest 7개, Contract 7개, test selector 9개,
+  전체 경로 111개, 공용 경로 37개
+- 1.13.1 사전자료 검증 5종 PASS
+- 1.13.1 소스 검사 8종 PASS
+
+상세 결과:
+
+- `harness/registrations/om-temp-1.13.1/upgrade-watch-results.json`
+- `harness/registrations/om-temp-1.13.1/upgrade-application-results.json`
+- `harness/registrations/om-temp-1.13.1/registration-validation-results.json`
+- `harness/registrations/om-temp-1.13.1/source-gate-results.json`
+- `docs/00-사용가이드/OM_TEMP_1.13.0_1.13.1_업그레이드_실행_가이드_미리보기.html`
+
+두 1.13.1 branch는 로컬에만 만들었고 아직 GitHub에 push하지 않았다. 전체
+build, Contract test 실제 실행, 담당자 지정, 검증 tag와 배포 승인은 남아 있다.
+
 HTML 다시 생성:
 
 ```bash
@@ -319,8 +351,9 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
    배포 준비 완료로 표시하지 않는다.
 6. Patch-lock은 vendor-merge 소스 검사의 필수가 아니다. patch-replay·복구·
    재현 시연을 선택할 때만 만든다.
-7. 2차·3차 HTML에 남은 사용자 피드백을 반영한다.
-8. 공식 1.13.1 upgrade 작업 branch에서 실제 충돌·재적용·재검사를 수행한다.
+7. `custom/om-1.13.1`에서 가능한 build와 Contract test를 실행하고 결과를
+   1.13.1 가이드에 추가한다.
+8. 2차·3차 HTML에 남은 사용자 피드백을 반영한다.
 9. 실제 Git 병합 전 대상·diff·병합·검사·결과 화면을 캡처해 4차 시연을 만든다.
 10. 1차·2차·3차·4차를 하나의 최종 공유문서로 합치고 중복과 용어를 다시 검토한다.
 11. 작업 완료 후 이 문서의 상태·검증·다음 단계를 갱신하고 같은 브랜치에

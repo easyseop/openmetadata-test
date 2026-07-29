@@ -1,0 +1,21 @@
+schema_version: 1
+customization_id: BANK-OM-005
+status: active
+kind: core-patch
+title: 한글 입력 조합 보정
+implementation:
+  allowed_changed_paths:
+  - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
+  required_changed_paths:
+  - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
+upgrade_watch:
+  paths:
+  - openmetadata-ui/src/main/resources/ui/package.json
+  - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
+assurance:
+  contracts:
+  - CONTRACT-KOREAN-IME
+  direct_tests: []
+series:
+  allowed: false
+  depends_on: []

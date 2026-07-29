@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "upstream": {
+    "tag": "1.13.1-release",
+    "commit_sha": "afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9"
+  },
+  "branches": {
+    "patch": "patch/om-1.13.1",
+    "custom": "custom/om-1.13.1"
+  },
+  "final_custom_commit": "dee330ebd5abfe33e1ac61e1ca31879746a1b423",
+  "applications": [
+    {
+      "customization_id": "BANK-OM-001",
+      "result_commit": "83b1e0ac7dcb5caa4fe4ed2159b684fb4f8736e3",
+      "conflict_unique_paths": 18,
+      "conflict_path_group": "openmetadata-ui/src/main/resources/ui/src/locale/languages/*.json",
+      "bank_leaf_changes_per_file": 9,
+      "overlapping_leaf_changes": 0
+    },
+    {
+      "customization_id": "BANK-OM-002",
+      "result_commit": "8b368af0a200b99d1d8d09bcdc921ccdcb3aa2d2",
+      "conflict_unique_paths": 18,
+      "conflict_path_group": "openmetadata-ui/src/main/resources/ui/src/locale/languages/*.json",
+      "bank_leaf_changes_per_file": 11,
+      "overlapping_leaf_changes": 0
+    },
+    {
+      "customization_id": "BANK-OM-003",
+      "result_commit": "e1d181d728225737fa4f1b6fb72fd62f5a450e42",
+      "conflict_unique_paths": 18,
+      "conflict_path_group": "openmetadata-ui/src/main/resources/ui/src/locale/languages/*.json",
+      "bank_leaf_changes_per_file": 5,
+      "overlapping_leaf_changes": 0
+    },
+    {
+      "customization_id": "BANK-OM-004",
+      "result_commit": "ed870cd63db8910113cd5f4ad7d4934f2c232516",
+      "conflict_unique_paths": 18,
+      "conflict_path_group": "openmetadata-ui/src/main/resources/ui/src/locale/languages/*.json",
+      "bank_leaf_changes_per_file": 9,
+      "overlapping_leaf_changes": 0
+    },
+    {
+      "customization_id": "BANK-OM-005",
+      "result_commit": "dfd3ad5e1c97a1bc9542bf18f71eb0d165370e6b",
+      "conflict_unique_paths": 0
+    },
+    {
+      "customization_id": "BANK-OM-006",
+      "result_commit": "15b85814f5bde6cc28358813f121c20a62a55526",
+      "conflict_unique_paths": 0
+    },
+    {
+      "customization_id": "BANK-OM-007",
+      "result_commits": [
+        "e7e4ba67b69145d585b4178779f5998944b872c4",
+        "dee330ebd5abfe33e1ac61e1ca31879746a1b423"
+      ],
+      "conflict_unique_paths": 0
+    }
+  ],
+  "conflict_resolution": {
+    "method": "three-way JSON leaf comparison",
+    "rule": "Keep official 1.13.1 JSON and add BANK-OM leaf changes only when the same leaf key was not changed by both sides.",
+    "fail_closed": "Any overlapping leaf key stops the resolver without writing the conflicting file."
+  },
+  "limitations": [
+    "Conflict events were recorded from the actual sequential cherry-pick execution.",
+    "The same 18 locale files conflicted in BANK-OM-001 through BANK-OM-004; this is 18 unique paths and 72 conflict events.",
+    "Source gates passed after resolution, but full build and runtime contract tests have not run."
+  ]
+}
