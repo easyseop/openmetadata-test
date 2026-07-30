@@ -59,8 +59,19 @@ plan(읽기 전용 분석) → 담당자 검토·승인 → apply(승인한 제�
 - 실행 위치: 거버넌스 저장소 루트
 - 도구: Git, Python 3, 저장소의 `.venv`
 - 제품 입력: 로컬 OM_TEMP clone과 fetch가 끝난 patch/custom ref
+- 공식 기준 commit: Registry의 `source.upstream_sha`와 `source.snapshot_sha`가
+  같은 clone 안에 있어야 한다
 - 제품 상태: tracked·untracked 파일이 하나도 없는 clean worktree
 - 권한: plan은 읽기 권한, apply는 등록 폴더 쓰기 권한
+
+공식 기준 commit은 OpenMetadata 원본에서 따로 받아야 한다. OM_TEMP만 clone하면
+`plan`이 `REGISTRATION_GIT_OBJECT_MISSING`으로 멈춘다.
+
+```bash
+git -C /path/to/OM_TEMP fetch --filter=blob:none \
+  https://github.com/open-metadata/OpenMetadata.git \
+  f329dd4a7e47134a2bd5a06af6181b0ee527ddd9
+```
 
 제품 저장소가 dirty이면 파일을 자동 포함하지 않고 `BLOCKED`로 멈춘다. 필요한
 변경을 올바른 BANK-OM ID로 commit하거나, 보존할 로컬 파일을 제품 저장소
@@ -89,7 +100,21 @@ PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py plan \
 | `diff.patch` | 승인하면 바뀔 Manifest·Registry 내용 |
 
 `proposal.yaml`, `commit-inventory.yaml`, `current-diff-paths.txt`는 감사와
-재현을 위한 상세 근거다. 처음부터 모두 읽을 필요는 없다.
+재현을 위한 상세 근거다. 처음부터 모두 읽을 필요는 없다. **이 파일들을 손으로
+고치지 않는다.** `apply`는 고정한 SHA로 Git 사실을 다시 계산해 제안서와
+대조하므로, 편집한 제안서는 승인서 digest가 맞아도 거부된다. 내용을 바꿔야
+하면 원인을 고치고 새 출력 폴더에서 `plan`을 다시 실행한다.
+
+`review-required.yaml`에 나오는 질문 코드는 다음과 같다.
+
+| 코드 | 무엇을 묻는가 |
+|---|---|
+| `NEW_CUSTOMIZATION_INPUT` | 새 BANK-OM ID의 사람 정책 입력이 아직 없음 |
+| `NEW_CUSTOMIZATION_APPROVAL` | 새 BANK-OM의 업무 범위·담당자·필수 경로·Contract 확인 |
+| `REQUIRED_PATH_DECISION` | 새로 바뀐 파일을 `required_changed_paths`에 넣을지 |
+| `BANK_ONLY_WATCH_DECISION` | 공식 patch에 없는 기존 watch 경로를 계속 둘지 |
+| `REVERTED_PATH_DECISION` | 바꿨다가 되돌려 최종 diff에 없는 경로가 의도한 결과인지 |
+| `REMOVED_PATH_DECISION` | 삭제하거나 이름을 바꿔 custom 최종 상태에 없는 경로 처리 |
 
 ### 새 BANK-OM ID가 발견된 경우
 
@@ -198,13 +223,17 @@ PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py apply \
 - Core와 governance 영역을 한 commit에서 혼합
 - 등록되지 않은 새 ID의 사람 입력 누락
 - 필수 파일 소실, retired ID 재사용, 비연속 commit series
+- 필수 파일을 바꿨다가 되돌려 최종 diff에 남지 않은 경우
 - patch와 custom의 무관한 Git 이력
 - 분류할 수 없는 경로
 - symlink, submodule, Git LFS pointer
 - 승인 뒤 이동한 branch나 변경된 등록자료
+- 손으로 편집해 Git 사실과 맞지 않는 제안서
 - 동시에 실행 중인 다른 apply
 
 이 경우 도구가 ID·owner·Contract를 임의로 채우거나 정책을 완화하지 않는다.
+규칙을 적용해 거절한 결과는 `BLOCKED`(종료코드 1)이고, 입력이나 Git 관계를
+믿을 수 없어 판단 자체를 못 한 경우만 `ANALYSIS_ERROR`(종료코드 3)다.
 
 ## 10. 보관할 증거와 완료 조건
 

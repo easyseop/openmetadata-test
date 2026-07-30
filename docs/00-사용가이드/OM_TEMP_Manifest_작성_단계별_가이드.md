@@ -345,21 +345,29 @@ Manifest는 “현재 버전에서 검사할 10개 파일”을 정의하고, Gi
 
 ### 9.1 자동 생성 도구 사용 여부
 
-현재 저장소에는 OM_TEMP 1.13.0 commit을 읽어 Manifest 등록본을 다시 만드는
-`harness/registrations/om-temp-1.13.0/generate_manifest_drafts.py`가 있습니다.
-다음 명령을 실행하면 기록된 Git commit의 전체 변경 파일을 다시 추출해
-BANK-OM-001~007 Manifest 7개를 생성합니다.
+Manifest 초안은 준비도구의 `plan`이 만듭니다. `plan`은 patch와 custom 사이의
+commit을 모두 읽어 BANK-OM ID별 변경 경로를 계산하고, 그 결과를 **제안
+폴더에만** 씁니다. 실제 등록 폴더는 사람이 승인한 뒤 `apply`에서만 바뀝니다.
 
 ```bash
-./.venv/bin/python \
-  harness/registrations/om-temp-1.13.0/generate_manifest_drafts.py \
-  --repo <OM_TEMP가-있는-절대경로>
+PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py plan \
+  --repo <제품-코드-저장소-절대경로> \
+  --registration harness/registrations/om-temp-1.13.0 \
+  --patch-ref origin/patch/om-1.13.0 \
+  --custom-ref origin/custom/om-1.13.0 \
+  --product-version 1.13.0 \
+  --output harness/preparation-plans/om-temp-1.13.0-YYYYMMDD-HHMM
 ```
 
-스크립트는 Git이 확정할 수 있는 전체 변경 파일을 ID별 `changed_paths`로
-자동 생성합니다. BANK-OM-007처럼 commit이 두 개면 두 commit의 경로를 한
-목록으로 합칩니다. `required`, 미수정 의존 파일, 계약은 기능 의미를
-판단해야 하므로 스크립트 안의 명시적인 검토값으로 관리합니다.
+`plan`은 Git이 확정할 수 있는 전체 변경 파일을 ID별 `changed_paths`로
+계산합니다. BANK-OM-007처럼 commit이 두 개면 두 commit의 경로를 한 목록으로
+합칩니다. `required`, 미수정 의존 파일, 계약은 기능 의미를 판단해야 하므로
+자동으로 확정하지 않고 `review-required.yaml`의 질문으로 남깁니다.
+
+전체 단계와 상태별 대응은
+[`OM_TEMP 검사 전 준비도구 쉬운 사용법`](OM_TEMP_검사전_준비도구_쉬운사용법.md)에
+있습니다. 같은 폴더의 `generate_manifest_drafts.py`는 옛 파일명을 유지하기
+위한 wrapper이며 위 `plan`과 같은 인자를 받습니다.
 
 `harness/registrations/kb-openmetadata/materialize_exact_scopes.py`는 기존
 1.13.1 등록자료 전용이므로 이번 1.13.0 생성에는 사용하지 않습니다.

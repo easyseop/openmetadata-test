@@ -1067,15 +1067,30 @@ databaseService.json:
       <details class="reference">
         <summary><span>2-6</span><strong>실제 생성·사전검증</strong><small>자동 생성 뒤 사람이 검토</small></summary>
         <div class="reference-body">
-          <p>첫 명령은 Git diff에서 계산할 수 있는 목록을 생성합니다. Contract의 정상 조건과 담당자는 사람이 검토해야 합니다.</p>
-          <pre><code>./.venv/bin/python \
-  harness/registrations/om-temp-1.13.0/generate_registration_bundle.py \
-  --repo ../om-temp-1.13.0-custom
+          <p>등록자료를 만들고 바꾸는 정본 절차는 준비도구의 <code>plan → 사람 승인 → apply</code> 하나뿐입니다. <code>plan</code>은 Git에서 계산할 수 있는 값만 제안으로 만들고 실제 등록 폴더는 건드리지 않습니다. Contract의 정상 조건과 담당자는 사람이 결정합니다.</p>
+          <pre><code># 1) 읽기 전용 제안 생성 (등록 폴더는 바뀌지 않음)
+PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py plan \
+  --repo ../om-temp-1.13.0-custom \
+  --registration harness/registrations/om-temp-1.13.0 \
+  --patch-ref origin/patch/om-1.13.0 \
+  --custom-ref origin/custom/om-1.13.0 \
+  --product-version 1.13.0 \
+  --output harness/preparation-plans/om-temp-1.13.0-YYYYMMDD-HHMM
 
+# 2) 승인서 양식 생성 → 실제 승인자가 자리표시자와 판단 사유를 채움
+# 3) 승인한 제안만 반영
+PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py apply \
+  --repo ../om-temp-1.13.0-custom \
+  --registration harness/registrations/om-temp-1.13.0 \
+  --proposal harness/preparation-plans/om-temp-1.13.0-YYYYMMDD-HHMM/proposal.yaml \
+  --approval /approved/location/registration-approval.yaml
+
+# 4) APPLIED 뒤 등록자료 검사
 ./.venv/bin/python \
   harness/registrations/om-temp-1.13.0/validate_registration_bundle.py \
   --repo ../om-temp-1.13.0-custom \
   --output harness/registrations/om-temp-1.13.0/registration-validation-results.json</code></pre>
+          <p><code>generate_registration_bundle.py</code>는 과거 source snapshot 등록을 처음 만들 때만 쓰는 부트스트랩 도구입니다. 담당자·Contract 같은 사람 정책값을 하드코딩된 초기값으로 다시 쓰므로 일반 후속 commit 처리에는 실행하지 않습니다.</p>
           <table class="result-table">
             <thead><tr><th>확인 항목</th><th>실제 결과</th><th>확인한 내용</th></tr></thead>
             <tbody>

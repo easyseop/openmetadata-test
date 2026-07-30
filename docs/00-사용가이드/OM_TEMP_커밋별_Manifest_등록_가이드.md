@@ -987,24 +987,50 @@ patch_series:
 <details>
 <summary><strong>2-7. 실제 생성 명령과 사전검증 결과</strong></summary>
 
-첫 명령은 Git diff에서 자동 계산할 수 있는 Registry 뼈대, 공용 경로와 111개 목록을 만듭니다. Contract의 정상 조건과 담당자는 사람이 검토해야 하므로 자동 생성값을 그대로 배포 승인으로 사용하지 않습니다.
+등록자료를 만들고 바꾸는 정본 절차는 준비도구의 `plan → 사람 승인 → apply`
+하나뿐입니다. `plan`은 Git에서 계산할 수 있는 값만 제안으로 만들고 실제 등록
+폴더는 건드리지 않습니다. Contract의 정상 조건과 담당자는 사람이 결정하므로
+자동 생성값을 그대로 배포 승인으로 사용하지 않습니다.
 
 ```bash
-./.venv/bin/python \
-  harness/registrations/om-temp-1.13.0/generate_registration_bundle.py \
-  --repo ../om-temp-1.13.0-custom
+# 1) 읽기 전용 제안 생성 (등록 폴더는 바뀌지 않음)
+PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py plan \
+  --repo ../om-temp-1.13.0-custom \
+  --registration harness/registrations/om-temp-1.13.0 \
+  --patch-ref origin/patch/om-1.13.0 \
+  --custom-ref origin/custom/om-1.13.0 \
+  --product-version 1.13.0 \
+  --output harness/preparation-plans/om-temp-1.13.0-YYYYMMDD-HHMM
 
+# 2) 승인서 양식 생성 → 실제 승인자가 자리표시자와 판단 사유를 채움
+# 3) 승인한 제안만 반영
+PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py apply \
+  --repo ../om-temp-1.13.0-custom \
+  --registration harness/registrations/om-temp-1.13.0 \
+  --proposal harness/preparation-plans/om-temp-1.13.0-YYYYMMDD-HHMM/proposal.yaml \
+  --approval /approved/location/registration-approval.yaml
+
+# 4) APPLIED 뒤 등록자료 검사
 ./.venv/bin/python \
   harness/registrations/om-temp-1.13.0/validate_registration_bundle.py \
   --repo ../om-temp-1.13.0-custom \
   --output harness/registrations/om-temp-1.13.0/registration-validation-results.json
 ```
 
+전체 단계와 상태별 대응은
+[`OM_TEMP 검사 전 준비도구 쉬운 사용법`](OM_TEMP_검사전_준비도구_쉬운사용법.md)에
+있습니다.
+
+> `generate_registration_bundle.py`는 **과거 source snapshot 등록을 처음
+> 만들 때만** 쓰는 부트스트랩 도구입니다. 담당자·Contract 같은 사람 정책값을
+> 하드코딩된 초기값으로 다시 쓰므로 일반 후속 commit 처리에는 실행하지
+> 않습니다.
+
 | 확인 항목 | 실제 결과 | 무엇을 확인했나 |
 |---|---|---|
 | Manifest 구조와 작성 규칙 | PASS · 7개 | 필수 항목과 경로 규칙이 맞는지 |
 | Registry·Manifest·Contract 연결 | PASS · 7개 ID | 세 자료가 같은 BANK-OM을 가리키는지 |
-| Git 전체 변경 목록 | PASS · 111개 경로 | 저장한 목록과 실제 Git diff가 같은지 |
+| 공식 원본과 행내 custom 코드의 변경 경로 | PASS · 111개 경로 | 저장한 목록과 실제 Git diff가 같은지 |
 | 공용 파일 소유정보 | PASS · 37개 경로 | 중복 경로의 모든 BANK-OM이 등록됐는지 |
 | 필수 테스트 코드 존재 | PASS · 9개 | 등록한 Python test 파일과 함수가 실제로 있는지 |
 

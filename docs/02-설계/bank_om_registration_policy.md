@@ -113,34 +113,53 @@ T42는 이전 공식 버전과 새 공식 버전 사이의 Git 변경 경로를
 
 ## 4. 최초 등록 절차
 
+등록자료를 실제로 바꾸는 경로는 준비도구의 `plan → 사람 승인 → apply`
+하나뿐이다. 아래에서 `plan`이 계산하는 값과 사람이 결정하는 값을 구분한다.
+
 1. 관리 담당자가 미사용 BANK-OM ID를 발급한다.
-2. 실제 커밋의 변경 파일을 확인해 `changed_paths`에 개별 파일로
-   등록한다.
-3. 누락만으로 기능 소실을 확정할 파일을 `required_changed_paths`로 지정한다.
-4. Manifest 생성기가 실제 변경 경로를 `upgrade_watch.paths`에 포함했는지
-   확인하고, 직접 수정하지 않은 의존 경로를 추가한다.
-5. 직접 참조 후보가 있으면 담당자가 근거를 검토해 반영 여부를 결정한다.
-6. 업무 계약과 실제 테스트를 `assurance`에 연결한다.
-7. 별도 Registry에 담당 조직·상태와 `provenance`를 기록한다. 최초 source
-   snapshot에 있던 기능은 `source-snapshot`, snapshot 이후 새 기능은
-   `candidate-follow-up`을 명시한다.
-8. 제품 커밋 메시지에 `Customization-ID: BANK-OM-NNN`을 넣는다.
-9. patch-replay 전략을 사용할 때만 Git commit SHA와 적용 순서를 patch-lock에
+2. 담당 조직·중요도·`kind`·`provenance`·`required_changed_paths`·계약을
+   신규 ID 입력 YAML에 작성한다. 최초 source snapshot에 있던 기능은
+   `provenance: source-snapshot`, snapshot 이후 새 기능은
+   `candidate-follow-up`이다. 후자를 생략하면 과거 소스 재구성 검사가
+   실패하므로 기본값에 의존하지 않는다.
+3. 업무 정상 조건과 필수 테스트를 `contracts.yaml`에 작성하고
+   `customization_ids`에 새 ID를 역방향으로 연결한다. 준비도구는 계약 내용을
+   대신 만들지 않는다.
+4. 제품 커밋 메시지에 `Customization-ID: BANK-OM-NNN`을 넣는다.
+5. `plan`을 `--new-id-input`과 함께 실행한다. `plan`은 실제 변경 파일을
+   `changed_paths`로 계산하고, 그중 공식 patch branch에 존재하는 경로만
+   `upgrade_watch.paths`에 자동 포함한다. 이 단계에서 등록 폴더는 바뀌지
+   않는다.
+6. 담당자가 `review-required.yaml`의 질문에 답한다. 직접 수정하지 않은 의존
+   경로 추가, 공식 tree에 없는 행내 경로의 watch 보존 여부, 새 파일의 필수
+   여부가 여기에 해당한다.
+7. 승인서에 제안 내용 확인값과 판단 사유를 적고 `apply`를 실행한다. 승인
+   이후 제품 commit이나 등록 입력이 달라졌으면 `apply`가 중단한다.
+8. patch-replay 전략을 사용할 때만 Git commit SHA와 적용 순서를 patch-lock에
    기록한다.
-10. T10·T25·T26·T30·T31·T40·T42·T60-I·T93 검사를 실행한다.
+9. 등록자료 검사 5종을 실행한 뒤
+   T10·T25·T26·T30·T31·T40·T42·T60-I·T93 검사를 실행한다.
 
 ## 5. 같은 ID의 후속 커밋 절차
 
 실제 예: BANK-OM-007은 최초 커밋에서 8개 파일을 변경한 뒤 후속 커밋에서
 `serviceConnection.ts`와 `DatabaseServiceUtils.test.tsx`를 새로 추가했다.
 
-1. Manifest의 `series.allowed`가 `true`인지 확인한다.
-2. 후속 커밋에도 `Customization-ID: BANK-OM-007`을 넣는다.
-3. 새 파일을 현재 버전 Manifest의 `changed_paths`에 추가한다.
-4. 파일이 필수 구성요소이면 `required_changed_paths`에도 추가한다.
-5. patch-replay 전략을 사용할 때만 새 Git commit SHA와 적용 순서를
+1. Manifest의 `series.allowed`가 `true`인지 확인한다. `false`인 ID에 두 번째
+   커밋이 생기면 준비도구가 차단하며, 허용 여부는 사람이 결정한다.
+2. 후속 커밋에도 `Customization-ID: BANK-OM-007`을 넣는다. 신규 ID 입력은
+   다시 만들지 않는다.
+3. `plan`을 실행한다. 같은 ID의 모든 커밋을 읽어 새 파일을 현재 버전
+   `changed_paths`에 합친 변경안을 만든다. 기존 등록 파일의 내용만 다시
+   수정했다면 경로 목록은 바뀌지 않는다.
+4. 새 파일이 필수 구성요소인지, 공식 업그레이드 감시가 필요한지는 담당자가
+   질문에 답해 결정한다. 되돌린 경로와 삭제·이름 변경한 경로도 질문으로
+   나오므로 의도한 결과인지 확인한다.
+5. 승인 후 `apply`를 실행해 승인한 변경안만 반영한다.
+6. patch-replay 전략을 사용할 때만 새 Git commit SHA와 적용 순서를
    patch-lock에 추가한다.
-6. 관련 계약·테스트를 갱신하고 전체 소스 검사를 다시 실행한다.
+7. 관련 계약·테스트를 갱신하고 등록자료 검사와 전체 소스 검사를 다시
+   실행한다.
 
 ```yaml
 implementation:

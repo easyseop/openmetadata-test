@@ -32,7 +32,7 @@ window.WIKI_GATES = {
     group: "소스·등록 검사",
     title: "T25 · 공식 버전 출발점 확인",
     question: "검사할 행내 코드가 승인한 공식 OpenMetadata 버전을 실제 Git 이력에 포함하는가?",
-    status: "구현·단위 테스트 완료 · OM_TEMP 1.13.1 결과 파일 있음(커밋별 재적용 후보)",
+    status: "구현·단위 테스트 완료 · 현재 근거는 재검증을 마친 OM_TEMP 1.13.0 후보 3a2811cf… 결과 · 1.13.1 결과 파일은 Manifest v2 도입 이전 산출물이고 후보 branch가 원격에 없어 재검증 대기",
     statusLevel: "pass",
     timing: "vendor-merge로 공식 코드와 BANK-OM 변경을 합친 검사 대상 코드를 만든 뒤, 다른 소스 검사를 시작하기 전에 실행합니다.",
     inputs: [
@@ -51,7 +51,7 @@ window.WIKI_GATES = {
       ["ANALYSIS ERROR", "commit 객체가 없거나 lock 값이 현재 코드와 달라 신뢰할 수 있는 판단을 할 수 없습니다."]
     ],
     limit: "공식 코드를 포함했다는 사실만 확인합니다. 병합 과정에서 BANK-OM 기능이 올바르게 유지됐는지는 T26과 실제 테스트가 따로 확인합니다.",
-    command: "./.venv/bin/python harness/run_source_candidate_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.1 \\\n  --layout harness/registrations/om-temp-1.13.1/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.1/sensitive-zones.yaml \\\n  --output harness/registrations/om-temp-1.13.1/source-gate-results.json",
+    command: "./.venv/bin/python harness/run_source_candidate_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --layout harness/registrations/om-temp-1.13.0/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.0/sensitive-zones.yaml \\\n  --output harness/registrations/om-temp-1.13.0/source-gate-results.json",
     resultExample: "T25 | PASS\n공식 1.13.1 commit afcb2d2…가 진단 후보 dee330ebd5…의 Git 이력에 포함됨\n주의: 이 결과는 공식 출발점만 확인하며 실제 vendor-merge 수행 증거는 아님",
     output: "통합 소스 검사 결과 source-gate-results.json의 T25 항목에 판정과 이유가 남습니다. 업그레이드 담당자와 검토 책임자가 공식 버전 출발점이 맞는지 확인합니다.",
     code: ["harness/acgh/ancestry.py", "harness/tests/test_ancestry.py"]
@@ -60,7 +60,7 @@ window.WIKI_GATES = {
     group: "소스·등록 검사",
     title: "T26 · 필수 커스터마이징 유지 확인",
     question: "공식 새 버전을 적용한 뒤에도 모든 active BANK-OM 기능의 필수 코드와 Contract 연결이 남아 있는가?",
-    status: "구현·단위 테스트 완료 · OM_TEMP 1.13.1 결과 파일 있음(커밋별 재적용 후보)",
+    status: "구현·단위 테스트 완료 · 현재 근거는 재검증을 마친 OM_TEMP 1.13.0 후보 3a2811cf… 결과 · 1.13.1 결과 파일은 Manifest v2 도입 이전 산출물이고 후보 branch가 원격에 없어 재검증 대기",
     statusLevel: "pass",
     timing: "vendor-merge 후보가 만들어지고 Manifest·Registry·Contract가 준비된 뒤 실행합니다.",
     inputs: [
@@ -82,7 +82,7 @@ window.WIKI_GATES = {
       ["ANALYSIS ERROR", "검사 대상 commit이나 Candidate lock을 신뢰할 수 없어 검사할 수 없습니다."]
     ],
     limit: "필수 파일이 존재하고 공식 원본과 다르다는 사실을 확인할 뿐, 그 코드가 올바르게 동작한다는 뜻은 아닙니다. T62 실행 결과가 필요합니다.",
-    command: "./.venv/bin/python harness/run_source_candidate_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.1 \\\n  --layout harness/registrations/om-temp-1.13.1/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.1/sensitive-zones.yaml \\\n  --output harness/registrations/om-temp-1.13.1/source-gate-results.json",
+    command: "./.venv/bin/python harness/run_source_candidate_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --layout harness/registrations/om-temp-1.13.0/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.0/sensitive-zones.yaml \\\n  --output harness/registrations/om-temp-1.13.0/source-gate-results.json",
     resultExample: "T26 | PASS\nactive_customizations=7 · BANK-OM-007 필수 파일과 Contract 연결 확인",
     output: "통합 소스 검사 결과 source-gate-results.json의 T26 항목에 기능별 누락 여부가 남습니다. 기능 담당자와 배포 검토자가 BLOCK·APPROVAL 사유를 확인합니다.",
     code: ["harness/acgh/survival.py", "harness/tests/test_survival.py"]
@@ -91,7 +91,7 @@ window.WIKI_GATES = {
     group: "소스·등록 검사",
     title: "T30 · 커밋별 BANK-OM ID 확인",
     question: "공식 코드 영역을 변경한 각 commit에 정확히 하나의 등록된 BANK-OM ID가 있는가?",
-    status: "구현·단위 테스트 완료 · OM_TEMP 1.13.1 결과 파일 있음",
+    status: "구현·단위 테스트 완료 · 현재 근거는 재검증을 마친 OM_TEMP 1.13.0 후보 3a2811cf… 결과 · 1.13.1 결과 파일은 Manifest v2 도입 이전 산출물이고 후보 branch가 원격에 없어 재검증 대기",
     statusLevel: "pass",
     timing: "BANK-OM commit이 추가될 때마다, 소스 후보 검사에서 실행합니다.",
     inputs: [
@@ -111,7 +111,7 @@ window.WIKI_GATES = {
       ["ANALYSIS ERROR", "어느 영역인지 판단할 수 없는 경로가 있습니다."]
     ],
     limit: "ID가 있다고 해서 commit의 업무 목적이 한 가지라는 사실까지 자동으로 알 수는 없습니다. commit 리뷰가 필요합니다.",
-    command: "git commit -m \"InstanceCode 기능 추가\" \\\n  -m \"Customization-ID: BANK-OM-001\"\n\n./.venv/bin/python harness/run_source_candidate_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.1 \\\n  --layout harness/registrations/om-temp-1.13.1/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.1/sensitive-zones.yaml \\\n  --output harness/registrations/om-temp-1.13.1/source-gate-results.json",
+    command: "git commit -m \"InstanceCode 기능 추가\" \\\n  -m \"Customization-ID: BANK-OM-001\"\n\n./.venv/bin/python harness/run_source_candidate_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --layout harness/registrations/om-temp-1.13.0/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.0/sensitive-zones.yaml \\\n  --output harness/registrations/om-temp-1.13.0/source-gate-results.json",
     resultExample: "T30 | PASS\ncommit 7d19c895…에서 등록된 ID BANK-OM-007 하나를 확인",
     output: "통합 소스 검사 결과 source-gate-results.json의 T30 항목에 문제가 있는 commit과 ID가 남습니다. 변경 작성자와 변경관리 담당자가 commit 메시지를 수정할지 판단합니다.",
     code: ["harness/acgh/invariants.py", "harness/tests/test_invariants.py"]
@@ -120,7 +120,7 @@ window.WIKI_GATES = {
     group: "소스·등록 검사",
     title: "T31 · BANK-OM 적용 순서 확인",
     question: "같은 ID의 여러 commit과 기능 간 선행 관계가 Manifest에 등록한 순서를 지키는가?",
-    status: "구현·단위 테스트 완료 · OM_TEMP 1.13.1 결과 파일 있음",
+    status: "구현·단위 테스트 완료 · 현재 근거는 재검증을 마친 OM_TEMP 1.13.0 후보 3a2811cf… 결과 · 1.13.1 결과 파일은 Manifest v2 도입 이전 산출물이고 후보 branch가 원격에 없어 재검증 대기",
     statusLevel: "pass",
     timing: "같은 BANK-OM ID의 후속 commit이나 depends_on 관계가 추가될 때 실행합니다.",
     inputs: [
@@ -139,7 +139,7 @@ window.WIKI_GATES = {
       ["BLOCK", "승인되지 않은 여러 commit, 비연속 series, 의존 관계 순환 또는 retired ID 재사용이 있습니다."]
     ],
     limit: "Manifest에 선행 관계 자체를 빠뜨리면 검사기가 업무 관계를 새로 추론하지 못합니다.",
-    command: "./.venv/bin/python harness/run_source_candidate_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.1 \\\n  --layout harness/registrations/om-temp-1.13.1/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.1/sensitive-zones.yaml \\\n  --output harness/registrations/om-temp-1.13.1/source-gate-results.json",
+    command: "./.venv/bin/python harness/run_source_candidate_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --layout harness/registrations/om-temp-1.13.0/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.0/sensitive-zones.yaml \\\n  --output harness/registrations/om-temp-1.13.0/source-gate-results.json",
     resultExample: "T31 | PASS\nBANK-OM-007의 두 commit 순서와 series.allowed=true를 확인",
     output: "통합 소스 검사 결과 source-gate-results.json의 T31 항목에 적용 순서·revision 위반이 남습니다. 변경관리 담당자가 Manifest 또는 Patch-lock 순서를 확인합니다.",
     code: ["harness/acgh/invariants.py", "harness/tests/test_invariants.py"]
@@ -148,7 +148,7 @@ window.WIKI_GATES = {
     group: "소스·등록 검사",
     title: "T40 · 변경 파일 범위 확인",
     question: "각 BANK-OM commit이 Manifest에 등록한 파일만 변경했고, 최종 후보에 필수 변경이 반영됐는가?",
-    status: "구현·단위 테스트 완료 · OM_TEMP 1.13.1 결과 파일 있음",
+    status: "구현·단위 테스트 완료 · 현재 근거는 재검증을 마친 OM_TEMP 1.13.0 후보 3a2811cf… 결과 · 1.13.1 결과 파일은 Manifest v2 도입 이전 산출물이고 후보 branch가 원격에 없어 재검증 대기",
     statusLevel: "pass",
     timing: "Manifest 초안을 만든 뒤와 새로운 후속 commit이 추가될 때마다 실행합니다.",
     inputs: [
@@ -169,7 +169,7 @@ window.WIKI_GATES = {
       ["ANALYSIS ERROR", "경로 소유 영역을 판정할 수 없습니다."]
     ],
     limit: "파일 단위 검사입니다. 허용된 파일 안의 잘못된 코드 줄은 코드 리뷰와 test로 확인해야 합니다.",
-    command: "./.venv/bin/python harness/run_source_candidate_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.1 \\\n  --layout harness/registrations/om-temp-1.13.1/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.1/sensitive-zones.yaml \\\n  --output harness/registrations/om-temp-1.13.1/source-gate-results.json",
+    command: "./.venv/bin/python harness/run_source_candidate_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --layout harness/registrations/om-temp-1.13.0/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.0/sensitive-zones.yaml \\\n  --output harness/registrations/om-temp-1.13.0/source-gate-results.json",
     resultExample: "T40 | PASS\nBANK-OM-007 실제 변경 10개 = Manifest changed_paths 10개",
     output: "통합 소스 검사 결과 source-gate-results.json의 T40 항목에 등록 밖 변경과 누락된 필수 경로가 남습니다. 기능 담당자가 코드와 Manifest 중 잘못된 쪽을 고칩니다.",
     code: ["harness/acgh/drift.py", "harness/tests/test_drift.py"]
@@ -178,7 +178,7 @@ window.WIKI_GATES = {
     group: "소스·등록 검사",
     title: "T41 · 중요 시스템 경로 확인",
     question: "보안·인증·설정·DB처럼 별도 검토가 필요한 경로를 BANK-OM commit이 변경했는가?",
-    status: "구현·단위 테스트 완료 · OM_TEMP 1.13.1 결과 파일 있음",
+    status: "구현·단위 테스트 완료 · 현재 근거는 재검증을 마친 OM_TEMP 1.13.0 후보 3a2811cf… 결과 · 1.13.1 결과 파일은 Manifest v2 도입 이전 산출물이고 후보 branch가 원격에 없어 재검증 대기",
     statusLevel: "pass",
     timing: "소스 후보 검사에서 실제 변경 파일을 분류할 때 실행합니다.",
     inputs: [
@@ -198,8 +198,8 @@ window.WIKI_GATES = {
       ["ANALYSIS ERROR", "경로를 규칙에 따라 분류할 수 없습니다."]
     ],
     limit: "경로 이름을 기준으로 판정하며 AST나 보안 취약점 분석을 수행하지 않습니다.",
-    command: "./.venv/bin/python harness/run_source_candidate_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.1 \\\n  --layout harness/registrations/om-temp-1.13.1/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.1/sensitive-zones.yaml \\\n  --output harness/registrations/om-temp-1.13.1/source-gate-results.json",
-    resultExample: "T41 | PASS (현재 OM_TEMP 소스 결과)\nMySQL·PostgreSQL migration 2개는 watched 경로로 결과에 표시됐지만 현재 정책이 visibility_only라 자동 차단하지 않음\n주의: 정책을 approval_required로 바꾸면 같은 변경은 APPROVAL",
+    command: "./.venv/bin/python harness/run_source_candidate_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --layout harness/registrations/om-temp-1.13.0/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.0/sensitive-zones.yaml \\\n  --output harness/registrations/om-temp-1.13.0/source-gate-results.json",
+    resultExample: "T41 | PASS (OM_TEMP 1.13.0 재검증 후보 3a2811cf… 결과)\nMySQL·PostgreSQL migration 2개는 watched 경로로 결과에 표시됐지만 현재 정책이 visibility_only라 자동 차단하지 않음\n주의: 정책을 approval_required로 바꾸면 같은 변경은 APPROVAL",
     output: "통합 소스 검사 결과 source-gate-results.json의 T41 항목에 민감 경로와 필요한 승인 수준이 남습니다. 보안·DB·플랫폼 담당자 중 해당 경로 책임자가 확인합니다.",
     code: ["harness/acgh/zones.py", "harness/tests/test_zones.py"]
   },
@@ -207,8 +207,8 @@ window.WIKI_GATES = {
     group: "업그레이드 영향 검사",
     title: "T42 · 공식 변경 영향 확인",
     question: "새 공식 OpenMetadata 버전이 BANK-OM 기능과 관련된 파일을 변경했는가?",
-    status: "구현·단위 테스트 완료 · OM_TEMP 1.13.1 영향 검사 결과 있음",
-    statusLevel: "pass",
+    status: "구현·단위 테스트 완료 · OM_TEMP 1.13.1 영향 검사 결과가 있으나 후보 branch가 원격에 없어 재검증 대기",
+    statusLevel: "approval",
     timing: "새 공식 버전을 patch branch에 준비한 뒤, 커스터마이징 병합 전에 실행합니다.",
     inputs: [
       ["공식 이전·새 버전 commit", "공식 A→B 사이의 Git 변경 파일", "f329dd4a…(1.13.0) → afcb2d2…(1.13.1)"],
@@ -227,7 +227,7 @@ window.WIKI_GATES = {
       ["ANALYSIS ERROR", "공식 commit 또는 경로 규칙을 읽지 못했습니다."]
     ],
     limit: "APPROVAL은 Git 충돌 확정이 아닙니다. 경로가 겹치지 않는 간접 런타임 의존도 자동으로 모두 찾지 못합니다.",
-    command: "./.venv/bin/python harness/run_upgrade_watch.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.1 \\\n  --upstream-base <공식-이전-SHA> \\\n  --upstream-target <공식-새버전-SHA> \\\n  --output harness/registrations/om-temp-1.13.1/upgrade-watch-results.json",
+    command: "./.venv/bin/python harness/run_upgrade_watch.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --upstream-base <공식-이전-SHA> \\\n  --upstream-target <공식-새버전-SHA> \\\n  --output harness/registrations/om-temp-1.13.1/upgrade-watch-results.json",
     resultExample: "T42 | APPROVAL\nBANK-OM-001 watch 경로 .../Entity.java가 공식 1.13.1에서도 변경됨",
     output: "upgrade-watch-results.json의 T42 판정과 affected_customizations에 BANK-OM ID와 겹친 경로가 남습니다. 기능 담당자가 공식 diff와 커스터마이징 연결 부분을 확인합니다.",
     code: ["harness/acgh/upgrade_watch.py", "harness/acgh/watch_suggest.py", "harness/tests/test_upgrade_watch.py"]
@@ -256,7 +256,7 @@ window.WIKI_GATES = {
       ["ANALYSIS ERROR", "필요한 diff나 정책 값을 계산할 수 없습니다."]
     ],
     limit: "현재 충돌률을 실제 vendor-merge 기록에서 자동 계산하지 않으므로, 전달한 값의 출처를 별도 증거로 확인해야 합니다.",
-    command: "./.venv/bin/python harness/run_upgrade_risk_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.1 \\\n  --layout harness/registrations/om-temp-1.13.1/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.1/sensitive-zones.yaml \\\n  --debt-policy harness/policies/debt-thresholds.yaml \\\n  --change-intent harness/registrations/om-temp-1.13.1/change-intent.yaml \\\n  --upstream-base <공식-이전-SHA> \\\n  --upstream-target <공식-새버전-SHA> \\\n  --candidate <검사-대상-SHA> \\\n  --conflict-rate <실제-충돌률> \\\n  > /path/to/upgrade-risk-results.json",
+    command: "./.venv/bin/python harness/run_upgrade_risk_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --layout harness/registrations/om-temp-1.13.0/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.0/sensitive-zones.yaml \\\n  --debt-policy harness/policies/debt-thresholds.yaml \\\n  --change-intent harness/registrations/om-temp-1.13.1/change-intent.yaml \\\n  --upstream-base <공식-이전-SHA> \\\n  --upstream-target <공식-새버전-SHA> \\\n  --candidate <검사-대상-SHA> \\\n  --conflict-rate <실제-충돌률> \\\n  > /path/to/upgrade-risk-results.json",
     resultExample: "T43 | APPROVAL (판정 예시)\nchanged_lines=14,500이 soft 기준 14,000을 초과 · 구조 개선 검토",
     output: "업그레이드 위험 검사 JSON의 T43 항목과 debt_metrics에 계산값과 기준 초과 이유가 남습니다. 기술 책임자가 유지 부담을 수용할지 구조 개선할지 결정합니다.",
     code: ["harness/acgh/debt.py", "harness/tests/test_debt.py"]
@@ -265,7 +265,7 @@ window.WIKI_GATES = {
     group: "소스·등록 검사",
     title: "T93-범위 · 실제 변경과 Manifest 일치 확인",
     question: "BANK-OM ID별 실제 변경 파일이 Manifest에 빠짐없이 정확하게 등록됐는가?",
-    status: "구현·단위 테스트 완료 · OM_TEMP 1.13.1 결과 파일 있음",
+    status: "구현·단위 테스트 완료 · 현재 근거는 재검증을 마친 OM_TEMP 1.13.0 후보 3a2811cf… 결과 · 1.13.1 결과 파일은 Manifest v2 도입 이전 산출물이고 후보 branch가 원격에 없어 재검증 대기",
     statusLevel: "pass",
     timing: "Manifest 생성·갱신 직후와 소스 후보 검사 때 실행합니다.",
     inputs: [
@@ -286,7 +286,7 @@ window.WIKI_GATES = {
       ["ANALYSIS ERROR", "경로 분류나 commit 분석을 완료할 수 없습니다."]
     ],
     limit: "경로가 같다는 사실만 확인하며, Manifest에 적은 업무 설명의 정확성은 사람이 검토합니다.",
-    command: "./.venv/bin/python harness/registrations/om-temp-1.13.0/validate_registration_bundle.py \\\n  --repo /path/to/OM_TEMP \\\n  --registration harness/registrations/om-temp-1.13.1 \\\n  --layout harness/registrations/om-temp-1.13.1/repository-layout.yaml \\\n  --output harness/registrations/om-temp-1.13.1/registration-validation-results.json\n\n./.venv/bin/python harness/run_source_candidate_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.1 \\\n  --layout harness/registrations/om-temp-1.13.1/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.1/sensitive-zones.yaml \\\n  --output harness/registrations/om-temp-1.13.1/source-gate-results.json",
+    command: "./.venv/bin/python harness/registrations/om-temp-1.13.0/validate_registration_bundle.py \\\n  --repo /path/to/OM_TEMP \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --layout harness/registrations/om-temp-1.13.0/repository-layout.yaml \\\n  --output harness/registrations/om-temp-1.13.0/registration-validation-results.json\n\n./.venv/bin/python harness/run_source_candidate_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --layout harness/registrations/om-temp-1.13.0/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.0/sensitive-zones.yaml \\\n  --output harness/registrations/om-temp-1.13.0/source-gate-results.json",
     resultExample: "T93-범위 | PASS\nBANK-OM-007 Git 변경 10개 = Manifest 등록 10개 · 공유 경로 소유 ID 일치",
     output: "등록 검증 결과 registration-validation-results.json과 통합 소스 검사 결과에 ID별 실제 경로·등록 경로 비교가 남습니다. Manifest 작성자와 리뷰어가 확인합니다.",
     code: ["harness/acgh/drift.py", "harness/registrations/om-temp-1.13.0/validate_registration_bundle.py"]
@@ -313,7 +313,7 @@ window.WIKI_GATES = {
       ["ANALYSIS ERROR", "공식 버전이나 경로 정책을 읽지 못했습니다."]
     ],
     limit: "경로와 직접 참조를 중심으로 확인합니다. 의미상 새로 생긴 의존 관계는 담당자가 추가해야 할 수 있습니다.",
-    command: "./.venv/bin/python harness/run_upgrade_risk_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.1 \\\n  --layout harness/registrations/om-temp-1.13.1/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.1/sensitive-zones.yaml \\\n  --debt-policy harness/policies/debt-thresholds.yaml \\\n  --change-intent harness/registrations/om-temp-1.13.1/change-intent.yaml \\\n  --upstream-base <공식-이전-SHA> \\\n  --upstream-target <공식-새버전-SHA> \\\n  --candidate <검사-대상-SHA> \\\n  --conflict-rate <실제-충돌률> \\\n  > /path/to/upgrade-risk-results.json",
+    command: "./.venv/bin/python harness/run_upgrade_risk_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --layout harness/registrations/om-temp-1.13.0/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.0/sensitive-zones.yaml \\\n  --debt-policy harness/policies/debt-thresholds.yaml \\\n  --change-intent harness/registrations/om-temp-1.13.1/change-intent.yaml \\\n  --upstream-base <공식-이전-SHA> \\\n  --upstream-target <공식-새버전-SHA> \\\n  --candidate <검사-대상-SHA> \\\n  --conflict-rate <실제-충돌률> \\\n  > /path/to/upgrade-risk-results.json",
     resultExample: "T93-정책 | APPROVAL (판정 예시)\n등록된 watch 파일이 공식 새 버전에서 이동됨 · Manifest 경로 재검토",
     output: "업그레이드 위험 검사 JSON의 T93-정책 항목에 이동·삭제된 watch 경로와 오래된 경로 정책이 남습니다. 플랫폼 담당자와 Manifest 담당자가 갱신 여부를 확인합니다.",
     code: ["harness/acgh/policy_drift.py", "harness/tests/test_policy_drift.py"]
@@ -322,7 +322,7 @@ window.WIKI_GATES = {
     group: "테스트·실행 검사",
     title: "T60-I · 필수 테스트 코드 존재 확인",
     question: "Contract에 등록한 필수 test의 파일과 Python 함수가 실제 검사 저장소에 존재하는가?",
-    status: "Python pytest 확인 구현 완료 · OM_TEMP 1.13.1 결과 파일 있음 · Java·TypeScript test 연결은 추가 개발 대상",
+    status: "Python pytest 확인 구현 완료 · 현재 근거는 재검증을 마친 OM_TEMP 1.13.0 후보 3a2811cf… 결과 · Java·TypeScript test 연결은 추가 개발 대상",
     statusLevel: "approval",
     timing: "Contract를 등록·갱신한 뒤와 Runtime test 실행 전에 실행합니다.",
     inputs: [
@@ -342,7 +342,7 @@ window.WIKI_GATES = {
       ["ANALYSIS ERROR", "Python 파일 문법을 읽을 수 없거나 입력 형식이 잘못됐습니다."]
     ],
     limit: "test가 존재한다는 사실만 확인합니다. 실행 성공은 T62가 확인하며 Java JUnit·TypeScript Jest는 현재 직접 확인하지 않습니다.",
-    command: "./.venv/bin/python harness/registrations/om-temp-1.13.0/validate_registration_bundle.py \\\n  --repo /path/to/OM_TEMP \\\n  --registration harness/registrations/om-temp-1.13.1 \\\n  --layout harness/registrations/om-temp-1.13.1/repository-layout.yaml \\\n  --output harness/registrations/om-temp-1.13.1/registration-validation-results.json",
+    command: "./.venv/bin/python harness/registrations/om-temp-1.13.0/validate_registration_bundle.py \\\n  --repo /path/to/OM_TEMP \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --layout harness/registrations/om-temp-1.13.0/repository-layout.yaml \\\n  --output harness/registrations/om-temp-1.13.0/registration-validation-results.json",
     resultExample: "T60-I | PASS\nCONTRACT-KOREAN-IME의 Python test 파일과 함수가 실제로 존재함",
     output: "등록 검증 결과 registration-validation-results.json의 “필수 테스트 코드 존재” 항목에 누락 여부가 남습니다. Contract 작성자와 테스트 담당자가 확인합니다.",
     code: ["harness/acgh/contracts.py", "harness/tests/test_contracts.py"]
@@ -371,7 +371,7 @@ window.WIKI_GATES = {
       ["ANALYSIS ERROR", "제거 상태나 실행 결과가 지정 후보와 연결되지 않습니다."]
     ],
     limit: "실패했다는 사실만으로 실패 원인이 정확히 기능 제거 때문인지 단정하기 어렵습니다. 오류 종류·메시지를 함께 검토해야 합니다.",
-    command: "# 먼저 om-temp-1.13.1/patch-kill-plan.yaml에 제거할 BANK-OM과\n# 실패해야 할 필수 test를 담당자가 등록해야 합니다. 현재 이 파일은 없습니다.\n./.venv/bin/python harness/run_source_patch_kills.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.1 \\\n  --output /path/to/evidence/source-patch-kill-result.yaml \\\n  --run-id source-patch-kill-001",
+    command: "# 먼저 om-temp-1.13.1/patch-kill-plan.yaml에 제거할 BANK-OM과\n# 실패해야 할 필수 test를 담당자가 등록해야 합니다. 현재 이 파일은 없습니다.\n./.venv/bin/python harness/run_source_patch_kills.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --output /path/to/evidence/source-patch-kill-result.yaml \\\n  --run-id source-patch-kill-001",
     resultExample: "T61 | PASS (실행 결과 형식 예시)\n정상 후보 PASS · BANK-OM-005 제거 상태에서 목표 test FAIL\n주의: 현재 OM_TEMP용 patch-kill 계획과 실행 증거는 아직 없음",
     output: "소스 제거 검사는 --output으로 지정한 source-patch-kill-result.yaml에, Runtime 제거 검사는 별도의 acgh-result.yaml에 정상·제거 상태의 test 결과를 남깁니다. 기능 담당자가 실패 원인이 의도한 기능 제거인지 확인합니다.",
     code: ["harness/acgh/patchkill.py", "harness/tests/test_patchkill.py"]
@@ -401,7 +401,7 @@ window.WIKI_GATES = {
       ["ANALYSIS ERROR", "후보·artifact·검사기·suite 버전이 맞지 않습니다."]
     ],
     limit: "등록된 test만 확인합니다. Contract가 다루지 않은 업무 동작까지 자동으로 보장하지 않습니다.",
-    command: "./.venv/bin/python harness/run_runtime_contracts.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.1 \\\n  --artifact-digest sha256:<배포파일해시> \\\n  --output-dir /path/to/evidence \\\n  --run-id runtime-contract-001",
+    command: "./.venv/bin/python harness/run_runtime_contracts.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --artifact-digest sha256:<배포파일해시> \\\n  --output-dir /path/to/evidence \\\n  --run-id runtime-contract-001",
     resultExample: "T62 | PASS (형식 예시)\n<실행 대상 SHA>와 <실제 artifact digest>에서 BANK-OM-007 필수 test 성공\n주의: 현재 OM_TEMP 행내 Runtime 실행 결과는 아직 없음",
     output: "실행별 evidence 폴더에 test-run-set.yaml과 acgh-result.yaml이 새로 생성됩니다. 기능 담당자와 배포 검토자가 후보·artifact 일치와 test 결과를 확인합니다.",
     code: ["harness/acgh/testruns.py", "harness/acgh/pytest_runs.py", "harness/tests/test_testruns.py"]
@@ -507,7 +507,7 @@ window.WIKI_FILES = {
       ["kind", "필수", "공식 Core 수정 여부와 변경 유형", "설계 검토자", "core-patch"],
       ["implementation.changed_paths", "필수·목록", "현재 버전에서 이 ID가 붙은 모든 commit이 변경한 전체 파일. 목록 밖 파일을 같은 ID로 변경하면 등록 범위 검사가 BLOCK", "Git 자동 추출 후 확인", ".../tiberoConnection.json"],
       ["implementation.required_changed_paths", "필수·목록", "현재 변경 범위 중 누락되면 기능 미적용으로 즉시 BLOCK할 핵심 파일", "기능 담당자", ".../tiberoConnection.json"],
-      ["upgrade_watch.paths", "필수·목록", "공식 버전 변경 시 다시 비교할 관련 경로", "실제 변경 자동 포함 + 담당자 의존 추가", ".../databaseService.json"],
+      ["upgrade_watch.paths", "필수·목록", "공식 버전 변경 시 다시 비교할 관련 경로", "공식 patch에 있는 실제 변경 경로만 자동 포함 + 담당자 의존 추가", ".../databaseService.json"],
       ["assurance.contracts", "필수·목록", "업무 정상 조건과 필수 test를 연결하는 Contract ID", "기능 담당자", "CONTRACT-TIBERO-CONNECTOR"],
       ["assurance.direct_tests", "목록", "Contract에서 파생되지 않은 별도 기술 test", "개발자", "tests/.../test_tibero.py::test_schema"],
       ["series.allowed", "필수·boolean", "같은 ID의 후속 commit을 허용하는지", "변경관리 담당자", "true"],
@@ -602,7 +602,7 @@ window.WIKI_FILES = {
     path: "harness/registrations/<버전>/shared-path-owners.yaml",
     purpose: "여러 BANK-OM ID가 같은 파일을 수정했을 때 해당 경로를 어느 기능들이 함께 소유하는지 기록합니다.",
     created: "등록 묶음 생성 시 Manifest의 전체 경로를 비교해 생성합니다.",
-    update: "새 ID나 후속 commit으로 같은 경로의 소유 ID가 추가·제거될 때 재생성합니다.",
+    update: "기준으로 삼은 과거 코드 commit이나 과거 commit 분류를 바로잡을 때만 다시 만듭니다. 일반 후속 commit이나 현재 Manifest 변경 때문에 갱신하지 않습니다.",
     owner: "생성기가 계산하고 담당자가 실제 기능 관계를 검토합니다.",
     readers: "현재 버전에서 한 파일을 여러 기능이 함께 변경했는지 확인하는 등록 범위·소유관계 검사에 사용됩니다.",
     fields: [
@@ -616,7 +616,7 @@ window.WIKI_FILES = {
       "python harness/registrations/om-temp-1.13.0/generate_registration_bundle.py --repo /path/to/OM_TEMP",
       "python harness/registrations/om-temp-1.13.0/validate_registration_bundle.py --repo /path/to/OM_TEMP"
     ],
-    storage: "버전별 등록 묶음의 파생 파일입니다. 수동 편집보다 Manifest와 Git 이력을 고친 뒤 재생성합니다."
+    storage: "버전별 최초 과거 코드 복사본에서 만든 파생 파일입니다. generate_registration_bundle.py는 과거 기준 commit과 사람 정책값까지 다시 쓰므로 일반 후속 commit 처리에는 실행하지 않습니다. 담당자·Contract 같은 승인된 값이 초기화될 수 있습니다."
   },
   source_snapshot_owners: {
     title: "과거 코드 경로 소유정보",
@@ -656,26 +656,26 @@ window.WIKI_FILES = {
         command: "python harness/registrations/om-temp-1.13.0/validate_registration_bundle.py \\\n  --repo /path/to/OM_TEMP"
       }
     ],
-    storage: "버전별 등록 폴더의 자동 생성 파일로 Git에 보관합니다. 현재 기능 범위를 설명하려고 수동으로 최신화하지 않습니다. 현재 범위는 Manifest changed_paths와 shared-path-owners.yaml에서 확인합니다."
+    storage: "버전별 등록 폴더의 자동 생성 파일로 Git에 보관합니다. 현재 기능 범위를 설명하려고 수동으로 최신화하지 않습니다. 현재 범위는 Manifest changed_paths와 commit-inventory.yaml에서 확인합니다. generate_registration_bundle.py는 과거 기준 commit과 사람 정책값까지 다시 쓰므로 일반 후속 commit 처리에는 실행하지 않습니다. 담당자·Contract 같은 승인된 값이 초기화될 수 있습니다."
   },
   diff_inventory: {
     title: "전체 변경 파일 목록",
     path: "harness/registrations/<버전>/source-diff-paths.txt",
     purpose: "공식 원본과 행내 코드 사이에서 실제로 달라진 모든 파일 경로를 한 줄에 하나씩 기록합니다.",
     created: "등록 묶음을 처음 만들 때 Git diff로 생성합니다.",
-    update: "검사 대상 OpenMetadata 코드 commit 또는 공식 기준 commit이 바뀔 때마다 다시 생성합니다.",
-    owner: "Git과 생성기가 자동으로 만듭니다. 사람이 파일 목록을 직접 보정하지 않습니다.",
+    update: "기준으로 삼는 과거 코드 commit 또는 공식 기준 commit이 바뀔 때만 다시 생성합니다. 같은 ID의 후속 commit이 생겼다는 이유만으로는 다시 만들지 않습니다. 현재 버전의 변경 범위는 Manifest changed_paths와 commit-inventory.yaml이 기록합니다.",
+    owner: "과거 기준을 바꾸는 별도 승인 작업에서 생성기가 만듭니다. 사람이 파일 목록을 직접 보정하지 않습니다.",
     readers: "등록자료가 실제 Git diff를 빠짐없이 설명하는지 확인하는 전체 변경 범위 검사에 사용됩니다.",
     fields: [
       ["한 줄의 경로", "필수", "저장소 root 기준 실제 변경 파일", "Git diff 자동 생성", "openmetadata-service/.../Entity.java"]
     ],
     before: "openmetadata-service/.../Entity.java\nopenmetadata-spec/.../instanceCode.json",
     after: "openmetadata-service/.../Entity.java\nopenmetadata-spec/.../instanceCode.json\nopenmetadata-ui/.../instanceCodeAPI.ts",
-    updateReason: "검사 대상 OpenMetadata 코드에 새 변경 파일이 생겼으므로 전체 목록을 Git에서 다시 생성합니다. 텍스트 파일만 수정하면 실제 코드와 달라져 검사에 실패합니다.",
+    updateReason: "공식 기준 commit을 새 버전으로 바꾸는 별도 승인 작업에서 전체 목록을 Git에서 다시 생성합니다. 텍스트 파일만 수정하면 실제 코드와 달라져 검사에 실패합니다. 일반 후속 commit으로 늘어난 변경 파일은 이 목록이 아니라 commit-inventory.yaml과 current-diff-paths.txt에 기록됩니다.",
     commands: [
-      "python harness/registrations/om-temp-1.13.0/generate_registration_bundle.py --repo /path/to/OM_TEMP"
+      "python harness/registrations/om-temp-1.13.0/generate_registration_bundle.py --repo /path/to/product-code-repo"
     ],
-    storage: "후보·공식 기준별 파생 파일입니다. 생성 기준 SHA와 함께 Git에 보관해 재현합니다."
+    storage: "후보·공식 기준별 파생 파일입니다. 생성 기준 SHA와 함께 Git에 보관해 재현합니다. generate_registration_bundle.py는 과거 기준 commit과 사람 정책값까지 다시 쓰므로 일반 후속 commit 처리에는 실행하지 않습니다. 담당자·Contract 같은 승인된 값이 초기화될 수 있습니다."
   },
   layout: {
     title: "Repository layout",
@@ -720,7 +720,7 @@ window.WIKI_FILES = {
     updateReason: "새 공식 버전의 인증 코드가 auth 경로로 분리됐고 같은 승인 통제가 필요하다고 보안 담당자가 판단했을 때 추가합니다.",
     commands: [
       "pytest -q harness/tests/test_zones.py",
-      "./.venv/bin/python harness/run_upgrade_risk_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.1 \\\n  --layout harness/registrations/om-temp-1.13.1/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.1/sensitive-zones.yaml \\\n  --debt-policy harness/policies/debt-thresholds.yaml \\\n  --change-intent harness/registrations/om-temp-1.13.1/change-intent.yaml \\\n  --upstream-base <공식-1.13.0-SHA> \\\n  --upstream-target <공식-1.13.1-SHA> \\\n  --candidate <행내-후보-SHA> \\\n  --conflict-rate 0.0 > harness/registrations/om-temp-1.13.1/upgrade-risk-results.json"
+      "./.venv/bin/python harness/run_upgrade_risk_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --layout harness/registrations/om-temp-1.13.0/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.0/sensitive-zones.yaml \\\n  --debt-policy harness/policies/debt-thresholds.yaml \\\n  --change-intent harness/registrations/om-temp-1.13.1/change-intent.yaml \\\n  --upstream-base <공식-1.13.0-SHA> \\\n  --upstream-target <공식-1.13.1-SHA> \\\n  --candidate <행내-후보-SHA> \\\n  --conflict-rate 0.0 > harness/registrations/om-temp-1.13.1/upgrade-risk-results.json"
     ],
     storage: "정책 파일이므로 변경 사유와 승인자를 Git 리뷰에 남깁니다. 과거 검사 결과에 사용한 정책은 수정하지 않습니다."
   },
@@ -747,7 +747,7 @@ window.WIKI_FILES = {
     after: "candidate:\n  commit_sha: bbb222...\n  artifact_digest: sha256:new...",
     updateReason: "코드나 빌드 파일이 바뀌면 기존 lock을 수정하지 않고 bbb222 후보용 새 evidence 폴더와 새 Candidate lock을 생성합니다. 이전 결과는 aaa111 후보의 기록으로 보존합니다.",
     commands: [
-      "./.venv/bin/python harness/run_runtime_contracts.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.1 \\\n  --artifact-digest sha256:<배포파일해시> \\\n  --output-dir /path/to/new-evidence \\\n  --run-id runtime-contract-001"
+      "./.venv/bin/python harness/run_runtime_contracts.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --artifact-digest sha256:<배포파일해시> \\\n  --output-dir /path/to/new-evidence \\\n  --run-id runtime-contract-001"
     ],
     storage: "검사 대상별 불변 실행 증거입니다. 실행 번호·검사 대상 Git commit SHA별 디렉터리 또는 CI artifact로 분리하고 덮어쓰지 않습니다. 현재 OM_TEMP 1.13.1 결과의 candidate는 dee330ebd5…이지만 실제 생성 방식은 커밋별 재적용입니다. 저장된 integration_strategy: vendor-merge 값과 실제 과정이 다르므로 이 lock은 vendor-merge 완료 증거로 사용하지 않습니다."
   },
@@ -772,7 +772,7 @@ window.WIKI_FILES = {
     after: "runs:\n  - test_id: tests/...::test_instance_code\n    attempt: 1\n    outcome: fail\n  - test_id: tests/...::test_instance_code\n    attempt: 2\n    outcome: pass",
     updateReason: "재시도 성공으로 첫 실패를 덮어쓰지 않습니다. 두 시도를 모두 새 Test run set에 남겨 T62가 기능 중요도에 따라 APPROVAL 여부를 판단하게 합니다.",
     commands: [
-      "./.venv/bin/python harness/run_runtime_contracts.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.1 \\\n  --artifact-digest sha256:<배포파일해시> \\\n  --output-dir /path/to/run-002 \\\n  --run-id runtime-contract-002"
+      "./.venv/bin/python harness/run_runtime_contracts.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --artifact-digest sha256:<배포파일해시> \\\n  --output-dir /path/to/run-002 \\\n  --run-id runtime-contract-002"
     ],
     storage: "실행별 불변 증거입니다. CI run ID·attempt와 함께 보관하고 같은 파일명을 다른 실행 결과로 덮어쓰지 않습니다."
   },
@@ -799,8 +799,8 @@ window.WIKI_FILES = {
     after: "canonical_payload:\n  verdict: pass\n  gates:\n    - name: customization-survival\n      verdict: pass\n      reasons: [\"active_customizations=7\"]",
     updateReason: "BLOCK 결과 파일을 PASS로 직접 고치지 않습니다. 코드를 보완하고 검사기를 다시 실행해 새로운 결과와 result_digest를 만듭니다.",
     commands: [
-      "./.venv/bin/python harness/run_source_candidate_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.1 \\\n  --layout harness/registrations/om-temp-1.13.1/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.1/sensitive-zones.yaml \\\n  --output harness/registrations/om-temp-1.13.1/source-gate-results.json",
-      "./.venv/bin/python harness/run_runtime_contracts.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.1 \\\n  --artifact-digest sha256:<배포파일해시> \\\n  --output-dir /path/to/runtime-evidence \\\n  --run-id runtime-contract-001"
+      "./.venv/bin/python harness/run_source_candidate_gates.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --layout harness/registrations/om-temp-1.13.0/repository-layout.yaml \\\n  --sensitive-zones harness/registrations/om-temp-1.13.0/sensitive-zones.yaml \\\n  --output harness/registrations/om-temp-1.13.0/source-gate-results.json",
+      "./.venv/bin/python harness/run_runtime_contracts.py \\\n  --repo /path/to/OM_TEMP \\\n  --harness harness \\\n  --registration harness/registrations/om-temp-1.13.0 \\\n  --artifact-digest sha256:<배포파일해시> \\\n  --output-dir /path/to/runtime-evidence \\\n  --run-id runtime-contract-001"
     ],
     storage: "실행별 불변 증거입니다. 검사 대상 Git commit SHA·실행 번호·검사기 버전과 함께 보관합니다."
   },
