@@ -47,6 +47,15 @@ class PreparationError(ValueError):
     """A proposal or approval is structurally unsafe."""
 
 
+class PolicyRefusal(PreparationError):
+    """A rule was evaluated and the input was rejected.
+
+    Distinct from the base error, which means the input could not be read or
+    trusted well enough to judge. A refusal is a BLOCKED outcome the operator
+    fixes in the approval or the proposal; it is not an ANALYSIS_ERROR.
+    """
+
+
 class StaleProposalError(PreparationError):
     """The repository or registration changed after proposal creation."""
 
@@ -788,11 +797,11 @@ def write_plan(output: Path, proposal: dict, *, registration: Path) -> str:
     except ValueError:
         pass
     else:
-        raise PreparationError(
+        raise PolicyRefusal(
             "proposal output must be outside the registration directory"
         )
     if output.exists():
-        raise PreparationError(f"proposal output already exists: {output}")
+        raise PolicyRefusal(f"proposal output already exists: {output}")
     output.mkdir(parents=True)
     digest = proposal_digest(proposal)
     (output / "commit-inventory.yaml").write_bytes(
@@ -924,10 +933,10 @@ def _safe_target(registration: Path, relative: str) -> Path:
     if relative not in allowed and not (
         relative.startswith("manifests/BANK-OM-") and relative.endswith(".yaml")
     ):
-        raise PreparationError(f"proposal targets forbidden path: {relative}")
+        raise PolicyRefusal(f"proposal targets forbidden path: {relative}")
     target = registration / relative
     if target.is_symlink() or target.parent.is_symlink():
-        raise PreparationError(f"proposal target uses a symlink: {relative}")
+        raise PolicyRefusal(f"proposal target uses a symlink: {relative}")
     target.resolve(strict=False).relative_to(registration.resolve(strict=True))
     return target
 
@@ -1021,11 +1030,11 @@ def _assert_proposal_is_derivable(
         customization_id = change["customization_id"]
         after = change["after_manifest"]
         if change["manifest_path"] != f"manifests/{customization_id}.yaml":
-            raise PreparationError(
+            raise PolicyRefusal(
                 f"{customization_id}: manifest path does not match its ID"
             )
         if after.get("customization_id") != customization_id:
-            raise PreparationError(
+            raise PolicyRefusal(
                 f"{customization_id}: after_manifest declares a different ID"
             )
         observed = facts["customizations"].get(customization_id, {}).get(
@@ -1039,7 +1048,7 @@ def _assert_proposal_is_derivable(
         try:
             manifest_module.validate_manifest(after, layout)
         except manifest_module.ManifestError as exc:
-            raise PreparationError(
+            raise PolicyRefusal(
                 f"{customization_id}: proposed manifest is invalid: {exc}"
             ) from exc
         proposed[customization_id] = after
@@ -1052,7 +1061,7 @@ def _assert_proposal_is_derivable(
     try:
         registry_module.validate_references(proposed_registry, proposed, catalog)
     except registry_module.RegistryError as exc:
-        raise PreparationError(
+        raise PolicyRefusal(
             f"proposed registration state is inconsistent: {exc}"
         ) from exc
 
@@ -1074,7 +1083,7 @@ def apply_plan(
         "BLOCKED",
         "ANALYSIS_ERROR",
     }:
-        raise PreparationError(
+        raise PolicyRefusal(
             f"proposal status {proposal['status']} is not applicable"
         )
     if approval["proposal_digest"] != digest:
@@ -1082,21 +1091,21 @@ def apply_plan(
     review_ids = {item["finding_id"] for item in proposal["review_required"]}
     decision_ids = [item["finding_id"] for item in approval["decisions"]]
     if len(decision_ids) != len(set(decision_ids)):
-        raise PreparationError("approval has duplicate finding decisions")
+        raise PolicyRefusal("approval has duplicate finding decisions")
     if set(decision_ids) != review_ids:
-        raise PreparationError(
+        raise PolicyRefusal(
             "approval decisions do not exactly cover review-required findings"
         )
     if approval["approved_by"] == "REPLACE_WITH_APPROVER_ID":
-        raise PreparationError("approval still contains placeholder approver")
+        raise PolicyRefusal("approval still contains placeholder approver")
     if not approval["approved_by"].strip():
-        raise PreparationError("approval approver is blank")
+        raise PolicyRefusal("approval approver is blank")
     if any(
         item["reason"] == "REPLACE_WITH_REVIEW_REASON"
         or not item["reason"].strip()
         for item in approval["decisions"]
     ):
-        raise PreparationError("approval contains a placeholder or blank reason")
+        raise PolicyRefusal("approval contains a placeholder or blank reason")
 
     if gitprim.worktree_is_dirty(str(repo)):
         raise StaleProposalError("product repository worktree is dirty")

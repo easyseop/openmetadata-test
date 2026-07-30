@@ -735,3 +735,35 @@ def test_apply_still_accepts_the_unmodified_proposal(prepared, tmp_path):
     assert result["status"] == "APPLIED"
     assert "commit-inventory.yaml" in result["written_files"]
     assert (registration / "commit-inventory.yaml").is_file()
+
+
+def test_policy_refusal_reports_blocked_not_analysis_error(
+    prepared, tmp_path, capsys
+):
+    """A rule that said no is BLOCKED; ANALYSIS_ERROR means we could not judge."""
+    repo, registration, output, proposal = _applied_pair(prepared, tmp_path)
+    cli_main(
+        [
+            "approval-template",
+            "--proposal", str(output / "proposal.yaml"),
+            "--output", str(output / "approval.yaml"),
+        ]
+    )
+    capsys.readouterr()
+
+    exit_code = cli_main(
+        [
+            "apply",
+            "--repo", str(repo),
+            "--registration", str(registration),
+            "--proposal", str(output / "proposal.yaml"),
+            "--approval", str(output / "approval.yaml"),
+        ]
+    )
+
+    printed = capsys.readouterr().out
+    assert exit_code == 1
+    assert '"status": "BLOCKED"' in printed
+    assert '"code": "POLICY_REFUSED"' in printed
+    assert "placeholder approver" in printed
+    assert "ANALYSIS_ERROR" not in printed

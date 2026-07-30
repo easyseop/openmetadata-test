@@ -11,6 +11,7 @@ import yaml
 
 from acgh.registration_prep import (
     ApplyLockError,
+    PolicyRefusal,
     PreparationError,
     StaleProposalError,
     approval_template,
@@ -153,6 +154,10 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     except ApplyLockError as exc:
         _json({"status": "BLOCKED", "code": "APPLY_LOCKED", "message": str(exc)})
+        return 1
+    except PolicyRefusal as exc:
+        # A rule was applied and said no. That is BLOCKED, not "could not judge".
+        _json({"status": "BLOCKED", "code": "POLICY_REFUSED", "message": str(exc)})
         return 1
     except (PreparationError, OSError, yaml.YAMLError) as exc:
         _json({"status": "ANALYSIS_ERROR", "message": str(exc)})
