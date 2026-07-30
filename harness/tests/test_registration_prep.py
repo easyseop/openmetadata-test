@@ -1,6 +1,7 @@
 """Fail-closed registration preparation tests."""
 from __future__ import annotations
 
+import copy
 import subprocess
 from pathlib import Path
 
@@ -607,3 +608,130 @@ def test_cli_emits_structured_analysis_error_for_bad_ref(
     assert exit_code == 3
     assert '"status": "ANALYSIS_ERROR"' in output
     assert "Traceback" not in output
+
+
+def _applied_pair(prepared, tmp_path, name="proposal"):
+    """A plan plus its matching approval, ready for apply."""
+    repo, registration, _, _ = prepared
+    proposal = _plan(prepared)
+    output = tmp_path / name
+    P.write_plan(output, proposal, registration=registration)
+    return repo, registration, output, proposal
+
+
+def _write(path, value):
+    path.write_text(
+        yaml.safe_dump(value, allow_unicode=True, sort_keys=False), encoding="utf-8"
+    )
+
+
+def test_apply_rejects_a_hand_edited_after_manifest(prepared, tmp_path):
+    """The digest binds proposal to approval; it must not stand in for origin."""
+    repo, registration, output, proposal = _applied_pair(prepared, tmp_path)
+    before = (registration / "manifests/BANK-OM-001.yaml").read_bytes()
+
+    tampered = dict(proposal)
+    tampered["changes"] = [
+        {
+            "customization_id": "BANK-OM-001",
+            "action": "update_existing",
+            "manifest_path": "manifests/BANK-OM-001.yaml",
+            "added_changed_paths": [],
+            "removed_changed_paths": [],
+            "added_watch_paths": [],
+            "after_manifest": {
+                "schema_version": 2,
+                "customization_id": "BANK-OM-001",
+                "status": "active",
+                "kind": "core-patch",
+                "title": "Feature A",
+                # A glob would make T40's upper bound unbounded, and dropping
+                # required_changed_paths removes its lower bound entirely.
+                "implementation": {
+                    "changed_paths": ["core/**"],
+                    "required_changed_paths": [],
+                },
+                "upgrade_watch": {"paths": []},
+                "assurance": {"contracts": ["CONTRACT-A"], "direct_tests": []},
+                "series": {"allowed": False, "depends_on": []},
+            },
+        }
+    ]
+    _write(output / "proposal.yaml", tampered)
+    # The documented approval-template step recomputes the digest for free.
+    _write(output / "approval.yaml", _approve(tampered))
+
+    with pytest.raises(P.StaleProposalError, match="changed_paths do not equal"):
+        P.apply_plan(
+            repo,
+            registration,
+            proposal_path=output / "proposal.yaml",
+            approval_path=output / "approval.yaml",
+        )
+    assert (registration / "manifests/BANK-OM-001.yaml").read_bytes() == before
+
+
+def test_apply_rejects_a_tampered_commit_inventory(prepared, tmp_path):
+    repo, registration, output, proposal = _applied_pair(prepared, tmp_path)
+    tampered = copy.deepcopy(proposal)
+    inventory = tampered["generated"]["commit_inventory"]["customizations"]
+    inventory["BANK-OM-001"]["changed_paths"] = ["core/a.txt", "core/ghost.txt"]
+    _write(output / "proposal.yaml", tampered)
+    _write(output / "approval.yaml", _approve(tampered))
+
+    with pytest.raises(P.StaleProposalError, match="commit inventory"):
+        P.apply_plan(
+            repo,
+            registration,
+            proposal_path=output / "proposal.yaml",
+            approval_path=output / "approval.yaml",
+        )
+    assert (registration / "commit-inventory.yaml").exists() is False
+
+
+def test_apply_rejects_a_proposal_that_breaks_contract_binding(prepared, tmp_path):
+    """changed_paths may be honest while the rest of the manifest is not."""
+    repo, registration, output, proposal = _applied_pair(prepared, tmp_path)
+    tampered = copy.deepcopy(proposal)
+    manifest = yaml.safe_load(
+        (registration / "manifests/BANK-OM-001.yaml").read_text(encoding="utf-8")
+    )
+    manifest["assurance"]["contracts"] = []
+    tampered["changes"] = [
+        {
+            "customization_id": "BANK-OM-001",
+            "action": "update_existing",
+            "manifest_path": "manifests/BANK-OM-001.yaml",
+            "added_changed_paths": [],
+            "removed_changed_paths": [],
+            "added_watch_paths": [],
+            "after_manifest": manifest,
+        }
+    ]
+    _write(output / "proposal.yaml", tampered)
+    _write(output / "approval.yaml", _approve(tampered))
+
+    with pytest.raises(P.PreparationError, match="inconsistent"):
+        P.apply_plan(
+            repo,
+            registration,
+            proposal_path=output / "proposal.yaml",
+            approval_path=output / "approval.yaml",
+        )
+
+
+def test_apply_still_accepts_the_unmodified_proposal(prepared, tmp_path):
+    """The new derivation check must not reject a genuine plan output."""
+    repo, registration, output, proposal = _applied_pair(prepared, tmp_path)
+    _write(output / "approval.yaml", _approve(proposal))
+
+    result = P.apply_plan(
+        repo,
+        registration,
+        proposal_path=output / "proposal.yaml",
+        approval_path=output / "approval.yaml",
+    )
+
+    assert result["status"] == "APPLIED"
+    assert "commit-inventory.yaml" in result["written_files"]
+    assert (registration / "commit-inventory.yaml").is_file()

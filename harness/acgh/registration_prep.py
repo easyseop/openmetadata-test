@@ -951,6 +951,112 @@ def _atomic_write(path: Path, content: bytes) -> None:
         raise
 
 
+def observed_git_facts(repo: str, patch_sha: str, custom_sha: str) -> dict:
+    """Recompute the Git-derived facts of a pinned range.
+
+    Deliberately independent of :func:`build_plan`'s judgment loop: apply must
+    be able to reject a proposal that was edited after ``plan`` produced it, so
+    it recomputes the facts rather than trusting the file.
+    """
+    commits_by_id: dict[str, list[dict]] = defaultdict(list)
+    changed_by_id: dict[str, set[str]] = defaultdict(set)
+    for commit in gitprim.commits(repo, patch_sha, custom_sha):
+        if len(commit.customization_ids) != 1:
+            continue  # 0/many IDs never reach a proposal change
+        customization_id = commit.customization_ids[0]
+        paths = sorted(set(gitprim.changed_paths(repo, commit.sha)))
+        commits_by_id[customization_id].append(
+            {"sha": commit.sha, "subject": commit.subject, "changed_paths": paths}
+        )
+        changed_by_id[customization_id].update(paths)
+    return {
+        "customizations": {
+            customization_id: {
+                "commits": commits_by_id[customization_id],
+                "latest_commit_sha": commits_by_id[customization_id][-1]["sha"],
+                "changed_paths": sorted(changed_by_id[customization_id]),
+            }
+            for customization_id in sorted(commits_by_id)
+        },
+        "net_changed_paths": sorted(
+            set(gitprim.net_changed_paths(repo, patch_sha, custom_sha))
+        ),
+    }
+
+
+def _assert_proposal_is_derivable(
+    repo: Path, registration: Path, proposal: dict
+) -> None:
+    """Reject a proposal that ``plan`` could not have produced.
+
+    The proposal digest only binds proposal to approval; it says nothing about
+    where the proposal came from. Without this check a hand-edited
+    ``proposal.yaml`` plus a regenerated approval writes arbitrary manifests
+    into the registration directory.
+    """
+    inputs = proposal["inputs"]
+    facts = observed_git_facts(
+        str(repo), inputs["patch_sha"], inputs["custom_head_sha"]
+    )
+    inventory = proposal["generated"]["commit_inventory"]
+    if inventory.get("customizations") != facts["customizations"]:
+        raise StaleProposalError(
+            "commit inventory does not match the pinned Git range"
+        )
+    if list(proposal["generated"]["current_diff_paths"]) != facts["net_changed_paths"]:
+        raise StaleProposalError(
+            "current diff paths do not match the pinned Git range"
+        )
+    if inventory.get("range", {}).get("patch_sha") != inputs["patch_sha"] or (
+        inventory.get("range", {}).get("custom_head_sha")
+        != inputs["custom_head_sha"]
+    ):
+        raise StaleProposalError("commit inventory range does not match inputs")
+
+    layout, _registry_data, registry, catalog, manifests = _load_registration(
+        registration
+    )
+    proposed = dict(manifests)
+    for change in proposal["changes"]:
+        customization_id = change["customization_id"]
+        after = change["after_manifest"]
+        if change["manifest_path"] != f"manifests/{customization_id}.yaml":
+            raise PreparationError(
+                f"{customization_id}: manifest path does not match its ID"
+            )
+        if after.get("customization_id") != customization_id:
+            raise PreparationError(
+                f"{customization_id}: after_manifest declares a different ID"
+            )
+        observed = facts["customizations"].get(customization_id, {}).get(
+            "changed_paths", []
+        )
+        if list(after.get("implementation", {}).get("changed_paths", [])) != observed:
+            raise StaleProposalError(
+                f"{customization_id}: after_manifest changed_paths do not equal "
+                "the paths its commits actually changed"
+            )
+        try:
+            manifest_module.validate_manifest(after, layout)
+        except manifest_module.ManifestError as exc:
+            raise PreparationError(
+                f"{customization_id}: proposed manifest is invalid: {exc}"
+            ) from exc
+        proposed[customization_id] = after
+
+    proposed_registry = registry
+    if proposal.get("registry_after") is not None:
+        proposed_registry = registry_module.parse_registry(
+            proposal["registry_after"]
+        )
+    try:
+        registry_module.validate_references(proposed_registry, proposed, catalog)
+    except registry_module.RegistryError as exc:
+        raise PreparationError(
+            f"proposed registration state is inconsistent: {exc}"
+        ) from exc
+
+
 def apply_plan(
     repo: Path,
     registration: Path,
@@ -1004,6 +1110,7 @@ def apply_plan(
         raise StaleProposalError("custom ref moved after proposal creation")
     if registration_state_digest(registration) != inputs["registration_state_digest"]:
         raise StaleProposalError("registration inputs changed after proposal creation")
+    _assert_proposal_is_derivable(repo, registration, proposal)
 
     writes: dict[str, bytes] = {
         "commit-inventory.yaml": _yaml_bytes(
