@@ -1,10 +1,10 @@
-schema_version: 1
+schema_version: 2
 customization_id: BANK-OM-004
 status: active
 kind: core-patch
 title: 은행 컬럼 확장 표시
 implementation:
-  allowed_changed_paths:
+  changed_paths:
   - openmetadata-ui/src/main/resources/ui/src/components/DataAssetSummaryPanelV1/DataAssetSummaryPanelV1.tsx
   - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaTable/SchemaTable.component.tsx
   - openmetadata-ui/src/main/resources/ui/src/components/Explore/ExploreTree/ExploreTree.tsx

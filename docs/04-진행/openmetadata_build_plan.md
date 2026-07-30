@@ -192,7 +192,7 @@ M9    릴리스: T90 → T92(해당 시) → T91(digest 승격) → T94(내부�
 - **구현**: 필드
   ```yaml
   implementation:
-    allowed_changed_paths: []   # 이 패치가 변경 허용된 파일
+    changed_paths: []           # 현재 버전에서 이 ID가 실제로 변경한 파일
     required_changed_paths: []  # 반드시 변경돼야 하는 파일
   upgrade_watch:
     paths: []                   # 업스트림 변경 감시(의존 포함)

@@ -3,8 +3,7 @@
 
 The script automates facts that Git can determine:
 
-* the complete file list changed by each BANK-OM commit;
-* paths introduced by a later commit for the same BANK-OM ID;
+* the complete current-version file list changed by every commit of a BANK-OM ID;
 * a conservative T42 watch list containing the current change scope.
 
 The required implementation files, behavior contract, title, and unmodified
@@ -152,12 +151,9 @@ def build_manifest(repo: Path, customization_id: str, policy: dict) -> dict:
                 f"{commit}: expected Customization-ID {customization_id}, got {trailer!r}"
             )
 
-    allowed = changed_paths(repo, commits[0])
-    later_paths = set()
-    for commit in commits[1:]:
-        later_paths.update(changed_paths(repo, commit))
-    additional = sorted(later_paths - set(allowed))
-    current_scope = set(allowed) | set(additional)
+    current_scope = set()
+    for commit in commits:
+        current_scope.update(changed_paths(repo, commit))
 
     missing_required = sorted(set(policy["required"]) - current_scope)
     if missing_required:
@@ -167,14 +163,12 @@ def build_manifest(repo: Path, customization_id: str, policy: dict) -> dict:
         )
 
     implementation = {
-        "allowed_changed_paths": allowed,
+        "changed_paths": sorted(current_scope),
     }
-    if additional:
-        implementation["candidate_additional_paths"] = additional
     implementation["required_changed_paths"] = policy["required"]
 
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "customization_id": customization_id,
         "status": "active",
         "kind": "core-patch",

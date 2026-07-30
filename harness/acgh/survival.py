@@ -29,6 +29,7 @@ from acgh import candidate as C
 from acgh import contracts
 from acgh import gitprim
 from acgh import layout as L
+from acgh import manifest as M
 from acgh import verdict
 
 
@@ -124,11 +125,7 @@ def inspect_survival(
                 "required_changed_paths", []
             )
         ]
-        implementation = manifest.get("implementation", {})
-        raw_expected_paths = [
-            *implementation.get("allowed_changed_paths", []),
-            *implementation.get("candidate_additional_paths", []),
-        ]
+        raw_expected_paths = M.declared_changed_paths(manifest)
         expected_paths: list[str] = []
         for path in raw_expected_paths:
             try:

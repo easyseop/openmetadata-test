@@ -41,6 +41,7 @@ def main() -> int:
     from acgh import gitprim
     from acgh import impact
     from acgh import layout
+    from acgh import manifest as manifest_module
     from acgh import policy_drift
     from acgh import structdiff
     from acgh import upgrade_watch
@@ -64,14 +65,7 @@ def main() -> int:
             "allowed": sorted({
                 path
                 for manifest in active.values()
-                for path in [
-                    *manifest["implementation"].get(
-                        "allowed_changed_paths", []
-                    ),
-                    *manifest["implementation"].get(
-                        "candidate_additional_paths", []
-                    ),
-                ]
+                for path in manifest_module.declared_changed_paths(manifest)
             }),
             "forbidden": change_intent.get("forbidden", []),
         }

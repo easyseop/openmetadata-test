@@ -7,7 +7,7 @@
   "additionalProperties": false,
   "required": ["schema_version", "customization_id", "kind", "implementation"],
   "properties": {
-    "schema_version": {"const": 1},
+    "schema_version": {"enum": [1, 2]},
     "customization_id": {
       "type": "string",
       "pattern": "^BANK-OM-[0-9]{3,}$"
@@ -18,9 +18,15 @@
     "implementation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["allowed_changed_paths"],
       "properties": {
+        "changed_paths": {
+          "description": "Schema v2: exact current-version files changed by this customization ID.",
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1
+        },
         "allowed_changed_paths": {
+          "description": "Schema v1 legacy field. Use changed_paths in schema v2.",
           "type": "array",
           "items": {"type": "string", "minLength": 1},
           "minItems": 1
@@ -30,7 +36,7 @@
           "items": {"type": "string", "minLength": 1}
         },
         "candidate_additional_paths": {
-          "description": "Literal files added by a registered follow-up commit after the pinned source snapshot; excluded from T25-R snapshot reconstruction but included in current-candidate scope and survival gates.",
+          "description": "Schema v1 legacy field. Use changed_paths in schema v2.",
           "type": "array",
           "items": {"type": "string", "minLength": 1}
         }

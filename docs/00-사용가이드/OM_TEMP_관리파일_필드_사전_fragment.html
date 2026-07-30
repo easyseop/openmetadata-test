@@ -43,14 +43,16 @@
 
     <div class="fd-example">
       <strong>BANK-OM-001 실제 구조</strong>
-      <pre><code>schema_version: 1
+      <pre><code>schema_version: 2
 customization_id: BANK-OM-001
 status: active
 kind: core-patch
 title: 기준코드(InstanceCode)
 
 implementation:
-  allowed_changed_paths: [...]
+  changed_paths:
+    - openmetadata-service/.../Entity.java
+    - openmetadata-service/.../InstanceCodeResource.java
   required_changed_paths: [...]
 
 upgrade_watch:
@@ -70,15 +72,17 @@ series:
       <div class="fd-fields">
         <article>
           <h3><code>schema_version</code> <span>필수</span></h3>
-          <p><b>의미</b> 관리 파일 형식의 버전입니다. 현재 허용값은 숫자 <code>1</code>뿐입니다.</p>
+          <p><b>의미</b> 관리 파일 형식의 버전입니다. 새 OM_TEMP Manifest는 숫자 <code>2</code>를 사용합니다. 과거 등록자료를 읽기 위해 <code>1</code>도 호환합니다.</p>
           <p><b>작성</b> 파일을 처음 만들 때 생성기가 기록하며, 담당자가 임의로 올리지 않습니다.</p>
           <p><b>사용·결과</b> 검사기가 어떤 스키마로 읽을지 결정합니다. 값이 다르면 파일 구조 검증이 실패합니다.</p>
+          <p><b>예시</b> <code>schema_version: 2</code>인 Manifest에는 <code>changed_paths</code>를 사용하며, 폐기된 두 경로 필드를 함께 쓰면 BLOCK입니다.</p>
         </article>
         <article>
           <h3><code>customization_id</code> <span>필수</span></h3>
           <p><b>의미</b> 하나의 업무 기능을 코드·Manifest·Contract·검사 결과에서 같은 대상으로 연결하는 번호입니다.</p>
           <p><b>작성</b> 관리 담당자가 미사용 번호를 발급합니다. 형식은 <code>BANK-OM-001</code>처럼 최소 세 자리 숫자입니다.</p>
           <p><b>사용·결과</b> Registry와 commit 메시지의 ID를 대조합니다. 미등록·불일치·중복이면 검사를 중단합니다.</p>
+          <p><b>예시</b> InstanceCode 기능의 코드 commit, Manifest와 Contract에는 모두 <code>BANK-OM-001</code>을 연결합니다.</p>
         </article>
         <article>
           <h3><code>status</code> <span>현재 명시</span></h3>
@@ -104,27 +108,27 @@ series:
     <details class="fd-group" open>
       <summary><code>implementation</code> · 실제 코드 변경 범위</summary>
       <div class="fd-intro">
-        <p><code>implementation</code>은 “이 BANK-OM이 실제로 어떤 파일을 변경했는가”를 묶는 상위 항목입니다. 직접 파일 경로를 쓰는 자리가 아니라 아래 세 목록을 담습니다.</p>
+        <p><code>implementation</code>은 “이 BANK-OM이 실제로 어떤 파일을 변경했는가”를 묶는 상위 항목입니다. 직접 파일 경로를 쓰는 자리가 아니라 <code>changed_paths</code>와 그 부분집합인 <code>required_changed_paths</code>를 담습니다.</p>
       </div>
       <div class="fd-fields">
         <article>
-          <h3><code>allowed_changed_paths</code> <span>필수</span></h3>
-          <p><b>의미</b> 최초 등록 기준에서 이 BANK-OM commit이 실제로 변경한 파일 전체입니다.</p>
-          <p><b>작성</b> Git diff로 자동 추출한 뒤 기능별 소유 관계를 사람이 검토합니다. 현재 OM_TEMP 등록은 폴더가 아니라 실제 파일 경로를 사용합니다.</p>
+          <h3><code>changed_paths</code> <span>필수</span></h3>
+          <p><b>의미</b> 현재 OpenMetadata 버전에서 같은 BANK-OM ID가 붙은 모든 commit이 실제로 변경한 파일 전체입니다.</p>
+          <p><b>작성</b> Git diff로 자동 추출한 뒤 기능별 소유 관계를 사람이 검토합니다. 같은 ID의 후속 commit이 새 파일을 변경하면 이 한 목록에 합칩니다. 현재 OM_TEMP 등록은 폴더가 아니라 실제 파일 경로를 사용합니다.</p>
           <p><b>사용·결과</b> 실제 commit이 목록 밖 파일을 바꾸면 BLOCK, 목록의 파일이 최종 코드에서 공식 원본과 같으면 담당자 확인이 필요합니다.</p>
+          <p><b>실제 예시</b> BANK-OM-007의 최초 commit 8개와 후속 보완 commit 2개를 합친 10개 파일이 현재 1.13.0 <code>changed_paths</code>입니다.</p>
         </article>
         <article>
           <h3><code>required_changed_paths</code> <span>운영상 필수</span></h3>
           <p><b>의미</b> 해당 파일이 없거나 공식 원본과 같으면 커스터마이징의 필수 구현이 빠졌다고 즉시 판단할 수 있는 파일입니다.</p>
           <p><b>작성</b> Git이 자동 결정하지 않습니다. 개발자와 기능 책임자가 전용 Resource·Schema처럼 역할이 명확한 파일을 선택합니다.</p>
           <p><b>사용·결과</b> 파일 소실 또는 공식 원본과 동일하면 BLOCK입니다. 활성 Manifest에서 목록이 비어 있어도 현재 유지 검사에서 BLOCK입니다.</p>
+          <p><b>실제 예시</b> BANK-OM-001의 <code>InstanceCodeResource.java</code>가 없어지면 InstanceCode API 구현이 빠진 것으로 보고 BLOCK합니다.</p>
         </article>
-        <article>
-          <h3><code>candidate_additional_paths</code> <span>필요할 때</span></h3>
-          <p><b>언제 쓰나</b> 기존 BANK-OM ID로 후속 commit을 만들었고, 그 commit이 최초 등록 목록에 없던 <em>새 파일 경로</em>까지 변경했을 때만 씁니다. 최초 목록의 기존 파일을 다시 수정한 경우에는 추가하지 않습니다.</p>
-          <p><b>왜 분리하나</b> 최초 등록 당시의 파일 범위를 보존하면서 현재 후보에서 승인한 확장 범위도 검사하기 위해서입니다. 별도 기능을 추가한 것이라면 이 항목에 넣지 않고 새 BANK-OM ID를 발급합니다.</p>
-          <p><b>검사에서 사용</b> 최초 snapshot 재구성은 <code>allowed_changed_paths</code>만 비교하고, 현재 후보 검사는 두 목록을 합쳐 비교합니다. BANK-OM-007은 최초 8개와 후속 신규 2개로 구분돼 있습니다.</p>
-        </article>
+      </div>
+      <div class="fd-callout">
+        <strong>후속 commit은 별도 경로 필드로 나누지 않습니다.</strong>
+        <p>BANK-OM-007의 최초 구현 SHA <code>62e39da8…</code>와 후속 보완 SHA <code>7d19c895…</code>는 Git 이력에 둘 다 남습니다. 현재 Manifest는 두 commit에서 나온 10개 경로를 <code>changed_paths</code> 하나로 검사합니다. 최종 검사 대상은 두 변경이 모두 반영된 custom branch의 마지막 SHA 하나입니다.</p>
       </div>
     </details>
 
@@ -139,6 +143,7 @@ series:
           <p><b>의미</b> 공식 업그레이드 전후에 변경 여부를 비교할 파일 경로입니다.</p>
           <p><b>작성</b> Manifest 생성기가 실제 변경 경로를 포함하고, 커스터마이징이 직접 의존하지만 수정하지 않은 파일은 제안 결과를 사람이 검토해 추가합니다.</p>
           <p><b>사용·결과</b> 새 공식 버전에서 경로가 바뀌면 자동 통과시키지 않고 담당자 검토 대상으로 표시합니다.</p>
+          <p><b>실제 예시</b> BANK-OM-001이 의존하는 <code>CollectionDAO.java</code>가 공식 1.13.0→1.13.1 사이에서 바뀌면 T42가 APPROVAL을 내고 저장 연결을 다시 확인하게 합니다.</p>
         </article>
         <article>
           <h3><code>configuration_keys</code></h3>
@@ -213,7 +218,7 @@ series:
         </article>
         <article>
           <h3>해결하면서 새 파일이 추가됨</h3>
-          <p><b>같은 기능이면</b> 같은 ID를 유지합니다. 최초 Manifest에 없던 새 파일 경로까지 변경한 경우에만 그 새 경로를 <code>candidate_additional_paths</code>에 추가합니다. 기존 등록 파일의 내용만 다시 수정했다면 Manifest 경로 목록은 그대로 둡니다.</p>
+          <p><b>같은 기능이면</b> 같은 ID를 유지합니다. 해결 과정에서 새 파일 경로까지 변경했다면 새 버전 Manifest의 <code>changed_paths</code>에 추가합니다. 기존 등록 파일의 내용만 다시 수정했다면 경로 목록은 그대로 둡니다.</p>
           <p><b>필수 파일이면</b> <code>required_changed_paths</code>에도 추가하고, 공식 변경 영향을 다시 볼 경로는 <code>upgrade_watch.paths</code>에 반영합니다.</p>
           <p><b>동작 조건이 달라지면</b> 연결된 Contract와 test를 갱신합니다.</p>
         </article>
@@ -234,7 +239,11 @@ series:
         <p>기존 파일만 다시 수정하든 새 파일을 추가하든, 같은 업무 기능의 보완이면 commit 메시지에 기존 ID를 그대로 남깁니다.</p>
         <pre><code>git commit -m "Tibero 서비스 연결 처리 보완" \
   -m "Customization-ID: BANK-OM-007"</code></pre>
-        <p>생성기는 이 ID와 Git diff를 읽습니다. 기존 등록 파일만 다시 수정했다면 Manifest 경로 목록은 바꾸지 않습니다. 최초 목록에 없던 새 파일이 보이면 <code>candidate_additional_paths</code> 초안을 만들고, 실제 변경 파일은 <code>upgrade_watch.paths</code>에도 포함합니다. 새 파일이 기능 필수 요소인지, 같은 기능의 연장인지, Contract를 바꿔야 하는지는 담당자가 승인합니다.</p>
+        <p>생성기는 이 ID와 Git diff를 읽습니다. 기존 등록 파일만 다시 수정했다면 Manifest 경로 목록은 바꾸지 않습니다. 새 파일이 보이면 현재 버전 <code>changed_paths</code> 초안에 합치고, 실제 변경 파일은 <code>upgrade_watch.paths</code>에도 포함합니다. 새 파일이 기능 필수 요소인지, 같은 기능의 연장인지, Contract를 바꿔야 하는지는 담당자가 승인합니다.</p>
+        <pre><code>BANK-OM-007
+62e39da8...  최초 8개 파일
+7d19c895...  후속 2개 파일
+changed_paths  현재 검사 범위 10개</code></pre>
       </div>
     </details>
   </section>
@@ -303,9 +312,15 @@ series:
     <div class="fd-fields">
       <article>
         <h3><code>shared-path-owners.yaml</code></h3>
-        <p><b>구조</b> 파일 경로를 key로, 해당 파일을 수정한 BANK-OM ID 목록을 value로 적습니다.</p>
+        <p><b>구조</b> 현재 버전의 파일 경로를 key로, 해당 파일을 수정한 BANK-OM ID 목록을 value로 적습니다.</p>
         <p><b>예시</b> <code>Entity.java: [BANK-OM-001, BANK-OM-002]</code></p>
-        <p><b>사용·결과</b> 한 공용 파일을 한 기능에 잘못 귀속하지 않도록 합니다. 실제 중복 소유와 목록이 다르면 snapshot 재구성 검사가 실패합니다.</p>
+        <p><b>사용·결과</b> 현재 버전 범위 검사에서 한 공용 파일을 한 기능에 잘못 귀속하지 않도록 합니다. 실제 중복 소유와 목록이 다르면 등록자료 검사가 실패합니다.</p>
+      </article>
+      <article>
+        <h3><code>source-snapshot-path-owners.yaml</code></h3>
+        <p><b>구조</b> 최초 등록에 사용한 과거 code snapshot의 파일 경로를 key로, 그 시점까지 파일을 변경한 BANK-OM ID를 value로 기록합니다.</p>
+        <p><b>예시</b> 과거 snapshot의 <code>serviceConnection.ts: [BANK-OM-006]</code>. 이후 BANK-OM-007도 이 파일을 수정했지만 과거 기록에는 추가하지 않습니다.</p>
+        <p><b>사용·결과</b> 과거 snapshot 재구성 검사만 읽습니다. 현재 범위는 Manifest <code>changed_paths</code>와 <code>shared-path-owners.yaml</code>을 사용합니다.</p>
       </article>
       <article>
         <h3><code>source-diff-paths.txt</code></h3>

@@ -15,6 +15,7 @@ from pathlib import PurePosixPath
 
 from acgh import gitprim
 from acgh import layout as L
+from acgh import manifest as M
 
 
 @dataclass(frozen=True)
@@ -57,13 +58,9 @@ def suggest_watch_paths(
 
     for customization_id in sorted(manifests_by_id):
         manifest = manifests_by_id[customization_id]
-        implementation = manifest.get("implementation", {})
         allowed = tuple(
             L.ensure_literal(path)
-            for path in [
-                *implementation.get("allowed_changed_paths", []),
-                *implementation.get("candidate_additional_paths", []),
-            ]
+            for path in M.declared_changed_paths(manifest)
         )
         watched = L.make_spec(
             manifest.get("upgrade_watch", {}).get("paths", [])

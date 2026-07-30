@@ -931,7 +931,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   &lt;header class=&quot;p3-hero&quot;&gt;
     &lt;span class=&quot;viz-badge&quot;&gt;부록 · 과거 참고 코드 검사&lt;/span&gt;
     &lt;h1&gt;과거 참고 코드에서 확인한 소스 검사 사례&lt;/h1&gt;
-    &lt;p&gt;&lt;code&gt;easyseop/OpenMetadata&lt;/code&gt;의 Git commit &lt;code&gt;849ae756…&lt;/code&gt;에 저장된 과거 코드 상태를 검사한 결과입니다. 현재 OM_TEMP 업그레이드 흐름을 설명하는 본문이 아니라, 검사기가 소스 수준에서 어떤 근거를 보여주는지 비교할 때만 보는 참고 자료입니다.&lt;/p&gt;
+    &lt;p&gt;&lt;code&gt;easyseop/OpenMetadata&lt;/code&gt;의 과거 Git 변경 기록 &lt;code&gt;849ae756…&lt;/code&gt; 시점에 저장된 코드를 검사한 결과입니다. 현재 OM_TEMP 업그레이드 결과가 아니라, 소스 검사 결과가 어떤 근거와 함께 표시되는지 보여주는 참고 자료입니다.&lt;/p&gt;
     &lt;div class=&quot;p3-final&quot; role=&quot;status&quot;&gt;
       &lt;div&gt;
         &lt;span&gt;이 코드 상태의 최종 판단&lt;/span&gt;
@@ -943,10 +943,10 @@ html&gt;body{padding:0}&lt;/style&gt;
 
   &lt;aside class=&quot;p3-page-scope&quot; aria-label=&quot;이 페이지가 답하는 질문과 범위&quot;&gt;
     &lt;div&gt;&lt;strong&gt;이 부록이 답하는 질문&lt;/strong&gt;&lt;p&gt;과거 참고 코드에서는 소스 검사 결과가 어떤 형태로 나왔고, 왜 소스 PASS만으로 배포할 수 없었는가?&lt;/p&gt;&lt;/div&gt;
-    &lt;div&gt;&lt;strong&gt;여기서 답하지 않는 것&lt;/strong&gt;&lt;p&gt;현재 OM_TEMP 1.13.1 후보의 충돌과 결과는 앞의 4번 연습에서 설명합니다.&lt;/p&gt;&lt;/div&gt;
+    &lt;div&gt;&lt;strong&gt;여기서 답하지 않는 것&lt;/strong&gt;&lt;p&gt;현재 OM_TEMP 1.13.1 코드의 충돌과 검사 결과는 앞의 4번 ‘OM_TEMP 코드 업그레이드 연습’에서 설명합니다.&lt;/p&gt;&lt;/div&gt;
     &lt;div&gt;&lt;strong&gt;읽어야 하는 경우&lt;/strong&gt;&lt;p&gt;BANK-OM-008~011이 포함된 과거 11개 변경이나 실제 코드·Manifest·결과 연결 예시가 필요할 때만 펼쳐봅니다.&lt;/p&gt;&lt;/div&gt;
   &lt;/aside&gt;
-  &lt;p class=&quot;p3-internal-scope&quot;&gt;&lt;strong&gt;이 저장소에 한정된 과거 사례:&lt;/strong&gt; &lt;code&gt;849ae756…&lt;/code&gt;, BANK-OM-008~011과 아래 판정은 &lt;code&gt;easyseop/OpenMetadata&lt;/code&gt;의 당시 코드 상태에만 해당합니다. 현재 OM_TEMP 후보나 OpenMetadata 일반 동작으로 확대해석하지 않습니다.&lt;/p&gt;
+  &lt;p class=&quot;p3-internal-scope&quot;&gt;&lt;strong&gt;이 저장소에 한정된 과거 사례:&lt;/strong&gt; &lt;code&gt;849ae756…&lt;/code&gt;, BANK-OM-008~011과 아래 판정은 &lt;code&gt;easyseop/OpenMetadata&lt;/code&gt;의 당시 코드에만 해당합니다. 현재 OM_TEMP 검사 대상 코드나 OpenMetadata 자체의 일반 기능으로 해석하면 안 됩니다.&lt;/p&gt;
 
   &lt;section class=&quot;p3-section&quot; aria-labelledby=&quot;p3-input-title&quot;&gt;
     &lt;div class=&quot;p3-heading&quot;&gt;
@@ -1076,7 +1076,7 @@ public class InstanceCodeResource
       &lt;span&gt;04&lt;/span&gt;
       &lt;div&gt;
         &lt;h2 id=&quot;p3-record-title&quot;&gt;Manifest와 Git 기록이 어떻게 연결되나&lt;/h2&gt;
-        &lt;p&gt;BANK-OM ID는 업무 기능 번호이고, Git commit SHA는 해당 코드 상태를 식별하는 값입니다.&lt;/p&gt;
+        &lt;p&gt;BANK-OM ID는 사람이 정한 업무 기능 번호이고, Git 변경 기록 번호(&lt;code&gt;commit SHA&lt;/code&gt;)는 Git이 실제 코드 변경을 저장할 때 자동으로 만든 번호입니다.&lt;/p&gt;
       &lt;/div&gt;
     &lt;/div&gt;
 
@@ -1089,7 +1089,7 @@ kind: core-patch
 title: InstanceCode
 
 implementation:
-  allowed_changed_paths:
+  changed_paths:
     - .../Entity.java
     - .../InstanceCodeResource.java
     - .../instanceCode.json
@@ -1110,7 +1110,7 @@ assurance:
         &lt;strong&gt;3. 실제 Git 기록&lt;/strong&gt;
         &lt;pre&gt;&lt;code&gt;a2566fac32 add InstanceCode customization
 Customization-ID: BANK-OM-001&lt;/code&gt;&lt;/pre&gt;
-        &lt;p&gt;&lt;code&gt;BANK-OM-001&lt;/code&gt;은 사람이 발급한 기능 ID이고, &lt;code&gt;a2566fac…&lt;/code&gt;은 Git이 생성한 해당 커밋의 SHA입니다.&lt;/p&gt;
+        &lt;p&gt;&lt;code&gt;BANK-OM-001&lt;/code&gt;은 사람이 발급한 기능 ID이고, &lt;code&gt;a2566fac…&lt;/code&gt;은 위 변경을 Git에 저장했을 때 자동 생성된 변경 기록 번호입니다.&lt;/p&gt;
       &lt;/div&gt;
     &lt;/div&gt;
   &lt;/section&gt;
@@ -1134,9 +1134,9 @@ Customization-ID: BANK-OM-001&lt;/code&gt;&lt;/pre&gt;
   --sensitive-zones harness/policies/sensitive-zones.yaml&lt;/code&gt;&lt;/pre&gt;
     &lt;/details&gt;
     &lt;div class=&quot;p3-console&quot; aria-label=&quot;실제 로컬 소스 검사 출력 요약&quot;&gt;
-      &lt;div&gt;&lt;span&gt;검사 대상 코드 SHA&lt;/span&gt;&lt;code&gt;849ae756cd238f218b5e3a6c795a392305cb32ee&lt;/code&gt;&lt;/div&gt;
-      &lt;div&gt;&lt;span&gt;공식 원본 SHA&lt;/span&gt;&lt;code&gt;afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9&lt;/code&gt;&lt;/div&gt;
-      &lt;div&gt;&lt;span&gt;검사 대상 잠금값&lt;/span&gt;&lt;code&gt;candidate lock digest · sha256:61a3f02d3f22…&lt;/code&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;span&gt;검사한 행내 코드의 Git 번호&lt;/span&gt;&lt;code&gt;849ae756cd238f218b5e3a6c795a392305cb32ee&lt;/code&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;span&gt;비교 기준인 공식 코드의 Git 번호&lt;/span&gt;&lt;code&gt;afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9&lt;/code&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;span&gt;검사 대상이 바뀌지 않았음을 확인하는 값&lt;/span&gt;&lt;code&gt;candidate lock digest · sha256:61a3f02d3f22…&lt;/code&gt;&lt;/div&gt;
       &lt;pre&gt;&lt;code&gt;vendor-ancestry              pass
 customization-survival       pass
 required-test-implementations pass
@@ -1146,7 +1146,7 @@ drift                        pass
 sensitive-zones              pass
 exact-scope-history          pass&lt;/code&gt;&lt;/pre&gt;
     &lt;/div&gt;
-    &lt;p class=&quot;p3-caption&quot;&gt;&lt;code&gt;candidate lock digest&lt;/code&gt;는 검사 대상 commit·Git tree·공식 원본 설정이 중간에 바뀌지 않았는지 비교하는 값입니다. 위 결과는 공식 1.13.1과 현재 행내 소스의 관계를 검사한 결과이며, 다음 공식 버전 업그레이드나 행내 운영 환경의 동작 결과는 아닙니다.&lt;/p&gt;
+    &lt;p class=&quot;p3-caption&quot;&gt;&lt;code&gt;candidate lock digest&lt;/code&gt;는 검사 시작 때 기록한 코드와 설정이 검사 도중 바뀌지 않았는지 확인하는 값입니다. 위 결과는 공식 1.13.1과 과거 행내 코드의 소스 관계만 확인했습니다. 다음 공식 버전으로 업그레이드했을 때의 충돌이나 행내 화면·API의 실제 동작은 확인하지 않았습니다.&lt;/p&gt;
   &lt;/section&gt;
 
   &lt;section class=&quot;p3-section&quot; aria-labelledby=&quot;p3-result-title&quot;&gt;
@@ -1262,15 +1262,15 @@ exact-scope-history          pass&lt;/code&gt;&lt;/pre&gt;
         &lt;ul&gt;
           &lt;li&gt;BANK-OM-001~011 Manifest와 Git 커밋 연결&lt;/li&gt;
           &lt;li&gt;공식 1.13.1 대비 소스 변경 검사&lt;/li&gt;
-          &lt;li&gt;검사 대상 commit SHA와 source tree digest 고정&lt;/li&gt;
+          &lt;li&gt;검사한 정확한 Git 변경 기록과 코드 내용 확인값 보관&lt;/li&gt;
         &lt;/ul&gt;
       &lt;/div&gt;
       &lt;div&gt;
         &lt;strong&gt;이후 진행&lt;/strong&gt;
         &lt;ol&gt;
-          &lt;li&gt;&lt;strong&gt;별도 OM_TEMP 연습 완료:&lt;/strong&gt; 공식 1.13.0→1.13.1에 BANK-OM-001~007 재적용&lt;/li&gt;
-          &lt;li&gt;&lt;strong&gt;별도 OM_TEMP 연습 완료:&lt;/strong&gt; T42 영향 확인과 소스 검사 8종 실행&lt;/li&gt;
-          &lt;li&gt;&lt;strong&gt;남은 작업:&lt;/strong&gt; 행내 환경에서 T61·T62·T63·T90·T91 실행&lt;/li&gt;
+          &lt;li&gt;&lt;strong&gt;별도 OM_TEMP 진단 완료:&lt;/strong&gt; 공식 1.13.1에 BANK-OM-001~007 commit을 순서대로 재적용해 ID별 충돌 확인&lt;/li&gt;
+          &lt;li&gt;&lt;strong&gt;별도 OM_TEMP 진단 완료:&lt;/strong&gt; T42 영향 확인과 재적용 후보의 소스 검사 8종 실행&lt;/li&gt;
+          &lt;li&gt;&lt;strong&gt;남은 작업:&lt;/strong&gt; 실제 vendor-merge 후보를 만들고 행내 환경에서 T61·T62·T63·T90·T91 실행&lt;/li&gt;
           &lt;li&gt;&lt;strong&gt;남은 작업:&lt;/strong&gt; 담당자 승인과 검증 tag·배포본 일치 확인&lt;/li&gt;
           &lt;li&gt;&lt;strong&gt;최종 시연:&lt;/strong&gt; 병합 전후 Git 화면·터미널·검사 결과를 순서대로 캡처&lt;/li&gt;
         &lt;/ol&gt;

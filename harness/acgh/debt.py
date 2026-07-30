@@ -20,6 +20,7 @@ import yaml
 
 from acgh import gitprim
 from acgh import layout as L
+from acgh import manifest as M
 from acgh import verdict
 
 # metric -> {soft, hard}. Tunable per team; these are conservative defaults.
@@ -91,11 +92,7 @@ def collect_metrics(
     }
     owners: dict[str, set[str]] = {}
     for customization_id, manifest in active_core.items():
-        implementation = manifest.get("implementation", {})
-        for raw in [
-            *implementation.get("allowed_changed_paths", []),
-            *implementation.get("candidate_additional_paths", []),
-        ]:
+        for raw in M.declared_changed_paths(manifest):
             path = L.ensure_literal(raw)
             owners.setdefault(path, set()).add(customization_id)
     return {

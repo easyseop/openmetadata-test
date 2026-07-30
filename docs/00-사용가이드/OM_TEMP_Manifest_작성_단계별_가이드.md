@@ -136,6 +136,23 @@ BANK-OM ID는 업무 기능 번호입니다. Git commit SHA는 Git이 각 코드
 부여한 식별값입니다. BANK-OM-007처럼 하나의 기능을 두 번 수정하면 같은
 BANK-OM ID에 서로 다른 Git commit SHA가 연결될 수 있습니다.
 
+여러 SHA를 가장 최근 SHA 하나로 줄이지 않습니다. 각 SHA는 서로 다른 변경
+묶음의 근거이기 때문입니다. BANK-OM-007에서는 최초 구현 SHA가 8개 파일을,
+후속 보완 SHA가 2개 파일을 변경했습니다. 둘 중 하나만 남기면 다른 변경의
+근거를 찾을 수 없습니다.
+
+```text
+BANK-OM-007
+├─ 62e39da8...  최초 구현: 8개 파일
+└─ 7d19c895...  후속 보완: 2개 파일
+
+최종 검사 대상 SHA
+└─ 위 두 변경과 BANK-OM-001~006까지 모두 반영된 custom branch의 마지막 SHA 1개
+```
+
+즉, 위 표의 SHA는 **기능별 변경 이력**이고, Candidate lock의
+`candidate.commit_sha`는 **이번에 검사할 전체 코드 상태**입니다.
+
 목록에서 BANK-OM ID가 비어 있거나 하나의 commit에 ID가 여러 개 나오면
 Manifest를 작성하기 전에 commit 기록부터 수정해야 합니다.
 
@@ -158,8 +175,8 @@ git show --name-status \
 
 | 표시 | 의미 | Manifest 판단 |
 |---|---|---|
-| `A` | 이 commit에서 새 파일을 추가함 | `allowed_changed_paths`에 등록 |
-| `M` | 공식 코드에 있던 파일을 수정함 | `allowed_changed_paths`에 등록 |
+| `A` | 이 commit에서 새 파일을 추가함 | `changed_paths`에 등록 |
+| `M` | 공식 코드에 있던 파일을 수정함 | `changed_paths`에 등록 |
 | `D` | 기존 파일을 삭제함 | 삭제가 의도된 변경인지 담당자 확인 후 등록 |
 | `R` | 파일 이름이나 경로를 변경함 | 이전 경로와 새 경로를 함께 검토 |
 
@@ -176,7 +193,7 @@ git show \
 `InstanceCodeResource.java`는 InstanceCode API를 제공하기 위해 새로 추가한
 커스터마이징 구현 파일입니다.
 
-### 6.2 `allowed_changed_paths` 목록 만들기
+### 6.2 `changed_paths` 목록 만들기
 
 다음 명령은 선택한 commit이 변경한 모든 파일을 YAML 목록 형태로 출력합니다.
 
@@ -188,7 +205,7 @@ git show --name-only --format= \
   | sed 's/^/    - /'
 ```
 
-출력된 파일을 빠짐없이 해당 ID의 `allowed_changed_paths`에 넣습니다. 폴더 전체를
+출력된 파일을 빠짐없이 해당 ID의 `changed_paths`에 넣습니다. 폴더 전체를
 `**`로 등록하지 않습니다. 현재 커밋에서 실제로 확인한 파일만 개별 경로로
 등록해야 다음 변경에서 범위 밖 파일을 찾을 수 있습니다.
 
@@ -202,7 +219,7 @@ git show --name-only --format= \
 - `openmetadata-service/src/main/java/org/openmetadata/service/search/SearchIndexFactory.java`
 
 이 경우 파일을 한 ID에서 빼지 않습니다. 두 Manifest의
-`allowed_changed_paths`에 모두 넣고 `shared-path-owners.yaml`에도 두 ID를
+`changed_paths`에 모두 넣고 `shared-path-owners.yaml`에도 두 ID를
 등록합니다.
 
 ```yaml
@@ -222,23 +239,22 @@ Manifest 항목은 같은 수준의 선택지가 아니라 서로 다른 질문�
 
 | Manifest 항목 | 답해야 하는 질문 | 등록 방법 | 검사 결과 |
 |---|---|---|---|
-| `allowed_changed_paths` | 이 BANK-OM commit이 실제로 변경한 파일은 무엇인가? | 최초 commit의 전체 변경 파일을 Git에서 추출 | 목록 밖 변경은 `BLOCK`, 목록 안 파일이 최종 코드에서 바뀌지 않으면 `APPROVAL` |
-| `required_changed_paths` | 어떤 파일이 빠지거나 공식 상태로 돌아가면 이 기능의 필수 구현이 빠졌다고 즉시 판단할 수 있는가? | `allowed` 중 핵심 파일만 담당자가 선택 | 누락되거나 공식 원본과 같으면 `BLOCK` |
-| `candidate_additional_paths` | 같은 ID의 후속 commit이 처음으로 변경 범위에 추가한 파일은 무엇인가? | 최초 `allowed`에 없고 후속 commit이 변경한 경로만 등록 | 현재 변경 범위와 필수 파일 검사에 포함 |
+| `changed_paths` | 현재 버전에서 이 BANK-OM ID의 모든 commit이 실제로 변경한 파일은 무엇인가? | 같은 ID의 최초·후속 commit 전체에서 경로를 추출해 한 목록으로 합침 | 목록 밖 변경은 `BLOCK`, 목록 안 일반 파일이 최종 코드에서 바뀌지 않으면 `APPROVAL` |
+| `required_changed_paths` | 어떤 파일이 빠지거나 공식 상태로 돌아가면 이 기능의 필수 구현이 빠졌다고 즉시 판단할 수 있는가? | `changed_paths` 중 핵심 파일만 담당자가 선택 | 누락되거나 공식 원본과 같으면 `BLOCK` |
 | `upgrade_watch.paths` | 다음 공식 버전이 바뀔 때 이 기능과의 연결을 다시 검토해야 할 파일은 무엇인가? | Manifest 생성기가 실제 변경 파일을 자동 포함하고, 미수정 의존 파일은 후보 제안과 담당자 검토로 추가 | 공식 버전 사이에서 해당 경로가 바뀌면 `APPROVAL` |
 | `assurance.contracts` | 파일이 남아 있다는 사실 외에 어떤 업무 동작을 test할 것인가? | `contracts.yaml`에 정의한 계약 ID를 연결 | 계약이나 test 연결이 없으면 통과 금지 |
 | `series.depends_on` | 이 기능보다 먼저 적용돼야 하는 다른 BANK-OM은 무엇인가? | 실제 선행 기능만 등록 | 순서 위반이나 순환 관계는 `BLOCK` |
 
-### 7.1 `allowed`와 `required`의 차이
+### 7.1 `changed`와 `required`의 차이
 
-`allowed`에는 commit이 변경한 파일 전체가 들어갑니다.
+`changed`에는 현재 버전에서 같은 ID의 모든 commit이 변경한 파일 전체가 들어갑니다.
 `required`에는 그중 필수 기능의 존재를 판단하는 대표 파일만 들어갑니다.
 
 BANK-OM-001에서는 다음처럼 구분할 수 있습니다.
 
 ```yaml
 implementation:
-  allowed_changed_paths:
+  changed_paths:
     - openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
     - openmetadata-service/src/main/java/org/openmetadata/service/resources/instancecode/InstanceCodeResource.java
     - openmetadata-spec/src/main/resources/json/schema/entity/data/instanceCode.json
@@ -249,7 +265,7 @@ implementation:
     - openmetadata-spec/src/main/resources/json/schema/entity/data/instanceCode.json
 ```
 
-`Entity.java`도 실제 변경 파일이므로 `allowed`에서 빠지면 안 됩니다. 다만
+`Entity.java`도 실제 변경 파일이므로 `changed`에서 빠지면 안 됩니다. 다만
 이 파일은 여러 기능이 함께 사용하는 공용 파일이므로, 파일 전체가 다르다는
 사실만으로 InstanceCode 기능 전체가 남았다고 판단하기 어렵습니다. 그래서
 InstanceCode API 구현 파일과 스키마 파일을 `required`의 대표 근거로 사용하고,
@@ -261,7 +277,7 @@ T42는 Manifest의 `upgrade_watch.paths`를 공식 버전 전후와 비교합니
 만들 때는 현재 다음 두 방식을 함께 사용합니다.
 
 1. Manifest 생성기가 각 BANK-OM 커밋의 실제 변경 파일을 Git에서 읽어
-   `allowed_changed_paths`와 `upgrade_watch.paths`에 함께 반영합니다. 사용자가
+   `changed_paths`와 `upgrade_watch.paths`에 함께 반영합니다. 사용자가
    같은 경로를 두 번 직접 입력하지 않습니다.
 2. 커스터마이징이 직접 수정하지 않았지만 호출하거나 구조에 의존하는 공식 파일은
    담당자가 `watch_dependencies`로 추가합니다.
@@ -281,8 +297,8 @@ BANK-OM-007에는 commit이 두 개 있습니다.
 - 최초 적용: `62e39da8be65c3ff259802c1cd35f4b0c8baa333`
 - 후속 보완: `7d19c8952612e77467b0a80d6287170d814f1de1`
 
-최초 commit의 파일은 `allowed_changed_paths`에 넣습니다. 후속 commit에서
-처음 등장한 경로는 `candidate_additional_paths`에 넣습니다.
+최초 commit과 후속 commit의 파일을 모두 합쳐 현재 버전 Manifest의
+`changed_paths`에 넣습니다.
 
 다음 명령으로 최초 목록에 없고 후속 commit에만 있는 경로를 확인합니다.
 
@@ -303,11 +319,16 @@ openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/
 openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx
 ```
 
-따라서 BANK-OM-007 Manifest에는 다음 항목이 필요합니다.
+따라서 BANK-OM-007 Manifest의 `changed_paths`에는 최초 8개와 후속 2개를
+합친 10개 경로가 필요합니다. 아래는 그중 네 경로만 발췌한 예시입니다.
 
 ```yaml
 implementation:
-  candidate_additional_paths:
+  changed_paths:
+    # 최초 구현 commit에서 변경한 경로의 예
+    - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/tiberoConnection.json
+    - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx
+    # 후속 보완 commit에서 새로 변경한 경로
     - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts
     - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx
 
@@ -316,9 +337,9 @@ series:
   depends_on: []
 ```
 
-`candidate_additional_paths`는 Git commit SHA를 대신하는 값이 아닙니다. Git
-commit SHA는 patch-lock에 두 개 모두 기록하고, 이 항목은 두 번째 commit으로
-해당 기능의 변경 범위에 새로 들어온 파일 경로를 검사기에 알려 줍니다.
+Manifest는 “현재 버전에서 검사할 10개 파일”을 정의하고, Git 이력은
+“어느 commit에서 8개와 2개가 각각 변경됐는지”를 보존합니다. 따라서 후속
+변경을 표시하기 위한 별도 경로 필드는 사용하지 않습니다.
 
 ## 9. Manifest 파일 작성
 
@@ -335,8 +356,9 @@ BANK-OM-001~007 Manifest 7개를 생성합니다.
   --repo <OM_TEMP가-있는-절대경로>
 ```
 
-스크립트는 Git이 확정할 수 있는 전체 변경 파일과 BANK-OM-007의 후속 추가
-파일을 자동으로 만듭니다. `required`, 미수정 의존 파일, 계약은 기능 의미를
+스크립트는 Git이 확정할 수 있는 전체 변경 파일을 ID별 `changed_paths`로
+자동 생성합니다. BANK-OM-007처럼 commit이 두 개면 두 commit의 경로를 한
+목록으로 합칩니다. `required`, 미수정 의존 파일, 계약은 기능 의미를
 판단해야 하므로 스크립트 안의 명시적인 검토값으로 관리합니다.
 
 `harness/registrations/kb-openmetadata/materialize_exact_scopes.py`는 기존
@@ -357,6 +379,7 @@ harness/registrations/om-temp-1.13.0/
 ├── contracts.yaml
 ├── patch-source-lock.yaml
 ├── shared-path-owners.yaml
+├── source-snapshot-path-owners.yaml
 ├── source-diff-paths.txt
 └── manifests/
     ├── BANK-OM-001.yaml
@@ -377,17 +400,17 @@ Manifest 7개는 현재 스키마 및 기본 의미 검사를 통과했습니다
 
 아래 코드는 항목 구조를 설명하기 위해 일부 경로만 넣은 축약 예시입니다.
 검사 입력으로 그대로 사용하면 안 됩니다. 실제 파일에는
-`allowed_changed_paths`와 `upgrade_watch.paths`를 생략 없이 넣어야 합니다.
+`changed_paths`와 `upgrade_watch.paths`를 생략 없이 넣어야 합니다.
 
 ```yaml
-schema_version: 1
+schema_version: 2
 customization_id: BANK-OM-001
 status: active
 kind: core-patch
 title: InstanceCode
 
 implementation:
-  allowed_changed_paths:
+  changed_paths:
     - openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
     - openmetadata-service/src/main/java/org/openmetadata/service/resources/instancecode/InstanceCodeResource.java
     - openmetadata-spec/src/main/resources/json/schema/entity/data/instanceCode.json
@@ -431,19 +454,26 @@ Manifest만 만들면 전체 검사를 실행할 수 없습니다. 다음 자료
 | `customization-registry.yaml` | 공식 기준 SHA, 커스터마이징 SHA, 활성 ID, 담당 조직, 중요도, Manifest·계약 파일 연결 |
 | `contracts.yaml` | 각 BANK-OM 기능이 정상이라고 판단할 업무 조건과 test |
 | `shared-path-owners.yaml` | 둘 이상의 BANK-OM commit이 함께 변경한 파일과 실제 ID |
+| `source-snapshot-path-owners.yaml` | 최초 등록에 사용한 과거 snapshot 시점의 파일별 BANK-OM ID. 과거 코드 재구성 검사 전용 자동 생성 자료 |
 | `source-diff-paths.txt` | `patch/om-1.13.0`과 `custom/om-1.13.0` 사이의 111개 변경 파일 |
 | `patch-source-lock.yaml` | 001~007 commit SHA와 적용 순서. 007은 두 SHA를 순서대로 기록 |
 
 Manifest는 정책과 파일 범위를 저장하고, Git commit SHA와 적용 순서는
 patch-lock이 저장합니다. Manifest에 commit SHA를 넣지 않습니다.
 
+`source-snapshot-path-owners.yaml`과 `shared-path-owners.yaml`은 이름이
+비슷하지만 시점이 다릅니다. 예를 들어
+`serviceConnection.ts`는 최초 source snapshot에서는 BANK-OM-006만
+수정했으므로 전자에는 `BANK-OM-006`만 기록됩니다. 이후 BANK-OM-007 후속
+commit도 같은 파일을 수정했으므로 현재 버전 기준 후자에는
+`BANK-OM-006, BANK-OM-007`이 기록됩니다.
+
 ## 11. 작성 후 확인 순서
 
 각 ID의 Manifest를 만든 뒤 다음 순서로 확인합니다.
 
-1. commit에서 나온 모든 파일이 `allowed_changed_paths`에 있는지 확인합니다.
-2. `required_changed_paths`가 `allowed` 또는
-   `candidate_additional_paths` 안에 있는지 확인합니다.
+1. 같은 ID의 모든 commit에서 나온 파일이 `changed_paths`에 있는지 확인합니다.
+2. `required_changed_paths`가 `changed_paths` 안에 있는지 확인합니다.
 3. 여러 ID가 수정한 파일을 `shared-path-owners.yaml`에 등록합니다.
 4. 모든 commit에 정확히 하나의 `Customization-ID`가 있는지 확인합니다.
 5. `contracts.yaml`의 계약 ID와 Manifest의 `assurance.contracts`가

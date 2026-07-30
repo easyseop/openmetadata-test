@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from acgh import gitprim
 from acgh import layout as L
+from acgh import manifest as M
 from acgh import verdict
 
 STALE_PATTERN = "stale_pattern"
@@ -102,11 +103,7 @@ def check_exact_scope_history(
         if manifest is None:
             continue  # T31 owns unregistered IDs.
         declared = set()
-        implementation = manifest.get("implementation", {})
-        for raw in [
-            *implementation.get("allowed_changed_paths", []),
-            *implementation.get("candidate_additional_paths", []),
-        ]:
+        for raw in M.declared_changed_paths(manifest):
             try:
                 declared.add(L.ensure_literal(raw))
             except L.LayoutError as exc:

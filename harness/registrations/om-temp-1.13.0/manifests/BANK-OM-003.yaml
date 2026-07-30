@@ -1,10 +1,10 @@
-schema_version: 1
+schema_version: 2
 customization_id: BANK-OM-003
 status: active
 kind: core-patch
 title: 데이터 검증 결과(Data Assertions)
 implementation:
-  allowed_changed_paths:
+  changed_paths:
   - openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
   - openmetadata-ui/src/main/resources/ui/src/components/MyData/MyDataFailedAssertions/MyDataFailedAssertions.component.tsx
   - openmetadata-ui/src/main/resources/ui/src/constants/constants.ts

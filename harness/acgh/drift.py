@@ -3,7 +3,7 @@
 Two-sided check with the touched/net split A-3.7 requires:
 
 - UPPER BOUND (touched paths): every path a candidate commit touches must fall
-  within its customization's ``allowed_changed_paths``.  Scope control applies
+  within its customization's current ``changed_paths``. Scope control applies
   equally to upstream, extension, and governance ownership zones.  Registration
   of the change itself — is there an ID at all — is T30's job; drift assumes a
   registered commit and checks its declared scope.
@@ -21,6 +21,7 @@ from __future__ import annotations
 
 from acgh import gitprim
 from acgh import layout as L
+from acgh import manifest as M
 from acgh import verdict
 from acgh.invariants import Violation
 
@@ -42,16 +43,12 @@ def check_drift(repo, base, head, manifests_by_id, layout: L.Layout) -> list[Vio
         manifest = manifests_by_id.get(cid)
         if manifest is None:
             continue  # unregistered ID is T31's concern
-        implementation = manifest["implementation"]
-        allowed = L.make_spec([
-            *implementation["allowed_changed_paths"],
-            *implementation.get("candidate_additional_paths", []),
-        ])
+        allowed = L.make_spec(M.declared_changed_paths(manifest))
         for p in gitprim.changed_paths(repo, c.sha):
             if not allowed.match_file(L.normalize_path(p)):
                 violations.append(Violation(
                     c.sha, OUT_OF_SCOPE,
-                    f"{cid}: {p} not in allowed_changed_paths"))
+                    f"{cid}: {p} not in changed_paths"))
 
     # --- lower bound: required paths must be in the net diff ----------------
     net = {L.normalize_path(p) for p in gitprim.net_changed_paths(repo, base, head)}

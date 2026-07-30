@@ -215,7 +215,7 @@ git (base..head) ─────┘     G-CB 정본(lock 대조)     │   + ver
   - 경로 필드 스키마 (역할 분리):
     ```yaml
     implementation:
-      allowed_changed_paths:      # 이 패치가 변경해도 되는 파일 (상한)
+      changed_paths:              # 현재 버전에서 이 ID가 실제로 변경한 전체 파일
         - "openmetadata-service/**/AuthenticationFilter.java"
       required_changed_paths:     # 반드시 변경돼야 하는 파일 (하한)
         - "openmetadata-service/**/AuthenticationFilter.java"
@@ -369,7 +369,7 @@ git (base..head) ─────┘     G-CB 정본(lock 대조)     │   + ver
 - **구현 방법**:
   - 실제 변경: `git diff-tree --no-commit-id --name-only -r -z <sha>` 합산
     → `observed_changed_paths` 생성(감사카드 기록)
-  - `observed ⊄ allowed_changed_paths` → 선언 밖 변경, block(또는 approval)
+  - `observed ⊄ changed_paths` → 선언 밖 변경, block(또는 approval)
   - `required_changed_paths` 중 observed에 없는 패턴 → 필수 미변경, block
   - **`upgrade_watch.paths`는 drift 검사에서 제외** — 감시 대상이지 변경
     선언이 아니므로(P0-6 오탐 방지 핵심)

@@ -28,6 +28,66 @@ GitHub 서버 시각을 기준으로 한다.
 [`SHARING_ARTIFACT_REQUIREMENTS.md`](SHARING_ARTIFACT_REQUIREMENTS.md)를 먼저
 따른다.
 
+## 0-0. 2026-07-29 Claude 위키 검토 반영
+
+Claude 검토 파일 `WIKI_REVIEW_20260729.md`의 F1~F17을 현재 작업본과 다시
+대조했다. 검토가 사용한 `dfc43f1` 이후 Manifest v2 전환이 이미 진행됐으므로
+F1·F2를 이유로 코드를 v1으로 되돌리지 않았다. 현재 기준은 다음과 같다.
+
+- 스키마는 v1 호환 읽기와 v2 `implementation.changed_paths`를 구분한다.
+- OM_TEMP 1.13.0·1.13.1 Manifest는 v2 형식이다.
+- `candidate_additional_paths`는 OM_TEMP 문서·v2 등록에서는 사용하지 않고
+  과거 v1 등록 묶음을 읽기 위한 호환 코드에만 남아 있다.
+- T90 등 실행 증거가 없는 검사는 초록 PASS가 아니라 APPROVAL로 표시한다.
+- T42를 patch 갱신과 custom 병합 사이에 배치했다.
+- OM_TEMP 문서가 과거 `kb-openmetadata` 등록 실행기를 직접 가리키지 않도록
+  공용 실행기 진입점 4개를 `harness/`에 추가했다.
+- 독립 검토 HTML은 이미지 20개와 충돌 근거 파일 10개를 내부 `data:` URI로
+  포함한다. 빌드 시 로컬 상대경로가 남으면 실패한다.
+
+검증 결과:
+
+- 전체 Python test: `314 passed, 47 skipped`
+- 공용 실행기 4개 `--help`: 정상 종료
+- 1280px 브라우저: 가로 넘침 없음
+- T90 상태: 호박색 APPROVAL
+- 브랜치 Cycle: 병합 전 T42 표시, SVG 내부 글자 겹침 없음
+- 독립 HTML 충돌 근거 링크 5개: 모두 내장 `data:` URI
+- 브라우저 console error: 없음
+
+최신 전달 파일:
+
+- `docs/00-사용가이드/OM_TEMP_operations_wiki_Claude_review_20260729.html`
+- `docs/00-사용가이드/OM_TEMP_Claude_검토패키지_20260729.zip`
+- `docs/00-사용가이드/CLAUDE_REVIEW_PROMPT_20260729.md`
+- `docs/00-사용가이드/WIKI_REVIEW_RESPONSE_20260729.md`
+
+## 0-A. 검사 운영 통합 위키
+
+2026-07-30 05:34 KST에 기존 보고용 1~5번과 실무 상세 기준을 한 화면의 계층형
+목차에서 확인하는 통합 위키 1차 본문을 만들었다.
+
+- 화면:
+  `docs/00-사용가이드/OM_TEMP_검사운영위키_구성초안.html`
+- 상세 원고 데이터:
+  `docs/00-사용가이드/OM_TEMP_검사운영위키_데이터.js`
+- 보고용 1~5번은 기존 정본의 내용을 위키 공통 템플릿으로 요약해 보여준다.
+  기존 standalone HTML 전체를 iframe으로 삽입하지 않는다.
+- 실무 상세에는 저장소·branch·ID·자동화·업그레이드·충돌·결과·배포 승인
+  개념 11개, 검사 상세 항목 17개, 관리 파일 12개를 등록했다. T93은 범위와
+  정책 질문을 별도 상세 항목으로 나눴다.
+- 검사기 페이지는 질문, 실행 시점, 입력, 판단 순서, 판정, 한계, 실행 명령과
+  구현·test 파일을 보여준다.
+- 관리 파일 페이지는 목적, 최초 생성·갱신 시점, 작성·승인 주체, 변수별 역할,
+  변경 전후 예시, 재실행 명령과 덮어쓰기·보관 원칙을 보여준다.
+- BANK-OM-007 후속 경로, Registry 담당자 배정, Contract test 추가,
+  Repository layout과 Sensitive zones 갱신, Candidate lock·Test run set·검사
+  결과의 불변 보관 예시를 포함했다.
+
+위키에서 설명한 주요 검사기와 스키마에 대응하는 단위 테스트 묶음은 로컬에서
+통과했다. 브라우저 file URL 미리보기는 사용자가 직접 열어 확인 중이며, 정식
+파일명 확정·원격 push와 모든 화면 폭의 시각 검토는 다음 작업에서 마무리한다.
+
 ## 0. 최신 공유문서 상태
 
 2026-07-30 KST에 처음 보는 부서 독자가 “이 개념은 누가 만든 것인지, 어느
@@ -44,15 +104,13 @@ GitHub 서버 시각을 기준으로 한다.
 3. 검사 전 사전환경 설정: Manifest·Registry·Contract와 실제 Git diff 등록
 4. OM_TEMP 코드 업그레이드 연습: 1.13.0 commit을 1.13.1에 하나씩 적용해
    BANK-OM별 충돌을 분리한 진단 결과
-5. 부록 · 과거 참고 코드 검사: `easyseop/OpenMetadata`의 `849ae756...`
-   소스 검사 사례
+5. 실제 적용과 결과 확인: 코드 변경, Manifest, 검사 결과와 배포 승인 조건 연결
 
-기존 4번의 과거 코드 검사와 5번의 OM_TEMP 연습 순서를 바꿨다. 과거
-`849ae756...` 사례는 현재 OM_TEMP 흐름을 끊고 저장소·ID 범위도 다르므로 본문
-결론이 아니라 마지막 부록으로 내렸다. 다섯 페이지를 한 파일로 합치지는 않았다.
-목적·검사 원리·설정·실제 결과는 각각 판단 범위가 달라 합치면 PASS의 의미와
-실행 순서가 다시 섞이기 때문이다. 반대로 Manifest 필드 설명은 본문을 과도하게
-늘리므로 3번에서
+과거 `easyseop/OpenMetadata`의 `849ae756...` 사례는 현재 OM_TEMP 흐름과
+저장소·ID 범위가 다르므로 보고용 1~5의 결론으로 사용하지 않는다. 보고용
+요약은 한 위키 안에서 읽지만 목적·검사 원리·설정·업그레이드·결과 판단의
+범위는 장별로 구분한다. 반대로 Manifest 필드 설명은 보고용 3차를 과도하게
+늘리므로 상세 페이지인
 [`OM_TEMP_관리파일_필드_사전_미리보기.html`](../00-사용가이드/OM_TEMP_관리파일_필드_사전_미리보기.html)로
 분리 연결했다.
 
@@ -66,7 +124,8 @@ GitHub 서버 시각을 기준으로 한다.
   아니라 검사 기준자료다.
 - 4번의 commit별 재적용과 JSON 충돌 보조 도구는 BANK-OM별 충돌을 분리한
   이번 연습용 방법이며 확정 운영 절차가 아니다.
-- 부록의 `849ae756...`와 BANK-OM-008~011 판정은 당시 저장소에만 해당한다.
+- 과거 참고자료의 `849ae756...`와 BANK-OM-008~011 판정은 당시 저장소에만
+  해당하며 현재 OM_TEMP 보고용 결과로 사용하지 않는다.
 
 가장 중요한 사실 보정은 **목표 운영 전략과 현재 증거의 분리**다. ADR의 기본
 운영 전략은 `vendor-merge`지만, 현재 OM_TEMP 1.13.1 후보는 BANK-OM commit을
@@ -77,8 +136,9 @@ GitHub 서버 시각을 기준으로 한다.
 않았으며, 다음 검증에서는 직전 custom 이력과 공식 1.13.1을 실제로 병합한
 후보를 새로 만들고 전략 값까지 검사해야 한다.
 
-다섯 페이지 모두 위·아래 이전·다음 이동을 유지한다. iframe형 미리보기는
-fragment를 다시 렌더링한 뒤 아래 명령으로 바깥 이동 버튼을 재생성한다.
+통합 위키와 별도로 보관하는 standalone 다섯 페이지는 위·아래 이전·다음
+이동을 유지한다. fragment를 다시 렌더링한 뒤 아래 명령으로 이동 버튼을
+재생성한다.
 
 ```bash
 ./.venv/bin/python harness/tools/enable_guide_navigation.py
@@ -95,7 +155,7 @@ fragment를 다시 렌더링한 뒤 아래 명령으로 바깥 이동 버튼을 
 | 2 · 검사기 원리 | 특정 후보 결과를 섞지 않은 검사 방법·한계 | `docs/00-사용가이드/공유문서/openmetadata-phase2-verifier-table-fragment.html` |
 | 3 · 검사 전 사전환경 설정 | OM_TEMP 1.13.0 실제 diff·Manifest 7개·기준자료 | `harness/registrations/om-temp-1.13.0/render_manifest_evidence_guide.py` |
 | 4 · OM_TEMP 코드 업그레이드 연습 | commit별 충돌 진단과 완료·미완료 판정 | `harness/registrations/om-temp-1.13.1/render_upgrade_guide.py` |
-| 부록 · 과거 참고 코드 검사 | `849ae756...`의 과거 소스 검사 예시 | `docs/00-사용가이드/공유문서/openmetadata-phase3-demo-fragment.html` |
+| 5 · 실제 적용과 결과 확인 | 코드 변경·Manifest·검사 결과·승인 조건 연결 | `docs/00-사용가이드/공유문서/openmetadata-phase3-demo-fragment.html` |
 
 ## 1. 저장소와 브랜치
 
@@ -211,8 +271,8 @@ Manifest 작성 절차는
   않는다.
 - 커밋 메시지에는 본문과 별도로 `Customization-ID: BANK-OM-nnn` 항목을 넣는다.
   BANK-OM ID와 Git commit SHA는 서로 다른 값이다.
-- `allowed_changed_paths`는 해당 BANK-OM ID의 커밋이 실제로 변경할 수 있는
-  전체 파일 목록이다.
+- `changed_paths`는 현재 OpenMetadata 버전에서 같은 BANK-OM ID가 붙은 모든
+  커밋이 실제로 변경한 전체 파일 목록이다.
 - `required_changed_paths`는 그중 최종 코드에서 실제 변경이 확인되지 않으면
   해당 커스터마이징이 빠졌다고 판단할 핵심 파일 목록이다.
 - `upgrade_watch`는 공식 업그레이드 때 다시 비교할 파일·설정·라이브러리
@@ -333,10 +393,20 @@ Java JUnit·TypeScript Jest를 직접 등록하고 실행하려면 언어·도�
 - `customization-registry.yaml`: BANK-OM-001~007 7개, 담당자 상태는 `pending`
 - `contracts.yaml`: Contract 7개, 필수 Python pytest selector 9개
 - `shared-path-owners.yaml`: 여러 ID가 함께 변경한 경로 37개
+- `source-snapshot-path-owners.yaml`: 최초 source snapshot의 111개 변경 경로를
+  해당 시점의 BANK-OM ID에 연결한 자동 생성 자료. T25-R 과거 코드 재구성에만
+  사용하며 현재 범위 검사는 Manifest `changed_paths`와
+  `shared-path-owners.yaml`을 사용한다.
 - `source-diff-paths.txt`: 공식 1.13.0 대비 전체 변경 경로 111개
 - `repository-layout.yaml`, `sensitive-zones.yaml`: 공식 1.13.0 SHA에 고정한 경로 정책
 - `registration-validation-results.json`: 사전자료 검증 5개 PASS
 - `source-gate-results.json`: 소스 검사 8개 PASS
+
+Manifest schema v2는 같은 BANK-OM ID의 모든 commit이 현재 버전에서 변경한
+파일을 `implementation.changed_paths` 한 목록에 합친다. BANK-OM-007은 최초
+commit `62e39da8...`의 8개 파일과 후속 commit `7d19c895...`의 새 파일 2개를
+합쳐 10개를 관리한다. 기능 변경 SHA 여러 개는 각각의 변경 근거로 보존하며,
+최종 검사 대상은 Candidate lock의 custom branch 후보 SHA 하나로 별도 고정한다.
 
 원격 OM_TEMP는 공식 1.13.0 파일 tree를 독립 commit으로 가져와 공식 계보가
 없다. 검사에는 공식 `f329dd4a7e...`에서 시작해 같은 BANK-OM 변경을 순서대로
@@ -499,7 +569,7 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
 3. `.agents/skills/clarity-preflight-review/SKILL.md`를 읽고 이후 모든 공유문서
    검토에 적용한다.
 4. 공유문서는 `목적과 브랜치 전략 → 검사기 원리 → 검사 전 사전환경 설정 →
-   OM_TEMP 코드 업그레이드 연습 → 부록·과거 참고 코드 검사` 순서로 읽는다.
+   OM_TEMP 코드 업그레이드 연습 → 실제 적용과 결과 확인` 순서로 읽는다.
 5. `OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html`에서 Manifest 등록,
    기준자료 생성, 로컬 연결, 실제 소스 검사 4단계를 확인한다. 파일명은 유지했지만
    화면 제목은 `OM_TEMP 검사 전 사전환경 설정 가이드`다. 실제 명령 실행에서는
@@ -513,8 +583,9 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
 9. 다섯 HTML에 남은 사용자 피드백을 반영한다.
 10. 환경 test·담당자 승인·검증 tag·배포 결과 화면을 4번 페이지에 추가한다.
 11. 다섯 페이지의 중복과 용어를 다시 검토한다.
-12. fragment를 다시 렌더링했다면 `harness/tools/enable_guide_navigation.py`를
-   실행해 iframe 바깥의 이전·다음 이동 영역을 다시 생성한다.
+12. standalone fragment를 다시 렌더링했다면
+   `harness/tools/enable_guide_navigation.py`를 실행해 각 페이지의
+   이전·다음 이동 영역을 다시 생성한다.
 13. 작업 완료 후 이 문서의 상태·검증·다음 단계를 갱신하고 같은 브랜치에
    커밋·푸시한다.
 
@@ -555,9 +626,8 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
 
 1. 다섯 페이지를 브라우저에서 한 번씩 열어 가로 넘침, 흐린 글자, 코드 박스,
    이전·다음 링크를 최종 확인한다.
-2. `candidate_additional_paths`처럼 실제 스키마 이름은 유지하되, 처음 등장하는
-   위치에 “같은 BANK-OM의 후속 커밋에서 처음 추가된 파일”이라는 설명이
-   붙어 있는지 재확인한다.
+2. Manifest schema v2의 `changed_paths`와 v1 호환 경로가 섞여 보이지 않는지
+   확인하고, 사용자 가이드에는 v2만 설명한다.
 3. 4번 페이지의 충돌 전·해결 후 색상 구분과 전체 diff 펼치기를 화면 크기별로
    최종 확인한다.
 4. 관련 단위 테스트와 `git diff --check`를 다시 실행한다.
@@ -582,8 +652,8 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
   발견해 생성기 CSS에 인라인 코드 줄바꿈 규칙을 추가하고 다시 렌더링했다.
 - 당시 `1 → 2 → 3 → 과거 결과 → 실제 업그레이드` 이동을 확인했고,
   2026-07-30 재구성 후에는 `1 → 2 → 3 → 4 → 부록` 이동을 다시 확인했다.
-- `candidate_additional_paths`의 첫 설명은 “같은 BANK-OM의 후속 commit에서
-  처음 추가된 파일”이라는 뜻을 바로 제시한다.
+- 이 시점 이후의 현행 문서는 후속 경로 분리 필드를 쓰지 않고 현재 버전
+  `changed_paths` 하나로 통합한다.
 - 전체 harness 단위 테스트는 `308 passed, 37 skipped`다. 37개 skip은 이
   노트북에 `/home/user/om-mirror`가 없어서 실행하지 못한 실제 mirror 연동
   항목이며 PASS로 계산하지 않는다. 관련 집중 테스트는 `14 passed, 5 skipped`,
@@ -620,10 +690,9 @@ python3 /Users/seop/.codex/plugins/cache/openai-bundled/visualize/1.0.15/skills/
    검사 기준 저장소 `easyseop/openmetadata-test`만 보여준다. 과거 실제
    BANK-OM-001 diff의 출처 링크는 증거 provenance이므로 코드 증거 상세에만
    유지했다.
-2. `candidate_additional_paths`는 실제 BANK-OM-007 사례로 바꿨다.
-   `allowed_changed_paths`의 최초 8개는 과거 등록 시점을 보존하고, 후속
-   commit에서 처음 생긴 2개는 `candidate_additional_paths`에 둔다.
-   T25-R은 최초 8개, 현재 후보의 T26·T40·T93은 합계 10개를 검사한다.
+2. BANK-OM-007의 최초 8개와 후속 2개 파일은 현재 버전 Manifest의
+   `changed_paths` 10개로 통합한다. 어느 파일이 어느 commit에서 추가됐는지는
+   Git commit SHA 두 개와 변경 이력으로 확인한다.
    필수 파일이면 `required_changed_paths`에도 넣고, 같은 ID 후속 commit을
    쓰려면 `series.allowed: true`가 필요하다.
 3. 2차 첫 화면에 네 묶음의 `검사기 지도`를 추가했다. 긴 본문은 검사기별
@@ -782,7 +851,7 @@ git rev-parse HEAD
 6. 공식 버전 업그레이드 충돌을 해결할 때는 기존 BANK-OM ID를 유지한다.
    새 버전 등록 폴더에는 같은 ID의 Manifest를 복사해 후보 기준으로 다시
    검토하되, 기존 파일 안에서 해결됐다면 경로 목록을 바꾸지 않는다. 새
-   파일은 `candidate_additional_paths`, 별도 후속 commit은
+   새 파일은 현재 버전 `changed_paths`, 별도 후속 commit은
    `series.allowed: true`, 독립 업무 기능은 새 ID로 구분한다.
 7. 2차 검사기 원리 페이지의 녹색 체크는 구현 코드 존재 표시가 아니다.
    현재 OM_TEMP 1.13.1 등록자료와 결과 파일에 실제 판정이 연결된 9개
@@ -791,11 +860,10 @@ git rev-parse HEAD
    T93-정책·T62·T63·T90·T91은 현재 후보 또는 행내 운영 증거가 없어
    체크 대신 필요한 조건을 표시한다. 체크 자체는 PASS가 아니라 실제 판정
    확인 가능을 뜻한다.
-8. `candidate_additional_paths`는 기존 ID의 후속 commit이 최초 Manifest에
-   없던 새 파일을 변경했을 때만 쓴다. 기존 등록 파일을 다시 수정한 경우에는
-   추가하지 않는다. 같은 기능의 후속 commit 메시지는 기존
-   `Customization-ID`를 유지하고, 생성기는 Git diff에서 새 파일 경로 초안을
-   만든다는 실제 명령 예시를 필드 사전에 추가했다.
+8. 같은 기능의 후속 commit 메시지는 기존 `Customization-ID`를 유지하고,
+   생성기는 같은 ID의 전체 Git diff를 합쳐 현재 버전 `changed_paths` 초안을
+   만든다. 기능 변경 commit SHA는 여러 개일 수 있지만 최종 검사 대상 SHA는
+   custom branch의 마지막 SHA 한 개다.
 9. 1.13.1 충돌 화면 앞에 공통 기준 1.13.0, 공식 1.13.1 변경,
    BANK-OM-001 변경, Git 중단의 네 단계를 추가했다. 이번 JSON 충돌은 양쪽이
    같은 번역 값을 다르게 고친 것이 아니라 파일 형식·항목 배치가 크게 달라져
@@ -842,3 +910,192 @@ git rev-parse HEAD
   BANK 항목이 잘리지 않고 표시되는 것을 인앱 브라우저에서 확인했다.
 - 사용자 소유 Vim swap 파일
   `docs/00-사용가이드/.비개발자_시연_가이드.md.swp`는 수정·추적하지 않는다.
+
+## 14. 2026-07-29 통합 운영 위키 초안·신입 운영 기준
+
+### 추가한 통합 위키
+
+- `docs/00-사용가이드/OM_TEMP_검사운영위키_구성초안.html`
+- `docs/00-사용가이드/OM_TEMP_검사운영위키_데이터.js`
+- `docs/00-사용가이드/OM_TEMP_검사운영위키_보고용.js`
+- `docs/00-사용가이드/generate_wiki_report_data.mjs`
+
+보고용 1~5번 가이드와 검사기·관리 파일·작업 절차 상세를 하나의 왼쪽
+목차에서 찾는 위키 구조를 만들었다. 현재는 운영 완료본이 아니라 `구조 초안`
+으로 표시한다. 모든 정상 예시·실패 예시·복구 명령·행내 환경값이 채워지기
+전에는 신입 운영 완료본으로 표현하지 않는다.
+
+보고용 페이지는 기존 standalone HTML을 iframe이나 `srcdoc`으로 표시하지
+않는다. 각 장은 위키 공통 레이아웃 안에서 질문, 핵심 개념, 업무 흐름,
+현재 확인 상태, 다음 단계와 상세 페이지 링크를 직접 렌더링한다.
+`OM_TEMP_검사운영위키_보고용.js`는 상세 브랜치 페이지에서 보고용 1차의
+동일한 Cycle SVG를 재사용하기 위해서만 남아 있다. 해당 SVG 원문이 바뀌면
+`node docs/00-사용가이드/generate_wiki_report_data.mjs`를 실행해 재사용
+데이터를 갱신한다.
+
+### 현재 schema v2 변경 범위의 실제 검사 연결
+
+현재 OM_TEMP Manifest는 아래 한 목록을 해당 BANK-OM ID의 현재 버전 변경
+범위로 사용한다.
+
+```text
+현재 변경 범위 =
+  changed_paths
+```
+
+- T40: 합친 범위 밖을 같은 ID의 commit이 변경하면 BLOCK
+- T93 exact-scope: 합친 범위와 실제 ID별 Git 변경 이력을 비교
+- T26: 합친 범위의 일반 파일이 없거나 공식 원본과 같으면 APPROVAL
+- `required_changed_paths`에도 들어간 파일은 T26에서 같은 문제가 발생하면
+  BLOCK
+
+따라서 후속 commit의 새 파일은 `changed_paths`에 합친 순간 현재 범위 검사
+대상이 되지만, 필수 파일로 자동 승격되지는 않는다. 그 파일
+누락만으로 기능 미적용을 확정할 수 있을 때 담당자가
+`required_changed_paths`에도 별도로 등록한다. 이 흐름과 BANK-OM-007
+예시를 통합 위키 Manifest 상세에 추가했다.
+
+### 가독성 스킬 강화
+
+저장소와 설치된 `clarity-preflight-review` 스킬에 아래 완료 기준을 추가했다.
+
+1. 문장마다 주체·입력·시점·비교 대상·결과가 하나로만 해석되는지 확인
+2. 문단을 읽은 신입 직원이 바로 물을 질문을 예상하고 그 위치에서 답변
+3. 관리 필드·명령·검사·작업마다 정상 예시와 필요한 실패 예시 확인
+4. 준비 → 실행 → 결과 판정 → 실패 복구 → 재실행 → 증거 보관 →
+   에스컬레이션을 문서만으로 수행 가능한지 확인
+
+저장소 스킬과 `/Users/seop/.codex/skills/clarity-preflight-review` 설치본 모두
+`quick_validate.py` 검증을 통과했다.
+
+### 이번 변경 검증
+
+- 통합 위키 데이터 JavaScript 문법 검사 통과
+- 통합 위키 inline JavaScript 문법 검사 통과
+- HTML ID 중복 없음
+- `git diff --check` 통과
+- Manifest·T26·T40·T93 관련 집중 테스트:
+  `30 passed, 5 skipped`
+- 인앱 브라우저 자동 검증은 `file://` URL 제어 정책 때문에 실행하지 못했다.
+  사용자가 이미 열어 둔 로컬 미리보기에서 새 레이아웃을 직접 확인해야 한다.
+
+### 보고용·상세 브랜치 도식 단일화
+
+통합 위키의 `patch branch와 custom branch` 상세 화면에 별도로 만든 간이 도식을
+제거했다. 상세 화면은
+`OM_TEMP_검사운영위키_보고용.js`에 저장된 1차 보고용 원문에서
+`.om-branch-visual`을 직접 읽어 Shadow DOM 안에 표시한다. 따라서 보고용 1차의
+공식 새 버전, patch, 직전 custom, 병합·충돌 지점, 검사, 검증 tag와 다음 버전
+Cycle이 상세 화면에도 같은 SVG로 표시된다. 그림 내용은 1차 정본에서 한 번만
+관리하고, 상세 화면에는 설명 카드만 추가한다.
+
+- 위키 inline JavaScript 문법 검사: 통과
+- 보고용 데이터에서 `.om-branch-visual`과 Cycle 제목 확인: 통과
+- 상세 화면의 보고용 파일·선택자 참조 확인: 통과
+- 과거 별도 도식 DOM과 중복 HTML ID: 0개
+- `git diff --check`: 통과
+- 인앱 브라우저의 기존 `file://` 탭 새로고침은 URL 보안 정책이 차단했으므로
+  이번 변경에서도 자동 시각 통과를 주장하지 않는다.
+
+### 보고용·상세 위키 동일 개념 대조
+
+보고용 1~5와 연결된 상세 위키를 개념별로 다시 대조해 아래 불일치를
+현행화했다.
+
+- 보고용 2차에는 있었지만 상세 위키에 없던 `T25-R` 페이지를 추가했다.
+  현재 OM_TEMP는 공식 Git 이력을 보존하므로 T25-R이 아니라 T25를 사용한다는
+  적용 조건도 함께 적었다.
+- OM_TEMP 1.13.0 등록 검사 후보 `63820f…`와 1.13.1 커밋별 재적용 진단 후보
+  `dee330ebd5…`를 분리했다. 실제 vendor-merge 후보는 아직 없다고 명시했다.
+- 1.13.1 결과의 `integration_strategy: vendor-merge` 값과 실제 커밋별 재적용
+  과정이 다르므로, 현재 Candidate lock을 vendor-merge 완료 증거로 사용하지
+  않도록 Candidate lock 상세에도 경고를 추가했다.
+- 현재 흐름은 `easyseop/OM_TEMP`와 `easyseop/openmetadata-test` 두 저장소를
+  사용하고, `easyseop/OpenMetadata`는 과거 사례 참고용이라는 계층으로
+  통일했다.
+- T40은 미등록 변경·필수 변경 누락은 BLOCK, 실제 변경이 없는 비필수 등록
+  경로는 APPROVAL이라는 판정을 보고용 표와 상세 설명에서 같게 맞췄다.
+- T41 현재 OM_TEMP 결과는 migration watched 경로가 `visibility_only` 정책으로
+  PASS였음을 상세 결과 예시에 반영했다.
+- Candidate lock의 `artifact_digest`는 소스 검사 단계에서는 source tree 내용
+  확인값이고, Runtime·배포 단계에서는 실제 이미지·패키지 digest여야 한다는
+  단계 차이를 명시했다.
+- 과거 참고 부록에서 현재 OM_TEMP 결과를 “다음 5번”이라고 가리키던 잘못된
+  안내를 앞의 4번 업그레이드 연습으로 수정했다.
+
+### JSON 충돌 보조 도구의 stage·실행 결과 명확화
+
+통합 위키와 1.13.0→1.13.1 업그레이드 가이드에서 Git stage와 보조 도구의
+실제 결과를 아래 기준으로 통일했다.
+
+- `stage 1 · BASE`: 두 변경이 갈라지기 전 공통 기준
+- `stage 2 · OURS`: 현재 checkout한 branch의 내용
+- `stage 3 · THEIRS`: 지금 적용 중인 반대편 변경
+
+이번 연습은 공식 1.13.1 branch에서 BANK-OM commit을 cherry-pick했으므로
+`stage 2=공식 1.13.1`, `stage 3=BANK-OM`이다. 이 대응은 Git의 고정 규칙이
+아니며 merge 방향이 바뀌면 공식/BANK-OM 위치도 바뀔 수 있다. stage 숫자는
+실행 순서가 아니라 충돌 파일에 저장된 세 버전 번호이다.
+
+`resolve_nonoverlapping_json_conflicts.py` 성공 후 상태도 구분했다.
+
+1. 작업 폴더 JSON은 stage 2를 바탕으로 겹치지 않는 stage 3 변경을 반영한
+   깨끗한 JSON으로 바뀐다.
+2. 터미널에는 파일별 `BANK-OM leaf changes=<수>`가 출력된다.
+3. Git index는 `git add` 전까지 `UU`인 충돌 미해결 상태다.
+4. 별도 결과 보고서·승인 파일·`plan.json`은 생성하지 않는다.
+5. test, `git add`, commit, `cherry-pick --continue`는 담당자가 확인 후
+   실행한다.
+
+도구는 JSON 외 충돌이 있거나 양쪽이 같은 최종 JSON 항목을 변경했다면 계획한
+JSON을 쓰기 전에 중단한다. 통합 위키에 성공 출력, `UU` 상태, 동일 항목 겹침
+실패 출력, JSON 외 충돌 실패 출력을 각각 추가했다.
+
+후속 명확화에서 “읽는 세 코드, 비교 조건과 중단 조건”이라는 축약 문구도
+제거했다. 현재 문서는 같은 충돌 파일의 BASE·OURS·THEIRS 세 버전,
+`BASE→OURS`와 `BASE→THEIRS`의 최종 JSON 항목 목록, 두 목록의 교집합을
+차례대로 보여준다. 같은 항목을 양쪽이 변경했다면 최종 값이 같아도 자동
+중단한다는 실제 구현 조건과 JSON 외 충돌·JSON 파싱 실패의 중단 시점도
+명시했다.
+
+### 상세 위키의 운영 사례와 보조 도구 후속 조치
+
+상세 주제 하단의 “언제 문서를 갱신하는가”라는 작성자 중심 제목을 제거하고
+“운영 중 언제 무엇을 갱신하고, 언제 그대로 두는가”로 바꿨다. 11개 상세
+주제마다 다음 네 열의 운영 사례를 추가했다.
+
+1. 실제 운영 상황
+2. 갱신 여부
+3. 담당자의 실제 대응
+4. 재실행하거나 보관할 검사·증거
+
+각 표에는 변경이 없을 때 그대로 유지하는 사례, 부분 갱신 사례, 구조를 새로
+만들어야 하는 사례를 포함했다. 따라서 단순히 “갱신한다”는 지시만 남지 않는다.
+
+충돌 보조 도구 상세에는 목적과 결과별 조치 표도 추가했다. 보조 도구의 목적은
+Git이 큰 JSON 구간을 충돌로 표시했을 때 BASE→OURS와 BASE→THEIRS의 실제 JSON
+항목 변경을 계산해 해결 파일 초안을 만드는 것이며, 업무 값을 자동 승인하는
+것이 아니다. `resolved`, `UU`, `overlapping leaf changes`,
+`unresolved non-JSON conflicts`, test 실패별로 정확한 뜻, 바로 할 일과 금지
+행동을 구분했다.
+
+### 보고용 1~5를 위키 템플릿으로 재구성
+
+통합 위키의 `보고용 요약`은 더 이상 기존 standalone HTML을 iframe으로
+통째로 삽입하지 않는다. 기존 보고서의 대형 gradient hero, 카드 외곽,
+페이지 이동 UI와 자체 폰트는 제거하고 다음 위키 공통 구조로 다시 작성했다.
+
+1. 이 장이 답하는 질문
+2. 한 문단 답변
+3. 보고에 필요한 핵심 개념 세 가지
+4. 업무 흐름
+5. 현재 확인 완료·부분 확인·미확인 상태
+6. 다음 단계
+7. 같은 내용을 자세히 설명하는 위키 하위 페이지 링크
+
+보고용 1~5의 내용은 상세 위키의 현재 정의와 맞췄다. 특히 1.13.1 결과는
+커밋별 재적용 진단이며 실제 vendor-merge와 운영 배포는 미확인이라는 범위를
+보고용 1차·4차·5차 모두에서 동일하게 표시한다. 기존 보고서 데이터는 상세
+브랜치 페이지와 보고용 1차 요약에서 동일한 Cycle SVG 하나를 재사용하는
+용도로만 남겨 두었다. 보고용 1차에는 그림 바로 위에 patch·custom 색상,
+병합·충돌 지점, 검사·tag와 다음 버전 반복의 의미를 한 문단으로 설명한다.

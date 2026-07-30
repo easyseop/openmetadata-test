@@ -177,6 +177,69 @@ def test_plan_is_deterministic_and_separates_shared_and_excluded_paths(tmp_path)
     assert plan.digest() == _plan(target, snapshot).digest()
 
 
+def test_v2_plan_uses_generated_source_owners_without_splitting_manifest_scope(
+    tmp_path,
+):
+    _, target, snapshot = _source(tmp_path)
+    manifests = {
+        "BANK-OM-001": {
+            "schema_version": 2,
+            "implementation": {
+                "changed_paths": ["a.txt", "shared.txt"],
+                "required_changed_paths": ["a.txt"],
+            },
+        },
+        "BANK-OM-002": {
+            "schema_version": 2,
+            "implementation": {
+                "changed_paths": ["b.txt", "shared.txt"],
+                "required_changed_paths": ["b.txt"],
+            },
+        },
+    }
+    plan = VR.build_reconstruction_plan(
+        _registry(target, snapshot),
+        manifests,
+        ["a.txt", "b.txt", "shared.txt", "blocked.txt"],
+        source_path_owners={
+            "a.txt": ("BANK-OM-001",),
+            "b.txt": ("BANK-OM-002",),
+            "shared.txt": ("BANK-OM-001",),
+        },
+    )
+
+    assert dict(plan.unique_assignments) == {
+        "a.txt": "BANK-OM-001",
+        "b.txt": "BANK-OM-002",
+        "shared.txt": "BANK-OM-001",
+    }
+    assert plan.shared_candidates == ()
+
+
+def test_load_source_snapshot_owners_reads_generated_mapping(tmp_path):
+    _write(
+        tmp_path,
+        "source-snapshot-path-owners.yaml",
+        "a.txt:\n- BANK-OM-001\nshared.txt:\n- BANK-OM-001\n- BANK-OM-002\n",
+    )
+
+    assert VR.load_source_snapshot_owners(tmp_path) == {
+        "a.txt": ("BANK-OM-001",),
+        "shared.txt": ("BANK-OM-001", "BANK-OM-002"),
+    }
+
+
+def test_load_source_snapshot_owners_rejects_empty_owner_list(tmp_path):
+    _write(tmp_path, "source-snapshot-path-owners.yaml", "a.txt: []\n")
+
+    try:
+        VR.load_source_snapshot_owners(tmp_path)
+    except VR.ReconstructionError as exc:
+        assert "must be a non-empty list" in str(exc)
+    else:
+        raise AssertionError("empty source owner list must fail closed")
+
+
 def test_source_inventory_matches_unrelated_pinned_trees(tmp_path):
     repo, target, snapshot = _source(tmp_path)
     result = VR.inspect_source_inventory(str(repo), _plan(target, snapshot))

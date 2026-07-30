@@ -15,7 +15,7 @@
 &lt;meta charset=&quot;utf-8&quot;&gt;
 &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
 &lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt;
-&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &#x27;none&#x27;; script-src &#x27;unsafe-inline&#x27; &#x27;unsafe-eval&#x27; &#x27;wasm-unsafe-eval&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src &#x27;unsafe-inline&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src &#x27;none&#x27;; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;&quot;&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'&quot;&gt;
 &lt;title&gt;Om_Temp_관리파일_필드_사전_Fragment&lt;/title&gt;
 &lt;style&gt;:root {
   color-scheme: light dark;
@@ -127,7 +127,7 @@
   --radius-2xl: calc(var(--radius) * 1.6);
   --radius-full: 9999px;
   --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
-  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 17 17&#x27;%3E%3Cpath d=&#x27;M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z&#x27;/%3E%3C/svg%3E&quot;);
+  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 17 17'%3E%3Cpath d='M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z'/%3E%3C/svg%3E&quot;);
 
   /* Legacy aliases; not part of the current agent contract. */
   --viz-bg: transparent;
@@ -919,14 +919,16 @@ html&gt;body{padding:0}&lt;/style&gt;
 
     &lt;div class=&quot;fd-example&quot;&gt;
       &lt;strong&gt;BANK-OM-001 실제 구조&lt;/strong&gt;
-      &lt;pre&gt;&lt;code&gt;schema_version: 1
+      &lt;pre&gt;&lt;code&gt;schema_version: 2
 customization_id: BANK-OM-001
 status: active
 kind: core-patch
 title: 기준코드(InstanceCode)
 
 implementation:
-  allowed_changed_paths: [...]
+  changed_paths:
+    - openmetadata-service/.../Entity.java
+    - openmetadata-service/.../InstanceCodeResource.java
   required_changed_paths: [...]
 
 upgrade_watch:
@@ -946,15 +948,17 @@ series:
       &lt;div class=&quot;fd-fields&quot;&gt;
         &lt;article&gt;
           &lt;h3&gt;&lt;code&gt;schema_version&lt;/code&gt; &lt;span&gt;필수&lt;/span&gt;&lt;/h3&gt;
-          &lt;p&gt;&lt;b&gt;의미&lt;/b&gt; 관리 파일 형식의 버전입니다. 현재 허용값은 숫자 &lt;code&gt;1&lt;/code&gt;뿐입니다.&lt;/p&gt;
+          &lt;p&gt;&lt;b&gt;의미&lt;/b&gt; 관리 파일 형식의 버전입니다. 새 OM_TEMP Manifest는 숫자 &lt;code&gt;2&lt;/code&gt;를 사용합니다. 과거 등록자료를 읽기 위해 &lt;code&gt;1&lt;/code&gt;도 호환합니다.&lt;/p&gt;
           &lt;p&gt;&lt;b&gt;작성&lt;/b&gt; 파일을 처음 만들 때 생성기가 기록하며, 담당자가 임의로 올리지 않습니다.&lt;/p&gt;
           &lt;p&gt;&lt;b&gt;사용·결과&lt;/b&gt; 검사기가 어떤 스키마로 읽을지 결정합니다. 값이 다르면 파일 구조 검증이 실패합니다.&lt;/p&gt;
+          &lt;p&gt;&lt;b&gt;예시&lt;/b&gt; &lt;code&gt;schema_version: 2&lt;/code&gt;인 Manifest에는 &lt;code&gt;changed_paths&lt;/code&gt;를 사용하며, 폐기된 두 경로 필드를 함께 쓰면 BLOCK입니다.&lt;/p&gt;
         &lt;/article&gt;
         &lt;article&gt;
           &lt;h3&gt;&lt;code&gt;customization_id&lt;/code&gt; &lt;span&gt;필수&lt;/span&gt;&lt;/h3&gt;
           &lt;p&gt;&lt;b&gt;의미&lt;/b&gt; 하나의 업무 기능을 코드·Manifest·Contract·검사 결과에서 같은 대상으로 연결하는 번호입니다.&lt;/p&gt;
           &lt;p&gt;&lt;b&gt;작성&lt;/b&gt; 관리 담당자가 미사용 번호를 발급합니다. 형식은 &lt;code&gt;BANK-OM-001&lt;/code&gt;처럼 최소 세 자리 숫자입니다.&lt;/p&gt;
           &lt;p&gt;&lt;b&gt;사용·결과&lt;/b&gt; Registry와 commit 메시지의 ID를 대조합니다. 미등록·불일치·중복이면 검사를 중단합니다.&lt;/p&gt;
+          &lt;p&gt;&lt;b&gt;예시&lt;/b&gt; InstanceCode 기능의 코드 commit, Manifest와 Contract에는 모두 &lt;code&gt;BANK-OM-001&lt;/code&gt;을 연결합니다.&lt;/p&gt;
         &lt;/article&gt;
         &lt;article&gt;
           &lt;h3&gt;&lt;code&gt;status&lt;/code&gt; &lt;span&gt;현재 명시&lt;/span&gt;&lt;/h3&gt;
@@ -980,27 +984,27 @@ series:
     &lt;details class=&quot;fd-group&quot; open&gt;
       &lt;summary&gt;&lt;code&gt;implementation&lt;/code&gt; · 실제 코드 변경 범위&lt;/summary&gt;
       &lt;div class=&quot;fd-intro&quot;&gt;
-        &lt;p&gt;&lt;code&gt;implementation&lt;/code&gt;은 “이 BANK-OM이 실제로 어떤 파일을 변경했는가”를 묶는 상위 항목입니다. 직접 파일 경로를 쓰는 자리가 아니라 아래 세 목록을 담습니다.&lt;/p&gt;
+        &lt;p&gt;&lt;code&gt;implementation&lt;/code&gt;은 “이 BANK-OM이 실제로 어떤 파일을 변경했는가”를 묶는 상위 항목입니다. 직접 파일 경로를 쓰는 자리가 아니라 &lt;code&gt;changed_paths&lt;/code&gt;와 그 부분집합인 &lt;code&gt;required_changed_paths&lt;/code&gt;를 담습니다.&lt;/p&gt;
       &lt;/div&gt;
       &lt;div class=&quot;fd-fields&quot;&gt;
         &lt;article&gt;
-          &lt;h3&gt;&lt;code&gt;allowed_changed_paths&lt;/code&gt; &lt;span&gt;필수&lt;/span&gt;&lt;/h3&gt;
-          &lt;p&gt;&lt;b&gt;의미&lt;/b&gt; 최초 등록 기준에서 이 BANK-OM commit이 실제로 변경한 파일 전체입니다.&lt;/p&gt;
-          &lt;p&gt;&lt;b&gt;작성&lt;/b&gt; Git diff로 자동 추출한 뒤 기능별 소유 관계를 사람이 검토합니다. 현재 OM_TEMP 등록은 폴더가 아니라 실제 파일 경로를 사용합니다.&lt;/p&gt;
+          &lt;h3&gt;&lt;code&gt;changed_paths&lt;/code&gt; &lt;span&gt;필수&lt;/span&gt;&lt;/h3&gt;
+          &lt;p&gt;&lt;b&gt;의미&lt;/b&gt; 현재 OpenMetadata 버전에서 같은 BANK-OM ID가 붙은 모든 commit이 실제로 변경한 파일 전체입니다.&lt;/p&gt;
+          &lt;p&gt;&lt;b&gt;작성&lt;/b&gt; Git diff로 자동 추출한 뒤 기능별 소유 관계를 사람이 검토합니다. 같은 ID의 후속 commit이 새 파일을 변경하면 이 한 목록에 합칩니다. 현재 OM_TEMP 등록은 폴더가 아니라 실제 파일 경로를 사용합니다.&lt;/p&gt;
           &lt;p&gt;&lt;b&gt;사용·결과&lt;/b&gt; 실제 commit이 목록 밖 파일을 바꾸면 BLOCK, 목록의 파일이 최종 코드에서 공식 원본과 같으면 담당자 확인이 필요합니다.&lt;/p&gt;
+          &lt;p&gt;&lt;b&gt;실제 예시&lt;/b&gt; BANK-OM-007의 최초 commit 8개와 후속 보완 commit 2개를 합친 10개 파일이 현재 1.13.0 &lt;code&gt;changed_paths&lt;/code&gt;입니다.&lt;/p&gt;
         &lt;/article&gt;
         &lt;article&gt;
           &lt;h3&gt;&lt;code&gt;required_changed_paths&lt;/code&gt; &lt;span&gt;운영상 필수&lt;/span&gt;&lt;/h3&gt;
           &lt;p&gt;&lt;b&gt;의미&lt;/b&gt; 해당 파일이 없거나 공식 원본과 같으면 커스터마이징의 필수 구현이 빠졌다고 즉시 판단할 수 있는 파일입니다.&lt;/p&gt;
           &lt;p&gt;&lt;b&gt;작성&lt;/b&gt; Git이 자동 결정하지 않습니다. 개발자와 기능 책임자가 전용 Resource·Schema처럼 역할이 명확한 파일을 선택합니다.&lt;/p&gt;
           &lt;p&gt;&lt;b&gt;사용·결과&lt;/b&gt; 파일 소실 또는 공식 원본과 동일하면 BLOCK입니다. 활성 Manifest에서 목록이 비어 있어도 현재 유지 검사에서 BLOCK입니다.&lt;/p&gt;
+          &lt;p&gt;&lt;b&gt;실제 예시&lt;/b&gt; BANK-OM-001의 &lt;code&gt;InstanceCodeResource.java&lt;/code&gt;가 없어지면 InstanceCode API 구현이 빠진 것으로 보고 BLOCK합니다.&lt;/p&gt;
         &lt;/article&gt;
-        &lt;article&gt;
-          &lt;h3&gt;&lt;code&gt;candidate_additional_paths&lt;/code&gt; &lt;span&gt;필요할 때&lt;/span&gt;&lt;/h3&gt;
-          &lt;p&gt;&lt;b&gt;언제 쓰나&lt;/b&gt; 기존 BANK-OM ID로 후속 commit을 만들었고, 그 commit이 최초 등록 목록에 없던 &lt;em&gt;새 파일 경로&lt;/em&gt;까지 변경했을 때만 씁니다. 최초 목록의 기존 파일을 다시 수정한 경우에는 추가하지 않습니다.&lt;/p&gt;
-          &lt;p&gt;&lt;b&gt;왜 분리하나&lt;/b&gt; 최초 등록 당시의 파일 범위를 보존하면서 현재 후보에서 승인한 확장 범위도 검사하기 위해서입니다. 별도 기능을 추가한 것이라면 이 항목에 넣지 않고 새 BANK-OM ID를 발급합니다.&lt;/p&gt;
-          &lt;p&gt;&lt;b&gt;검사에서 사용&lt;/b&gt; 최초 snapshot 재구성은 &lt;code&gt;allowed_changed_paths&lt;/code&gt;만 비교하고, 현재 후보 검사는 두 목록을 합쳐 비교합니다. BANK-OM-007은 최초 8개와 후속 신규 2개로 구분돼 있습니다.&lt;/p&gt;
-        &lt;/article&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;fd-callout&quot;&gt;
+        &lt;strong&gt;후속 commit은 별도 경로 필드로 나누지 않습니다.&lt;/strong&gt;
+        &lt;p&gt;BANK-OM-007의 최초 구현 SHA &lt;code&gt;62e39da8…&lt;/code&gt;와 후속 보완 SHA &lt;code&gt;7d19c895…&lt;/code&gt;는 Git 이력에 둘 다 남습니다. 현재 Manifest는 두 commit에서 나온 10개 경로를 &lt;code&gt;changed_paths&lt;/code&gt; 하나로 검사합니다. 최종 검사 대상은 두 변경이 모두 반영된 custom branch의 마지막 SHA 하나입니다.&lt;/p&gt;
       &lt;/div&gt;
     &lt;/details&gt;
 
@@ -1015,6 +1019,7 @@ series:
           &lt;p&gt;&lt;b&gt;의미&lt;/b&gt; 공식 업그레이드 전후에 변경 여부를 비교할 파일 경로입니다.&lt;/p&gt;
           &lt;p&gt;&lt;b&gt;작성&lt;/b&gt; Manifest 생성기가 실제 변경 경로를 포함하고, 커스터마이징이 직접 의존하지만 수정하지 않은 파일은 제안 결과를 사람이 검토해 추가합니다.&lt;/p&gt;
           &lt;p&gt;&lt;b&gt;사용·결과&lt;/b&gt; 새 공식 버전에서 경로가 바뀌면 자동 통과시키지 않고 담당자 검토 대상으로 표시합니다.&lt;/p&gt;
+          &lt;p&gt;&lt;b&gt;실제 예시&lt;/b&gt; BANK-OM-001이 의존하는 &lt;code&gt;CollectionDAO.java&lt;/code&gt;가 공식 1.13.0→1.13.1 사이에서 바뀌면 T42가 APPROVAL을 내고 저장 연결을 다시 확인하게 합니다.&lt;/p&gt;
         &lt;/article&gt;
         &lt;article&gt;
           &lt;h3&gt;&lt;code&gt;configuration_keys&lt;/code&gt;&lt;/h3&gt;
@@ -1089,7 +1094,7 @@ series:
         &lt;/article&gt;
         &lt;article&gt;
           &lt;h3&gt;해결하면서 새 파일이 추가됨&lt;/h3&gt;
-          &lt;p&gt;&lt;b&gt;같은 기능이면&lt;/b&gt; 같은 ID를 유지합니다. 최초 Manifest에 없던 새 파일 경로까지 변경한 경우에만 그 새 경로를 &lt;code&gt;candidate_additional_paths&lt;/code&gt;에 추가합니다. 기존 등록 파일의 내용만 다시 수정했다면 Manifest 경로 목록은 그대로 둡니다.&lt;/p&gt;
+          &lt;p&gt;&lt;b&gt;같은 기능이면&lt;/b&gt; 같은 ID를 유지합니다. 해결 과정에서 새 파일 경로까지 변경했다면 새 버전 Manifest의 &lt;code&gt;changed_paths&lt;/code&gt;에 추가합니다. 기존 등록 파일의 내용만 다시 수정했다면 경로 목록은 그대로 둡니다.&lt;/p&gt;
           &lt;p&gt;&lt;b&gt;필수 파일이면&lt;/b&gt; &lt;code&gt;required_changed_paths&lt;/code&gt;에도 추가하고, 공식 변경 영향을 다시 볼 경로는 &lt;code&gt;upgrade_watch.paths&lt;/code&gt;에 반영합니다.&lt;/p&gt;
           &lt;p&gt;&lt;b&gt;동작 조건이 달라지면&lt;/b&gt; 연결된 Contract와 test를 갱신합니다.&lt;/p&gt;
         &lt;/article&gt;
@@ -1110,7 +1115,11 @@ series:
         &lt;p&gt;기존 파일만 다시 수정하든 새 파일을 추가하든, 같은 업무 기능의 보완이면 commit 메시지에 기존 ID를 그대로 남깁니다.&lt;/p&gt;
         &lt;pre&gt;&lt;code&gt;git commit -m &quot;Tibero 서비스 연결 처리 보완&quot; \
   -m &quot;Customization-ID: BANK-OM-007&quot;&lt;/code&gt;&lt;/pre&gt;
-        &lt;p&gt;생성기는 이 ID와 Git diff를 읽습니다. 기존 등록 파일만 다시 수정했다면 Manifest 경로 목록은 바꾸지 않습니다. 최초 목록에 없던 새 파일이 보이면 &lt;code&gt;candidate_additional_paths&lt;/code&gt; 초안을 만들고, 실제 변경 파일은 &lt;code&gt;upgrade_watch.paths&lt;/code&gt;에도 포함합니다. 새 파일이 기능 필수 요소인지, 같은 기능의 연장인지, Contract를 바꿔야 하는지는 담당자가 승인합니다.&lt;/p&gt;
+        &lt;p&gt;생성기는 이 ID와 Git diff를 읽습니다. 기존 등록 파일만 다시 수정했다면 Manifest 경로 목록은 바꾸지 않습니다. 새 파일이 보이면 현재 버전 &lt;code&gt;changed_paths&lt;/code&gt; 초안에 합치고, 실제 변경 파일은 &lt;code&gt;upgrade_watch.paths&lt;/code&gt;에도 포함합니다. 새 파일이 기능 필수 요소인지, 같은 기능의 연장인지, Contract를 바꿔야 하는지는 담당자가 승인합니다.&lt;/p&gt;
+        &lt;pre&gt;&lt;code&gt;BANK-OM-007
+62e39da8...  최초 8개 파일
+7d19c895...  후속 2개 파일
+changed_paths  현재 검사 범위 10개&lt;/code&gt;&lt;/pre&gt;
       &lt;/div&gt;
     &lt;/details&gt;
   &lt;/section&gt;
@@ -1179,9 +1188,15 @@ series:
     &lt;div class=&quot;fd-fields&quot;&gt;
       &lt;article&gt;
         &lt;h3&gt;&lt;code&gt;shared-path-owners.yaml&lt;/code&gt;&lt;/h3&gt;
-        &lt;p&gt;&lt;b&gt;구조&lt;/b&gt; 파일 경로를 key로, 해당 파일을 수정한 BANK-OM ID 목록을 value로 적습니다.&lt;/p&gt;
+        &lt;p&gt;&lt;b&gt;구조&lt;/b&gt; 현재 버전의 파일 경로를 key로, 해당 파일을 수정한 BANK-OM ID 목록을 value로 적습니다.&lt;/p&gt;
         &lt;p&gt;&lt;b&gt;예시&lt;/b&gt; &lt;code&gt;Entity.java: [BANK-OM-001, BANK-OM-002]&lt;/code&gt;&lt;/p&gt;
-        &lt;p&gt;&lt;b&gt;사용·결과&lt;/b&gt; 한 공용 파일을 한 기능에 잘못 귀속하지 않도록 합니다. 실제 중복 소유와 목록이 다르면 snapshot 재구성 검사가 실패합니다.&lt;/p&gt;
+        &lt;p&gt;&lt;b&gt;사용·결과&lt;/b&gt; 현재 버전 범위 검사에서 한 공용 파일을 한 기능에 잘못 귀속하지 않도록 합니다. 실제 중복 소유와 목록이 다르면 등록자료 검사가 실패합니다.&lt;/p&gt;
+      &lt;/article&gt;
+      &lt;article&gt;
+        &lt;h3&gt;&lt;code&gt;source-snapshot-path-owners.yaml&lt;/code&gt;&lt;/h3&gt;
+        &lt;p&gt;&lt;b&gt;구조&lt;/b&gt; 최초 등록에 사용한 과거 code snapshot의 파일 경로를 key로, 그 시점까지 파일을 변경한 BANK-OM ID를 value로 기록합니다.&lt;/p&gt;
+        &lt;p&gt;&lt;b&gt;예시&lt;/b&gt; 과거 snapshot의 &lt;code&gt;serviceConnection.ts: [BANK-OM-006]&lt;/code&gt;. 이후 BANK-OM-007도 이 파일을 수정했지만 과거 기록에는 추가하지 않습니다.&lt;/p&gt;
+        &lt;p&gt;&lt;b&gt;사용·결과&lt;/b&gt; 과거 snapshot 재구성 검사만 읽습니다. 현재 범위는 Manifest &lt;code&gt;changed_paths&lt;/code&gt;와 &lt;code&gt;shared-path-owners.yaml&lt;/code&gt;을 사용합니다.&lt;/p&gt;
       &lt;/article&gt;
       &lt;article&gt;
         &lt;h3&gt;&lt;code&gt;source-diff-paths.txt&lt;/code&gt;&lt;/h3&gt;

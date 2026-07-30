@@ -34,13 +34,13 @@ def markdown() -> str:
 >
 > 로컬 branch: `patch/om-1.13.1`, `custom/om-1.13.1`
 >
-> 최종 검사 대상 commit: `dee330ebd5abfe33e1ac61e1ca31879746a1b423`
+> 최종 검사 대상 Git 번호: `dee330ebd5abfe33e1ac61e1ca31879746a1b423`
 
 > **이 페이지가 답하는 질문:** 커밋별 재적용 진단에서 어떤 충돌이 발생했고, 현재 검사기로 어디까지 확인했는가?
 > **이 페이지가 답하지 않는 것:** 기본 운영 방식인 vendor-merge 전체와 행내 배포 완료 여부는 아직 검증하지 않았습니다.
 > **읽고 나면:** 현재 완료·미완료를 구분한 뒤, 필요한 경우 부록의 과거 참고 코드 검사와 비교합니다.
 
-> **이번 연습에만 사용한 방법:** commit별 재적용과 JSON 충돌 보조 도구는 BANK-OM별
+> **이번 연습에만 사용한 방법:** Git 변경 기록별 재적용과 JSON 충돌 보조 도구는 BANK-OM별
 > 충돌을 분리해 보기 위해 이번 OM_TEMP 연습에서 사용했습니다. OpenMetadata 공식
 > 업그레이드 기능이나 확정된 행내 운영 절차가 아닙니다.
 
@@ -48,7 +48,7 @@ def markdown() -> str:
 
 공식 1.13.1 코드 위에 BANK-OM-001~007을 순서대로 다시 적용하고, 실제 충돌을
 해결한 뒤 Manifest와 Git 이력이 일치하는지 검사했습니다. 이 결과는 소스 코드
-수준의 **커밋별 재적용 진단**이며, 기본 운영 방식인 vendor-merge나 운영 배포
+수준의 **변경 기록별 재적용 진단**이며, 기본 운영 방식인 vendor-merge나 운영 배포
 완료를 뜻하지 않습니다.
 
 여기서 **Manifest**는 BANK-OM별 변경 경로, 반드시 유지할 구현 경로, 공식
@@ -106,10 +106,10 @@ git -C ../om-temp-1.13.1-upgrade switch -c custom/om-1.13.1
 그 위에 BANK-OM 커밋을 적용한 검사 대상 branch입니다. 두 branch는 현재 로컬에만
 있고 GitHub에는 아직 push하지 않았습니다.
 
-이 단계의 최종 검사 대상 commit `dee330ebd5...`는 공식 commit이나
-BANK-OM ID가 아닙니다. 공식 1.13.1 위에 BANK-OM-001~007의 8개 commit을 모두
-적용한 `custom/om-1.13.1` branch의 마지막 Git commit SHA입니다. 검사기는 이
-SHA를 지정해 “바로 이 코드 상태”의 Git 이력과 111개 변경 경로를 확인했습니다.
+이 단계의 최종 검사 대상 Git 번호 `dee330ebd5...`는 공식 버전 번호나
+BANK-OM ID가 아닙니다. 공식 1.13.1 위에 BANK-OM-001~007의 변경 기록 8개를 모두
+적용한 `custom/om-1.13.1` branch의 마지막 상태를 가리킵니다. 검사기는 이 번호를
+입력받아 “바로 이 시점의 코드”와 111개 변경 경로를 확인했습니다.
 
 여기에는 운영 판단상 중요한 제한이 있습니다. 저장된 소스 검사 결과의
 `integration_strategy`는 `vendor-merge`로 기록됐지만, 이 후보를 만든 실제
@@ -129,15 +129,16 @@ SHA를 지정해 “바로 이 코드 상태”의 Git 이력과 111개 변경 �
 
 ### 먼저, BANK-OM별 충돌을 분리해 확인한 진단 방법
 
-1.13.0의 BANK-OM 변경은 기능별 Git commit으로 나뉘어 있습니다. 이 연습에서는
-**어느 BANK-OM에서 충돌하는지 기능별로 구분해 확인하려고** 각 commit의 변경을
+1.13.0의 BANK-OM 변경은 기능별 Git 변경 기록으로 나뉘어 있습니다. 이 연습에서는
+**어느 BANK-OM에서 충돌하는지 기능별로 구분해 확인하려고** 각 기록의 변경을
 공식 1.13.1 위에 하나씩 다시 적용했습니다. 이때 실제로 사용한 Git 명령이
 `git cherry-pick <BANK-OM commit SHA>`입니다.
 
-이 문서에서는 이 작업을 **BANK-OM 변경 적용**이라고 부릅니다. `cherry-pick`은
-이번 진단에서 선택한 commit 단위 적용 방법이지, 충돌을 재현하는 데 반드시
-필요한 명령도 아니고 모든 업그레이드에서 사용해야 하는 규칙도 아닙니다.
-branch를 합치거나 rebase할 때도 같은 코드 구간이 겹치면 충돌할 수 있습니다.
+`cherry-pick`은 다른 branch에 저장된 특정 변경 기록 하나를 현재 branch에
+복사해 적용하는 Git 명령입니다. 커밋 순서를 임의로 바꾸는 명령이라는 뜻은
+아닙니다. 이번에는 BANK-OM 변경을 한 건씩 적용해 어느 ID에서 충돌했는지 바로
+기록하려고 사용했습니다. 충돌을 만들기 위해 반드시 필요한 명령은 아니며,
+branch 전체를 병합해도 같은 코드 구간이 겹치면 충돌할 수 있습니다.
 
 이번에는 BANK-OM별 충돌 파일을 바로 식별하려고 `cherry-pick`을 사용했습니다.
 따라서 아래 결과가 증명하는 범위는 **commit별 재적용에서 발생한 충돌과 해결
@@ -282,42 +283,58 @@ Git이 한 파일 안에서 자동으로 합치지 못한 **두 개의 큰 충�
 있음을 Git에서 다시 확인했습니다. 이 결과가 BANK-OM-001의 새 1.13.1 commit
 `83b1e0ac7d`에 기록됐습니다.
 
-### 실제로 사용한 JSON 충돌 보조 도구
+### 실제로 사용한 제한적 JSON 충돌 보조 도구
 
 도구는 실제로 `harness/tools/resolve_nonoverlapping_json_conflicts.py`에
 구현되어 있습니다. 검사기 전체의 필수 단계가 아니라, **Git이 JSON 충돌로
 멈췄을 때만 실행하는 제한된 보조 도구**입니다. 각 충돌 파일에서 Git이 보관한
-세 값을 입력으로 읽습니다.
+세 값을 입력으로 읽습니다. `stage 1·2·3`은 실행 순서가 아니라 Git이 충돌
+파일 하나에 보관한 세 버전의 번호입니다.
 
-1. `stage 1` — 공식 1.13.0과 BANK-OM 변경이 갈라지기 전 공통 기준 JSON
-2. `stage 2` — 지금 유지해야 할 공식 1.13.1 JSON
-3. `stage 3` — 지금 적용하려는 BANK-OM commit의 JSON
+| Git 표기 | Git에서 고정된 의미 | 이번 연습의 실제 내용 | 직접 확인 명령 | 도구에서 하는 일 |
+|---|---|---|---|---|
+| `stage 1 · BASE` | 두 변경의 공통 기준 | 공식 1.13.0과 BANK-OM이 갈라지기 전 JSON | `git show :1:<파일경로>` | 양쪽 변경을 계산하는 기준 |
+| `stage 2 · OURS` | 현재 checkout한 branch의 내용 | 이번 연습에서는 HEAD인 공식 1.13.1 JSON | `git show :2:<파일경로>` | 해결 파일의 바탕으로 유지 |
+| `stage 3 · THEIRS` | 지금 적용 중인 반대편 변경 | 이번 cherry-pick에서는 BANK-OM commit의 JSON | `git show :3:<파일경로>` | 다시 반영할 BANK-OM 변경 계산 |
 
-도구는 세 JSON에서 실제 값을 담는 항목별로 변경 여부를 비교합니다. 예를 들어
-`label` 안의 `instance-code`는 `label.instance-code`라는 한 항목으로
-구분합니다. 이는 사용자가 별도로 입력하는 설정이 아니라 도구 내부의 비교
-방법입니다.
+이번 연습에서는 공식 1.13.1 branch에서 BANK-OM commit을 cherry-pick했기 때문에
+`stage 2=공식`, `stage 3=BANK-OM`입니다. 일반 merge에서도 stage 2는 현재
+checkout한 쪽(OURS), stage 3은 들어오는 쪽(THEIRS)이므로 branch 방향을 바꾸면
+공식/BANK-OM 대응도 바뀔 수 있습니다.
 
-- 공식 1.13.1과 BANK-OM이 **서로 다른 JSON 항목**을 바꿨으면 공식 1.13.1
-  JSON을 유지하고 BANK-OM 변경만 추가합니다.
-- 양쪽이 **같은 JSON 항목**을 바꿨거나 JSON 이외의 파일이 충돌하면 도구가
-  아무 값도 선택하지 않고 중단합니다.
+도구는 먼저 `stage 1→stage 2`에서 바뀐 최종 JSON 항목 목록과
+`stage 1→stage 3`에서 바뀐 최종 JSON 항목 목록을 각각 만듭니다. 예를 들어
+`label` 안의 `instance-code`는 `label.instance-code`라는 한 항목입니다.
+줄 번호와 들여쓰기는 비교하지 않습니다.
+
+| 판단 | 도구가 비교하는 값 | 계속 진행 | 중단 |
+|---|---|---|---|
+| 충돌 파일 종류 | `git diff --name-only --diff-filter=U` 결과 | 모두 JSON | JSON 이외 파일이 하나라도 있으면 파일을 쓰기 전에 중단 |
+| OURS 변경 계산 | BASE와 OURS의 최종 JSON 항목별 값 | 변경 항목 목록 생성 | JSON을 읽을 수 없으면 파일을 쓰기 전에 중단 |
+| THEIRS 변경 계산 | BASE와 THEIRS의 최종 JSON 항목별 값 | 변경 항목 목록 생성 | JSON을 읽을 수 없으면 파일을 쓰기 전에 중단 |
+| 두 목록 겹침 | OURS 변경 항목 경로와 THEIRS 변경 항목 경로의 교집합 | 0개면 OURS에 THEIRS 변경 반영 | 1개라도 겹치면 최종 값이 같아도 파일을 쓰기 전에 중단 |
+
+이번 18개 JSON에서는 OURS와 THEIRS가 함께 바꾼 최종 JSON 항목이 0개였으므로
+공식 1.13.1인 OURS 전체를 유지하고 BANK-OM인 THEIRS 변경만 반영했습니다.
 
 이번 18개 JSON에서는 양쪽이 함께 바꾼 동일 JSON 항목이 0개였으므로 보조 도구가
 해결 파일을 작성했습니다. 이 처리 방식은 반복 가능한 업그레이드 연습을 위해
 구현했으며 OpenMetadata의 기존 기능이나 확정된 행내 승인 정책은 아닙니다.
 
 도구를 실행하면 충돌 난 JSON 파일 자체를 작업 branch에서 수정하고, 터미널에
-파일별 적용 건수를 출력합니다. 현재 도구는 별도의 결과 보고서, 승인 파일,
-`plan.json`을 만들지 않습니다. 담당자는 수정된 JSON을 확인한 뒤 `git add`와
-`git cherry-pick --continue`를 실행해야 합니다.
+파일별 적용 건수를 출력합니다. 이때 **작업 폴더의 파일 내용만 바뀌며 Git
+index는 아직 충돌 미해결 상태**입니다. 담당자가 diff와 test를 확인한 뒤
+`git add`를 해야 Git이 해당 파일을 해결 완료로 인식합니다. 현재 도구는 별도의
+결과 보고서, 승인 파일, `plan.json`을 만들지 않고 `git add`, test,
+`git cherry-pick --continue`도 실행하지 않습니다.
 
 ```text
 resolved .../languages/ko-kr.json: BANK-OM leaf changes=9
 ```
 
-위 실제 출력의 `leaf changes`는 “최종 값을 담는 JSON 항목 9개”라는 도구 내부
-표현입니다.
+위 출력의 `leaf changes=9`는 도구가 BANK-OM 쪽에서 새로 추가된 최종 JSON
+항목 9개를 공식 1.13.1 파일에 반영했다는 뜻입니다. 사용자가 입력하는 설정
+이름도, 검사 PASS도, Git 충돌 해결 완료도 아닙니다.
 
 아래 자료는 도구가 자동 생성한 운영 보고서가 아니라, **이번 충돌 재현 결과를
 가이드에서 확인할 수 있도록 별도로 보관한 증거 자료**입니다.
@@ -520,7 +537,7 @@ code{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}} p code,li code,t
 {pagination}
 <section class="hero">
   <h1>1.13.0 → 1.13.1 코드 업그레이드 연습</h1>
-  <p>BANK-OM별 충돌을 분리해 보기 위해 공식 1.13.1 위에 커밋을 하나씩 적용하고 소스 검사를 수행한 결과입니다.</p>
+  <p>BANK-OM별 충돌을 분리해 보기 위해 공식 1.13.1 위에 기능별 변경 기록을 하나씩 적용하고 소스 검사를 수행한 결과입니다.</p>
   <div class="chips"><span>공식 변경 834개 파일</span><span>번역 JSON 18개 충돌</span><span>소스 검사 8종 PASS</span><span>Contract test 7개 SKIP</span><span>전체 build 미실행</span></div>
 </section>
 <section class="page-scope" aria-label="이 페이지가 답하는 질문과 범위">
@@ -528,11 +545,18 @@ code{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}} p code,li code,t
   <div><strong>여기서 답하지 않는 것</strong><p>기본 운영 방식인 vendor-merge 전체와 행내 배포 완료 여부는 아직 검증하지 않았습니다.</p></div>
   <div><strong>읽고 나면</strong><p>완료·미완료를 구분하고, 필요한 경우 부록의 과거 참고 코드 검사와 비교합니다.</p></div>
 </section>
-<p class="internal-scope"><strong>이번 연습에만 사용한 방법:</strong> commit별 재적용과 JSON 충돌 보조 도구는 BANK-OM별 충돌을 분리해 보기 위해 사용했습니다. OpenMetadata 공식 업그레이드 기능이나 확정된 행내 운영 절차가 아닙니다.</p>
+<p class="internal-scope"><strong>이번 연습에만 사용한 방법:</strong> Git 변경 기록별 재적용과 제한적 JSON 충돌 보조 도구는 BANK-OM별 충돌을 분리해 보기 위해 사용했습니다. OpenMetadata 공식 업그레이드 기능이나 확정된 행내 운영 절차가 아닙니다.</p>
 <section class="summary">
   <strong>결론:</strong> 커밋별 재적용으로 만든 후보에서 BANK-OM-001~007의 소스 범위는 확인했습니다.
   그러나 실제 vendor-merge 기록, 전체 build, Contract test 7개, 담당자 승인과 배포 검증은 남아 있습니다.
 </section>
+<table><thead><tr><th>단계</th><th>현재 자동으로 하는 일</th><th>담당자가 해야 하는 일</th></tr></thead><tbody>
+  <tr><td>사전 설정</td><td>Git에서 실제 변경 파일을 읽어 Manifest 초안을 만듦</td><td>파일을 어느 BANK-OM으로 묶을지, 필수 파일·간접 영향·업무 테스트 기준을 확정</td></tr>
+  <tr><td>업그레이드 영향 확인</td><td>공식 두 버전의 변경 파일과 감시 경로를 비교</td><td>APPROVAL로 표시된 변경이 행내 기능에 미치는 영향 검토</td></tr>
+  <tr><td>코드 적용과 충돌</td><td>Git이 가능한 부분은 합치고, 결정할 수 없는 파일에서 중단</td><td>충돌 내용을 선택·수정하고 해결 결과를 승인</td></tr>
+  <tr><td>JSON 보조 처리</td><td>양쪽이 서로 다른 JSON 항목을 바꾼 경우에만 합친 파일 작성</td><td>수정 결과 확인 후 Git 적용을 계속 진행. 같은 항목 또는 JSON 외 충돌은 직접 해결</td></tr>
+  <tr><td>검사와 배포</td><td>등록 범위·필수 파일·테스트 코드 존재·Git 이력을 검사</td><td>전체 빌드, 행내 화면·API·DB 시험, 승인과 배포 파일 일치 확인</td></tr>
+</tbody></table>
 <p class="mobile-table-note">작은 화면에서는 표를 좌우로 밀어 모든 열을 확인하세요.</p>
 
 <details open><summary><span class="n">1</span><span class="title"><strong>업그레이드 전 영향 확인</strong><small>공식 변경과 upgrade_watch 비교</small></span></summary>
@@ -559,12 +583,12 @@ code{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}} p code,li code,t
 
 <details open><summary><span class="n">2</span><span class="title"><strong>branch 생성</strong><small>공식 코드와 커스터마이징 적용 코드를 분리</small></span></summary>
 <div class="body">
-  <div class="flow"><div><b>공식 tag</b>1.13.1-release</div><div><b>patch branch</b>patch/om-1.13.1</div><div><b>custom branch</b>custom/om-1.13.1</div><div><b>검사 대상</b>dee330ebd5...</div></div>
+  <div class="flow"><div><b>공식 버전 표시(tag)</b>1.13.1-release</div><div><b>공식 코드 branch</b>patch/om-1.13.1</div><div><b>행내 코드 branch</b>custom/om-1.13.1</div><div><b>검사한 Git 번호</b>dee330ebd5...</div></div>
   <pre><code>git worktree add -b patch/om-1.13.1 ../om-temp-1.13.1-upgrade 1.13.1-release
 git -C ../om-temp-1.13.1-upgrade switch -c custom/om-1.13.1</code></pre>
-  <p><strong><code>dee330ebd5...</code>는 무엇인가?</strong> 공식 commit이나 BANK-OM ID가 아닙니다. 공식 1.13.1 위에 BANK-OM-001~007의 8개 commit을 모두 적용한 <code>custom/om-1.13.1</code> branch의 마지막 Git commit SHA입니다.</p>
+  <p><strong><code>dee330ebd5...</code>는 무엇인가?</strong> 공식 버전 번호나 BANK-OM ID가 아닙니다. 공식 1.13.1 위에 BANK-OM-001~007의 변경 기록 8개를 모두 적용한 뒤, Git이 그 최종 코드 상태에 부여한 번호입니다.</p>
   <div class="flow"><div><b>공식 시작점</b><code>afcb2d2...</code><br>공식 1.13.1</div><div><b>순차 적용</b>BANK-OM-001~006</div><div><b>마지막 기능</b>BANK-OM-007과 후속 보완</div><div><b>최종 코드 상태</b><code>dee330ebd5...</code><br>검사기가 고정한 대상</div></div>
-  <p class="note">검사기는 이 SHA를 입력으로 받아 “그 시점의 전체 코드와 Git 이력”을 검사합니다. 이후 commit이 하나라도 추가되면 코드 상태가 달라지므로 다시 검사해야 합니다.</p>
+  <p class="note">검사기는 이 Git 번호를 입력으로 받아 “그 시점의 전체 코드와 변경 이력”을 검사합니다. 이후 변경이 하나라도 추가되면 코드 상태가 달라지므로 다시 검사해야 합니다.</p>
   <p class="warning"><strong>운영 전략과 이번 후보 생성 방식은 다릅니다.</strong> 저장된 검사 결과에는 <code>integration_strategy: vendor-merge</code>가 기록됐지만, 실제 후보는 아래의 커밋별 재적용으로 만들었습니다. 따라서 공식 1.13.1 포함 관계는 확인했어도 실제 vendor branch 병합 기록과 충돌 해결 증거까지 검증한 것은 아닙니다. 이 후보를 vendor-merge 운영경로 통과로 해석하면 안 됩니다.</p>
   <p class="note">두 branch는 현재 로컬에만 있고 GitHub에는 아직 push하지 않았습니다.</p>
 </div></details>
@@ -572,9 +596,9 @@ git -C ../om-temp-1.13.1-upgrade switch -c custom/om-1.13.1</code></pre>
 <details open><summary><span class="n">3</span><span class="title"><strong>커스터마이징 적용과 충돌 해결</strong><small>실제 커밋별 결과</small></span></summary>
 <div class="body">
   <h3 class="subhead">먼저, BANK-OM별 충돌을 분리해 확인한 방법</h3>
-  <p>이 연습에서는 어느 BANK-OM에서 충돌하는지 바로 구분하려고 1.13.0의 기능별 commit을 공식 1.13.1 위에 하나씩 적용했습니다. 실제 명령은 <code>git cherry-pick &lt;BANK-OM commit SHA&gt;</code>였지만, 이 문서에서는 이해하기 쉽게 <strong>BANK-OM 변경 적용</strong>이라고 부릅니다.</p>
+  <p>이 연습에서는 어느 BANK-OM에서 충돌하는지 바로 구분하려고 1.13.0의 기능별 변경 기록을 공식 1.13.1 위에 하나씩 적용했습니다. 실제 명령은 <code>git cherry-pick &lt;BANK-OM commit SHA&gt;</code>였습니다.</p>
   <div class="flow"><div><b>이전 버전</b>1.13.0의 BANK-OM commit</div><div><b>이번 진단 방법</b>공식 1.13.1에 commit별 적용</div><div><b>충돌 없음</b>해당 BANK-OM 적용 완료</div><div><b>충돌 발생</b>Git이 멈추고 해결 대기</div></div>
-  <p class="note"><strong>왜 cherry-pick을 썼나?</strong> 충돌을 만들기 위해 필요한 명령이라서가 아니라, 충돌을 BANK-OM ID별로 분리해 기록하기 쉬웠기 때문입니다. branch merge나 rebase도 같은 코드 구간이 겹치면 충돌할 수 있습니다. 따라서 아래는 commit별 진단 결과이며 vendor-merge 운영경로 전체 결과가 아닙니다.</p>
+  <p class="note"><strong>cherry-pick은 무엇이고 왜 사용했나?</strong> 다른 branch에 저장된 특정 변경 기록 하나를 현재 branch에 복사해 적용하는 Git 명령입니다. 커밋 순서를 바꾸기 위해 사용한 것이 아닙니다. 이번에는 BANK-OM 변경을 한 건씩 적용해 어느 ID에서 충돌했는지 바로 기록하려고 사용했습니다. branch 전체를 병합해도 같은 코드 구간이 겹치면 충돌할 수 있으므로, 아래 결과는 변경 기록별 진단 결과이지 정식 병합 절차 전체의 결과가 아닙니다.</p>
   <table><thead><tr><th>BANK-OM</th><th>1.13.1 commit</th><th>실제 충돌</th><th>처리</th></tr></thead><tbody>{conflict_rows}</tbody></table>
   <p>001~004는 각각 번역 JSON 18개에서 충돌한 것으로 기록됐습니다. BANK-OM-001은 18개 상세 경로까지 보관했지만 002~004는 건수만 보관했으므로, 네 차례의 파일 목록이 완전히 같다고 단정하지 않습니다.</p>
 
@@ -677,24 +701,45 @@ $ git diff --name-only --diff-filter=U | wc -l
   </details>
   <p class="note"><strong>해결 결과:</strong> 공식 1.13.1의 번역과 형식을 유지하면서 BANK-OM-001의 9개 항목도 남겼고, 새 commit <code>83b1e0ac7d</code>에 기록했습니다.</p>
 
-  <h3 class="subhead">3. 실제로 사용한 JSON 충돌 보조 도구</h3>
+  <h3 class="subhead">3. 실제로 사용한 제한적 JSON 충돌 보조 도구</h3>
   <p><code>harness/tools/resolve_nonoverlapping_json_conflicts.py</code>라는 실제 Python 도구가 있습니다. 검사기 전체의 필수 단계가 아니라, <strong>Git이 JSON 충돌로 멈췄을 때만 실행하는 제한된 보조 도구</strong>입니다.</p>
-  <table><thead><tr><th>입력</th><th>이번 사례의 의미</th><th>사용 목적</th></tr></thead><tbody>
-    <tr><td><code>stage 1</code></td><td>공식 1.13.0과 BANK-OM 변경이 갈라지기 전 공통 JSON</td><td>양쪽이 무엇을 바꿨는지 계산하는 기준</td></tr>
-    <tr><td><code>stage 2</code></td><td>지금 유지해야 할 공식 1.13.1 JSON</td><td>해결 파일의 기본 내용</td></tr>
-    <tr><td><code>stage 3</code></td><td>적용하려는 BANK-OM-001 commit의 JSON</td><td>다시 추가할 BANK-OM 변경 계산</td></tr>
+  <p><code>stage 1·2·3</code>은 실행 순서가 아니라 Git이 충돌 파일 하나에 보관한 세 버전의 번호입니다.</p>
+  <table><thead><tr><th>Git 표기</th><th>Git에서 고정된 의미</th><th>이번 연습의 실제 내용</th><th>직접 확인 명령</th><th>보조 도구에서 하는 일</th></tr></thead><tbody>
+    <tr><td><code>stage 1 · BASE</code></td><td>두 변경의 공통 기준</td><td>공식 1.13.0과 BANK-OM이 갈라지기 전 JSON</td><td><code>git show :1:&lt;파일경로&gt;</code></td><td>stage 1→2와 stage 1→3 변경 계산</td></tr>
+    <tr><td><code>stage 2 · OURS</code></td><td>현재 checkout한 branch의 내용</td><td>이번 연습에서는 HEAD인 공식 1.13.1 JSON</td><td><code>git show :2:&lt;파일경로&gt;</code></td><td>해결 파일의 바탕으로 유지</td></tr>
+    <tr><td><code>stage 3 · THEIRS</code></td><td>지금 적용 중인 반대편 변경</td><td>이번 cherry-pick에서는 BANK-OM-001 commit의 JSON</td><td><code>git show :3:&lt;파일경로&gt;</code></td><td>BANK-OM 변경 계산</td></tr>
   </tbody></table>
-  <p>도구는 세 JSON에서 <strong>실제 값을 담는 항목별로</strong> 변경 여부를 비교합니다. 예를 들어 <code>label</code> 안의 <code>instance-code</code>는 <code>label.instance-code</code>라는 한 항목으로 구분합니다. 이는 사용자가 별도로 입력하는 설정이 아니라 도구 내부의 비교 방법입니다.</p>
+  <p class="note"><strong>이번 연습에서만:</strong> 공식 1.13.1 branch에서 BANK-OM commit을 cherry-pick했기 때문에 stage 2=공식, stage 3=BANK-OM입니다. 일반 merge에서도 stage 2는 현재 checkout한 쪽(OURS), stage 3은 들어오는 쪽(THEIRS)이므로 branch 방향을 바꾸면 공식/BANK-OM 대응도 바뀔 수 있습니다.</p>
+  <p>도구는 <code>stage 1→stage 2</code>에서 바뀐 최종 JSON 항목 목록과 <code>stage 1→stage 3</code>에서 바뀐 최종 JSON 항목 목록을 각각 만듭니다. 예를 들어 <code>label</code> 안의 <code>instance-code</code>는 <code>label.instance-code</code>라는 한 항목입니다. 줄 번호와 들여쓰기는 비교하지 않습니다.</p>
+  <table><thead><tr><th>판단</th><th>도구가 비교하는 값</th><th>계속 진행</th><th>중단</th></tr></thead><tbody>
+    <tr><td>충돌 파일 종류</td><td><code>git diff --name-only --diff-filter=U</code> 결과</td><td>모두 JSON</td><td>JSON 이외 파일이 하나라도 있으면 파일을 쓰기 전에 중단</td></tr>
+    <tr><td>OURS 변경 계산</td><td>BASE와 OURS의 최종 JSON 항목별 값</td><td>변경 항목 목록 생성</td><td>JSON을 읽을 수 없으면 파일을 쓰기 전에 중단</td></tr>
+    <tr><td>THEIRS 변경 계산</td><td>BASE와 THEIRS의 최종 JSON 항목별 값</td><td>변경 항목 목록 생성</td><td>JSON을 읽을 수 없으면 파일을 쓰기 전에 중단</td></tr>
+    <tr><td>두 목록 겹침</td><td>OURS 변경 항목 경로 ∩ THEIRS 변경 항목 경로</td><td>0개면 OURS에 THEIRS 변경 반영</td><td>1개라도 겹치면 최종 값이 같아도 파일을 쓰기 전에 중단</td></tr>
+  </tbody></table>
   <div class="tool-output">
-    <div><b>자동 처리</b>공식과 BANK-OM이 서로 다른 JSON 항목을 바꾼 경우, 공식 JSON에 BANK-OM 항목을 추가</div>
-    <div><b>즉시 중단</b>양쪽이 같은 JSON 항목을 바꿨거나 JSON 이외의 파일이 충돌한 경우</div>
+    <div><b>자동 처리</b>OURS와 THEIRS의 변경 항목 교집합이 0개인 경우</div>
+    <div><b>즉시 중단</b>같은 항목을 둘 다 변경했거나 JSON 이외 파일이 충돌한 경우</div>
     <div><b>사람이 할 일</b>수정된 JSON 확인 후 <code>git add</code>와 <code>git cherry-pick --continue</code></div>
   </div>
   <pre><code>./.venv/bin/python harness/tools/resolve_nonoverlapping_json_conflicts.py \
   --repo ../om-temp-1.13.1-upgrade
 
 resolved .../languages/ko-kr.json: BANK-OM leaf changes=9</code></pre>
-  <p class="note"><strong>도구가 실제로 남기는 것:</strong> 충돌 난 JSON 파일을 작업 branch에서 수정하고 터미널에 파일별 적용 건수를 출력합니다. 출력의 <code>leaf changes=9</code>는 “최종 값을 담는 JSON 항목 9개”라는 내부 표현입니다. 현재 도구는 별도 결과 보고서, 승인 파일, <code>plan.json</code>을 만들지 않습니다.</p>
+  <p class="note"><strong>도구가 실제로 남기는 것:</strong> 작업 폴더의 충돌 JSON을 깨끗한 JSON으로 다시 쓰고 터미널에 파일별 적용 건수를 출력합니다. <code>leaf changes=9</code>는 BANK-OM 쪽의 최종 JSON 항목 9개를 공식 파일에 반영했다는 뜻이며, 검사 PASS나 Git 충돌 해결 완료라는 뜻은 아닙니다.</p>
+  <div class="tool-output">
+    <div><b>작업 폴더</b>JSON 내용은 공식 1.13.1 + BANK-OM 항목으로 바뀜</div>
+    <div><b>Git index</b><code>git add</code> 전이므로 아직 <code>UU</code>(충돌 미해결)</div>
+    <div><b>별도 산출물</b>없음. 수정된 JSON과 터미널 출력만 남음</div>
+  </div>
+  <pre><code># 도구 실행 직후
+git status --short
+UU openmetadata-ui/.../languages/ko-kr.json
+
+# 사람이 diff와 test를 확인한 뒤에만 해결 완료로 표시
+git add openmetadata-ui/.../languages/ko-kr.json
+git cherry-pick --continue</code></pre>
+  <p class="warning"><strong>자동 실행하지 않는 것:</strong> <code>git add</code>, commit, test, <code>cherry-pick --continue</code>, 별도 결과 보고서·승인 파일·<code>plan.json</code> 생성.</p>
   <p class="warning"><strong>현재 운영 상태:</strong> 이 도구와 “같은 JSON 항목이 겹치지 않을 때만 합친다”는 기준은 이번 업그레이드 연습을 위해 구현했습니다. OpenMetadata의 기존 기능도, 확정된 행내 승인 정책도 아닙니다.</p>
   <details class="mini"><summary><span class="title"><strong>충돌 재현 증거 자료 보기</strong><small>도구의 자동 보고서가 아니라 이번 재현을 위해 별도 보관한 자료</small></span></summary>
     <div class="body">

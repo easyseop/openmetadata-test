@@ -87,18 +87,19 @@ Manifest 전체 필드 설명은 3번 본문을 늘리지 않도록
   Manifest를 만든 근거를 보여준다.
 - Manifest는 ID 최초 등록 때 한 번 만들고, 업그레이드 때 같은 ID의 새 버전
   등록 묶음으로 복사해 달라진 경로·검증 기준만 갱신한다고 설명한다.
-- `allowed_changed_paths`는 해당 BANK-OM commit의 전체 실제 변경,
+- `changed_paths`는 현재 버전에서 같은 BANK-OM ID의 모든 commit이 만든 전체 실제 변경,
   `required_changed_paths`는 빠지면 즉시 기능 미적용으로 판단할 핵심 구현,
-  `candidate_additional_paths`는 같은 ID 후속 commit에서 최초 등록 범위에
-  새로 들어온 경로,
   `upgrade_watch`는 다음 공식 버전과 비교할 변경·의존 경로라고 설명한다.
 - 같은 ID의 후속 commit은 commit 메시지에 기존
   `Customization-ID: BANK-OM-NNN`을 그대로 사용한다. 기존 등록 파일만 다시
-  수정하면 Manifest 경로 목록은 유지하고, 새 파일이 생긴 경우에만 생성기가
-  `candidate_additional_paths` 초안을 만든다는 실제 예시를 포함한다.
-- Registry, Contracts, 공용 파일 소유정보, 전체 변경 목록, Repository layout,
-  Sensitive zones, Candidate lock, 선택적 Patch-lock과 결과 파일의 의미·작성
-  시점·사용 검사를 설명한다.
+  수정하면 Manifest 경로 목록은 유지하고, 새 파일이 생기면 생성기가 현재 버전
+  `changed_paths` 초안에 합친다는 실제 BANK-OM-007 예시를 포함한다.
+- 같은 ID의 기능 변경 commit SHA는 여러 개일 수 있지만, 최종 검사 대상
+  custom branch SHA는 한 개라는 차이를 실제 값으로 보여준다.
+- Registry, Contracts, 현재 버전 공용 파일 소유정보, 과거 snapshot 경로
+  소유정보, 전체 변경 목록, Repository layout, Sensitive zones, Candidate
+  lock, 선택적 Patch-lock과 결과 파일의 의미·작성 시점·사용 검사를 실제 값
+  예시와 함께 설명한다.
 - Patch-lock은 `patch-replay`·복구·재현을 선택할 때만 쓰며
   `vendor-merge` 소스 검사의 필수 자료가 아니라고 표시한다.
 - 이 기준자료는 OpenMetadata 실행 설정이나 직원용 화면이 아니라

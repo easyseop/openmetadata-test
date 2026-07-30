@@ -2,9 +2,12 @@
 """Resolve JSON cherry-pick conflicts only when leaf changes do not overlap.
 
 Git index stages are used as the three inputs:
-  1 = common base, 2 = new official version, 3 = BANK-OM commit being applied.
+  1 = common base (BASE), 2 = currently checked out side (OURS),
+  3 = incoming side (THEIRS).
 
-The command keeps the new official JSON and applies only BANK-OM leaf changes.
+In the OM_TEMP cherry-pick exercise, OURS is the new official JSON and THEIRS is
+the BANK-OM commit being applied. The command keeps OURS and applies only
+non-overlapping THEIRS leaf changes.
 If both sides changed the same leaf key, it stops without writing that file.
 """
 

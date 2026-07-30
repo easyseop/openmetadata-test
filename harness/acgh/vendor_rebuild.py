@@ -35,6 +35,7 @@ import yaml
 from acgh import binding
 from acgh import gitprim
 from acgh import layout
+from acgh import manifest as M
 from acgh import registry as R
 from acgh import verdict
 
@@ -87,6 +88,7 @@ def build_reconstruction_plan(
     registry: R.Registry,
     manifests_by_id: dict[str, dict],
     inventory_paths,
+    source_path_owners: dict[str, tuple[str, ...]] | None = None,
 ) -> ReconstructionPlan:
     """Build a deterministic path plan from the registered snapshot inventory."""
     try:
@@ -113,27 +115,66 @@ def build_reconstruction_plan(
         )
 
     inventory_set = set(paths)
+    if source_path_owners is not None:
+        unknown_owner_paths = sorted(set(source_path_owners) - inventory_set)
+        unknown_owner_ids = sorted(
+            {
+                owner
+                for owners in source_path_owners.values()
+                for owner in owners
+                if owner not in active_ids
+            }
+        )
+        if unknown_owner_paths or unknown_owner_ids:
+            raise ReconstructionError(
+                "source snapshot owner map mismatch: "
+                f"paths_not_in_inventory={unknown_owner_paths}, "
+                f"unknown_ids={unknown_owner_ids}"
+            )
     exact_scopes: dict[str, frozenset[str]] = {}
     try:
         for customization_id in active_ids:
-            raw_scope = manifests_by_id[customization_id]["implementation"][
-                "allowed_changed_paths"
-            ]
+            manifest = manifests_by_id[customization_id]
+            raw_scope = M.declared_changed_paths(manifest)
             literals = tuple(layout.ensure_literal(item) for item in raw_scope)
             if len(literals) != len(set(literals)):
                 raise ReconstructionError(
-                    f"{customization_id}: duplicate allowed source path"
+                    f"{customization_id}: duplicate changed path"
                 )
-            extra = sorted(set(literals) - inventory_set)
-            if extra:
-                raise ReconstructionError(
-                    f"{customization_id}: allowed source paths are absent from "
-                    f"the pinned source inventory: {extra}"
+            # Schema v2 stores the current-version scope. A separately
+            # generated source ownership map preserves which ID owned each
+            # path at the pinned source snapshot without splitting the current
+            # Manifest into first-commit and follow-up fields.
+            source_literals = set(literals) & inventory_set
+            if source_path_owners is not None:
+                source_literals = {
+                    path
+                    for path, owners in source_path_owners.items()
+                    if customization_id in owners
+                }
+                outside_current = sorted(source_literals - set(literals))
+                if outside_current:
+                    raise ReconstructionError(
+                        f"{customization_id}: source ownership paths are absent "
+                        f"from current changed_paths: {outside_current}"
+                    )
+            if manifest.get("schema_version", 1) == 1:
+                legacy_source = manifest["implementation"].get(
+                    "allowed_changed_paths", []
                 )
-            exact_scopes[customization_id] = frozenset(literals)
+                source_literals = {
+                    layout.ensure_literal(item) for item in legacy_source
+                }
+                extra = sorted(source_literals - inventory_set)
+                if extra:
+                    raise ReconstructionError(
+                        f"{customization_id}: legacy source paths are absent from "
+                        f"the pinned source inventory: {extra}"
+                    )
+            exact_scopes[customization_id] = frozenset(source_literals)
     except (KeyError, TypeError, layout.LayoutError) as exc:
         raise ReconstructionError(
-            "source-snapshot allowed_changed_paths must be literal files: "
+            "source-snapshot changed paths must be literal files: "
             f"{exc}"
         ) from exc
 
@@ -195,6 +236,45 @@ def build_reconstruction_plan(
         excluded_paths=tuple(excluded),
         active_ids=active_ids,
     )
+
+
+def load_source_snapshot_owners(
+    registration_dir: str | Path,
+) -> dict[str, tuple[str, ...]] | None:
+    """Load generated ownership at the pinned source snapshot when present."""
+    path = Path(registration_dir) / "source-snapshot-path-owners.yaml"
+    if not path.exists():
+        return None
+    try:
+        raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+        if not isinstance(raw, dict):
+            raise ReconstructionError(
+                "source snapshot path owners must be a mapping"
+            )
+        result: dict[str, tuple[str, ...]] = {}
+        for raw_path, raw_owners in raw.items():
+            normalized = layout.normalize_path(raw_path)
+            if normalized in result:
+                raise ReconstructionError(
+                    f"duplicate source snapshot path owner entry: {normalized}"
+                )
+            if not isinstance(raw_owners, list) or not raw_owners:
+                raise ReconstructionError(
+                    f"{normalized}: source snapshot owners must be a non-empty list"
+                )
+            owners = tuple(raw_owners)
+            if len(owners) != len(set(owners)) or not all(
+                isinstance(owner, str) for owner in owners
+            ):
+                raise ReconstructionError(
+                    f"{normalized}: invalid source snapshot owner list"
+                )
+            result[normalized] = owners
+        return result
+    except (OSError, yaml.YAMLError, layout.LayoutError) as exc:
+        raise ReconstructionError(
+            f"cannot load source snapshot path owners: {exc}"
+        ) from exc
 
 
 def inspect_source_inventory(
@@ -468,9 +548,7 @@ def check_reconstructed_candidate(
             continue
         try:
             changed = gitprim.changed_paths(repo, commit.sha)
-            allowed = layout.make_spec(
-                manifest["implementation"]["allowed_changed_paths"]
-            )
+            allowed = layout.make_spec(M.declared_changed_paths(manifest))
         except (
             KeyError,
             TypeError,
@@ -620,7 +698,13 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         reg, manifests, inventory = load_registration_bundle(args.registration)
-        plan = build_reconstruction_plan(reg, manifests, inventory)
+        source_owners = load_source_snapshot_owners(args.registration)
+        plan = build_reconstruction_plan(
+            reg,
+            manifests,
+            inventory,
+            source_path_owners=source_owners,
+        )
     except (OSError, yaml.YAMLError, R.RegistryError, ReconstructionError) as exc:
         result = verdict.GateResult(
             "vendor-reconstruction-plan",

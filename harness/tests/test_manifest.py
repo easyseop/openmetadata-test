@@ -46,8 +46,47 @@ def good_core_patch():
     }
 
 
+def good_v2_core_patch():
+    manifest = good_core_patch()
+    manifest["schema_version"] = 2
+    manifest["implementation"] = {
+        "changed_paths": [_AUTH],
+        "required_changed_paths": [_AUTH],
+    }
+    return manifest
+
+
 def test_valid_core_patch_passes():
     M.validate_manifest(good_core_patch(), layout())
+
+
+def test_valid_v2_core_patch_passes():
+    manifest = good_v2_core_patch()
+    M.validate_manifest(manifest, layout())
+    assert M.declared_changed_paths(manifest) == [_AUTH]
+
+
+def test_v2_rejects_legacy_path_fields():
+    manifest = good_v2_core_patch()
+    manifest["implementation"]["allowed_changed_paths"] = [_AUTH]
+    with pytest.raises(M.ManifestError, match="cannot use legacy path fields"):
+        M.validate_manifest(manifest, layout())
+
+
+def test_v2_changed_paths_are_literal_and_cover_required():
+    manifest = good_v2_core_patch()
+    manifest["implementation"]["changed_paths"] = [
+        "openmetadata-service/src/main/java/org/openmetadata/service/security/**"
+    ]
+    with pytest.raises(M.ManifestError, match="changed_paths.*literal"):
+        M.validate_manifest(manifest, layout())
+
+    manifest = good_v2_core_patch()
+    manifest["implementation"]["changed_paths"] = [
+        "openmetadata-service/src/main/java/org/openmetadata/service/Entity.java"
+    ]
+    with pytest.raises(M.ManifestError, match="not covered by current changed scope"):
+        M.validate_manifest(manifest, layout())
 
 
 def test_candidate_follow_up_paths_are_literal_disjoint_and_owned():
@@ -72,7 +111,7 @@ def test_candidate_follow_up_paths_are_literal_disjoint_and_owned():
 def test_required_not_subset_of_allowed_fails():
     m = good_core_patch()
     m["implementation"]["allowed_changed_paths"] = ["ingestion/**"]
-    with pytest.raises(M.ManifestError, match="not covered by allowed"):
+    with pytest.raises(M.ManifestError, match="not covered by current changed scope"):
         M.validate_manifest(m, layout())
 
 

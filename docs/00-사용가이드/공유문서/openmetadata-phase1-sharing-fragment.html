@@ -1,8 +1,8 @@
 <div id="om-guide-v3" data-artifact-status="current">
   <header class="om-hero">
     <span class="viz-badge">1차 공유문서 · 현행본</span>
-    <h1>공식 업그레이드 뒤에도 행내 기능을 잃지 않는 방법</h1>
-    <p>직전 행내 <code>custom</code> branch에 새 공식 버전을 병합하고, 검사기로 BANK-OM 누락·승인되지 않은 변경·업무 동작을 단계별 확인합니다.</p>
+    <h1>공식 OpenMetadata를 업데이트하면서 행내 기능을 유지하는 방법</h1>
+    <p>새 공식 버전과 기존 행내 커스터마이징을 하나의 코드로 합친 뒤, 누락된 기능과 승인되지 않은 변경이 없는지 검사하는 반복 절차입니다.</p>
     <div class="om-now" role="status">
       <span><strong>이번 검토 범위</strong> 목적 · 브랜치 전략</span>
       <span><strong>대표 사례</strong> BANK-OM-001 · InstanceCode</span>
@@ -12,7 +12,7 @@
 
   <aside class="om-page-scope" aria-label="이 페이지가 답하는 질문과 범위">
     <div><strong>이 페이지가 답하는 질문</strong><p>공식 OpenMetadata를 계속 업데이트하면서 행내 커스터마이징을 어떤 branch 흐름으로 유지할 것인가?</p></div>
-    <div><strong>여기서 답하지 않는 것</strong><p>Manifest 작성법, 검사기별 입력·판정 방법, 현재 후보의 실제 검사 결과는 뒤 페이지에서 설명합니다.</p></div>
+    <div><strong>여기서 답하지 않는 것</strong><p>Manifest 작성법, 검사기별 입력·판정 방법, 현재 검사 대상 코드의 실제 결과는 뒤 페이지에서 설명합니다.</p></div>
     <div><strong>읽고 나면</strong><p>2번에서 각 검사기가 이 흐름의 어느 위험을 확인하는지 봅니다.</p></div>
   </aside>
   <p class="om-internal-scope"><strong>우리 내부에서 정한 관리 방식:</strong> <code>BANK-OM</code> ID, <code>patch/custom</code> branch 이름과 이 반복 절차는 OpenMetadata가 기본 제공하는 화면이나 규칙이 아니라, 공식 코드를 행내 커스터마이징과 함께 유지하기 위해 이 프로젝트에서 정한 운영 방식입니다.</p>
@@ -31,7 +31,7 @@
     <article>
       <span>1차 · 반복 절차</span>
       <strong>어떻게 업그레이드하나</strong>
-      <p>새 공식 버전 병합, 충돌 해결, 검사, 배포 후보 고정까지의 반복 흐름을 봅니다.</p>
+      <p>새 공식 버전 병합, 충돌 해결, 검사, 배포할 코드 확정까지의 반복 흐름을 봅니다.</p>
     </article>
   </section>
 
@@ -71,7 +71,7 @@
       <div>
         <span>현재 업그레이드·검사를 진행하는 코드 저장소</span>
         <strong>easyseop/OM_TEMP</strong>
-        <p>공식 1.13.0과 BANK-OM-001~007을 바탕으로 1.13.1 코드 후보를 만들고, 충돌·해결·검사를 연습합니다. 이 연습은 커밋별 재적용으로 충돌을 진단했으며, 아래 목표 운영 방식인 <code>vendor-merge</code> 전체를 완료한 것은 아닙니다.</p>
+        <p>공식 1.13.0과 BANK-OM-001~007을 바탕으로 1.13.1 검사 대상 코드를 만들고, 충돌·해결·검사를 연습합니다. 현재 결과는 BANK-OM 변경을 하나씩 적용해 충돌 위치를 확인한 연습 결과입니다. 아래에 설명하는 정식 병합 절차 전체를 완료했다는 뜻은 아닙니다.</p>
       </div>
       <div>
         <span>검사 기준과 결과를 관리하는 저장소</span>
@@ -86,11 +86,11 @@
       <span>02</span>
       <div>
         <h2>브랜치 전략</h2>
-        <p>기본 운영 방식은 <code>vendor-merge</code>입니다. 직전 <code>custom</code> branch의 행내 변경 이력을 유지한 채, 새 공식 버전을 병합해 다음 검사 후보를 만듭니다.</p>
+        <p>정식 운영에서는 직전 행내 코드에 새 공식 버전을 병합하는 방식을 사용합니다. 이 방식을 이 문서와 설정 파일에서는 <code>vendor-merge</code>라고 부릅니다.</p>
       </div>
     </div>
 
-    <p class="om-reading-order-note">이 페이지에서는 공식 코드와 BANK-OM 변경이 <code>custom</code> branch에서 합쳐지고, 충돌 해결·검사·배포 후보 고정을 거쳐 다음 공식 버전으로 이어지는 흐름만 설명합니다. BANK-OM ID 발급, 커밋 메시지와 Manifest 작성 방법은 <a href="../OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html" target="_top">3번 · 검사 전 사전환경 설정</a>에서 단계별로 설명합니다.</p>
+    <p class="om-reading-order-note"><code>patch</code> branch에는 행내 변경이 없는 공식 코드만 보관하고, <code>custom</code> branch에는 공식 코드와 BANK-OM 변경을 함께 보관합니다. 아래 그림은 두 코드가 합쳐진 뒤 검사와 승인을 거쳐 다음 공식 버전으로 이어지는 과정을 보여줍니다. BANK-OM ID와 Manifest 작성 방법은 <a href="../OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html" target="_top">3번 · 검사 전 사전환경 설정</a>에서 설명합니다.</p>
 
     <div class="om-branch-legend" aria-label="브랜치 색상 구분">
       <span class="om-swatch om-core-swatch"></span><span>공식 버전과 patch branch · 공식 코드만 유지</span>
@@ -100,7 +100,7 @@
     <div class="om-branch-visual">
       <svg class="om-branch-svg" viewBox="0 0 940 800" role="img" aria-labelledby="om-branch-title om-branch-desc">
         <title id="om-branch-title">OpenMetadata 버전별 커스터마이징 반복 Cycle</title>
-        <desc id="om-branch-desc">왼쪽 patch branch의 새 공식 코드와 오른쪽 직전 custom branch의 행내 코드 이력이 다음 custom branch에서 병합된다. 이 병합 지점에서 Git 충돌이 발생할 수 있으며, 충돌은 다음 custom branch에서 해결한다. 검사에 통과하면 배포 후보 tag를 붙이고 다음 공식 버전에서 같은 과정을 반복한다.</desc>
+        <desc id="om-branch-desc">새 공식 코드의 변경이 행내 기능에 미칠 영향을 T42로 먼저 확인하고 등록 자료를 갱신한 뒤, 오른쪽의 직전 행내 코드와 다음 버전의 custom branch에서 병합한다. 같은 코드 구간을 양쪽이 다르게 수정했다면 이 병합 지점에서 Git 충돌이 발생한다. 충돌을 해결하고 검사를 통과한 코드에는 검증 완료 표시를 붙인 뒤 다음 공식 버전에서 같은 과정을 반복한다.</desc>
         <defs>
           <marker id="om-arrow-core" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
             <path d="M0,0 L9,4.5 L0,9 z" fill="var(--viz-series-1)"/>
@@ -117,7 +117,8 @@
         </defs>
 
         <path class="om-svg-path om-svg-core-line" marker-end="url(#om-arrow-core)" d="M410 92 C360 106 304 116 270 135"/>
-        <path class="om-svg-path om-svg-core-line" marker-end="url(#om-arrow-core)" d="M270 213 C270 260 358 278 400 295"/>
+        <path class="om-svg-path om-svg-core-line" d="M270 213 L270 235"/>
+        <path class="om-svg-path om-svg-core-line" marker-end="url(#om-arrow-core)" d="M280 269 C300 282 362 287 400 295"/>
         <path class="om-svg-path om-svg-custom-line" marker-end="url(#om-arrow-custom)" d="M680 223 C680 260 572 278 530 295"/>
         <path class="om-svg-path om-svg-custom-line" marker-end="url(#om-arrow-custom)" d="M465 415 L465 455"/>
         <path class="om-svg-path om-svg-neutral-line" marker-end="url(#om-arrow-core)" d="M465 525 L465 565"/>
@@ -137,8 +138,8 @@
         <text class="om-svg-muted om-svg-center" x="680" y="192">직전 공식 코드 + 검증된 BANK-OM 변경</text>
         <text class="om-svg-muted om-svg-center" x="680" y="212">행내 Git 이력을 그대로 보존</text>
 
-        <rect class="om-svg-input-pill om-svg-core-node" x="198" y="235" width="164" height="34" rx="17"/>
-        <text class="om-svg-core-text om-svg-center" x="280" y="258">공식 코드 입력</text>
+        <rect class="om-svg-input-pill om-svg-core-node" x="135" y="235" width="290" height="34" rx="17"/>
+        <text class="om-svg-core-text om-svg-center" x="280" y="258">병합 전 T42 영향 확인·등록 갱신</text>
         <rect class="om-svg-input-pill om-svg-custom-node" x="578" y="235" width="164" height="34" rx="17"/>
         <text class="om-svg-custom-text om-svg-center" x="660" y="258">직전 행내 코드 입력</text>
 
@@ -155,7 +156,7 @@
         <path class="om-svg-path om-svg-fail-line om-svg-loop" marker-end="url(#om-arrow-fail)" d="M140 399 C140 443 236 443 285 408"/>
 
         <rect class="om-svg-node om-svg-candidate-node" x="315" y="455" width="300" height="70" rx="24"/>
-        <text class="om-svg-label om-svg-center om-svg-strong" x="465" y="484">④ 병합 완료 custom candidate</text>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="465" y="484">④ 병합을 마친 검사 대상 코드</text>
         <text class="om-svg-muted om-svg-center" x="465" y="507">공식 코드와 행내 변경이 함께 있는 상태</text>
 
         <polygon class="om-svg-node om-svg-verifier-node" points="465,565 529,610 465,655 401,610"/>
@@ -166,19 +167,20 @@
         <text class="om-svg-fail-text" x="196" y="665">검사 BLOCK → custom 보완 → 재검사</text>
 
         <rect class="om-svg-node om-svg-pass-node" x="320" y="690" width="290" height="56" rx="22"/>
-        <text class="om-svg-label om-svg-center om-svg-strong" x="465" y="714">⑥ 배포 후보 tag 고정</text>
+        <text class="om-svg-label om-svg-center om-svg-strong" x="465" y="714">⑥ 검증 완료 버전 표시(tag)</text>
         <text class="om-svg-muted om-svg-center" x="465" y="734">실제 배포는 행내 동작·승인 완료 후</text>
         <text class="om-svg-core-text om-svg-center" x="790" y="672">다음 공식 버전에서 Cycle 반복</text>
       </svg>
     </div>
 
     <div class="om-branch-after">
-      <p><strong>그림에서 무엇과 무엇이 합쳐지나?</strong> 새 공식 코드만 담은 <code>patch</code> branch를, 직전 공식 코드와 검증된 BANK-OM 변경을 함께 보유한 <code>custom</code> 이력에 병합합니다. 결과는 다음 버전의 <code>custom</code> candidate입니다.</p>
-      <p><strong>Git 충돌은 어디서 발생하나?</strong> 직전 <code>custom</code> 코드와 새 공식 코드가 같은 구간을 다르게 바꿨을 때 ③ 병합 지점에서 발생합니다. 해결 코드는 다음 <code>custom</code> branch에 commit으로 남기고 병합을 완료합니다.</p>
+      <p><strong>그림에서 무엇과 무엇이 합쳐지나?</strong> 새 공식 코드만 담은 <code>patch</code> branch와, 직전 공식 코드에 BANK-OM 변경을 적용한 <code>custom</code> branch가 합쳐집니다. 결과는 새 공식 버전과 행내 기능이 함께 들어 있는 다음 버전의 <code>custom</code> branch입니다.</p>
+      <p><strong>왜 T42를 병합 전에 실행하나?</strong> 새 공식 버전이 Manifest의 <code>watch</code> 경로를 바꿨는지 먼저 찾아, 영향을 받을 BANK-OM ID와 검토할 파일을 병합 전에 알기 위해서입니다. 결과가 <code>APPROVAL</code>이면 담당자가 영향 내용을 확인하고 필요한 Manifest·공용 파일 소유정보를 갱신한 뒤 병합을 시작합니다. T42가 Git 충돌을 해결해 주는 것은 아닙니다.</p>
+      <p><strong>Git 충돌은 어디서 발생하나?</strong> 양쪽 코드가 같은 부분을 서로 다르게 수정했을 때 ③ 병합 단계에서 발생합니다. 담당자가 어느 내용을 유지할지 확인해 다음 <code>custom</code> branch에서 수정하고, 그 해결 내용을 Git 변경 기록으로 남깁니다.</p>
       <p><strong>충돌 해결 때 새 BANK-OM을 만드는가?</strong> 기존 기능을 새 공식 버전에 맞춘 것이라면 같은 BANK-OM ID를 사용합니다. 기존 Manifest를 새 버전 등록 묶음으로 복사해 다시 검토하고, 해결 과정에서 변경 범위나 검증 기준이 달라진 항목만 갱신합니다. 별도 업무 기능이 생겼을 때만 새 ID와 Manifest를 만듭니다.</p>
       <p><strong>검사 BLOCK은 무엇이 다른가?</strong> Git 병합은 끝났지만 Manifest 범위, 필수 구현, 테스트 또는 승인 조건을 통과하지 못한 경우입니다. 이때도 다음 <code>custom</code> branch를 보완하지만 Git 병합 충돌과는 다른 문제입니다.</p>
-      <p><strong>검사를 통과하면 바로 배포하는가?</strong> 소스 검사 통과 commit에 먼저 배포 후보 tag를 붙여 대상을 고정합니다. 전체 build, 행내 API·화면·DB 테스트, 담당자 승인과 배포 파일 일치까지 끝난 뒤에만 실제 배포할 수 있습니다.</p>
-      <p><strong>4번의 커밋별 재적용 실습은 무엇인가?</strong> 현재 OM_TEMP 연습은 어느 BANK-OM에서 충돌하는지 분리해 보기 위해 commit을 하나씩 적용했습니다. 이는 진단 자료이며, 위 <code>vendor-merge</code> 운영 Cycle 전체가 검증됐다는 뜻은 아닙니다.</p>
+      <p><strong>검사를 통과하면 바로 배포하는가?</strong> 아닙니다. 먼저 검사에 통과한 정확한 코드에 검증 완료 표시(<code>tag</code>)를 붙입니다. 전체 빌드, 행내 API·화면·DB 테스트, 담당자 승인과 실제 배포 파일 일치까지 확인한 뒤에만 배포할 수 있습니다.</p>
+      <p><strong>현재 OM_TEMP 연습은 이 그림과 완전히 같은가?</strong> 아닙니다. 현재는 어느 BANK-OM에서 충돌하는지 확인하기 위해 변경 기록을 하나씩 적용했습니다. 따라서 BANK-OM별 충돌 진단 결과는 있지만, 위 정식 병합 절차 전체를 검증한 결과는 아닙니다.</p>
     </div>
 
   </section>

@@ -8,10 +8,11 @@ Two layers, because JSON Schema alone cannot express the invariants that matter
    arbitrary shell can never enter through the manifest (P0-8); verification is
    declarative only (T50).
 2. SEMANTICS — code rules this module enforces:
-   - ``required_changed_paths`` are literal and covered by the combined current
-     scope (source ``allowed`` + registered follow-up ``candidate_additional``).
-   - ``candidate_additional_paths`` are literal, disjoint from source allowed,
-     and preserve the T25-R source-snapshot boundary.
+   - schema v2 uses one literal ``changed_paths`` list for the current-version
+     implementation scope.
+   - schema v1 ``allowed_changed_paths`` plus ``candidate_additional_paths``
+     remain read-compatible while historical registrations are migrated.
+   - ``required_changed_paths`` are literal and covered by the current scope.
    - ``kind: core-patch`` must declare at least one required path.
    - each required path's ownership (via T05 layout) matches ``kind``.
    - ``assurance.contracts`` / ``assurance.direct_tests`` are unique & disjoint.
@@ -74,35 +75,84 @@ def load_manifest(path, layout: L.Layout) -> dict:
     return validate_manifest(data, layout)
 
 
+def declared_changed_paths(data: dict) -> list[str]:
+    """Return the current-version implementation scope for any schema version."""
+    implementation = data.get("implementation", {})
+    if data.get("schema_version") == 2:
+        return list(implementation.get("changed_paths", []))
+    return [
+        *implementation.get("allowed_changed_paths", []),
+        *implementation.get("candidate_additional_paths", []),
+    ]
+
+
 def _semantic(data: dict, layout: L.Layout) -> None:
     kind = data["kind"]
     role = _KIND_ROLE[kind]
     impl = data["implementation"]
-    allowed = impl["allowed_changed_paths"]
-    candidate_additional = impl.get("candidate_additional_paths", [])
+    schema_version = data["schema_version"]
     required = impl.get("required_changed_paths", [])
 
-    # allowed patterns: valid grammar, no negation (checked while building spec).
-    try:
-        allowed_spec = L.make_spec(allowed)
-    except L.LayoutError as e:
-        raise ManifestError(f"allowed_changed_paths: {e}") from e
-    try:
-        additional = [L.ensure_literal(path) for path in candidate_additional]
-    except L.LayoutError as e:
-        raise ManifestError(f"candidate_additional_paths: {e}") from e
-    if len(additional) != len(set(additional)):
-        raise ManifestError("candidate_additional_paths has duplicate entries")
-    overlap = {
-        path for path in additional
-        if allowed_spec.match_file(path)
-    }
-    if overlap:
-        raise ManifestError(
-            "candidate_additional_paths overlaps source allowed scope: "
-            f"{sorted(overlap)}"
+    if schema_version == 2:
+        legacy = sorted(
+            set(impl) & {"allowed_changed_paths", "candidate_additional_paths"}
         )
-    current_spec = L.make_spec([*allowed, *additional])
+        if legacy:
+            raise ManifestError(
+                f"schema v2 cannot use legacy path fields: {legacy}"
+            )
+        raw_scope = impl.get("changed_paths")
+        if not raw_scope:
+            raise ManifestError(
+                "schema v2 implementation.changed_paths must be non-empty"
+            )
+        try:
+            current = [L.ensure_literal(path) for path in raw_scope]
+        except L.LayoutError as e:
+            raise ManifestError(f"changed_paths: {e}") from e
+        if len(current) != len(set(current)):
+            raise ManifestError("changed_paths has duplicate entries")
+    else:
+        if "changed_paths" in impl:
+            raise ManifestError(
+                "schema v1 cannot use changed_paths; migrate to schema v2"
+            )
+        allowed = impl.get("allowed_changed_paths")
+        if not allowed:
+            raise ManifestError(
+                "schema v1 implementation.allowed_changed_paths must be non-empty"
+            )
+        # Legacy allowed patterns remain supported for historical registrations.
+        try:
+            allowed_spec = L.make_spec(allowed)
+        except L.LayoutError as e:
+            raise ManifestError(f"allowed_changed_paths: {e}") from e
+        try:
+            additional = [
+                L.ensure_literal(path)
+                for path in impl.get("candidate_additional_paths", [])
+            ]
+        except L.LayoutError as e:
+            raise ManifestError(f"candidate_additional_paths: {e}") from e
+        if len(additional) != len(set(additional)):
+            raise ManifestError("candidate_additional_paths has duplicate entries")
+        overlap = {
+            path for path in additional
+            if allowed_spec.match_file(path)
+        }
+        if overlap:
+            raise ManifestError(
+                "candidate_additional_paths overlaps source allowed scope: "
+                f"{sorted(overlap)}"
+            )
+        current = [*allowed, *additional]
+
+    try:
+        current_spec = L.make_spec(current)
+    except L.LayoutError as e:
+        raise ManifestError(
+            f"current implementation scope is invalid: {e}"
+        ) from e
 
     # core-patch must pin down at least one file it is required to change.
     if kind == "core-patch" and not required:
@@ -116,10 +166,10 @@ def _semantic(data: dict, layout: L.Layout) -> None:
             lit = L.ensure_literal(raw)
         except L.LayoutError as e:
             raise ManifestError(f"required_changed_paths: {e}") from e
-        # required ⊆ allowed
+        # required ⊆ current changed scope
         if not current_spec.match_file(lit):
             raise ManifestError(
-                f"required path not covered by allowed current candidate scope: {lit!r}"
+                f"required path not covered by current changed scope: {lit!r}"
             )
         # ownership must match kind
         owner = layout.classify(lit)
@@ -128,13 +178,22 @@ def _semantic(data: dict, layout: L.Layout) -> None:
                 f"required path {lit!r} is owned by {owner!r}, "
                 f"but kind {kind!r} requires {role!r}"
             )
-    for lit in additional:
-        owner = layout.classify(lit)
-        if owner != role:
-            raise ManifestError(
-                f"candidate additional path {lit!r} is owned by {owner!r}, "
-                f"but kind {kind!r} requires {role!r}"
-            )
+    if schema_version == 2:
+        for lit in current:
+            owner = layout.classify(lit)
+            if owner != role:
+                raise ManifestError(
+                    f"changed path {lit!r} is owned by {owner!r}, "
+                    f"but kind {kind!r} requires {role!r}"
+                )
+    else:
+        for lit in additional:
+            owner = layout.classify(lit)
+            if owner != role:
+                raise ManifestError(
+                    f"candidate additional path {lit!r} is owned by {owner!r}, "
+                    f"but kind {kind!r} requires {role!r}"
+                )
 
     _check_assurance(data.get("assurance", {}))
 

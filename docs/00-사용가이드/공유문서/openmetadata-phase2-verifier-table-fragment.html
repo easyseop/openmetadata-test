@@ -1,18 +1,18 @@
 <div id="om-phase2" data-artifact-status="current">
   <header class="p2-hero">
     <span class="viz-badge">2차 공유문서 · 현행본</span>
-    <h1>각 검사기는 무엇을 읽고, 어떻게 판단하는가</h1>
-    <p>이 문서는 검사 결과가 아니라 검사 방법을 설명합니다. 3번에서 검사 기준자료를 준비하고, 4번에서 OM_TEMP 업그레이드 연습 결과를 확인합니다.</p>
+    <h1>각 검사기는 무엇을 확인하고, 결과를 어떻게 읽어야 하는가</h1>
+    <p>이 페이지는 각 검사가 어떤 문제를 찾는지 설명합니다. 실제 검사 자료를 만드는 방법은 다음 3번 가이드에서, OM_TEMP 1.13.1 진단 결과는 4번 업그레이드 연습에서 확인합니다.</p>
     <div class="p2-decision" role="status">
-      <strong>검토 결론</strong>
-      <span>현재 검사기는 소스 변경을 관리하는 데는 유효하지만, 경로 기반 검사와 외부 입력에 의존하는 부분이 있어 행내 동작·보안·배포 검사를 함께 사용해야 합니다.</span>
+      <strong>이 페이지의 핵심</strong>
+      <span>검사기는 커스터마이징 파일의 누락과 등록 오류를 자동으로 찾습니다. 그러나 기능이 실제로 정상인지, 충돌을 올바르게 해결했는지, 배포해도 되는지는 별도의 기능 테스트와 담당자 승인이 필요합니다.</span>
     </div>
   </header>
 
   <aside class="p2-page-scope" aria-label="이 페이지가 답하는 질문과 범위">
-    <div><strong>이 페이지가 답하는 질문</strong><p>각 검사는 어떤 입력을 읽고, 어떤 방법으로 PASS·APPROVAL·BLOCK을 판단하는가?</p></div>
-    <div><strong>여기서 답하지 않는 것</strong><p>특정 commit의 실제 결과와 배포 가능 여부는 4번과 부록에서 구분해 보여줍니다.</p></div>
-    <div><strong>읽고 나면</strong><p>3번에서 검사에 필요한 Manifest·Registry·Contract를 직접 준비합니다.</p></div>
+    <div><strong>이 페이지가 답하는 질문</strong><p>각 검사는 무엇을 비교하며, 어떤 경우에 통과·담당자 확인·중단으로 판단하는가?</p></div>
+    <div><strong>이 페이지의 범위</strong><p>검사 원리만 설명합니다. 특정 코드의 실제 검사 결과와 아직 확인하지 못한 배포 범위는 4번 업그레이드 연습에서 구분해 보여줍니다.</p></div>
+    <div><strong>다음 단계</strong><p>검사 원리를 이해한 뒤 다음 가이드에서 변경 등록표(Manifest), ID 관리대장(Registry), 업무 테스트 기준(Contract)을 준비합니다.</p></div>
   </aside>
   <p class="p2-internal-scope"><strong>우리 내부에서 만든 검사 체계:</strong> T25·T42 같은 번호, PASS·APPROVAL·BLOCK 판정과 아래 검사기는 OpenMetadata 기본 기능이 아니라 <code>easyseop/openmetadata-test</code>에서 BANK-OM 변경을 관리하기 위해 만든 검사 체계입니다.</p>
 
@@ -21,18 +21,18 @@
     <ol class="p2-flow">
       <li>
         <span>1</span>
-        <strong>코드 버전 지정</strong>
-        <p>공식 원본과 검사할 <code>custom</code> branch의 Git commit SHA를 지정합니다.</p>
+        <strong>비교할 코드 지정</strong>
+        <p>기준이 되는 공식 버전과 검사할 행내 커스터마이징 버전을 지정합니다.</p>
       </li>
       <li>
         <span>2</span>
-        <strong>Manifest 입력</strong>
-        <p>활성 BANK-OM ID별 파일 범위, 필수 파일, 감시 파일과 테스트를 읽습니다.</p>
+        <strong>변경 등록표 입력</strong>
+        <p>Manifest에 등록한 BANK-OM ID별 변경 파일, 필수 파일, 업그레이드 확인 대상과 테스트를 읽습니다.</p>
       </li>
       <li>
         <span>3</span>
-        <strong>Git 기록 비교</strong>
-        <p>공식 원본 이후의 모든 커밋과 각 커밋이 변경한 파일을 확인합니다.</p>
+        <strong>변경 기록 비교</strong>
+        <p>공식 버전 이후에 추가된 행내 변경과 각 변경에서 수정한 파일을 확인합니다.</p>
       </li>
       <li>
         <span>4</span>
@@ -45,7 +45,7 @@
         <p>검사한 코드와 이미지·설정 파일이 실제 배포 대상과 같은지 확인합니다.</p>
       </li>
     </ol>
-    <p class="p2-terms"><strong>Git commit SHA</strong>는 저장된 코드 버전을 식별하는 값입니다. <strong>SHA-256 digest</strong>는 파일 내용이 같은지 비교하기 위해 계산한 값입니다.</p>
+    <p class="p2-terms"><strong>화면에서는 “코드 버전 번호”와 “파일 내용 식별값”으로 설명합니다.</strong> 결과 파일에서는 각각 Git commit SHA와 SHA-256 digest라는 기술 명칭으로 저장됩니다.</p>
     <details class="p2-details">
       <summary>뒤의 표에 나오는 기준자료 이름</summary>
       <div class="table-responsive">
@@ -55,208 +55,279 @@
             <tr><td>Manifest</td><td>BANK-OM ID별 실제 변경 파일, 필수 파일, 업그레이드 비교 경로, 테스트</td><td>파일 누락·범위 이탈·공식 변경 영향을 판단</td></tr>
             <tr><td>Registry</td><td>사용 중인 BANK-OM ID, 이름, 상태, 담당자</td><td>미등록·폐기 ID 사용과 담당자 누락을 판단</td></tr>
             <tr><td>Contract</td><td>기능이 정상이라고 판단할 업무 동작과 연결된 테스트</td><td>테스트 코드 존재와 실제 실행 결과를 확인</td></tr>
-            <tr><td>검사 대상 잠금<br><code>candidate-lock.yaml</code></td><td>검사할 Git commit SHA와 전체 파일 상태</td><td>검사 중 코드가 바뀌거나 다른 결과가 섞이는 것을 차단</td></tr>
+            <tr><td>검사 대상 고정 정보<br><code>candidate-lock.yaml</code></td><td>검사를 시작한 행내 코드의 버전 번호와 전체 파일 상태</td><td>검사 도중 코드가 바뀌거나 다른 버전의 결과가 섞이는 것을 차단</td></tr>
             <tr><td>테스트 실행 목록<br><code>test-run-set.yaml</code></td><td>실제로 실행할 테스트와 마지막 결과</td><td>필수 테스트 누락·SKIP·실패를 판단</td></tr>
-            <tr><td>배포 잠금<br><code>release lock</code></td><td>승인한 코드·이미지·Helm·검사 결과의 digest</td><td>검사한 파일과 실제 배포할 파일이 같은지 확인</td></tr>
+            <tr><td>배포 대상 고정 정보<br><code>release lock</code></td><td>승인한 코드·설치 이미지·설정 파일·검사 결과의 내용 식별값</td><td>검사한 파일과 실제 배포할 파일이 같은지 확인</td></tr>
           </tbody>
         </table>
       </div>
     </details>
+    <details class="p2-details" open>
+      <summary>운영할 때 각 파일을 언제 만들고 갱신하는가</summary>
+      <p class="p2-terms">모든 파일을 검사할 때마다 다시 만드는 것은 아닙니다. 아래 자료는 <strong>계속 관리하는 기준자료</strong>, <strong>검사할 코드가 확정될 때 만드는 고정정보</strong>, <strong>검사를 실행할 때마다 생기는 결과자료</strong>로 나뉩니다.</p>
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead><tr><th>파일</th><th>처음 만드는 시점</th><th>다시 갱신하는 조건</th><th>검사 실행마다 새로 만드나?</th><th>관리 책임</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Manifest</strong><br><code>manifests/BANK-OM-xxx.yaml</code></td>
+              <td>BANK-OM 기능을 처음 등록할 때</td>
+              <td>기능을 구현하는 파일, 필수 파일, 업그레이드 영향 경로 또는 연결 테스트가 달라질 때. 공식 버전에 맞춰 코드를 수정한 뒤 새 버전 등록 폴더에서 다시 검토</td>
+              <td><strong>아니요.</strong> 같은 코드에 검사를 반복해도 바꾸지 않음</td>
+              <td>생성기가 실제 변경 파일 초안을 만들고, 기능 담당자가 업무 단위·필수 파일·간접 영향·테스트를 확정</td>
+            </tr>
+            <tr>
+              <td><strong>Registry</strong><br><code>customization-registry.yaml</code></td>
+              <td>첫 BANK-OM 목록을 구성할 때</td>
+              <td>ID 추가·폐기, 상태·담당자·중요도 변경, Manifest·Contract 연결 변경 시. 버전별 등록 묶음을 만들 때 현재 목록으로 다시 생성</td>
+              <td><strong>아니요.</strong> 조직의 BANK-OM 관리대장으로 계속 유지</td>
+              <td>관리 담당자가 상태·담당자를 승인하고, 생성기가 Manifest·Contract 연결 누락을 검사</td>
+            </tr>
+            <tr>
+              <td><strong>Contract</strong><br><code>contracts.yaml</code></td>
+              <td>기능의 정상 동작과 이를 확인할 테스트를 처음 합의할 때</td>
+              <td>업무 정상 조건이나 연결할 테스트 파일·테스트 이름이 바뀔 때</td>
+              <td><strong>아니요.</strong> 코드 버전이 바뀌어도 정상 조건이 같으면 재사용</td>
+              <td>기능 담당자와 테스트 담당자가 정상 조건을 정하고 코드 담당자가 테스트를 구현</td>
+            </tr>
+            <tr>
+              <td><strong>검사 대상 고정정보</strong><br><code>candidate-lock.yaml</code></td>
+              <td>병합과 수정이 끝나 검사할 코드와 배포 파일이 확정됐을 때</td>
+              <td>공식 대상 버전, 적용 방식, 검사 대상 Git commit, 전체 파일 상태 또는 배포 파일 내용이 하나라도 바뀔 때 새 파일 생성</td>
+              <td><strong>검사 종류별이 아니라 검사 대상 코드별 1개.</strong> 같은 대상을 검사하는 여러 검사가 함께 사용</td>
+              <td>검사 실행기가 실제 Git 번호와 파일 내용 식별값을 읽어 자동 생성. 생성 후 수정하지 않음</td>
+            </tr>
+            <tr>
+              <td><strong>테스트 실행 결과 목록</strong><br><code>test-run-set.yaml</code></td>
+              <td>행내 API·화면·DB 테스트를 실제로 실행할 때</td>
+              <td>테스트를 다시 실행하거나, 검사 대상 코드·배포 파일·검사기 버전·테스트 목록이 바뀔 때 새 파일 생성</td>
+              <td><strong>실제 테스트 실행 1회마다 새로 생성.</strong> 기존 파일을 덮어쓰지 않음</td>
+              <td>테스트 실행기가 테스트별 PASS·FAIL·ERROR·SKIP을 자동 기록하고 담당자가 BLOCK 원인을 확인</td>
+            </tr>
+            <tr>
+              <td><strong>검사 결과</strong><br><code>acgh-result.yaml</code> 또는 결과 JSON</td>
+              <td>소스 검사나 행내 동작 검사를 실행할 때</td>
+              <td>검사를 다시 실행할 때마다 새 결과 생성</td>
+              <td><strong>예.</strong> 실행 시각·대상 Git 번호·입력자료와 함께 실행별로 보관</td>
+              <td>검사기가 자동 생성하고 책임자가 판정과 미실행 항목을 검토</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="p2-terms"><strong>운영 원칙:</strong> Manifest·Registry·Contract는 Git에서 변경 이력을 관리하고 담당자 리뷰를 받아 갱신합니다. <code>candidate-lock.yaml</code>, <code>test-run-set.yaml</code>, 검사 결과는 실행 증거이므로 생성 후 수정하거나 덮어쓰지 않고, 검사 대상 Git 번호와 실행 번호별로 분리해 보관합니다.</p>
+      <p class="p2-terms"><strong>현재 구현 범위:</strong> 실제 Runtime contracts 실행기는 <code>candidate-lock.yaml</code>, <code>test-run-set.yaml</code>, <code>acgh-result.yaml</code>을 한 번의 실행에서 함께 생성합니다. 현재 OM_TEMP 문서에 있는 <code>source-gate-results.json</code>은 소스 검사 연습 결과이며, 운영 환경의 실제 Runtime contracts 결과를 대신하지 않습니다.</p>
+    </details>
     <div class="p2-language">
       <strong>프론트엔드와 백엔드에 같은 검사기를 쓸 수 있나?</strong>
-      <p><b>Git 커밋과 파일 변경을 확인하는 검사는 언어에 상관없이 그대로 사용할 수 있습니다.</b> T25-R·T25·T26·T30·T31·T40·T41·T42·T43·T93은 Java·TypeScript·Python·JSON·YAML·SQL 등 파일 종류와 관계없이 Git 이력, 각 커밋에서 바뀐 파일 경로와 공식 원본 대비 최종 파일 상태를 확인합니다. 따라서 프론트엔드와 백엔드 파일을 같은 방식으로 관리할 수 있습니다. 다만 이 공통 검사는 파일 내부 코드의 의미나 실행 동작까지 언어에 관계없이 이해하는 검사가 아닙니다.</p>
-      <p><b>테스트 코드 자체를 해석하거나 실행하는 검사는 언어·도구별 지원이 필요합니다.</b> 현재 T60-I는 Python pytest 코드만 확인하고, T63은 TypeScript 오류만 비교합니다. T61·T62도 Python pytest를 실행 도구로 사용하지만 그 테스트가 Java 백엔드 API와 TypeScript 프론트 화면을 호출하는 것은 가능합니다. Java JUnit이나 TypeScript Jest를 직접 등록·실행하려면 해당 도구용 확인 방식과 실행 연결을 추가해야 합니다.</p>
+      <p><b>변경된 파일을 찾는 검사는 프로그래밍 언어와 관계없이 사용할 수 있습니다.</b> Java·TypeScript·Python·JSON 등 어떤 파일이든 “어느 변경에서 어떤 파일이 바뀌었는가”는 같은 방식으로 확인합니다. 다만 파일 안의 코드가 올바르게 동작하는지는 이 검사만으로 알 수 없습니다.</p>
+      <p><b>기능을 실제로 실행하는 검사는 언어와 테스트 도구별 지원이 필요합니다.</b> 현재 테스트 코드 존재 확인은 Python 테스트만 지원하고, 화면 코드 오류 비교는 TypeScript만 지원합니다. Java JUnit이나 TypeScript Jest를 직접 등록하고 실행하는 기능은 추가 개발이 필요합니다.</p>
     </div>
   </section>
 
   <section class="p2-section" aria-labelledby="p2-map-title">
-    <h2 id="p2-map-title">먼저 보는 검사기 지도</h2>
-    <p class="p2-terms">이 지도는 검사기를 목적별로 나눈 것이며, 네 묶음이 모두 운영 완료됐다는 뜻은 아닙니다. 처음에는 제목과 현재 사용 범위를 훑어보고, 필요한 검사기를 펼쳐 실제 검사 방법과 예외·보완을 확인하세요.</p>
+    <h2 id="p2-map-title">검사 목적별로 먼저 보기</h2>
+    <p class="p2-terms">검사기를 네 가지 질문으로 나눴습니다. 오른쪽 상태는 “검사 프로그램이 존재하는가”가 아니라 “현재 OM_TEMP 자료로 실제 결과까지 확인했는가”를 표시합니다.</p>
     <div class="p2-map">
       <article>
-        <div><span>A · 소스 기준</span><em class="p2-availability p2-ready">현재 결과 7개 확인</em></div>
-        <strong>공식 원본과 변경 범위가 맞는가</strong>
-        <p><b>T25-R</b> 과거 변경 재구성 일치 · <b>T25</b> 공식 버전 출발점 · <b>T26</b> 등록 기능 생존 · <b>T30</b> 커밋별 BANK-OM 식별 · <b>T31</b> BANK-OM 적용 순서 · <b>T40</b> 허용·필수 파일 범위 · <b>T41</b> 민감 경로 위험 · <b>T93</b> 실제 변경과 Manifest 일치</p>
-        <small>T25-R은 공식 Git 이력이 끊긴 과거 snapshot을 재구성할 때만 사용합니다. 공식 이력을 유지하는 vendor branch에는 T25를 사용합니다.</small>
+        <div><span>A · 코드 변경 확인</span><em class="p2-availability p2-ready">현재 자료로 결과 확인</em></div>
+        <strong>정해진 공식 버전에서 시작해 등록한 파일만 바꿨는가</strong>
+        <p><b>T25-R</b> 과거 보관 소스 재구성 · <b>T25</b> 공식 버전 출발점 · <b>T26</b> 필수 커스터마이징 유지 · <b>T30</b> 변경 기록별 BANK-OM 식별 · <b>T31</b> BANK-OM 적용 순서 · <b>T40</b> 등록한 변경 파일 범위 · <b>T41</b> 중요 시스템 파일 변경 · <b>T93</b> 실제 변경과 Manifest 일치</p>
+        <small>T25-R은 공식 변경 기록이 없는 과거 보관 소스를 다시 구성할 때만 사용합니다. 현재처럼 공식 변경 기록을 유지하는 브랜치는 T25로 확인합니다.</small>
       </article>
       <article>
-        <div><span>B · 업그레이드 영향</span><em class="p2-availability p2-limited">T42 결과 확인 · 2개 미완료</em></div>
-        <strong>새 공식 버전이 무엇을 건드렸는가</strong>
+        <div><span>B · 공식 업그레이드 영향</span><em class="p2-availability p2-limited">영향 경로 결과만 확인</em></div>
+        <strong>새 공식 버전이 행내 커스터마이징과 관련된 파일을 바꿨는가</strong>
         <p><b>T42</b> 공식 업그레이드 영향 경로 · <b>T43</b> 커스터마이징 유지 부담 · <b>T93</b> 경로 정책 노후화</p>
-        <small>T42는 공식 버전 간 변경과 watch를 비교합니다. T43은 실제 병합 충돌 증거에서 충돌률을 자동 계산하는 연결이 더 필요합니다.</small>
+        <small>관련 파일 변경 여부는 확인했습니다. 전체 커스터마이징 규모와 실제 충돌 비율을 자동 계산하는 연결은 아직 완료되지 않았습니다.</small>
       </article>
       <article>
-        <div><span>C · 테스트와 실행</span><em class="p2-availability p2-partial">T60-I 결과 확인 · 환경 연결 필요</em></div>
-        <strong>기능 누락과 새 오류를 잡는가</strong>
-        <p><b>T60-I</b> 필수 테스트 코드 존재 · <b>T61</b> 커스터마이징 누락 탐지력 · <b>T62</b> 테스트 결과와 검사 대상 결속 · <b>T63</b> 공식 원본 대비 새 TypeScript 오류</p>
-        <small>T60-I는 테스트 코드의 존재만 확인합니다. 실제 실행을 판단하는 T61·T62·T63은 행내 서버·브라우저·동일 빌드 환경과 결속된 결과가 필요합니다.</small>
+        <div><span>C · 기능 테스트</span><em class="p2-availability p2-partial">테스트 파일만 확인</em></div>
+        <strong>커스터마이징이 빠지거나 새로운 화면 오류가 생기면 테스트가 찾아내는가</strong>
+        <p><b>T60-I</b> 필수 테스트 파일 존재 · <b>T61</b> 기능 누락 시 테스트 실패 여부 · <b>T62</b> 테스트 결과가 나온 코드 확인 · <b>T63</b> 공식 원본 대비 새 TypeScript 오류</p>
+        <small>현재는 등록한 Python 테스트 파일이 존재하는지만 확인했습니다. 실제 기능 실행 결과는 행내 서버와 브라우저 환경이 필요합니다.</small>
       </article>
       <article>
-        <div><span>D · 승격과 배포</span><em class="p2-availability p2-pending">현재 운영 증거 없음</em></div>
-        <strong>검사한 것과 배포할 것이 같은가</strong>
+        <div><span>D · 배포 전 최종 확인</span><em class="p2-availability p2-pending">행내 실행 결과 없음</em></div>
+        <strong>검사한 코드와 실제로 배포할 파일이 같은가</strong>
         <p><b>T90</b> 업그레이드 전 과정 결과 · <b>T91</b> 검사 산출물과 배포 산출물 일치</p>
-        <small>결과 형식만으로 실제 실행을 대신할 수 없습니다. 행내 실행 시스템이 만든 로그·서명·배포 digest를 입력해야 합니다.</small>
+        <small>현재는 결과 문서 형식만 있습니다. 행내 실행 시스템이 만든 실제 로그와 배포 파일의 내용 식별값이 있어야 결과를 판단할 수 있습니다.</small>
       </article>
     </div>
     <aside class="p2-number-note">
-      <strong>왜 T1이 아니라 T25부터 보이나?</strong>
-      <p>T번호는 이 문서에서 새로 매긴 순번이 아니라 검사기 개발계획과 결과 파일에서 함께 사용하는 태스크 ID입니다. T01~T24에는 커스터마이징 조사, 경로 정책, Manifest 스키마, Git 공통 기능, 선택적 재적용 도구 같은 기반 작업이 있습니다. 이 페이지는 책임자가 직접 판정을 읽는 검사기만 추렸기 때문에 첫 항목이 T25-R·T25로 보입니다. 코드·결과 파일·증거가 같은 ID를 사용하므로 화면에서 T1부터 다시 번호를 붙이지 않습니다.</p>
+      <strong>T25 같은 번호는 무엇인가?</strong>
+      <p>검사기 코드와 결과 파일을 서로 연결하기 위한 내부 번호입니다. 화면의 읽는 순서를 뜻하지 않으며, 현업 사용자는 번호보다 각 검사 제목과 판정을 확인하면 됩니다.</p>
     </aside>
     <aside class="p2-number-note">
-      <strong>왜 T93이 두 번 나오나?</strong>
-      <p>현재 구현에서 T93이라는 한 정책 점검 묶음이 두 질문을 처리하기 때문입니다. 이 문서에서는 혼동을 줄이려고 <b>T93-범위</b>(실제 변경 파일과 Manifest 일치)와 <b>T93-정책</b>(공식 파일 이동으로 경로 규칙이 낡았는지)으로 표시합니다. 결과 파일의 내부 ID는 아직 둘 다 T93 계열입니다.</p>
+      <strong>T93이 두 번 나오는 이유</strong>
+      <p>한 검사 프로그램이 두 가지 질문을 처리하기 때문입니다. 이 화면에서는 “실제 변경 파일이 등록 내용과 같은가”를 <b>T93-범위</b>, “공식 파일 이동으로 기존 검사 규칙이 낡았는가”를 <b>T93-정책</b>으로 나눠 표시합니다.</p>
     </aside>
   </section>
 
   <section class="p2-section" aria-labelledby="p2-table-title">
-    <h2 id="p2-table-title">검사기별 실제 검사 방법과 예외 가능성</h2>
-    <p class="p2-terms">각 항목은 닫힌 상태에서 한 줄 역할과 현재 결과 확인 가능 여부를 보여줍니다. 펼치면 검사 목적, 실제 판단 방법과 놓칠 수 있는 경우를 확인할 수 있습니다. 실제 PASS·APPROVAL·BLOCK 판정 내용은 5번 실행 결과에서 확인합니다.</p>
+    <h2 id="p2-table-title">검사기별 판단 방법과 한계</h2>
+    <p class="p2-terms">각 항목을 펼치면 “검사가 답하는 질문 → 판단 방법 → 이 검사만으로 알 수 없는 것” 순서로 설명합니다. 실제 판정은 마지막 실행 결과 가이드에서 확인합니다.</p>
     <div class="p2-check-legend">
       <span class="p2-checkmark" aria-hidden="true">✓</span>
-      <p><b>체크는 현재 OM_TEMP 1.13.1 등록자료와 결과 파일에 실제 판정이 연결된 검사입니다.</b> 체크 자체가 PASS라는 뜻은 아니며 판정은 PASS·APPROVAL·BLOCK 중 하나일 수 있습니다. 체크가 없는 검사는 코드가 있더라도 현재 후보 입력이나 행내 운영 증거가 부족해 지금 결과를 확정할 수 없습니다.</p>
+      <p><b>체크는 현재 OM_TEMP 1.13.1 자료를 넣어 결과 파일까지 만든 검사라는 뜻입니다.</b> 체크가 곧 통과를 뜻하지는 않습니다. 체크가 없는 항목은 검사 프로그램이 있더라도 현재 필요한 행내 실행 결과가 없어 판정을 확정하지 못한 상태입니다.</p>
     </div>
     <div class="p2-check-list">
       <h3>A · 공식 원본과 행내 커스터마이징 소스 확인</h3>
       <details class="p2-check">
-        <summary><b>T25-R · 과거 변경 재구성 일치 확인</b><span>공식 Git 이력이 끊긴 snapshot을 공식 원본 위에서 같은 내용으로 재구성할 수 있는가</span><em class="p2-result-state p2-state-na">현재 후보 해당 없음</em></summary>
+        <summary><b>T25-R · 과거 보관 소스 재구성 확인</b><span>변경 기록이 없는 과거 행내 소스를 공식 원본 위에서 다시 만들 수 있는가</span><em class="p2-result-state p2-state-na">현재 검사 대상 아님</em></summary>
         <div class="p2-check-body">
-          <div><strong>무엇을 확인하나</strong><p>과거 행내 소스에서 등록한 파일을 공식 원본 위에 다시 적용했을 때 같은 내용이 만들어지는지 확인합니다.</p></div>
-          <div><strong>실제 검사</strong><p>공식 원본과 과거 행내 소스의 변경 파일 목록을 먼저 고정한 뒤, 재구성한 브랜치의 파일을 비교합니다. JSON은 공백과 키 순서를 제외한 실제 값을 비교하고, Java·TypeScript 등 나머지 파일은 Git에서 차이가 없어야 합니다.</p></div>
-          <div><strong>예외·보완</strong><p>Java 파일에 빈 줄 하나만 달라도 차이로 판단해 중단합니다. 의미는 같지만 서식만 다른 경우에도 중단될 수 있으므로, 자동 통과시키기보다 서식 차이를 따로 보여주고 담당자가 확인하도록 보완하는 편이 안전합니다. 공식 Git 이력을 계속 유지하는 vendor branch에는 이 검사가 아니라 T25를 사용합니다.</p></div>
+          <div><strong>이 검사가 답하는 질문</strong><p>과거에 파일 상태만 보관하고 변경 기록은 남기지 못한 행내 소스를, 공식 원본과 등록자료만으로 같은 상태까지 다시 만들 수 있는지 확인합니다.</p></div>
+          <div><strong>어떻게 판단하나</strong><p>다시 만든 코드와 과거 보관 소스의 파일 내용을 비교합니다. JSON은 공백과 항목 순서가 달라도 실제 값이 같으면 같은 것으로 판단합니다. Java·TypeScript 등 나머지 파일은 내용이 완전히 같아야 통과합니다.</p></div>
+          <div><strong>이 검사만으로 알 수 없는 것</strong><p>빈 줄처럼 기능에 영향이 없는 차이도 불일치로 판단할 수 있습니다. 현재 OM_TEMP처럼 공식 변경 기록을 유지하는 브랜치에는 이 검사를 사용하지 않고 T25를 사용합니다.</p></div>
         </div>
       </details>
       <details class="p2-check is-evidenced">
-        <summary><b>T25 · 공식 버전 출발점 확인</b><span>검사할 코드가 지정한 공식 버전에서 출발했는가</span><span class="p2-checkmark" role="img" aria-label="현재 OM_TEMP 후보 결과 확인 가능">✓</span></summary>
+        <summary><b>T25 · 공식 버전 출발점 확인</b><span>검사할 코드가 지정한 공식 버전에서 출발했는가</span><span class="p2-checkmark" role="img" aria-label="현재 OM_TEMP 결과 파일 있음">✓</span></summary>
         <div class="p2-check-body">
-          <div><strong>무엇을 확인하나</strong><p>검사할 <code>custom</code> branch가 지정한 공식 버전에서 시작했는지 확인합니다.</p></div>
-          <div><strong>실제 검사</strong><p>Git의 공통 조상과 포함 관계를 조회해 공식 버전의 commit SHA가 행내 코드의 조상인지 확인합니다. 동시에 검사 대상 commit SHA와 전체 파일 상태가 사전에 기록한 검사 대상과 같은지도 확인합니다.</p></div>
-          <div><strong>예외·보완</strong><p>공식 코드가 이력에 포함됐다는 사실만 증명하며, 충돌을 올바르게 해결했는지 또는 기능이 정상인지까지 증명하지는 않습니다. 그래서 T26·T40과 행내 동작 검사가 함께 필요합니다.</p></div>
+          <div><strong>이 검사가 답하는 질문</strong><p>검사할 행내 커스터마이징 브랜치가 지정한 공식 버전에서 시작했는지 확인합니다.</p></div>
+          <div><strong>어떻게 판단하나</strong><p>검사할 행내 코드의 변경 기록을 거슬러 올라가 지정한 공식 버전이 실제 출발점으로 포함되어 있는지 확인합니다. 이어서 검사를 시작할 때 기록한 코드 버전과 현재 파일 상태가 그대로인지 확인합니다.</p></div>
+          <div><strong>판정 기준</strong><p>공식 버전에서 시작했고 검사 도중 코드가 바뀌지 않았으면 PASS입니다. 출발점이 다르거나 검사 도중 파일 상태가 달라졌으면 결과를 신뢰할 수 없으므로 중단합니다.</p></div>
+          <div><strong>이 검사만으로 알 수 없는 것</strong><p>올바른 공식 버전에서 시작했다는 사실만 확인합니다. 충돌 해결이 정확한지와 기능이 정상인지는 다른 검사와 기능 테스트가 확인해야 합니다.</p></div>
         </div>
       </details>
       <details class="p2-check is-evidenced">
-        <summary><b>T26 · 등록 기능 생존 확인</b><span>활성 BANK-OM의 필수 구현과 테스트 연결이 남아 있는가</span><span class="p2-checkmark" role="img" aria-label="현재 OM_TEMP 후보 결과 확인 가능">✓</span></summary>
+        <summary><b>T26 · 필수 커스터마이징 유지 확인</b><span>업그레이드 후에도 필수 파일과 테스트 연결이 유지됐는가</span><span class="p2-checkmark" role="img" aria-label="현재 OM_TEMP 결과 파일 있음">✓</span></summary>
         <div class="p2-check-body">
-          <div><strong>무엇을 확인하나</strong><p>Manifest와 Registry에서 상태가 <code>active</code>인 모든 BANK-OM ID의 커스터마이징이 검사 대상 코드에 남아 있는지 확인합니다.</p></div>
-          <div><strong>실제 검사</strong><p>각 활성 BANK-OM ID의 필수 파일이 존재하고 공식 원본과 실제로 다른지 확인합니다. 전체 등록 파일 중 필수가 아닌 파일이 없어졌거나 공식 원본과 같아지면 담당자 확인 대상으로 분류하며, 업무 계약과 연결된 테스트 목록도 함께 확인합니다.</p></div>
-          <div><strong>예외·보완</strong><p>파일이 존재하고 공식 원본과 다르더라도 기능이 올바르게 동작한다고 단정할 수는 없습니다. 실제 테스트 코드의 존재는 T60-I가, 실제 실행 결과는 T62가 따로 확인합니다.</p></div>
+          <div><strong>이 검사가 답하는 질문</strong><p>현재 사용하기로 등록한 BANK-OM 기능의 필수 코드와 테스트 연결이 업그레이드 과정에서 빠지지 않았는지 확인합니다.</p></div>
+          <div><strong>어떻게 판단하나</strong><p>Manifest에서 “반드시 커스터마이징 상태로 남아야 한다”고 지정한 파일이 실제로 존재하며 공식 원본과 다른지 확인합니다. 또한 해당 기능을 확인할 테스트가 등록되어 있는지 확인합니다.</p></div>
+          <div><strong>판정 기준</strong><p>필수 파일이나 필수 테스트 연결이 하나라도 없으면 BLOCK입니다. 필수로 지정하지 않은 등록 파일에 변화가 있으면 자동으로 실패시키지 않고 담당자 확인 대상으로 표시합니다.</p></div>
+          <div><strong>이 검사만으로 알 수 없는 것</strong><p>파일이 존재하고 공식 원본과 다르더라도 기능이 올바르게 동작한다고 단정할 수는 없습니다. 실제 테스트 코드의 존재는 T60-I가, 실제 실행 결과는 T62가 따로 확인합니다.</p></div>
         </div>
       </details>
       <details class="p2-check is-evidenced">
-        <summary><b>T30 · 커밋별 BANK-OM 식별 확인</b><span>공식 원본 이후의 각 행내 코드 커밋에 BANK-OM ID가 정확히 하나 있는가</span><span class="p2-checkmark" role="img" aria-label="현재 OM_TEMP 후보 결과 확인 가능">✓</span></summary>
+        <summary><b>T30 · 변경 기록별 BANK-OM 식별 확인</b><span>공식 버전 이후의 각 행내 변경에 BANK-OM ID가 정확히 하나 있는가</span><span class="p2-checkmark" role="img" aria-label="현재 OM_TEMP 결과 파일 있음">✓</span></summary>
         <div class="p2-check-body">
-          <div><strong>무엇을 확인하나</strong><p>공식 원본 이후의 각 커밋이 어떤 BANK-OM 변경인지 빠짐없이 구분되는지 확인합니다.</p></div>
-          <div><strong>실제 검사</strong><p>검사기는 공식 원본부터 검사 대상 commit SHA까지의 모든 커밋을 Git에서 순서대로 가져옵니다. 각 커밋 메시지의 <code>Customization-ID:</code> 항목과 그 커밋이 변경한 파일을 읽어, 행내 소스를 바꾼 커밋에 BANK-OM ID가 정확히 하나 있는지 확인합니다.</p></div>
-          <div><strong>예외·보완</strong><p>하나의 BANK-OM ID 안에 서로 다른 목적의 변경을 섞어도 파일 범위가 같으면 이 검사만으로는 구분하기 어렵습니다. 커밋 목적을 작게 유지하고 T40·T93 변경범위 검사로 실제 변경 파일까지 함께 비교해야 합니다.</p></div>
+          <div><strong>이 검사가 답하는 질문</strong><p>공식 원본 이후의 각 커밋이 어떤 BANK-OM 변경인지 빠짐없이 구분되는지 확인합니다.</p></div>
+          <div><strong>어떻게 판단하나</strong><p>공식 버전 이후에 추가된 행내 변경 기록을 모두 읽습니다. 각 변경 기록의 메시지에 <code>Customization-ID:</code>가 정확히 하나 있는지 확인하고, 어떤 파일을 바꿨는지도 함께 기록합니다.</p></div>
+          <div><strong>판정 기준</strong><p>ID가 없거나 한 변경에 여러 ID가 적혀 있으면 BLOCK입니다. 어떤 BANK-OM 기능의 변경인지 한 가지로 설명할 수 있어야 통과합니다.</p></div>
+          <div><strong>이 검사만으로 알 수 없는 것</strong><p>하나의 BANK-OM ID 안에 서로 다른 목적의 변경을 섞어도 파일 범위가 같으면 이 검사만으로는 구분하기 어렵습니다. 커밋 목적을 작게 유지하고 T40·T93 변경범위 검사로 실제 변경 파일까지 함께 비교해야 합니다.</p></div>
         </div>
       </details>
       <details class="p2-check is-evidenced">
-        <summary><b>T31 · BANK-OM 적용 순서 확인</b><span>후속 커밋과 ID 의존관계가 등록된 순서를 지키는가</span><span class="p2-checkmark" role="img" aria-label="현재 OM_TEMP 후보 결과 확인 가능">✓</span></summary>
+        <summary><b>T31 · BANK-OM 적용 순서 확인</b><span>후속 수정과 기능 간 선행 관계가 등록된 순서를 지키는가</span><span class="p2-checkmark" role="img" aria-label="현재 OM_TEMP 결과 파일 있음">✓</span></summary>
         <div class="p2-check-body">
-          <div><strong>무엇을 확인하나</strong><p>같은 BANK-OM ID를 여러 커밋에 사용할 수 있는지, 커밋이 연속되어 있는지, ID 간 선행 관계가 순환하지 않는지 확인합니다.</p></div>
-          <div><strong>실제 검사</strong><p>Git 커밋을 오래된 순서부터 나열한 뒤 같은 ID의 위치를 비교합니다. 여러 커밋 사용이 Manifest에서 허용됐는지, 다른 ID가 중간에 끼지 않았는지, 폐기한 ID를 다시 쓰지 않았는지 확인합니다.</p></div>
-          <div><strong>예외·보완</strong><p>선행 관계 자체를 빠뜨린 경우에는 검사기가 업무 관계를 새로 추론하지 못합니다. 커스터마이징 설계자가 선행 BANK-OM ID를 Manifest에 등록하고 리뷰하는 절차가 필요합니다.</p></div>
+          <div><strong>이 검사가 답하는 질문</strong><p>같은 BANK-OM ID의 후속 수정이 사전 규칙에 맞게 기록됐고, 먼저 적용해야 할 다른 기능보다 앞서 적용되지는 않았는지 확인합니다.</p></div>
+          <div><strong>어떻게 판단하나</strong><p>행내 변경 기록을 시간순으로 확인합니다. 같은 ID로 후속 수정을 허용했는지, 관련 변경들이 정해진 순서에 있는지, 폐기한 ID를 다시 사용하지 않았는지 확인합니다.</p></div>
+          <div><strong>판정 기준</strong><p>미등록 ID, 폐기 ID 재사용, 허용하지 않은 후속 수정, 서로 먼저 적용되어야 한다고 등록된 모순 관계가 있으면 BLOCK입니다.</p></div>
+          <div><strong>이 검사만으로 알 수 없는 것</strong><p>선행 관계 자체를 빠뜨린 경우에는 검사기가 업무 관계를 새로 추론하지 못합니다. 커스터마이징 설계자가 선행 BANK-OM ID를 Manifest에 등록하고 리뷰하는 절차가 필요합니다.</p></div>
         </div>
       </details>
       <details class="p2-check is-evidenced">
-        <summary><b>T40 · 허용·필수 파일 범위 확인</b><span>허용한 파일만 바뀌고 필수 파일은 최종 코드에 남았는가</span><span class="p2-checkmark" role="img" aria-label="현재 OM_TEMP 후보 결과 확인 가능">✓</span></summary>
+        <summary><b>T40 · 등록한 변경 파일 범위 확인</b><span>등록한 파일만 바뀌고 필수 변경은 최종 코드에 반영됐는가</span><span class="p2-checkmark" role="img" aria-label="현재 OM_TEMP 결과 파일 있음">✓</span></summary>
         <div class="p2-check-body">
-          <div><strong>무엇을 확인하나</strong><p>각 BANK-OM 커밋이 사전에 등록한 파일만 변경했고, 반드시 반영돼야 할 파일이 최종 코드에서 실제로 변경됐는지 확인합니다.</p></div>
-          <div><strong>실제 검사</strong><p>첫째, 각 커밋이 변경한 모든 파일을 <code>allowed_changed_paths</code>와 비교합니다. 둘째, 공식 원본과 최종 코드의 전체 차이를 구해 <code>required_changed_paths</code>가 실제 차이에 포함되는지 확인합니다. 잠깐 수정했다가 원상 복구한 필수 파일도 이 단계에서 잡힙니다.</p></div>
-          <div><strong>예외·보완</strong><p>변경 범위를 통제하는 핵심 검사지만 파일 단위로만 판단합니다. 허용된 파일 안에서 잘못된 줄을 수정한 경우까지는 알 수 없고, 여러 BANK-OM ID가 같은 파일을 수정할 때의 줄 단위 소유 관계는 T25-R의 공유 파일 설정과 코드 리뷰가 보완해야 합니다.</p></div>
+          <div><strong>이 검사가 답하는 질문</strong><p>각 BANK-OM 커밋이 사전에 등록한 파일만 변경했고, 반드시 반영돼야 할 파일이 최종 코드에서 실제로 변경됐는지 확인합니다.</p></div>
+          <div><strong>어떻게 판단하나</strong><p>먼저 현재 버전에서 같은 BANK-OM ID가 수정한 모든 파일이 Manifest의 <code>changed_paths</code> 안에 있는지 확인합니다. 예를 들어 BANK-OM-007의 두 commit이 변경한 10개 파일을 한 목록과 비교합니다. 그다음 <code>required_changed_paths</code>의 핵심 파일이 공식 원본과 실제로 다른지 확인합니다.</p></div>
+          <div><strong>판정 기준</strong><p>등록하지 않은 파일을 수정했거나 필수 변경이 최종 코드에서 사라졌으면 BLOCK입니다.</p></div>
+          <div><strong>이 검사만으로 알 수 없는 것</strong><p>변경 범위를 통제하는 핵심 검사지만 파일 단위로만 판단합니다. 등록한 파일 안에서 잘못된 줄을 수정한 경우까지는 알 수 없습니다. 여러 BANK-OM ID가 같은 파일을 수정하면 공용 파일 소유정보는 공동 소유 ID까지만 알려주며, 실제 줄별 의도는 코드 리뷰가 확인해야 합니다.</p></div>
         </div>
       </details>
       <details class="p2-check is-evidenced">
-        <summary><b>T41 · 민감 경로 변경 위험 확인</b><span>실제 변경이 보안·인증·설정·DB 경로에 닿았는가</span><span class="p2-checkmark" role="img" aria-label="현재 OM_TEMP 후보 결과 확인 가능">✓</span></summary>
+        <summary><b>T41 · 중요 시스템 파일 변경 확인</b><span>보안·인증·설정·DB 관련 파일을 수정했는가</span><span class="p2-checkmark" role="img" aria-label="현재 OM_TEMP 결과 파일 있음">✓</span></summary>
         <div class="p2-check-body">
-          <div><strong>무엇을 확인하나</strong><p>보안·인증·설정·DB 경로를 위험도 단계로 나누고, 실제 변경 파일이 어느 단계에 해당하는지 확인합니다.</p></div>
-          <div><strong>실제 검사</strong><p>AST로 코드 내용을 분석하는 검사가 아닙니다. <code>sensitive-zones.yaml</code>의 경로 규칙과 실제 변경 파일을 비교합니다. 현재 보안 서비스 경로는 변경 시 중단하고, 인증 스키마와 설정 경로는 담당자 승인을 요구하며, DB 변경과 수집 경로는 결과에 표시만 합니다.</p></div>
-          <div><strong>예외·보완</strong><p>새 보안 코드가 기존 경로 규칙 밖에 추가되면 놓칠 수 있습니다. 경로 규칙 점검 외에 정적 보안 분석, 보안 담당자 리뷰와 새 모듈 탐지를 함께 사용해야 합니다.</p></div>
+          <div><strong>이 검사가 답하는 질문</strong><p>보안·인증·설정·DB 경로를 위험도 단계로 나누고, 실제 변경 파일이 어느 단계에 해당하는지 확인합니다.</p></div>
+          <div><strong>어떻게 판단하나</strong><p>코드 내용을 해석하는 검사가 아니라 파일 위치를 확인하는 검사입니다. 사전에 “변경 금지·승인 필요·결과 표시”로 분류한 경로와 실제 변경 파일의 위치를 비교합니다.</p></div>
+          <div><strong>판정 기준</strong><p>변경 금지 경로는 BLOCK, 보안·인증·설정처럼 담당자 검토가 필요한 경로는 APPROVAL입니다. DB 변경과 수집 경로는 위험 정보를 결과에 표시합니다.</p></div>
+          <div><strong>이 검사만으로 알 수 없는 것</strong><p>새 보안 코드가 기존 경로 규칙 밖에 추가되면 놓칠 수 있습니다. 경로 규칙 점검 외에 정적 보안 분석, 보안 담당자 리뷰와 새 모듈 탐지를 함께 사용해야 합니다.</p></div>
         </div>
       </details>
       <details class="p2-check is-evidenced">
-        <summary><b>T93-범위 · 실제 변경과 Manifest 일치 확인</b><span>BANK-OM별 실제 변경 파일과 Manifest가 정확히 같은가</span><span class="p2-checkmark" role="img" aria-label="현재 OM_TEMP 후보 결과 확인 가능">✓</span></summary>
+        <summary><b>T93-범위 · 실제 변경과 Manifest 일치 확인</b><span>BANK-OM별 실제 변경 파일이 빠짐없이 등록됐는가</span><span class="p2-checkmark" role="img" aria-label="현재 OM_TEMP 결과 파일 있음">✓</span></summary>
         <div class="p2-check-body">
-          <div><strong>무엇을 확인하나</strong><p>각 BANK-OM ID가 실제로 변경한 파일 목록과 Manifest에 등록한 정확한 파일 목록이 같은지 확인합니다.</p></div>
-          <div><strong>실제 검사</strong><p>Git 커밋 이력을 BANK-OM ID별로 다시 모아 실제 변경 파일 목록을 만듭니다. 실제로 변경했지만 등록하지 않은 파일은 중단하고, 등록했지만 해당 ID가 변경하지 않은 파일은 담당자 확인 대상으로 분류합니다.</p></div>
-          <div><strong>예외·보완</strong><p>파일 목록이 같아도 파일 안의 어떤 줄을 누가 변경했는지는 알 수 없습니다. 공유 파일은 별도 소유 관계와 코드 리뷰가 필요하며, 폴더 전체 같은 넓은 패턴은 정확 비교가 불가능하므로 현재 검사는 개별 파일 경로만 허용합니다.</p></div>
+          <div><strong>이 검사가 답하는 질문</strong><p>각 BANK-OM ID가 실제로 변경한 파일 목록과 Manifest에 등록한 정확한 파일 목록이 같은지 확인합니다.</p></div>
+          <div><strong>어떻게 판단하나</strong><p>변경 기록을 BANK-OM ID별로 모아 실제 수정 파일 목록을 만듭니다. 이 목록을 Manifest에 등록한 정확한 파일 목록과 비교합니다.</p></div>
+          <div><strong>판정 기준</strong><p>실제로 수정했지만 등록하지 않은 파일이 있으면 BLOCK입니다. 등록했지만 해당 ID가 수정하지 않은 파일이 있으면 잘못 등록했을 가능성이 있으므로 APPROVAL로 담당자 확인을 요구합니다.</p></div>
+          <div><strong>이 검사만으로 알 수 없는 것</strong><p>파일 목록이 같아도 파일 안의 어떤 줄을 누가 변경했는지는 알 수 없습니다. 공유 파일은 별도 소유 관계와 코드 리뷰가 필요하며, 폴더 전체 같은 넓은 패턴은 정확 비교가 불가능하므로 현재 검사는 개별 파일 경로만 허용합니다.</p></div>
         </div>
       </details>
 
       <h3>B · 다음 공식 OpenMetadata 버전의 영향 확인</h3>
       <details class="p2-check is-evidenced">
-        <summary><b>T42 · 공식 업그레이드 영향 경로 확인</b><span>새 공식 버전이 커스터마이징 의존 대상을 바꿨는가</span><span class="p2-checkmark" role="img" aria-label="현재 OM_TEMP 후보 결과 확인 가능">✓</span></summary>
+        <summary><b>T42 · 공식 업그레이드 영향 확인</b><span>새 공식 버전이 커스터마이징 관련 파일이나 설정을 바꿨는가</span><span class="p2-checkmark" role="img" aria-label="현재 OM_TEMP 결과 파일 있음">✓</span></summary>
         <div class="p2-check-body">
-          <div><strong>무엇을 확인하나</strong><p>Manifest의 watch에 등록된 파일·설정·라이브러리가 새 공식 버전에서 바뀌었는지 확인합니다. 여기에는 BANK-OM이 직접 수정한 경로와, 수정하지 않았지만 기능이 의존하는 경로가 함께 포함됩니다.</p></div>
-          <div><strong>실제 검사</strong><p>기존 공식 버전과 새 공식 버전의 Git 차이를 구하고, 각 BANK-OM Manifest의 <code>upgrade_watch</code>에 등록한 경로·설정 키·라이브러리 이름과 비교합니다. 하나라도 일치하면 자동 통과하지 않고 담당자 확인을 요구합니다.</p></div>
-          <div><strong>예외·보완</strong><p>실제 변경 경로는 Manifest 생성기가 Git에서 watch에 포함합니다. 새 공식 버전의 변경 파일을 커스터마이징 코드가 직접 참조하면 추가 watch 경로와 참조 근거도 제시합니다. 다만 간접 호출처럼 이름이 코드에 드러나지 않는 의존 관계는 담당자가 추가해야 합니다.</p></div>
+          <div><strong>이 검사가 답하는 질문</strong><p>새 공식 버전이 BANK-OM 기능과 관련된 파일·설정·라이브러리를 변경했는지 확인합니다. BANK-OM이 직접 수정한 파일뿐 아니라 수정하지 않았지만 기능 실행에 필요한 공용 파일도 대상입니다.</p></div>
+          <div><strong>어떻게 판단하나</strong><p>이전 공식 버전과 새 공식 버전 사이에서 바뀐 항목을 찾고, Manifest의 “업그레이드 때 다시 확인할 항목”(<code>upgrade_watch</code>)과 비교합니다.</p></div>
+          <div><strong>판정 기준</strong><p>관련 항목이 하나도 바뀌지 않았으면 PASS입니다. 하나라도 바뀌었으면 실제 충돌이 확정된 것은 아니지만 영향 확인이 필요하므로 APPROVAL입니다.</p></div>
+          <div><strong>이 검사만으로 알 수 없는 것</strong><p>코드에 파일 이름이나 호출 관계가 직접 나타나는 경우는 생성기가 확인 대상을 제안할 수 있습니다. 실행 중에만 결정되는 간접 의존 관계는 자동으로 찾기 어려우므로 담당자가 추가해야 합니다.</p></div>
         </div>
       </details>
       <details class="p2-check">
-        <summary><b>T43 · 커스터마이징 유지 부담 확인</b><span>커스터마이징 규모와 충돌률이 정책 한도를 넘었는가</span><em class="p2-result-state p2-state-partial">실제 충돌률 연결 필요</em></summary>
+        <summary><b>T43 · 커스터마이징 유지 부담 확인</b><span>공식 코드 수정 규모가 너무 커져 업그레이드 부담이 높아졌는가</span><em class="p2-result-state p2-state-partial">충돌 결과 자동 연결 전</em></summary>
         <div class="p2-check-body">
-          <div><strong>무엇을 확인하나</strong><p>공식 공용 코드의 커스터마이징 규모가 커져 다음 업그레이드를 감당하기 어려운 수준인지 확인합니다.</p></div>
-          <div><strong>실제 검사</strong><p>종류(<code>kind</code>)가 <code>core-patch</code>인 활성 BANK-OM ID 수, 공식 원본 대비 추가·삭제한 줄 수, 여러 BANK-OM ID가 함께 수정한 파일의 최대 ID 수와 재적용 충돌 비율을 정책 한도와 비교합니다. 현재 각 수치가 14/19개, 14,000/18,000줄, 4/8개, 충돌률 15%/35%를 초과하면 각각 담당자 승인 또는 중단이 필요합니다.</p></div>
-          <div><strong>예외·보완</strong><p>충돌률은 검사기가 직접 재현하지 않고 실행 명령의 입력값으로 받습니다. 실제 업그레이드 재적용 결과에서 자동 계산하고 근거 파일과 함께 저장하도록 보완하지 않으면 잘못된 숫자를 넣을 위험이 있습니다. 또한 수정량이 작아도 설계가 복잡할 수 있으므로 수치만으로 품질을 판단하면 안 됩니다.</p></div>
+          <div><strong>이 검사가 답하는 질문</strong><p>공식 공용 코드의 커스터마이징 규모가 커져 다음 업그레이드를 감당하기 어려운 수준인지 확인합니다.</p></div>
+          <div><strong>어떻게 판단하나</strong><p>공식 공용 코드를 수정한 BANK-OM 기능 수, 공식 원본과 달라진 코드 줄 수, 한 파일을 함께 수정한 BANK-OM ID 수, 실제 업그레이드에서 충돌한 비율을 사전 기준과 비교합니다.</p></div>
+          <div><strong>판정 기준</strong><p>주의 기준을 넘으면 APPROVAL, 중단 기준을 넘으면 BLOCK입니다. 현재 기준값은 기능 수 14/19개, 변경량 14,000/18,000줄, 한 파일의 ID 수 4/8개, 충돌률 15%/35%입니다.</p></div>
+          <div><strong>이 검사만으로 알 수 없는 것</strong><p>현재 충돌률은 검사기가 직접 계산하지 않고 사용자가 입력합니다. 따라서 실제 충돌 결과를 자동으로 연결하기 전까지 충돌률 판정은 완전 자동화됐다고 볼 수 없습니다. 또한 수정량이 작더라도 설계가 복잡할 수 있으므로 수치만으로 품질을 판단하면 안 됩니다.</p></div>
         </div>
       </details>
       <details class="p2-check">
-        <summary><b>T93-정책 · 경로 정책 노후화 확인</b><span>파일 이동과 새 모듈 때문에 기존 경로 규칙이 낡았는가</span><em class="p2-result-state p2-state-not-run">현재 후보 미실행</em></summary>
+        <summary><b>T93-정책 · 검사 경로 최신성 확인</b><span>공식 파일 이동 때문에 기존 검사 대상이 더 이상 맞지 않는가</span><em class="p2-result-state p2-state-not-run">현재 OM_TEMP 결과 없음</em></summary>
         <div class="p2-check-body">
-          <div><strong>무엇을 확인하나</strong><p>공식 버전의 파일 이동이나 모듈 추가 때문에 기존 감시 규칙이 더 이상 유효하지 않은지 확인합니다.</p></div>
-          <div><strong>실제 검사</strong><p>새 공식 버전의 전체 파일 목록에서 각 감시 경로가 최소 한 파일과 일치하는지 확인합니다. 이전에는 없던 최상위 폴더가 추가됐는데 소유 구분 규칙에 없으면 검사 불가로 처리합니다.</p></div>
-          <div><strong>예외·보완</strong><p>경로가 다른 파일과 우연히 일치하면 잘못 통과할 수 있습니다. 또한 현재 통합 실행기는 감시 파일 패턴만 넘기며 민감 경로 패턴의 노후화는 함께 검사하지 않으므로, T41의 민감 경로도 같은 방식으로 검사하도록 보완해야 합니다.</p></div>
+          <div><strong>이 검사가 답하는 질문</strong><p>공식 버전에서 파일이 이동하거나 새 모듈이 추가되어, Manifest와 보안 검사에 등록한 파일 위치가 더 이상 맞지 않는지 확인합니다.</p></div>
+          <div><strong>어떻게 판단하나</strong><p>등록한 각 파일 위치가 새 공식 버전에서도 실제 파일과 연결되는지 확인합니다. 새 최상위 폴더가 생겼는데 어느 담당 영역인지 등록되지 않았다면 정상 검사를 계속할 수 없다고 판단합니다.</p></div>
+          <div><strong>판정 기준</strong><p>더 이상 실제 파일과 연결되지 않는 검사 위치는 APPROVAL입니다. 담당 영역을 알 수 없는 새 모듈은 검사를 신뢰할 수 없으므로 중단합니다.</p></div>
+          <div><strong>이 검사만으로 알 수 없는 것</strong><p>비슷한 이름의 다른 파일과 우연히 연결될 수 있습니다. 현재는 업그레이드 영향 확인 위치만 검사하며, 보안·인증 등 민감 경로의 최신성 확인은 아직 통합 실행에 연결되지 않았습니다.</p></div>
         </div>
       </details>
 
       <h3>C · 행내 테스트 환경에서 확인</h3>
       <details class="p2-check is-evidenced">
-        <summary><b>T60-I · 필수 테스트 코드 존재 확인</b><span>등록한 업무 테스트가 실제 Python 코드로 존재하는가</span><span class="p2-checkmark" role="img" aria-label="현재 OM_TEMP 후보 결과 확인 가능">✓</span></summary>
+        <summary><b>T60-I · 필수 테스트 파일 확인</b><span>등록한 업무 테스트의 파일과 테스트 항목이 실제로 존재하는가</span><span class="p2-checkmark" role="img" aria-label="현재 OM_TEMP 결과 파일 있음">✓</span></summary>
         <div class="p2-check-body">
-          <div><strong>무엇을 확인하나</strong><p>각 커스터마이징의 핵심 업무 동작을 확인하기로 등록한 테스트가 이름만 있는 것이 아니라 실제 코드로 존재하는지 확인합니다. 현재 등록된 9개는 InstanceCode API·검색, QueryReport 연결, Data Assertions API·화면, 은행 컬럼 API·화면, 한글 입력 화면, Sybase·Tibero 연결 스키마를 확인합니다.</p></div>
-          <div><strong>실제 검사</strong><p><code>contracts.yaml</code>에 적은 Python pytest 파일 경로와 함수 이름을 읽고, Python 코드 구조 분석(AST)으로 파일을 정상적으로 해석할 수 있는지와 해당 테스트 함수가 실제로 존재하는지 확인합니다. 이 단계에서는 테스트를 실행하지 않습니다.</p></div>
-          <div><strong>예외·보완</strong><p>현재 T60-I는 <code>.py</code> 파일만 허용하므로 Java JUnit이나 TypeScript Jest 테스트의 존재는 확인하지 않습니다. Python 테스트가 Java API와 TypeScript 화면을 실제로 호출할 수는 있지만, 다른 테스트 언어를 직접 등록하려면 검사기에 언어·프레임워크별 확인 방식을 추가해야 합니다. 또한 현재는 계약에서 파생된 테스트만 확인하므로 Manifest의 <code>direct_tests</code>도 같은 방식으로 확인하도록 보완해야 합니다.</p></div>
+          <div><strong>이 검사가 답하는 질문</strong><p>각 커스터마이징의 핵심 업무 동작을 확인하기로 등록한 테스트가 이름만 있는 것이 아니라 실제 코드로 존재하는지 확인합니다. 현재 등록된 9개는 InstanceCode API·검색, QueryReport 연결, Data Assertions API·화면, 은행 컬럼 API·화면, 한글 입력 화면, Sybase·Tibero 연결 스키마를 확인합니다.</p></div>
+          <div><strong>어떻게 판단하나</strong><p><code>contracts.yaml</code>에 등록한 Python 테스트 파일을 열 수 있는지, 파일에 문법 오류가 없는지, 등록한 이름의 테스트 항목이 실제로 있는지 확인합니다. 이 단계에서는 테스트를 실행하지 않습니다.</p></div>
+          <div><strong>판정 기준</strong><p>파일이 없거나, Python 코드로 읽을 수 없거나, 등록한 테스트 항목을 찾을 수 없으면 BLOCK입니다.</p></div>
+          <div><strong>이 검사만으로 알 수 없는 것</strong><p>현재 T60-I는 <code>.py</code> 파일만 허용하므로 Java JUnit이나 TypeScript Jest 테스트의 존재는 확인하지 않습니다. Python 테스트가 Java API와 TypeScript 화면을 실제로 호출할 수는 있지만, 다른 테스트 언어를 직접 등록하려면 검사기에 언어·프레임워크별 확인 방식을 추가해야 합니다. 또한 현재는 계약에서 파생된 테스트만 확인하므로 Manifest의 <code>direct_tests</code>도 같은 방식으로 확인하도록 보완해야 합니다.</p></div>
         </div>
       </details>
       <details class="p2-check">
-        <summary><b>T61 · 커스터마이징 누락 탐지력 확인</b><span>커스터마이징을 빼면 필수 테스트가 실제로 실패하는가</span><em class="p2-result-state p2-state-partial">과거 코드에서 2/5 확인</em></summary>
+        <summary><b>T61 · 테스트의 누락 탐지 능력 확인</b><span>커스터마이징을 제거하면 해당 테스트가 실제로 실패하는가</span><em class="p2-result-state p2-state-partial">과거 자료 일부만 확인</em></summary>
         <div class="p2-check-body">
-          <div><strong>무엇을 확인하나</strong><p>커스터마이징을 제거했는데도 테스트가 통과하는 형식적인 테스트인지 확인합니다.</p></div>
-          <div><strong>실제 검사</strong><p>해당 BANK-OM 변경이 없는 코드 버전을 별도로 만들고 같은 필수 테스트를 실행합니다. 이 버전에서 테스트가 명확한 실패로 끝나야 커스터마이징 누락을 잡는 테스트라고 판단합니다. 행내 환경에서는 API와 화면이 정상이라는 별도 확인을 전후에 실행하고 대상 테스트를 두 번 반복합니다.</p></div>
-          <div><strong>예외·보완</strong><p>제거본의 다른 장애를 커스터마이징 누락으로 오인할 수 있습니다. 따라서 커스터마이징 포함본은 통과하고 제거본만 미리 정한 오류 종류와 메시지로 실패하는지, 같은 환경에서 반복 확인해야 합니다.</p></div>
+          <div><strong>이 검사가 답하는 질문</strong><p>등록한 테스트가 단순히 항상 통과하는 테스트가 아니라, BANK-OM 기능이 빠졌을 때 실제로 문제를 발견하는지 확인합니다.</p></div>
+          <div><strong>어떻게 판단하나</strong><p>하나는 BANK-OM 기능이 포함된 코드, 다른 하나는 해당 기능만 제거한 코드로 준비합니다. 같은 테스트를 실행해 포함된 코드는 통과하고 제거한 코드만 예상한 이유로 실패하는지 확인합니다.</p></div>
+          <div><strong>판정 기준</strong><p>기능 포함본은 통과하고 제거본만 실패하면 PASS입니다. 기능을 제거했는데도 테스트가 통과하면 누락을 발견하지 못하는 테스트이므로 BLOCK입니다. 환경 문제로 실행하지 못했으면 판정을 보류합니다.</p></div>
+          <div><strong>이 검사만으로 알 수 없는 것</strong><p>제거본의 다른 장애를 커스터마이징 누락으로 오인할 수 있습니다. 따라서 커스터마이징 포함본은 통과하고 제거본만 미리 정한 오류 종류와 메시지로 실패하는지, 같은 환경에서 반복 확인해야 합니다.</p></div>
         </div>
       </details>
       <details class="p2-check">
-        <summary><b>T62 · 테스트 결과와 검사 대상 결속 확인</b><span>테스트 결과가 정확한 코드·배포 파일에서 나왔는가</span><em class="p2-result-state p2-state-not-run">행내 실행 결과 필요</em></summary>
+        <summary><b>T62 · 테스트 결과의 대상 확인</b><span>이 테스트 결과가 정확히 지금 검사하는 코드에서 나온 것인가</span><em class="p2-result-state p2-state-not-run">행내 실행 결과 필요</em></summary>
         <div class="p2-check-body">
-          <div><strong>무엇을 확인하나</strong><p>테스트 결과가 정확히 어떤 소스 코드와 배포 파일, 어떤 검사기와 테스트 코드에서 나온 것인지 확인합니다.</p></div>
-          <div><strong>실제 검사</strong><p>테스트 결과에 검사한 <code>custom</code> commit SHA, 배포 파일의 SHA-256 digest, 검사기 버전, 테스트 묶음 버전을 함께 저장합니다. 필수 테스트가 빠졌거나 마지막 실행이 실패하면 중단하고, 중요 테스트가 재실행 후에만 통과하면 담당자 승인을 요구합니다.</p></div>
-          <div><strong>예외·보완</strong><p>현재 결과 형식에는 실행 환경의 설정과 버전을 식별하는 값이 없습니다. 같은 코드라도 DB·검색엔진·설정이 다르면 결과가 달라질 수 있으므로 환경 정보의 digest와 신뢰할 수 있는 실행 시스템의 서명을 추가해야 합니다.</p></div>
+          <div><strong>이 검사가 답하는 질문</strong><p>테스트 결과가 정확히 어떤 소스 코드와 배포 파일, 어떤 검사기와 테스트 코드에서 나온 것인지 확인합니다.</p></div>
+          <div><strong>어떻게 판단하나</strong><p>테스트 결과에 행내 코드 버전 번호, 배포 파일의 내용 식별값, 검사기 버전, 테스트 목록 버전을 함께 기록합니다. 기록된 값이 현재 검사 대상과 같은지 확인합니다.</p></div>
+          <div><strong>판정 기준</strong><p>필수 테스트가 빠지거나 실패했으면 BLOCK입니다. 결과가 다른 코드나 배포 파일에서 나온 것이면 결과를 신뢰할 수 없으므로 중단합니다. 중요한 테스트가 재실행 후에만 통과하면 APPROVAL입니다.</p></div>
+          <div><strong>이 검사만으로 알 수 없는 것</strong><p>현재 결과에는 DB·검색엔진·설정 버전처럼 실행 환경을 구분하는 값이 없습니다. 같은 코드라도 환경이 다르면 결과가 달라질 수 있으므로 운영 적용 전 환경 정보도 함께 고정해야 합니다.</p></div>
         </div>
       </details>
       <details class="p2-check">
-        <summary><b>T63 · 공식 원본 대비 새 TypeScript 오류 확인</b><span>행내 코드에 공식 원본에는 없는 TypeScript 오류가 생겼는가</span><em class="p2-result-state p2-state-not-run">현재 후보 미실행</em></summary>
+        <summary><b>T63 · 공식 원본 대비 새 TypeScript 오류 확인</b><span>행내 코드에 공식 원본에는 없는 TypeScript 오류가 생겼는가</span><em class="p2-result-state p2-state-not-run">현재 OM_TEMP 결과 없음</em></summary>
         <div class="p2-check-body">
-          <div><strong>무엇을 확인하나</strong><p>행내 커스터마이징 때문에 공식 원본보다 새로운 TypeScript 오류가 생겼는지 확인합니다.</p></div>
-          <div><strong>실제 검사</strong><p>공식 원본과 행내 코드에서 같은 TypeScript 검사를 실행한 뒤, 파일 경로와 오류 코드별 발생 횟수를 비교합니다. 행내 코드에만 생긴 오류는 중단하며, 공식 원본부터 있던 오류가 남아 있으면 자동 통과하지 않습니다.</p></div>
-          <div><strong>예외·보완</strong><p>파일 이동은 같은 오류도 새 오류처럼 보이게 할 수 있고, 오류 메시지만 바뀐 경우에는 담당자 판단이 필요합니다. 현재 비교 함수는 Node·Yarn 버전이 같은지 직접 강제하지 않으므로 실행 환경과 전체 로그의 digest를 검사 입력에 연결해야 합니다.</p></div>
+          <div><strong>이 검사가 답하는 질문</strong><p>행내 커스터마이징 때문에 공식 원본보다 새로운 TypeScript 오류가 생겼는지 확인합니다.</p></div>
+          <div><strong>어떻게 판단하나</strong><p>공식 원본과 행내 코드에 같은 화면 코드 검사를 실행합니다. 오류가 발생한 파일 위치와 오류 종류를 비교해 행내 코드에만 새로 생긴 오류를 찾습니다.</p></div>
+          <div><strong>판정 기준</strong><p>행내 코드에만 생긴 오류는 BLOCK입니다. 공식 원본부터 있던 오류가 남아 있으면 자동 통과하지 않고 APPROVAL로 표시합니다.</p></div>
+          <div><strong>이 검사만으로 알 수 없는 것</strong><p>파일이 이동하면 같은 오류도 새로운 오류처럼 보일 수 있습니다. 또한 두 코드를 서로 다른 Node·Yarn 환경에서 검사하면 공정한 비교가 아니므로 동일 환경에서 실행해야 합니다.</p></div>
         </div>
       </details>
 
-      <h3>D · 업그레이드 완료와 배포 승격에서 확인</h3>
+      <h3>D · 업그레이드 완료와 배포 전 확인</h3>
       <details class="p2-check">
-        <summary><b>T90 · 업그레이드 전 과정 결과 확인</b><span>정해진 업그레이드 12단계가 같은 대상에서 완료됐는가</span><em class="p2-result-state p2-state-not-run">행내 12단계 실행 필요</em></summary>
+        <summary><b>T90 · 업그레이드 전 과정 결과 확인</b><span>정해진 12단계가 같은 코드와 환경에서 모두 완료됐는가</span><em class="p2-result-state p2-state-not-run">행내 실행 필요</em></summary>
         <div class="p2-check-body">
-          <div><strong>무엇을 확인하나</strong><p>실제 데이터와 행내 환경에서 업그레이드, DB·검색·권한·API·수집·복구가 모두 정상인지 확인합니다.</p></div>
-          <div><strong>실제 검사</strong><p>운영 스냅샷 복원부터 롤백 연습까지 정해진 12단계의 결과가 모두 통과인지 확인하고, 결과 문서를 검사한 <code>custom</code> commit SHA·배포 파일 digest·T62 결과와 연결합니다.</p></div>
-          <div><strong>예외·보완</strong><p>현재 T90 코드는 12단계 결과 문서의 형식과 상태만 판단하며 각 단계를 직접 실행하거나 증거 파일의 내용을 검증하지 않습니다. 신뢰할 수 있는 실행 시스템이 각 단계의 실제 로그를 보관하고 서명하도록 보완해야 합니다.</p></div>
+          <div><strong>이 검사가 답하는 질문</strong><p>실제 데이터와 행내 환경에서 업그레이드, DB·검색·권한·API·수집·복구가 모두 정상인지 확인합니다.</p></div>
+          <div><strong>어떻게 판단하나</strong><p>운영 데이터 복원부터 장애 시 이전 버전 복구 연습까지 12단계 결과가 모두 통과인지 확인합니다. 각 결과가 지금 검사하는 코드와 배포 파일에서 나온 것인지도 함께 확인합니다.</p></div>
+          <div><strong>판정 기준</strong><p>필수 단계가 빠지거나 실패했으면 BLOCK입니다. 다른 코드나 배포 파일의 결과가 섞였으면 결과를 신뢰할 수 없으므로 중단합니다.</p></div>
+          <div><strong>이 검사만으로 알 수 없는 것</strong><p>현재 검사기는 12단계를 직접 실행하지 않고 제출된 결과 문서의 형식과 상태만 읽습니다. 실제 로그가 정확한지는 행내 실행 시스템과 담당자가 보증해야 합니다.</p></div>
         </div>
       </details>
       <details class="p2-check">
-        <summary><b>T91 · 검사 산출물과 배포 산출물 일치 확인</b><span>검사한 소스·이미지·Helm을 다시 만들지 않고 배포하는가</span><em class="p2-result-state p2-state-not-run">배포 digest 필요</em></summary>
+        <summary><b>T91 · 검사 대상과 배포 대상 일치 확인</b><span>검사를 통과한 파일과 실제 배포할 파일이 정확히 같은가</span><em class="p2-result-state p2-state-not-run">행내 배포 정보 필요</em></summary>
         <div class="p2-check-body">
-          <div><strong>무엇을 확인하나</strong><p>검사를 마친 소스와 이미지·Helm 설정을 다시 만들지 않고 그대로 배포하는지 확인합니다.</p></div>
-          <div><strong>실제 검사</strong><p>승인 시점에 배포할 <code>custom</code> commit SHA, 컨테이너 이미지 digest, Helm 파일 digest, 검사 결과 digest를 고정합니다. 배포 시 관측한 값이 하나라도 다르거나 중간에 다시 빌드했으면 중단합니다.</p></div>
-          <div><strong>예외·보완</strong><p>digest를 어디에서 읽었는지가 신뢰할 수 있어야 합니다. T91만으로는 외부망에서 내부망으로 옮기는 과정의 서명이나 내부망 재검증까지 보장하지 않으므로 별도의 반입 검증이 필요합니다.</p></div>
+          <div><strong>이 검사가 답하는 질문</strong><p>검사를 마친 소스와 이미지·Helm 설정을 다시 만들지 않고 그대로 배포하는지 확인합니다.</p></div>
+          <div><strong>어떻게 판단하나</strong><p>검사를 통과한 코드, 컨테이너 이미지, Helm 설정, 검사 결과의 내용 식별값을 저장합니다. 배포 직전 파일의 식별값과 하나씩 비교합니다.</p></div>
+          <div><strong>판정 기준</strong><p>하나라도 다르거나 검사 후 다시 빌드했다면 BLOCK입니다. 모두 같아야 배포 승인 검토를 계속할 수 있습니다.</p></div>
+          <div><strong>이 검사만으로 알 수 없는 것</strong><p>식별값을 신뢰할 수 있는 시스템에서 읽었다는 보장이 필요합니다. 외부망에서 내부망으로 파일을 옮기는 과정의 위·변조 여부는 별도의 반입 검증이 확인해야 합니다.</p></div>
         </div>
       </details>
     </div>
@@ -264,27 +335,27 @@
 
   <details class="p2-details p2-io-details">
     <summary>검사기별 입력과 출력 한눈에 보기</summary>
-    <p>각 검사는 결과 파일에 <strong>검사명, 판정(PASS·APPROVAL·BLOCK·ANALYSIS ERROR), 판단 이유</strong>를 남깁니다. 아래 입력이 없거나 신뢰할 수 없으면 정상 통과가 아니라 <strong>ANALYSIS ERROR</strong>로 중단합니다.</p>
+    <p>각 검사는 결과 파일에 <strong>검사명, 판정, 판단 이유</strong>를 남깁니다. PASS는 통과, APPROVAL은 담당자 확인 필요, BLOCK은 수정 전까지 다음 단계 중단을 뜻합니다. 검사에 필요한 자료가 없거나 서로 맞지 않으면 <strong>ANALYSIS ERROR(판단 불가)</strong>로 중단합니다.</p>
     <div class="table-responsive">
       <table class="table table-sm p2-io-table">
-        <thead><tr><th>검사기</th><th>필수 입력</th><th>주요 출력</th><th>출력을 어떻게 읽나</th></tr></thead>
+        <thead><tr><th>검사</th><th>검사 전에 준비할 자료</th><th>검사기가 알려주는 것</th><th>결과를 어떻게 읽나</th></tr></thead>
         <tbody>
-          <tr><td><strong>T25-R</strong></td><td>공식 target SHA, 과거 snapshot SHA, Manifest, 전체 변경 목록, 공용 파일 소유정보</td><td>재구성 계획과 digest, 파일별 소유·제외 목록, 판정</td><td>PASS면 공식 원본 위에서 같은 행내 변경을 재현할 근거가 맞다는 뜻입니다.</td></tr>
-          <tr><td><strong>T25</strong></td><td>공식 base·target SHA, 검사 대상 SHA·tree를 기록한 검사 대상 잠금, Git 이력</td><td>공식 commit 포함 여부와 잠근 검사 대상의 일치 여부, 판정</td><td>PASS는 공식 버전에서 시작했다는 뜻이며 기능 정상까지 뜻하지 않습니다.</td></tr>
-          <tr><td><strong>T26</strong></td><td>활성 BANK-OM Registry, Manifest, Contract 목록, 공식 target과 검사 대상 tree</td><td>ID별 필수 파일·Contract·test 연결 상태와 누락 사유, 판정</td><td>필수 상태가 없으면 BLOCK, 필수가 아닌 등록 파일 이상은 담당자 확인 대상입니다.</td></tr>
-          <tr><td><strong>T60-I</strong></td><td><code>contracts.yaml</code>의 Python pytest 경로·함수명과 실제 test 소스</td><td>test 파일·함수 존재 및 Python 문법 분석 결과, 판정</td><td>PASS는 test 코드가 존재한다는 뜻이며 실제 실행 성공은 T62가 확인합니다.</td></tr>
-          <tr><td><strong>T30</strong></td><td>공식 원본 이후 모든 commit, commit 메시지, commit별 변경 경로, 저장소 경로 분류</td><td>commit SHA별 ID 누락·복수 ID·혼합 변경 등의 위반 목록, 판정</td><td>위반이 있으면 해당 commit을 고친 뒤 다시 검사해야 합니다.</td></tr>
-          <tr><td><strong>T31</strong></td><td>commit의 BANK-OM ID 순서, Manifest·Registry, 후속 commit 허용과 선행 관계</td><td>미등록 ID·비연속 series·폐기 ID 재사용·의존 순환 목록, 판정</td><td>PASS면 ID 사용 순서와 관계가 등록 규칙에 맞는다는 뜻입니다.</td></tr>
-          <tr><td><strong>T40</strong></td><td>commit별 실제 변경 경로, 공식 원본 대비 최종 diff, Manifest의 allowed·required</td><td>허용 범위 밖 변경과 최종 diff에서 빠진 required 경로 목록, 판정</td><td>하나라도 있으면 BLOCK입니다. 파일 내부 코드의 정확성은 판단하지 않습니다.</td></tr>
-          <tr><td><strong>T41</strong></td><td>실제 변경 경로, <code>sensitive-zones.yaml</code>, 변경 의도의 허용·금지 경로</td><td>경로별 위험 등급과 사유, 전체 판정</td><td>금지·동결 경로는 BLOCK, 보호 경로는 APPROVAL, 입력 정책이 없으면 ANALYSIS ERROR입니다.</td></tr>
-          <tr><td><strong>T42</strong></td><td>공식 이전·새 버전 Git ref와 Manifest의 watch 경로·설정 키·의존성</td><td>BANK-OM ID별 공식 변경과 겹친 watch 항목, PASS 또는 APPROVAL</td><td>APPROVAL은 충돌 확정이 아니라 커스터마이징 재적용 전 영향 검토가 필요하다는 뜻입니다.</td></tr>
-          <tr><td><strong>T43</strong></td><td>공식 원본 대비 코드 diff, 활성 core-patch Manifest, 실제 재적용 충돌률, 기준값</td><td>core patch 수·변경 줄·충돌률·공유 집중도와 기준 초과 사유</td><td>검토 기준을 넘으면 APPROVAL, 차단 기준을 넘으면 BLOCK입니다.</td></tr>
-          <tr><td><strong>T93</strong></td><td>새 공식 버전 tree, watch·민감 경로 정책, 저장소 경로 분류, BANK-OM별 실제 Git 이력과 Manifest</td><td>더 이상 파일과 맞지 않는 정책, 미분류 새 모듈, 실제 경로와 등록 경로의 불일치</td><td>정책 노후화는 APPROVAL, 미분류 경로나 실제 미등록 변경은 통과시키지 않습니다.</td></tr>
-          <tr><td><strong>T61</strong></td><td>해당 BANK-OM을 제거한 코드·배포본, 필수 test, 커스터마이징 제거 시험 계획과 실행 결과</td><td>제거 효과 확인(<code>proven</code>), 셸 명령 검사(<code>shell_test</code>), 판단 불가(<code>inconclusive</code>), 환경 오류(<code>infra_error</code>)</td><td>커스터마이징이 없을 때 test가 실패해야 PASS입니다. 그대로 통과하면 BLOCK입니다.</td></tr>
-          <tr><td><strong>T62</strong></td><td>검사 대상 잠금, 배포 artifact digest, Contract test 목록, 환경값과 실제 pytest 실행 결과</td><td><code>candidate-lock.yaml</code>, <code>test-run-set.yaml</code>, <code>acgh-result.yaml</code></td><td>필수 test의 실패·누락·SKIP은 통과가 아니며, 코드 SHA와 artifact가 다르면 ANALYSIS ERROR입니다.</td></tr>
-          <tr><td><strong>T63</strong></td><td>같은 환경에서 실행한 공식 원본·검사 대상의 전체 TypeScript 로그와 종료 코드</td><td>오류 건수·경로·오류 코드·fingerprint 차이와 판정</td><td>새 오류는 BLOCK, 기존 오류가 남은 기준선은 APPROVAL, 로그가 모순되면 ANALYSIS ERROR입니다.</td></tr>
-          <tr><td><strong>T90</strong></td><td>12단계 업그레이드 실행 결과, 검사 대상 잠금, artifact digest, T62 테스트 실행 목록</td><td>단계별 상태와 동일 대상 연결 여부, 전체 판정과 결과 digest</td><td>필수 단계가 없거나 실패했거나 다른 코드의 결과가 섞이면 BLOCK 또는 ANALYSIS ERROR입니다.</td></tr>
-          <tr><td><strong>T91</strong></td><td>검사한 코드·결과 digest, 테스트 실행 목록, 이미지·Helm·정책 digest와 승인 기록</td><td>배포 잠금과 실제 승격 대상의 동일 여부, 판정</td><td>검사한 파일과 배포할 파일이 정확히 같을 때만 승격 검토를 계속할 수 있습니다.</td></tr>
+          <tr><td><strong>T25-R</strong></td><td>공식 원본, 과거 보관 소스, Manifest, 전체 변경 파일 목록</td><td>과거 행내 소스를 같은 내용으로 다시 만들었는지</td><td>PASS는 재구성 결과가 과거 보관 소스와 같다는 뜻입니다. 기능 정상까지 뜻하지는 않습니다.</td></tr>
+          <tr><td><strong>T25</strong></td><td>출발점으로 지정한 공식 버전, 검사할 행내 코드, 검사 시작 시 저장한 파일 상태</td><td>행내 코드가 지정한 공식 버전에서 시작했는지와 검사 도중 바뀌지 않았는지</td><td>공식 버전이 이력에 없으면 BLOCK입니다. 기록한 Git 번호·파일 상태가 현재 코드와 다르거나 필요한 commit을 읽을 수 없으면 판단 불가로 중단합니다.</td></tr>
+          <tr><td><strong>T26</strong></td><td>사용 중인 BANK-OM 목록, Manifest, Contract, 공식 코드와 행내 코드</td><td>BANK-OM ID별 필수 파일과 테스트 연결의 누락 여부</td><td>필수 항목이 없으면 BLOCK입니다. 선택 항목의 이상은 APPROVAL로 담당자 확인을 요구합니다.</td></tr>
+          <tr><td><strong>T60-I</strong></td><td>등록한 Python 테스트 파일 위치와 테스트 이름, 실제 테스트 코드</td><td>테스트 파일·테스트 항목의 존재 여부와 문법 오류</td><td>PASS는 테스트 코드가 존재한다는 뜻입니다. 실제 실행 성공을 뜻하지는 않습니다.</td></tr>
+          <tr><td><strong>T30</strong></td><td>공식 버전 이후의 행내 변경 기록과 각 변경의 메시지·수정 파일</td><td>BANK-OM ID가 없거나 여러 개 적힌 변경 기록</td><td>위반이 있으면 BLOCK이며 해당 변경 기록을 정리한 뒤 다시 검사합니다.</td></tr>
+          <tr><td><strong>T31</strong></td><td>BANK-OM 적용 순서, ID 등록 상태, 후속 수정 허용 여부와 선행 관계</td><td>미등록 ID, 폐기 ID 재사용, 잘못된 적용 순서와 모순 관계</td><td>위반이 없으면 PASS입니다. 등록하지 않은 업무 관계는 검사기가 새로 추론하지 못합니다.</td></tr>
+          <tr><td><strong>T40</strong></td><td>실제 수정 파일과 Manifest의 전체 변경 파일·필수 변경 파일</td><td>등록하지 않은 수정 파일, 최종 코드에서 사라진 필수 변경, 실제로 수정되지 않은 비필수 등록 파일</td><td>미등록 수정·필수 변경 누락은 BLOCK입니다. 실제로 수정되지 않은 비필수 등록 파일은 APPROVAL로 담당자 확인을 요구합니다.</td></tr>
+          <tr><td><strong>T41</strong></td><td>실제 수정 파일과 보안·인증·설정·DB 경로별 사전 위험 등급</td><td>어떤 위험 경로를 수정했는지와 그 사유</td><td>변경 금지는 BLOCK, 담당자 검토 대상은 APPROVAL입니다. 위험 기준표가 없으면 판단 불가입니다.</td></tr>
+          <tr><td><strong>T42</strong></td><td>이전·새 공식 버전과 Manifest의 업그레이드 확인 대상</td><td>새 공식 버전에서 바뀐 커스터마이징 관련 파일·설정·라이브러리</td><td>관련 변경이 없으면 PASS, 있으면 충돌 확정이 아니라 영향 검토가 필요한 APPROVAL입니다.</td></tr>
+          <tr><td><strong>T43</strong></td><td>공식 코드 수정 기능 수·변경량·공유 파일 수, 실제 충돌 비율, 사전 기준값</td><td>커스터마이징 유지 부담이 주의 또는 중단 기준을 넘었는지</td><td>주의 기준은 APPROVAL, 중단 기준은 BLOCK입니다. 현재 충돌 비율은 사용자가 입력합니다.</td></tr>
+          <tr><td><strong>T93</strong></td><td>새 공식 버전의 파일 목록, Manifest, 보안 경로 규칙, BANK-OM별 실제 수정 파일</td><td>등록에서 빠진 실제 변경, 더 이상 맞지 않는 검사 위치, 담당 영역이 없는 새 모듈</td><td>실제 미등록 변경은 BLOCK입니다. 낡은 검사 위치는 APPROVAL이며 담당자가 갱신해야 합니다.</td></tr>
+          <tr><td><strong>T61</strong></td><td>BANK-OM 기능 포함본과 제거본, 같은 필수 테스트와 실행 결과</td><td>기능 제거 시 테스트가 예상대로 실패하는지</td><td>포함본은 통과하고 제거본만 실패해야 PASS입니다. 제거본도 통과하면 BLOCK입니다.</td></tr>
+          <tr><td><strong>T62</strong></td><td>검사 시작 시 고정한 코드·배포 파일 정보, 필수 테스트 목록, 실제 실행 결과</td><td>테스트 누락·실패와 다른 코드 또는 배포 파일의 결과가 섞였는지</td><td>필수 테스트 실패·누락은 BLOCK입니다. 검사 대상과 결과 대상이 다르면 판단 불가입니다.</td></tr>
+          <tr><td><strong>T63</strong></td><td>같은 환경에서 실행한 공식 코드와 행내 코드의 전체 TypeScript 검사 로그</td><td>행내 코드에만 새로 생긴 오류</td><td>새 오류는 BLOCK입니다. 공식 코드부터 있던 오류가 남아 있으면 APPROVAL입니다.</td></tr>
+          <tr><td><strong>T90</strong></td><td>행내 업그레이드 12단계 실행 결과와 각 결과가 사용한 코드·배포 파일 정보</td><td>빠지거나 실패한 단계와 다른 대상의 결과가 섞였는지</td><td>필수 단계 실패·누락은 BLOCK입니다. 대상이 서로 다르면 판단 불가입니다.</td></tr>
+          <tr><td><strong>T91</strong></td><td>검사를 통과한 코드·이미지·설정 파일과 실제 배포할 파일의 내용 식별값</td><td>검사한 파일과 실제 배포할 파일이 정확히 같은지</td><td>모두 같아야 배포 승인 검토를 계속할 수 있습니다. 하나라도 다르면 BLOCK입니다.</td></tr>
         </tbody>
       </table>
     </div>
@@ -897,6 +968,24 @@
       border: 1px solid var(--guide-line);
       border-radius: 14px;
       background: white;
+    }
+
+    #om-phase2 .p2-io-table {
+      min-width: 920px;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    #om-phase2 .p2-io-table th,
+    #om-phase2 .p2-io-table td {
+      padding: 10px 12px;
+      vertical-align: top;
+    }
+
+    #om-phase2 .p2-io-table th:first-child,
+    #om-phase2 .p2-io-table td:first-child {
+      width: 76px;
+      white-space: nowrap;
     }
 
     #om-phase2 .p2-reinforce {

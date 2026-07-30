@@ -53,7 +53,12 @@ def main() -> int:
     catalog = contracts.load_catalog(registration / "contracts.yaml")
     registry.validate_references(registered, manifests, catalog)
     plan = vendor_rebuild.build_reconstruction_plan(
-        registered, manifests, inventory
+        registered,
+        manifests,
+        inventory,
+        source_path_owners=vendor_rebuild.load_source_snapshot_owners(
+            registration
+        ),
     )
     source_result = vendor_rebuild.inspect_source_inventory(args.repo, plan)
     test_result = contracts.check_required_test_implementations(
@@ -83,7 +88,7 @@ def main() -> int:
                 "detail": f"{len(registered.entries)}개 BANK-OM",
             },
             {
-                "name": "Git 전체 변경 목록",
+                "name": "공식 원본과 행내 custom 코드의 변경 경로",
                 "verdict": source_result.verdict,
                 "detail": f"{len(inventory)}개 경로",
             },

@@ -1,6 +1,6 @@
 ---
 name: clarity-preflight-review
-description: Review user-facing HTML, guides, reports, and handoff documents before sharing them. Detect duplicated information, unexplained terms, ambiguous wording, misleading implementation status, and layouts that a first-time department reader cannot follow.
+description: Review user-facing HTML, guides, reports, handoff documents, and operating manuals before sharing them. Detect duplicated information, unexplained terms, sentence-level ambiguity, misleading implementation status, missing examples or recovery steps, and layouts or procedures that a first-time employee cannot follow independently.
 ---
 
 # Clarity Preflight Review
@@ -47,6 +47,12 @@ workflow step when it belongs inside that step.
 ### Ambiguity
 
 - Every sentence must make the actor, object, action, condition, and result clear.
+- Review sentence by sentence. For each sentence, ask whether two readers could
+  reasonably assign different actors, inputs, time points, comparison targets, or
+  outcomes. Rewrite the sentence until only one operational interpretation remains.
+- After every paragraph, write down the first question a new employee would ask.
+  If the visible text does not already answer it, add the answer at that point instead
+  of relying on a later glossary or the author's background knowledge.
 - Replace vague references such as 이것, 후보, 제품, 현재, or 적용 when more than
   one interpretation is possible.
 - Detect contextless transitions: a question, answer, warning, example, or term must
@@ -58,7 +64,9 @@ workflow step when it belongs inside that step.
   introduce it at the point where the process first needs it, or remove it from the
   main flow and keep the internal detail in a collapsed section.
 - State whether a finding causes pass, review, block, or no automated decision.
-- Use an actual example when a definition alone can be misread.
+- Use an actual example when a definition alone can be misread. For a field, command,
+  check, or operator action, prefer one normal example and one failure example when
+  the failure response is not obvious.
 
 ### Evidence-backed explanation
 
@@ -95,6 +103,45 @@ specific strategy, label the strategy and do not present it as a universal prere
 - Check tables, code blocks, labels, and expanded sections for wrapping or overflow.
 - Prefer a short before/after example over a paragraph when both convey the same fact.
 
+### First-time operator completeness
+
+Treat a guide as incomplete unless a new employee can perform the work without asking
+the author for a missing step. Each executable procedure must state:
+
+1. the exact repository, branch or version, working directory, required files, tools,
+   permissions, and environment assumptions;
+2. who performs the step and which parts are automatic versus human decisions;
+3. the command or UI action, including placeholders and where each value comes from;
+4. the expected output file or screen and a real successful example;
+5. every result label the operator can receive and the next action for each label;
+6. how to recover from a common failure, what to edit, and which checks to rerun;
+7. the evidence to retain, its storage location, and the exact completion condition;
+8. when the operator must stop and escalate rather than choose a code or business
+   resolution alone.
+
+Maintain an example-coverage check while reviewing. Every management-file field, gate,
+branch operation, generated artifact, and approval action must have a concrete example
+somewhere in the guide, or be explicitly marked as a reference-only item that the
+operator does not perform.
+
+### Repeated-question prevention
+
+Before sharing, review the user's earlier questions and group repeated questions by
+concept. For every concept that was asked more than once, confirm that the explanation
+now answers all of the following at the first point of use:
+
+1. why the concept exists;
+2. who creates or decides it;
+3. when it is created and updated;
+4. whether the step is automatic or requires human judgment;
+5. one concrete value or command from the current repository;
+6. which check reads it and how the result changes;
+7. how it differs from the nearest similar concept.
+
+Then ask the question again as a first-time reader. If the visible explanation still
+permits the same question, revise the artifact before sharing. Do not rely on a later
+glossary to repair an ambiguity introduced earlier.
+
 ## Required final pass
 
 Do not share until every answer is yes:
@@ -108,6 +155,12 @@ Do not share until every answer is yes:
 - Are current and future behavior impossible to confuse?
 - Does every status claim match the actual implementation and evidence?
 - Is the rendered layout readable when details are expanded?
+- Can a new employee complete preparation, execution, result interpretation, failure
+  recovery, rerun, evidence retention, and handoff using this guide alone?
+- Does every executable feature have a normal example and, where useful, a failure
+  example with the required response?
+- Would the user's previously repeated questions be answered at the exact point where
+  the relevant term first appears?
 
 When updating a preview, follow the user's requested handoff format. If the user asked
 for only the HTML link, return only that link.

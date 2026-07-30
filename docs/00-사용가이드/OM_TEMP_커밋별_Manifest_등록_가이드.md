@@ -3,7 +3,7 @@
 > 대상 코드: `easyseop/OM_TEMP`의 `custom/om-1.13.0`
 > 검사 설정 위치: `easyseop/openmetadata-test/harness/registrations/om-temp-1.13.0/`
 
-> **이 페이지가 답하는 질문:** 검사기가 코드와 비교할 Manifest·Registry·Contract를 언제 만들고, 실제 Git diff를 어떤 기준으로 등록하는가?
+> **이 페이지가 답하는 질문:** 검사 전에 어떤 관리자료를 준비하고, 실제 변경 파일을 어떤 BANK-OM 기능에 연결하는가?
 > **이 페이지가 답하지 않는 것:** 1.13.1 충돌과 검사 결과는 4번에서 설명합니다.
 > **다음 행동:** 등록자료와 로컬 repository를 연결한 뒤 4번 업그레이드 연습으로 이동합니다.
 
@@ -21,6 +21,7 @@
 |---|---|---|---|
 | Manifest·Registry·Contract | 최초 작성 | 기존 자료를 복사해 새 코드 기준으로 검토·갱신 | 확정본을 읽음 |
 | 공용 파일 소유정보 | 실제 diff의 중복 경로를 계산해 작성 | 새 버전 diff로 다시 계산·검토 | 확정본을 읽음 |
+| 과거 snapshot 경로 소유정보 | 기준 snapshot의 commit 이력에서 자동 생성 | 기준 snapshot SHA가 바뀔 때만 재생성 | 과거 코드 재구성 검사만 읽음 |
 | 전체 변경 목록 | Git에서 생성 | 새 버전 branch 사이에서 다시 생성 | 실제 Git diff와 비교 |
 | Patch-lock | patch-replay를 쓸 때만 작성 | 재적용 커밋이 바뀌면 새 리비전 작성 | 선택한 전략에서만 읽음 |
 
@@ -31,9 +32,17 @@
 | 이름 | 의미 | 이 문서에서의 예 |
 |---|---|---|
 | BANK-OM ID | 사람이 발급하는 업무 기능 번호 | `BANK-OM-005` |
-| Git commit SHA | Git이 한 번의 코드 저장에 자동 부여하는 값 | `d983f7c...` |
+| Git 변경 기록 번호(commit SHA) | Git이 한 번 저장한 코드 변경에 자동 부여하는 값 | `d983f7c...` |
 
-Manifest는 **BANK-OM ID마다 한 파일**을 최초 등록 때 만듭니다. 같은 기능을 새 공식 버전에 맞추거나 후속 보완해도 새 ID를 만들지 않습니다. 새 버전 등록 폴더에 기존 Manifest를 복사한 뒤 실제 경로·watch·Contract 변경만 갱신합니다. BANK-OM-007처럼 Git commit SHA는 여러 개가 될 수 있지만 Manifest는 하나입니다.
+Manifest는 **BANK-OM ID마다 한 파일**을 최초 등록 때 만듭니다. 같은 기능을 새 공식 버전에 맞추거나 후속 보완해도 새 ID를 만들지 않습니다. 새 버전 등록 폴더에 기존 Manifest를 복사한 뒤 실제 경로·watch·Contract 변경만 갱신합니다. BANK-OM-007처럼 Git 변경 기록 번호는 여러 개가 될 수 있지만 Manifest는 하나입니다.
+
+BANK-OM-007의 실제 예에서는 최초 구현 SHA `62e39da8...`가 8개 파일을 변경했고 후속 보완 SHA `7d19c895...`가 2개 파일을 추가했습니다. 두 SHA를 가장 최근 SHA 하나로 바꾸지 않습니다. 각 SHA가 서로 다른 변경 파일의 근거이기 때문입니다. 반면 최종 검사는 두 변경을 모두 포함한 custom branch의 마지막 SHA 하나를 Candidate lock에 기록합니다.
+
+```text
+기능 변경 이력: BANK-OM-007 → 62e39da8... + 7d19c895...
+현재 파일 범위: changed_paths 10개
+최종 검사 대상: custom/om-1.13.0 HEAD의 SHA 1개
+```
 
 ## 사전환경 설정 순서
 
@@ -74,13 +83,13 @@ InstanceCode라는 새 데이터 유형을 정의하고, 저장·검색·API·�
 <summary><strong>BANK-OM-001 Manifest 등록본 전체 보기</strong></summary>
 
 ```yaml
-schema_version: 1
+schema_version: 2
 customization_id: BANK-OM-001
 status: active
 kind: core-patch
 title: 기준코드(InstanceCode)
 implementation:
-  allowed_changed_paths:
+  changed_paths:
   - bootstrap/sql/migrations/native/1.13.0/mysql/schemaChanges.sql
   - bootstrap/sql/migrations/native/1.13.0/postgres/schemaChanges.sql
   - openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
@@ -222,13 +231,13 @@ QueryReport 데이터 유형, 저장소, API, 검색과 화면 연결을 함께 
 <summary><strong>BANK-OM-002 Manifest 등록본 전체 보기</strong></summary>
 
 ```yaml
-schema_version: 1
+schema_version: 2
 customization_id: BANK-OM-002
 status: active
 kind: core-patch
 title: 쿼리 리포트(QueryReport)
 implementation:
-  allowed_changed_paths:
+  changed_paths:
   - bootstrap/sql/migrations/native/1.13.0/mysql/schemaChanges.sql
   - bootstrap/sql/migrations/native/1.13.0/postgres/schemaChanges.sql
   - openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
@@ -385,13 +394,13 @@ series:
 <summary><strong>BANK-OM-003 Manifest 등록본 전체 보기</strong></summary>
 
 ```yaml
-schema_version: 1
+schema_version: 2
 customization_id: BANK-OM-003
 status: active
 kind: core-patch
 title: 데이터 검증 결과(Data Assertions)
 implementation:
-  allowed_changed_paths:
+  changed_paths:
   - openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
   - openmetadata-ui/src/main/resources/ui/src/components/MyData/MyDataFailedAssertions/MyDataFailedAssertions.component.tsx
   - openmetadata-ui/src/main/resources/ui/src/constants/constants.ts
@@ -489,13 +498,13 @@ series:
 <summary><strong>BANK-OM-004 Manifest 등록본 전체 보기</strong></summary>
 
 ```yaml
-schema_version: 1
+schema_version: 2
 customization_id: BANK-OM-004
 status: active
 kind: core-patch
 title: 은행 컬럼 확장 표시
 implementation:
-  allowed_changed_paths:
+  changed_paths:
   - openmetadata-ui/src/main/resources/ui/src/components/DataAssetSummaryPanelV1/DataAssetSummaryPanelV1.tsx
   - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaTable/SchemaTable.component.tsx
   - openmetadata-ui/src/main/resources/ui/src/components/Explore/ExploreTree/ExploreTree.tsx
@@ -624,7 +633,7 @@ SchemaEditor.tsx 한 파일에서 한글 조합 시작·종료 처리를 추가�
 
 ![BANK-OM-005 전체 diff 4/4](공유문서/assets/om-temp-manifest/bank-om-005-full-diff/005-korean-ime-diff-part-4.png)
 
-이 전체 diff에서 바뀐 파일 경로는 하나이므로 Manifest의 `allowed_changed_paths`도 한 경로입니다. 같은 파일이 한글 입력 보정의 핵심 구현이므로 `required_changed_paths`에도 같은 경로를 등록했습니다.
+이 전체 diff에서 바뀐 파일 경로는 하나이므로 Manifest의 `changed_paths`도 한 경로입니다. 같은 파일이 한글 입력 보정의 핵심 구현이므로 `required_changed_paths`에도 같은 경로를 등록했습니다.
 
 </details>
 
@@ -632,13 +641,13 @@ SchemaEditor.tsx 한 파일에서 한글 조합 시작·종료 처리를 추가�
 <summary><strong>BANK-OM-005 Manifest 등록본 전체 보기</strong></summary>
 
 ```yaml
-schema_version: 1
+schema_version: 2
 customization_id: BANK-OM-005
 status: active
 kind: core-patch
 title: 한글 입력 조합 보정
 implementation:
-  allowed_changed_paths:
+  changed_paths:
   - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
   required_changed_paths:
   - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
@@ -686,13 +695,13 @@ Sybase 연결 스키마, 생성 타입, 아이콘과 연결 선택 로직을 함
 <summary><strong>BANK-OM-006 Manifest 등록본 전체 보기</strong></summary>
 
 ```yaml
-schema_version: 1
+schema_version: 2
 customization_id: BANK-OM-006
 status: active
 kind: core-patch
 title: Sybase 연결 유형
 implementation:
-  allowed_changed_paths:
+  changed_paths:
   - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/sybaseConnection.json
   - openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json
   - openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-sybase.svg
@@ -784,19 +793,19 @@ series:
 
 ### 왜 하나의 BANK-OM 기능으로 보았나
 
-두 커밋 모두 Tibero 연결 유형 하나를 완성합니다. 최초 8개 파일은 allowed_changed_paths에, 후속 커밋에서 처음 추가된 2개 파일은 candidate_additional_paths에 등록합니다. Git commit SHA는 두 개지만 업무 기능 ID와 Manifest는 BANK-OM-007 하나입니다.
+두 커밋 모두 Tibero 연결 유형 하나를 완성합니다. Manifest의 changed_paths에는 두 커밋이 현재 1.13.0 버전에서 변경한 파일 10개를 모두 등록합니다. 어떤 파일이 첫 번째 또는 두 번째 커밋에서 추가됐는지는 Git 이력으로 확인합니다. Git 변경 기록은 두 개지만 업무 기능 ID와 Manifest는 BANK-OM-007 하나입니다.
 
 <details>
 <summary><strong>BANK-OM-007 Manifest 등록본 전체 보기</strong></summary>
 
 ```yaml
-schema_version: 1
+schema_version: 2
 customization_id: BANK-OM-007
 status: active
 kind: core-patch
 title: Tibero 연결 유형
 implementation:
-  allowed_changed_paths:
+  changed_paths:
   - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/tiberoConnection.json
   - openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json
   - openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-tibero.svg
@@ -805,7 +814,6 @@ implementation:
   - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/databaseService.ts
   - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx
   - openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts
-  candidate_additional_paths:
   - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts
   - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx
   required_changed_paths:
@@ -836,13 +844,12 @@ series:
 
 </details>
 
-### Manifest 네 목록을 읽는 기준
+### Manifest 세 목록을 읽는 기준
 
 | 항목 | 현재 등록 기준 | 검사에서 쓰는 방식 |
 |---|---|---|
-| `allowed_changed_paths` | 최초 BANK-OM 커밋이 실제 변경한 모든 파일 | 목록 밖 파일을 같은 ID로 변경하면 차단합니다. 목록 안 파일이 최종 코드에서 공식 원본과 같아진 경우에는 기능 생존 검사에서 검토를 요구합니다. |
+| `changed_paths` | 현재 OpenMetadata 버전에서 같은 BANK-OM ID의 모든 커밋이 실제 변경한 파일 | 목록 밖 파일을 같은 ID로 변경하면 차단합니다. 목록 안 일반 파일이 최종 코드에서 공식 원본과 같아지면 담당자 검토를 요구합니다. |
 | `required_changed_paths` | 기능이 적용됐음을 판단하는 핵심 구현 파일 | 파일이 없거나 공식 원본과 같아지면 기능이 빠진 것으로 보고 차단 |
-| `candidate_additional_paths` | 같은 ID의 후속 커밋에서 처음 추가된 파일 | 사전 등록 없이 확장한 변경과 승인된 후속 변경을 구분 |
 | `upgrade_watch.paths` | 공식 버전 변경 비교 검사가 확인할 경로 | 공식 새 버전에서 해당 경로가 바뀌면 자동 통과하지 않고 재검토를 요구 |
 
 공식 버전 변경 비교 검사(검사기 내부 이름 `T42`)는 이전 버전과 새 버전의 OpenMetadata에서 지정 경로가 바뀌었는지 확인하는 검사입니다. `upgrade_watch.paths`에는 현재 T42 구현에 맞춰 해당 ID의 변경 범위 전체와 직접 수정하지 않았지만 기능이 의존하는 공식 파일을 함께 넣었습니다. 따라서 watch에 있다고 해서 그 파일을 이 커밋이 반드시 수정했다는 뜻은 아닙니다.
@@ -902,7 +909,7 @@ entries:
 <details>
 <summary><strong>2-3. 공용 파일 소유정보 · 한 파일을 함께 변경한 ID</strong></summary>
 
-**의미:** 여러 BANK-OM이 같은 파일을 정상적으로 변경했다는 사실과 실제 소유 ID를 기록합니다.
+**의미:** 현재 버전에서 여러 BANK-OM이 같은 파일을 정상적으로 변경했다는 사실과 실제 소유 ID를 기록합니다.
 
 **생성·갱신 시점:** Manifest들의 실제 변경 경로를 비교해 중복 경로를 자동 제안한 뒤, 각 commit diff에서 ID별 코드가 실제로 있는지 사람이 확인합니다. 업그레이드 버전마다 다시 계산·검토합니다.
 
@@ -918,12 +925,28 @@ openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService
   - BANK-OM-007  # Tibero
 ```
 
-**실제 사용:** 검사기는 공용 파일을 한 ID의 단독 소유로 잘못 판단하지 않고, 등록된 모든 ID가 해당 경로를 실제로 변경했는지 확인합니다. 등록되지 않은 중복 소유는 담당 ID를 결정할 수 없으므로 재구성 검사가 `ANALYSIS ERROR`로 중단됩니다.
+**실제 사용:** 현재 버전 범위 검사는 공용 파일을 한 ID의 단독 소유로 잘못 판단하지 않고, 등록된 모든 ID가 해당 경로를 실제로 변경했는지 확인합니다. 실제 중복 소유와 목록이 다르면 등록자료 검사가 실패합니다.
 
 </details>
 
 <details>
-<summary><strong>2-4. 전체 변경 목록 · patch와 custom 사이의 111개 경로</strong></summary>
+<summary><strong>2-4. 과거 snapshot 경로 소유정보 · 재구성 시점 전용</strong></summary>
+
+**의미:** 최초 등록에 사용한 과거 행내 code snapshot에서 각 변경 파일이 어느 BANK-OM 기능에 속했는지 기록합니다. 현재 Manifest 범위를 나누는 자료가 아니라 T25-R 과거 코드 재구성 검사 전용 자동 생성 자료입니다.
+
+**생성·갱신 시점:** 기준 source snapshot SHA까지의 commit 이력을 읽어 자동 생성합니다. 기준 SHA가 바뀔 때만 다시 생성하며, 이후 후속 commit이 생겼다는 이유로 과거 기록을 고치지 않습니다.
+
+```yaml
+openmetadata-ui/.../serviceConnection.ts:
+  - BANK-OM-006
+```
+
+**실제 사용:** 최초 snapshot에서는 BANK-OM-006만 위 파일을 수정했습니다. 이후 BANK-OM-007 후속 commit도 같은 파일을 수정했으므로 현재 버전의 `shared-path-owners.yaml`에는 006과 007이 함께 표시됩니다. 두 파일은 서로 다른 시점을 설명하므로 값이 달라도 오류가 아닙니다.
+
+</details>
+
+<details>
+<summary><strong>2-5. 전체 변경 목록 · patch와 custom 사이의 111개 경로</strong></summary>
 
 **의미:** `patch/om-1.13.0`과 `custom/om-1.13.0` 사이에서 최종적으로 달라진 모든 파일 경로입니다.
 
@@ -942,7 +965,7 @@ openmetadata-spec/src/main/resources/json/schema/entity/services/connections/dat
 </details>
 
 <details>
-<summary><strong>2-5. Patch-lock · 커밋 재적용을 선택할 때만 사용하는 순서표</strong></summary>
+<summary><strong>2-6. Patch-lock · 커밋 재적용을 선택할 때만 사용하는 순서표</strong></summary>
 
 **의미:** patch-replay 방식으로 커스터마이징 커밋을 다시 적용할 때 사용할 정확한 SHA와 순서를 고정합니다.
 
@@ -962,7 +985,7 @@ patch_series:
 </details>
 
 <details>
-<summary><strong>2-6. 실제 생성 명령과 사전검증 결과</strong></summary>
+<summary><strong>2-7. 실제 생성 명령과 사전검증 결과</strong></summary>
 
 첫 명령은 Git diff에서 자동 계산할 수 있는 Registry 뼈대, 공용 경로와 111개 목록을 만듭니다. Contract의 정상 조건과 담당자는 사람이 검토해야 하므로 자동 생성값을 그대로 배포 승인으로 사용하지 않습니다.
 
@@ -994,7 +1017,7 @@ patch_series:
 <details>
 <summary><strong>3-1. OM_TEMP repository 준비와 branch 확인</strong></summary>
 
-**의미:** 검사기는 GitHub 화면을 원격으로 읽는 것이 아니라 로컬 Git repository의 commit·diff·파일을 직접 검사합니다.
+**의미:** 검사기는 GitHub 화면을 원격으로 읽는 것이 아니라 컴퓨터에 내려받은 OM_TEMP 저장소의 변경 기록·변경 파일·최종 코드를 직접 검사합니다.
 
 **최초 준비:** 다른 노트북에서는 한 번 clone합니다. 이미 받은 뒤에는 `git fetch`로 갱신합니다. 현재 노트북에는 `work/om-temp-1.13.0-custom`에 OM_TEMP 원격 branch도 fetch되어 있으므로 다시 clone하지 않습니다.
 
@@ -1006,22 +1029,22 @@ git rev-parse origin/patch/om-1.13.0
 git rev-parse origin/custom/om-1.13.0
 ```
 
-**검사 연결:** 검사 실행기의 `--repo`에 이 로컬 경로를 전달합니다. 검사기는 여기서 BANK-OM commit, Customization-ID, 111개 diff와 최종 파일 내용을 읽습니다.
+**검사 연결:** 검사 실행기의 `--repo`에 이 로컬 경로를 전달합니다. 검사기는 여기서 BANK-OM 변경 기록, Customization-ID, 111개 변경 경로와 최종 파일 내용을 읽습니다.
 
 </details>
 
 <details>
 <summary><strong>3-2. 공식 1.13.0과 OM_TEMP patch 기준 연결 주의사항</strong></summary>
 
-OM_TEMP는 공식 OpenMetadata 전체 Git 이력을 복사하지 않고 공식 1.13.0 파일 상태를 독립 commit으로 가져왔습니다. 따라서 다음 세 값을 구분해야 합니다.
+OM_TEMP는 공식 OpenMetadata의 과거 변경 이력 전체를 가져오지 않고, 공식 1.13.0 파일만 새로운 Git 변경 기록으로 저장했습니다. 따라서 파일 내용이 같아도 두 Git 번호는 다릅니다.
 
 ```text
-공식 OpenMetadata 1.13.0 commit: f329dd4a...
-OM_TEMP patch/om-1.13.0 commit: 2f4f3560...
-두 commit의 동일한 Git tree: da56c24d...
+공식 OpenMetadata 1.13.0 Git 번호: f329dd4a...
+OM_TEMP patch/om-1.13.0 Git 번호: 2f4f3560...
+두 버전의 파일 내용이 같음을 확인하는 값: da56c24d...
 ```
 
-원격 OM_TEMP commit은 공식 commit과 계보가 연결되지 않아 그대로는 이력 검사를 통과할 수 없습니다. 그래서 공식 `f329dd4a...`에서 시작해 같은 BANK-OM 변경을 순서대로 적용한 로컬 검사 branch를 만들었습니다. 로컬 검사 대상 commit `63820f88...`의 최종 tree는 원격 custom `7d19c895...`의 tree와 같으므로, 코드 내용은 유지하면서 공식 이력과 연결된 상태로 검사합니다.
+원격 OM_TEMP의 변경 이력에는 “공식 1.13.0에서 시작했다”는 연결 기록이 없어 그대로는 공식 출발점 검사를 통과할 수 없습니다. 그래서 공식 `f329dd4a...`에서 시작해 같은 BANK-OM 변경을 순서대로 적용한 로컬 검사 branch를 만들었습니다. 로컬 검사 대상 Git 번호 `63820f88...`의 최종 파일 내용은 원격 custom `7d19c895...`와 같습니다. 즉, 코드는 바꾸지 않고 공식 1.13.0에서 시작했다는 이력만 확인할 수 있는 상태로 만들어 검사했습니다.
 
 </details>
 

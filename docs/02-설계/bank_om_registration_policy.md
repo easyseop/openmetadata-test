@@ -44,26 +44,53 @@
 
 | 항목 | 쉬운 뜻 | 현재 검사 결과 |
 |---|---|---|
-| `allowed_changed_paths` | 최초 등록 시 실제로 변경한 파일 전체 | 명단 밖 변경은 block, 명단 안 누락은 approval |
+| `changed_paths` | 현재 OpenMetadata 버전에서 같은 BANK-OM ID가 변경한 파일 전체 | 명단 밖 변경은 block, 일반 파일 누락은 approval |
 | `required_changed_paths` | 누락만으로 필수 기능 소실을 확정할 파일 | 누락·공식 원본과 동일하면 block |
-| `candidate_additional_paths` | 같은 ID의 후속 커밋이 새로 추가한 파일 | 현재 변경 범위에 포함, 최초 재구성에서는 제외 |
 | `upgrade_watch.paths` | 실제 변경 경로와 담당자가 등록한 의존 경로 | 공식 A→B에서 바뀌면 approval |
 | `assurance` | 실제 동작을 확인할 계약·기술 테스트 | 테스트 연결이 없거나 실패하면 통과 금지 |
 | `series.depends_on` | 먼저 적용할 다른 BANK-OM | 순환·순서 위반 시 block |
 
-### allowed와 required
+### changed, required, watch
 
-- `allowed`는 “이 기능이 실제로 어느 파일을 변경했는가?”에 답한다.
+- `changed`는 “이 버전에서 이 기능이 실제로 어느 파일을 변경했는가?”에 답한다.
 - `required`는 그중 “어느 파일이 빠지면 즉시 실패할 것인가?”에 답한다.
 - `required` 파일은 현재 변경 범위에도 반드시 포함돼야 한다.
+- `watch`는 “우리가 직접 변경했거나 의존하는 경로 중, 공식 새 버전에서도
+  바뀌면 담당자가 다시 확인할 경로는 무엇인가?”에 답한다.
 - 공용 파일은 파일 전체의 차이만으로 특정 코드 생존을 증명하기 어려우므로
   코드 내용 검사와 동작 검사를 함께 사용한다.
+
+실제 예시는 다음과 같다.
+
+```yaml
+implementation:
+  changed_paths:
+    # BANK-OM-001이 현재 버전에서 실제로 변경한 파일
+    - openmetadata-service/.../Entity.java
+    - openmetadata-service/.../InstanceCodeResource.java
+  required_changed_paths:
+    # 이 파일이 없으면 InstanceCode API 자체가 없다고 판단할 수 있음
+    - openmetadata-service/.../InstanceCodeResource.java
+upgrade_watch:
+  paths:
+    # 공식 새 버전에서 Entity.java도 바뀌면 등록 연결을 다시 확인해야 함
+    - openmetadata-service/.../Entity.java
+    - openmetadata-service/.../CollectionDAO.java
+```
+
+이 예시에서 `Entity.java`는 `changed_paths`와 `watch`에 모두 들어간다. 행내
+코드가 직접 변경했고, 공식 새 버전에서도 같은 파일이 바뀌면 충돌·누락 가능성을
+다시 봐야 하기 때문이다. `InstanceCodeResource.java`는 행내에서 추가한 핵심
+구현이므로 `changed_paths`와 `required`에 들어간다. `CollectionDAO.java`는
+행내 코드가 직접 변경하지 않았더라도 InstanceCode 저장 동작이 의존하고 있어
+공식 변경 시 재검토가 필요한 경우에만 `watch`에 들어간다.
 
 ### 현재 watch 운영
 
 현재 OM_TEMP Manifest 생성기는 각 BANK-OM commit의 실제 변경 경로를 Git에서
-읽고 `upgrade_watch.paths`에 자동으로 포함한다. 같은 ID의 후속 commit에서 처음
-추가된 `candidate_additional_paths`도 현재 변경 범위에 포함된다.
+읽고 `changed_paths`와 `upgrade_watch.paths`의 직접 변경 경로 초안을 만든다.
+같은 ID의 후속 commit에서 새 파일이 추가되면 기존 목록과 별도 필드로 나누지
+않고 현재 버전의 `changed_paths`에 합친다.
 
 행내에서 직접 수정하지 않았지만 커스터마이징이 의존하는 경로는 담당자가
 `watch_dependencies`로 등록한다. 새 공식 버전에서 바뀐 파일 이름을
@@ -80,7 +107,7 @@ T42는 이전 공식 버전과 새 공식 버전 사이의 Git 변경 경로를
 ## 4. 최초 등록 절차
 
 1. 관리 담당자가 미사용 BANK-OM ID를 발급한다.
-2. 실제 커밋의 변경 파일을 확인해 `allowed_changed_paths`에 개별 파일로
+2. 실제 커밋의 변경 파일을 확인해 `changed_paths`에 개별 파일로
    등록한다.
 3. 누락만으로 기능 소실을 확정할 파일을 `required_changed_paths`로 지정한다.
 4. Manifest 생성기가 실제 변경 경로를 `upgrade_watch.paths`에 포함했는지
@@ -100,7 +127,7 @@ T42는 이전 공식 버전과 새 공식 버전 사이의 Git 변경 경로를
 
 1. Manifest의 `series.allowed`가 `true`인지 확인한다.
 2. 후속 커밋에도 `Customization-ID: BANK-OM-007`을 넣는다.
-3. 새 파일을 `candidate_additional_paths`에 추가한다.
+3. 새 파일을 현재 버전 Manifest의 `changed_paths`에 추가한다.
 4. 파일이 필수 구성요소이면 `required_changed_paths`에도 추가한다.
 5. patch-replay 전략을 사용할 때만 새 Git commit SHA와 적용 순서를
    patch-lock에 추가한다.
@@ -108,19 +135,38 @@ T42는 이전 공식 버전과 새 공식 버전 사이의 Git 변경 경로를
 
 ```yaml
 implementation:
-  candidate_additional_paths:
+  changed_paths:
+    # 최초 구현 commit의 8개 파일도 이 목록에 함께 유지
+    - .../tiberoConnection.json
+    - .../DatabaseServiceUtils.tsx
+    # 후속 보완 commit에서 추가된 2개 파일
     - .../connections/serviceConnection.ts
     - .../DatabaseServiceUtils.test.tsx
 series:
   allowed: true
 ```
 
-Git 커밋 SHA만 추가하면 “어떤 변경이 생겼는가”는 알 수 있지만, 새 파일이
-해당 BANK-OM의 승인 범위인지는 알 수 없다. 반대로 최초
-`allowed_changed_paths`를 직접 고치면 과거 최초 스냅샷의 기록이 달라진다.
-따라서 최초 8개 범위는 보존하고 후속 2개 파일을 별도로 기록한다. 최초
-재구성 T25-R은 8개만 보고, 현재 후보를 보는 T26·T40·T93은 8개와 후속 2개를
-합친 10개를 검사한다.
+현재 버전 Manifest는 과거 최초 범위를 보관하는 문서가 아니라 현재 검사 범위를
+정의하는 문서다. 따라서 최초 8개와 후속 2개를 합친 10개를
+`changed_paths` 하나에 기록한다. “어느 커밋에서 어떤 파일이 추가됐는가”는
+Manifest 필드를 둘로 나누지 않고 Git commit 이력으로 확인한다.
+
+구체적으로 BANK-OM-007에는 기능 변경 commit SHA가 두 개 있다.
+
+```text
+62e39da8...  최초 구현: 8개 파일 변경
+7d19c895...  누락 보완: 2개 파일 추가
+```
+
+두 SHA 중 하나를 “대표 SHA”로 덮어쓰지 않는다. 첫 번째 commit을 지우면 최초
+8개 파일을 만든 변경 근거가 사라지고, 두 번째 commit을 지우면 추가 2개 파일의
+근거가 사라지기 때문이다. 다만 최종 검사 실행은 두 commit이 모두 반영된
+`custom/om-1.13.0`의 마지막 commit SHA 하나를 Candidate lock에 기록한다.
+
+```text
+BANK-OM-007 기능 변경 이력: 62e39da8... → 7d19c895...
+최종 검사 대상 코드:     custom/om-1.13.0 HEAD의 SHA 1개
+```
 
 ## 6. 담당자 정보
 
@@ -139,9 +185,9 @@ LLM 위키는 이 문서를 원본으로 사용하고 다음 항목을 반드시
 
 1. 현재 구현 완료와 향후 개선을 별도 상태로 표시
 2. BANK-OM ID와 Git 커밋 SHA를 서로 다른 개념으로 설명
-3. `allowed`·`required`·`watch`의 판정 차이 표시
+3. `changed`·`required`·`watch`의 판정 차이 표시
 4. 같은 ID 후속 변경과 새 ID 발급 판단표 포함
-5. `candidate_additional_paths`를 쓰는 이유와 예시 포함
+5. 기능 변경 commit SHA 여러 개와 최종 검사 대상 SHA 한 개의 차이와 예시 포함
 6. 파일 검사·코드 내용 검사·실제 동작 검사의 한계와 역할 구분
 7. `owner`는 Manifest가 아니라 별도 Registry에 저장하며, `UNASSIGNED` 상태를
    배정 완료로 서술하지 않음

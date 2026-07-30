@@ -6,8 +6,9 @@ decisions (titles, criticality, business invariants, and required tests) stay
 explicit in this file so they can be reviewed before regeneration.
 
 The source snapshot intentionally stops at BANK-OM-007's first commit.
-The later BANK-OM-007 coverage commit is represented by the Manifest's
-``candidate_additional_paths`` and is checked on the final candidate branch.
+The Manifest stores one current-version ``changed_paths`` list. Git commit
+history remains the source of truth for which files belonged to the pinned
+source snapshot and which were changed by a later commit.
 """
 
 from __future__ import annotations
@@ -268,15 +269,29 @@ def main() -> None:
             ).splitlines(),
         )
     )
-    if source_paths != final_paths:
-        raise ValueError(
-            "BANK-OM-007 follow-up changed the final path inventory; "
-            "candidate_additional_paths must be reviewed"
-        )
-
     source_owners: dict[str, list[str]] = defaultdict(list)
-    for customization_id, manifest in manifests.items():
-        for path in manifest["implementation"]["allowed_changed_paths"]:
+    for commit in git(repo, "rev-list", "--reverse", args.source_snapshot_sha).splitlines():
+        customization_id = git(
+            repo,
+            "show",
+            "-s",
+            "--format=%(trailers:key=Customization-ID,valueonly)",
+            commit,
+        )
+        if customization_id not in manifests:
+            continue
+        changed = filter(
+            None,
+            git(
+                repo,
+                "diff-tree",
+                "--no-commit-id",
+                "--name-only",
+                "-r",
+                commit,
+            ).splitlines(),
+        )
+        for path in changed:
             source_owners[path].append(customization_id)
 
     unregistered = sorted(set(source_paths) - set(source_owners))
@@ -287,7 +302,7 @@ def main() -> None:
         )
 
     shared_owners = {
-        path: sorted(owners)
+        path: sorted(set(owners))
         for path, owners in sorted(source_owners.items())
         if len(set(owners)) > 1
     }
@@ -318,7 +333,8 @@ def main() -> None:
                 ),
                 (
                     "The source snapshot stops before the BANK-OM-007 follow-up; "
-                    "the final candidate checks its two candidate_additional_paths."
+                    "the final candidate Manifest contains the full current-version "
+                    "changed_paths scope."
                 ),
                 (
                     "BANK-OM owners are pending assignment; registry readiness "
@@ -347,6 +363,13 @@ def main() -> None:
         {"schema_version": 1, "contracts": CONTRACTS},
     )
     write_yaml(root / "shared-path-owners.yaml", shared_owners)
+    write_yaml(
+        root / "source-snapshot-path-owners.yaml",
+        {
+            path: sorted(set(owners))
+            for path, owners in sorted(source_owners.items())
+        },
+    )
     (root / "source-diff-paths.txt").write_text(
         "\n".join(source_paths) + "\n",
         encoding="utf-8",
@@ -356,6 +379,7 @@ def main() -> None:
     print(f"Contracts: {len(CONTRACTS)}")
     print(f"Source diff paths: {len(source_paths)}")
     print(f"Shared paths: {len(shared_owners)}")
+    print(f"Source snapshot ownership paths: {len(source_owners)}")
     print(f"Official upstream tree: {upstream_tree}")
 
 

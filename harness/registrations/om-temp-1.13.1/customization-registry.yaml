@@ -10,7 +10,7 @@ source:
   diff_inventory: source-diff-paths.txt
   unregistered_findings: []
   limitations:
-  - The source snapshot stops before the BANK-OM-007 follow-up; the final candidate checks its two candidate_additional_paths.
+  - The source snapshot stops before the BANK-OM-007 follow-up; the final candidate Manifest records the full current-version changed_paths scope.
   - BANK-OM owners are pending assignment; registry readiness cannot approve release ownership yet.
 entries:
 - customization_id: BANK-OM-001

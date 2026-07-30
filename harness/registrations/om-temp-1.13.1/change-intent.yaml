@@ -1,0 +1,7 @@
+# The runner expands this flag to the exact changed_paths of every active
+# Manifest. It does not allow arbitrary repository-wide changes.
+schema_version: 1
+allowed_from_active_manifests: true
+forbidden:
+  - .github/**
+  - harness/**

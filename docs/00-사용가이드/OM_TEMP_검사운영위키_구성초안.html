@@ -1,0 +1,1433 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenMetadata 커스터마이징 검사 운영 위키</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #59647a;
+      --line: #dce3ee;
+      --soft: #f5f7fb;
+      --blue: #2563eb;
+      --blue-soft: #eaf1ff;
+      --orange: #c2410c;
+      --orange-soft: #fff1e8;
+      --green: #087f5b;
+      --green-soft: #e9f8f2;
+      --red: #b42318;
+      --red-soft: #fff0ee;
+      --nav: 330px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #fff;
+      font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+      line-height: 1.65;
+    }
+    button, input { font: inherit; }
+    .draft {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding: 9px 20px;
+      color: #5f3c00;
+      background: #fff4cc;
+      border-bottom: 1px solid #efd171;
+      font-size: 14px;
+      font-weight: 750;
+      text-align: center;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: var(--nav) minmax(0, 1fr);
+      min-height: calc(100vh - 43px);
+    }
+    aside {
+      position: sticky;
+      top: 43px;
+      height: calc(100vh - 43px);
+      overflow: auto;
+      padding: 24px 18px 40px;
+      background: #f8fafc;
+      border-right: 1px solid var(--line);
+    }
+    .brand {
+      display: block;
+      margin: 0 8px 18px;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .brand b { display: block; font-size: 18px; }
+    .brand span { color: var(--muted); font-size: 13px; }
+    .search {
+      width: 100%;
+      margin-bottom: 20px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+    }
+    .tree, .tree ul { margin: 0; padding: 0; list-style: none; }
+    .tree > li { margin: 14px 0; }
+    .tree h3 {
+      margin: 0 8px 6px;
+      color: #344054;
+      font-size: 13px;
+      letter-spacing: .02em;
+    }
+    .tree ul ul { margin-left: 14px; border-left: 1px solid #d8e0ec; }
+    .tree button {
+      width: 100%;
+      padding: 7px 9px;
+      border: 0;
+      border-radius: 8px;
+      color: #42506a;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+    }
+    .tree button:hover, .tree button.active {
+      color: #1746a2;
+      background: var(--blue-soft);
+      font-weight: 750;
+    }
+    .tree .report-summary {
+      color: #1746a2;
+      background: #edf3ff;
+      font-weight: 800;
+    }
+    .tree .sub { padding-left: 18px; font-size: 14px; }
+    main { min-width: 0; padding: 52px clamp(28px, 6vw, 92px) 90px; }
+    .page { display: none; max-width: 1060px; margin: 0 auto; overflow-x: auto; }
+    .page.active { display: block; }
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 0; font-size: clamp(31px, 4vw, 46px); line-height: 1.24; letter-spacing: -.04em; }
+    h2 { margin: 50px 0 16px; font-size: 26px; letter-spacing: -.025em; }
+    h3 { margin: 0 0 8px; font-size: 18px; }
+    .lead { max-width: 820px; margin: 18px 0 30px; color: #48546a; font-size: 18px; }
+    .scope {
+      margin: 24px 0;
+      padding: 16px 18px;
+      background: var(--blue-soft);
+      border-left: 4px solid var(--blue);
+      border-radius: 0 12px 12px 0;
+    }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .card {
+      min-width: 0;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 10px 28px rgba(23, 32, 51, .055);
+    }
+    .card p, .card ul { margin: 7px 0 0; color: var(--muted); }
+    .card ul { padding-left: 20px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      color: #1746a2;
+      background: var(--blue-soft);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .badge.green { color: var(--green); background: var(--green-soft); }
+    .badge.orange { color: var(--orange); background: var(--orange-soft); }
+    .badge.red { color: var(--red); background: var(--red-soft); }
+    table { width: 100%; margin: 18px 0 28px; border-collapse: collapse; font-size: 15px; }
+    #file-detail table, #gate-detail table { table-layout: fixed; }
+    #file-detail th, #file-detail td, #gate-detail th, #gate-detail td {
+      overflow-wrap: anywhere;
+    }
+    th, td { padding: 13px 14px; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: var(--soft); }
+    code {
+      padding: .12em .34em;
+      border-radius: 5px;
+      color: #19418d;
+      background: #edf3ff;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: .91em;
+    }
+    pre {
+      overflow: auto;
+      margin: 16px 0;
+      padding: 18px 20px;
+      border-radius: 14px;
+      color: #e7edf8;
+      background: #101827;
+      line-height: 1.55;
+    }
+    pre code { padding: 0; color: inherit; background: transparent; }
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin: 22px 0;
+    }
+    .flow span {
+      padding: 9px 12px;
+      border: 1px solid #cdd8ea;
+      border-radius: 10px;
+      background: #fff;
+      font-weight: 700;
+    }
+    .flow i { color: #536178; font-style: normal; }
+    .template {
+      margin-top: 30px;
+      padding: 22px;
+      border: 1px dashed #aebbd0;
+      border-radius: 16px;
+      background: #fbfcfe;
+    }
+    .template ol { margin-bottom: 0; padding-left: 22px; }
+    .status-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 24px; }
+    .status-row span { padding: 5px 10px; border-radius: 999px; font-size: 13px; font-weight: 800; }
+    .pass { color: var(--green); background: var(--green-soft); }
+    .approval { color: #8b5a00; background: #fff3cc; }
+    .block { color: var(--red); background: var(--red-soft); }
+    .neutral { color: #41506a; background: #edf1f7; }
+    .muted { color: var(--muted); }
+    .footer-note { margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+    #report-summary.page {
+      max-width: 1180px;
+    }
+    .report-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    .report-header strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 21px;
+      letter-spacing: -.02em;
+    }
+    .report-header p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .report-position {
+      flex: 0 0 auto;
+      padding: 6px 11px;
+      border-radius: 999px;
+      color: #1746a2;
+      background: var(--blue-soft);
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .report-native-summary {
+      padding: clamp(22px, 4vw, 36px);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: 0 14px 34px rgba(23, 32, 51, .06);
+    }
+    .report-native-summary h1 {
+      max-width: 900px;
+      font-size: clamp(29px, 3.7vw, 43px);
+    }
+    .report-native-summary .lead { margin-bottom: 26px; }
+    .report-facts { margin: 0 0 30px; }
+    .report-facts .card { box-shadow: none; }
+    .report-facts .card p { line-height: 1.55; }
+    .report-flow {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin: 18px 0 28px;
+    }
+    .report-flow span {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      gap: 9px;
+      padding: 12px 13px;
+      border: 1px solid #cdd8ea;
+      border-radius: 12px;
+      background: #fff;
+      font-weight: 750;
+    }
+    .report-flow b {
+      display: inline-grid;
+      flex: 0 0 26px;
+      width: 26px;
+      height: 26px;
+      place-items: center;
+      border-radius: 50%;
+      color: #1746a2;
+      background: var(--blue-soft);
+      font-size: 12px;
+    }
+    .report-native-summary h2 { margin-top: 34px; }
+    .report-native-summary table { margin-bottom: 22px; }
+    .report-native-summary .scope { margin-bottom: 0; }
+    .report-native-summary + .detail-map { margin-top: 22px; }
+    .report-diagram-section h2 { margin-bottom: 6px; }
+    .report-diagram-note {
+      margin: 0 0 14px;
+      color: var(--muted);
+    }
+    .path {
+      display: block;
+      margin: 14px 0 24px;
+      padding: 10px 12px;
+      overflow-wrap: anywhere;
+      border-radius: 9px;
+      color: #334155;
+      background: var(--soft);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 13px;
+    }
+    .split-code {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .split-code h3 { margin: 0 0 7px; }
+    #topic-comparison-section pre {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-size: 13px;
+    }
+    .detail-map {
+      margin: 0 0 22px;
+      padding: 18px;
+      border: 1px solid #cdd8ea;
+      border-radius: 15px;
+      background: #f8fbff;
+    }
+    .detail-map h2, .detail-map h3 { margin: 0 0 7px; }
+    .detail-map > p { margin: 0 0 12px; color: var(--muted); }
+    .detail-map > ul {
+      margin: 0 0 16px;
+      padding-left: 20px;
+      color: #4c5870;
+    }
+    .detail-map > ul li + li { margin-top: 7px; }
+    .detail-map-links {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+    }
+    .detail-map-link {
+      display: block;
+      min-width: 0;
+      padding: 11px 12px;
+      border: 1px solid #cdd8ea;
+      border-radius: 11px;
+      color: #22304a;
+      background: #fff;
+      text-align: left;
+      cursor: pointer;
+    }
+    .detail-map-link strong { display: block; margin-bottom: 3px; color: #1746a2; }
+    .detail-map-link small { color: #667085; line-height: 1.45; }
+    .origin-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .origin-links .detail-map-link { width: auto; }
+    .shared-report-figure {
+      margin: 18px 0 8px;
+      padding: 18px;
+      overflow: hidden;
+      border: 1px solid #d8e0ec;
+      border-radius: 18px;
+      background: #fff;
+    }
+    .shared-report-figure-note {
+      margin: -4px 0 12px;
+      color: #667085;
+    }
+    #topic-shared-diagram {
+      display: block;
+      width: 100%;
+      min-width: 0;
+    }
+    .shared-report-figure-error {
+      margin: 0;
+      padding: 14px;
+      color: #8f1d18;
+      border: 1px solid #efb4ae;
+      border-radius: 12px;
+      background: #fff4f2;
+    }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      main { padding: 34px 20px 70px; }
+      .grid, .grid.three { grid-template-columns: 1fr; }
+      .report-flow { grid-template-columns: 1fr; }
+      .detail-map-links { grid-template-columns: 1fr; }
+      .report-header { align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="draft">검사 운영 위키 · 구현된 기능, 환경 실행 대기 항목과 실제 예시를 구분해 표시합니다.</div>
+  <div class="layout">
+    <aside>
+      <a class="brand" href="#home" data-page="home">
+        <b>검사 운영 위키</b>
+        <span>OpenMetadata BANK-OM 변경관리</span>
+      </a>
+      <input class="search" id="search" type="search" placeholder="목차 검색" aria-label="목차 검색">
+      <nav aria-label="위키 목차">
+        <ul class="tree" id="tree">
+          <li>
+            <h3>시작하기</h3>
+            <ul>
+              <li><button data-page="home">위키의 목적과 읽는 순서</button></li>
+              <li><button data-page="boundary">현재 구현 범위와 한계</button></li>
+              <li><button data-page="workflow">전체 검사 흐름</button></li>
+              <li><button data-page="operator-readiness">신입 운영 가능 기준</button></li>
+            </ul>
+          </li>
+          <li>
+            <h3>1. 목적과 브랜치 전략</h3>
+            <ul>
+              <li><button class="report-summary" data-page="report-summary" data-legacy="공유문서/openmetadata-phase1-sharing-preview.html">보고용 요약</button></li>
+              <li><button class="sub" data-page="topic-detail" data-topic="repositories">상세 · 저장소 역할</button></li>
+              <li><button class="sub" data-page="topic-detail" data-topic="branches">상세 · patch·custom branch</button></li>
+              <li><button class="sub" data-page="topic-detail" data-topic="identity">상세 · ID·commit·SHA</button></li>
+            </ul>
+          </li>
+          <li>
+            <h3>2. 검사기 원리</h3>
+            <ul>
+              <li><button class="report-summary" data-page="report-summary" data-legacy="공유문서/openmetadata-phase2-verifier-table-preview.html">보고용 요약</button></li>
+              <li><button data-page="gate-index">상세 · 검사기 전체 목록</button></li>
+              <li>
+                <button data-page="source-gates">상세 · 소스·등록 검사</button>
+                <ul>
+                  <li><button class="sub" data-page="gate-detail" data-gate="t25r">T25-R · 과거 소스 재구성</button></li>
+                  <li><button class="sub" data-page="gate-detail" data-gate="t25">T25 · 공식 버전 출발점</button></li>
+                  <li><button class="sub" data-page="gate-detail" data-gate="t26">T26 · 필수 변경 유지</button></li>
+                  <li><button class="sub" data-page="gate-detail" data-gate="t30">T30 · 커밋 ID 확인</button></li>
+                  <li><button class="sub" data-page="gate-detail" data-gate="t31">T31 · ID 적용 순서</button></li>
+                  <li><button class="sub" data-page="gate-detail" data-gate="t40">T40 · 변경 범위</button></li>
+                  <li><button class="sub" data-page="gate-detail" data-gate="t41">T41 · 중요 경로</button></li>
+                  <li><button class="sub" data-page="gate-detail" data-gate="t93_scope">T93 · 등록 일치</button></li>
+                </ul>
+              </li>
+              <li>
+                <button data-page="upgrade-gates">상세 · 업그레이드 영향 검사</button>
+                <ul>
+                  <li><button class="sub" data-page="gate-detail" data-gate="t42">T42 · 공식 변경 영향</button></li>
+                  <li><button class="sub" data-page="gate-detail" data-gate="t43">T43 · 유지 부담</button></li>
+                  <li><button class="sub" data-page="gate-detail" data-gate="t93_policy">T93 · 경로 정책 최신성</button></li>
+                </ul>
+              </li>
+              <li>
+                <button data-page="runtime-gates">상세 · 테스트·실행 검사</button>
+                <ul>
+                  <li><button class="sub" data-page="gate-detail" data-gate="t60i">T60-I · 테스트 코드 존재</button></li>
+                  <li><button class="sub" data-page="gate-detail" data-gate="t61">T61 · 변경 제거 시 실패</button></li>
+                  <li><button class="sub" data-page="gate-detail" data-gate="t62">T62 · 실행 결과 연결</button></li>
+                  <li><button class="sub" data-page="gate-detail" data-gate="t63">T63 · TypeScript 오류 비교</button></li>
+                </ul>
+              </li>
+              <li>
+                <button data-page="release-gates">상세 · 업그레이드·배포 검사</button>
+                <ul>
+                  <li><button class="sub" data-page="gate-detail" data-gate="t90">T90 · 업그레이드 전 과정</button></li>
+                  <li><button class="sub" data-page="gate-detail" data-gate="t91">T91 · 검증·배포 대상 일치</button></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <h3>3. 검사 전 사전환경 설정</h3>
+            <ul>
+              <li><button class="report-summary" data-page="report-summary" data-legacy="OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html">보고용 요약</button></li>
+              <li><button class="sub" data-page="topic-detail" data-topic="registration">상세 · 새 BANK-OM 등록</button></li>
+              <li><button class="sub" data-page="topic-detail" data-topic="followup">상세 · 기존 ID 후속 commit</button></li>
+              <li><button class="sub" data-page="topic-detail" data-topic="automation">상세 · 자동화와 사람 승인</button></li>
+              <li><button class="sub" data-page="file-detail" data-file="manifest">상세 · Manifest</button></li>
+              <li><button class="sub" data-page="file-detail" data-file="registry">상세 · Registry</button></li>
+              <li><button class="sub" data-page="file-detail" data-file="contracts">상세 · Contract catalog</button></li>
+              <li><button class="sub" data-page="file-detail" data-file="shared_paths">상세 · 공용 파일 소유정보</button></li>
+              <li><button class="sub" data-page="file-detail" data-file="source_snapshot_owners">상세 · 과거 코드 경로 소유정보</button></li>
+              <li><button class="sub" data-page="file-detail" data-file="diff_inventory">상세 · 전체 변경 파일 목록</button></li>
+              <li><button class="sub" data-page="file-detail" data-file="layout">상세 · Repository layout</button></li>
+              <li><button class="sub" data-page="file-detail" data-file="zones">상세 · Sensitive zones</button></li>
+            </ul>
+          </li>
+          <li>
+            <h3>4. OM_TEMP 업그레이드 연습</h3>
+            <ul>
+              <li><button class="report-summary" data-page="report-summary" data-legacy="OM_TEMP_1.13.0_1.13.1_업그레이드_실행_가이드_미리보기.html">보고용 요약</button></li>
+              <li><button class="sub" data-page="topic-detail" data-topic="upgrade">상세 · 공식 버전 업그레이드</button></li>
+              <li><button class="sub" data-page="topic-detail" data-topic="conflicts">상세 · Git 충돌과 해결 보조 도구</button></li>
+              <li><button class="sub" data-page="file-detail" data-file="candidate_lock">상세 · Candidate lock</button></li>
+              <li><button class="sub" data-page="file-detail" data-file="test_run_set">상세 · Test run set</button></li>
+              <li><button class="sub" data-page="file-detail" data-file="result">상세 · 검사 결과</button></li>
+              <li><button class="sub" data-page="file-detail" data-file="patch_lock">참고 · Patch-lock 선택 전략</button></li>
+            </ul>
+          </li>
+          <li>
+            <h3>5. 실제 적용과 결과 확인</h3>
+            <ul>
+              <li><button class="report-summary" data-page="report-summary" data-legacy="공유문서/openmetadata-phase3-demo-preview.html">보고용 요약</button></li>
+              <li><button class="sub" data-page="topic-detail" data-topic="evidence">상세 · 검사 결과 읽기</button></li>
+              <li><button class="sub" data-page="topic-detail" data-topic="release">상세 · 검증 tag와 배포 승인</button></li>
+              <li><button class="sub" data-page="topic-detail" data-topic="block_action">상세 · BLOCK·오류 조치</button></li>
+            </ul>
+          </li>
+          <li>
+            <h3>공통 운영</h3>
+            <ul>
+              <li><button data-page="automation">생성·갱신·보관 원칙</button></li>
+            </ul>
+          </li>
+          <li>
+            <h3>참고</h3>
+            <ul>
+              <li><button data-page="reference">판정 라벨 사전</button></li>
+              <li><button data-page="reference">용어 사전</button></li>
+              <li><button data-page="reference">실제 파일·코드 위치</button></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main>
+      <article class="page active" id="home">
+        <p class="eyebrow">OpenMetadata BANK-OM 변경관리</p>
+        <h1>각 보고용 요약 바로 아래에서 같은 주제의 상세 기준을 확인합니다</h1>
+        <p class="lead">1~5번 각 장은 먼저 보고용 요약을 보여주고, 같은 장 아래에 그 내용을 구성하는 개념·검사기·관리 파일 상세 페이지를 둡니다. 보고용에서 본 도식과 결론이 어떤 기준과 실제 예시에서 나온 것인지 바로 이어서 확인할 수 있습니다.</p>
+        <div class="grid">
+          <section class="card">
+            <span class="badge">보고용 1~5번</span>
+            <h3>처음 보는 사람의 전체 흐름</h3>
+            <p>각 장의 첫 번째 “보고용 요약”에서 왜 필요한가, 무엇을 했고 어떤 결과가 나왔는지 빠르게 확인합니다.</p>
+          </section>
+          <section class="card">
+            <span class="badge green">검사 운영 위키</span>
+            <h3>담당자가 실제 작업할 때 찾는 설명</h3>
+            <p>같은 장 아래의 “상세” 항목에서 입력·판정·출력, 관리 파일 변수, 생성기와 명령, 갱신 시점과 실패 조치를 확인합니다.</p>
+          </section>
+        </div>
+        <h2>권장 읽는 순서</h2>
+        <div class="flow">
+          <span>현재 구현 범위</span><i>→</i><span>1~5장 보고용 요약</span><i>→</i><span>같은 장의 상세 개념</span><i>→</i><span>검사기·관리 파일 예시</span><i>→</i><span>실패 조치·재검사</span>
+        </div>
+        <div class="scope"><strong>프로젝트 경계</strong><br>BANK-OM ID, Manifest와 T25·T42 같은 검사 번호는 OpenMetadata 기본 기능이 아니라 <code>easyseop/openmetadata-test</code>에서 만든 내부 변경관리 체계입니다.</div>
+        <h2>실무 상세 페이지의 공통 구성</h2>
+        <div class="grid three">
+          <section class="card"><h3>검사기 페이지</h3><p>답하는 질문, 실행 시점, 입력, 판단 단계, 출력, 판정 라벨, 예외, 실제 명령과 결과</p></section>
+          <section class="card"><h3>관리 파일 페이지</h3><p>의미, 생성·갱신 시점, 작성 주체, 읽는 검사기, 변수별 허용값, 예시 YAML, 오류 결과</p></section>
+          <section class="card"><h3>작업 절차 페이지</h3><p>전제조건, 담당자와 자동화 역할, 순서, 실행 명령, 생성 산출물, 중단 조건, 완료 조건</p></section>
+        </div>
+      </article>
+
+      <article class="page" id="boundary">
+        <p class="eyebrow">시작하기</p>
+        <h1>현재 구현 범위와 한계</h1>
+        <p class="lead">이 페이지는 문서에서 “자동으로 된다”와 “향후 개발한다”가 섞이지 않게 하는 기준 페이지입니다.</p>
+        <table>
+          <thead><tr><th>범위</th><th>현재 상태</th><th>위키에서 표시할 내용</th></tr></thead>
+          <tbody>
+            <tr><td>소스·등록 검사</td><td>구현·단위 테스트 완료</td><td>어떤 조건까지 PASS로 증명하는지와 파일 내부 동작은 증명하지 못한다는 한계</td></tr>
+            <tr><td>Manifest·등록 묶음 생성</td><td>생성 스크립트 존재, 커밋 자동 실행은 아직 미연결</td><td>자동 생성값과 사람이 정할 값을 구분</td></tr>
+            <tr><td>Runtime contract</td><td>실행기 존재, 행내 환경 실행 대기</td><td>실제 환경·배포 파일이 있어야 만들 수 있는 산출물 구분</td></tr>
+            <tr><td>Java·TypeScript 동작 테스트</td><td>언어별 연결 추가 개발 대상</td><td>모든 파일의 변경 범위 검사는 가능하지만 모든 언어의 동작을 이해하는 것은 아님</td></tr>
+          </tbody>
+        </table>
+      </article>
+
+      <article class="page" id="workflow">
+        <p class="eyebrow">시작하기</p>
+        <h1>전체 검사 흐름</h1>
+        <p class="lead">검사 번호를 나열하기 전에 각 단계가 왜 필요한지와 앞 단계의 출력이 다음 단계에서 어떻게 쓰이는지를 먼저 설명합니다.</p>
+        <div class="flow">
+          <span>Git commit·diff</span><i>→</i><span>Manifest·Registry·Contract</span><i>→</i><span>소스 검사</span><i>→</i><span>Candidate lock</span><i>→</i><span>환경 테스트</span><i>→</i><span>배포 대상 일치 검사</span>
+        </div>
+        <table>
+          <thead><tr><th>단계</th><th>주요 입력</th><th>주요 출력</th><th>다음 단계 사용</th></tr></thead>
+          <tbody>
+            <tr><td>등록</td><td>Git diff, BANK-OM ID</td><td>Manifest·Registry·Contract</td><td>어떤 변경과 동작을 검사할지 결정</td></tr>
+            <tr><td>소스 검사</td><td>공식 기준 코드, 행내 코드, 등록자료</td><td>PASS·APPROVAL·BLOCK과 이유</td><td>후보 확정 가능 여부 판단</td></tr>
+            <tr><td>후보 고정</td><td>정확한 commit, 빌드 파일 digest</td><td><code>candidate-lock.yaml</code></td><td>이후 결과가 같은 코드인지 확인</td></tr>
+            <tr><td>실행 검사</td><td>후보 고정정보, Contract test, 환경</td><td><code>test-run-set.yaml</code>·검사 결과</td><td>배포 승인 판단</td></tr>
+          </tbody>
+        </table>
+      </article>
+
+      <article class="page" id="operator-readiness">
+        <p class="eyebrow">시작하기</p>
+        <h1>신입사원이 문서만 보고 운영할 수 있는 완료 기준</h1>
+        <p class="lead">이 위키는 개념 설명에서 끝나지 않습니다. 처음 맡은 직원이 준비부터 실패 조치와 완료 보고까지 다른 사람의 구두 설명 없이 수행할 수 있어야 완성으로 판정합니다.</p>
+        <table>
+          <thead><tr><th>운영 단계</th><th>문서에 반드시 있어야 할 내용</th><th>예시 기준</th></tr></thead>
+          <tbody>
+            <tr><td>작업 준비</td><td>대상 repository·branch·버전, 필요한 권한·도구·파일, 명령을 실행할 위치</td><td><code>easyseop/OM_TEMP</code>의 어떤 branch에서 시작하는지 실제 이름으로 표시</td></tr>
+            <tr><td>입력 작성</td><td>관리 파일의 모든 변수, 값의 출처, 자동 생성값과 사람 판단값</td><td>BANK-OM-007의 두 commit에서 나온 10개 파일을 <code>changed_paths</code> 하나로 관리하는 실제 예시</td></tr>
+            <tr><td>실행</td><td>복사해 실행할 명령, 바꿔 넣을 값, 명령이 읽는 입력과 생성하는 출력</td><td>Manifest 생성 명령과 검증 명령을 파일 변경 여부까지 구분</td></tr>
+            <tr><td>결과 판정</td><td>PASS·APPROVAL·BLOCK·ANALYSIS ERROR의 뜻과 다음 조치</td><td>검사별 실제 결과 한 건과 담당자가 확인할 필드 표시</td></tr>
+            <tr><td>실패 복구</td><td>어떤 파일을 수정할지, 사람이 결정할 부분, 다시 실행할 검사 범위</td><td>필수 경로 누락 BLOCK을 Manifest와 코드 중 어디서 고치는지 제시</td></tr>
+            <tr><td>증거 보관</td><td>남길 결과 파일·Git commit·tag, 저장 위치, 인수인계 항목</td><td>버전 폴더와 결과 파일명을 실제 경로로 표시</td></tr>
+            <tr><td>중단·에스컬레이션</td><td>신입 담당자가 임의로 결정하면 안 되는 코드 충돌·업무 기준 변경 조건</td><td>동일 번역 key 충돌처럼 기능 책임자 승인이 필요한 사례</td></tr>
+          </tbody>
+        </table>
+        <section class="scope"><strong>현재 상태</strong><br>소스·등록 검사는 실제 OM_TEMP 값, 명령, 정상·실패 예시와 복구 절차까지 작성했습니다. Runtime·업그레이드·배포 검사는 실행 방법과 판정 예시는 작성했지만 실제 행내 환경 실행 증거가 아직 없으므로 해당 페이지에 “환경 실행 대기”라고 표시합니다.</section>
+      </article>
+
+      <article class="page" id="report-summary">
+        <header class="report-header">
+          <div>
+            <span class="eyebrow">보고용 요약</span>
+            <strong id="legacy-title">보고용 페이지</strong>
+            <p>위키 상세 설명에서 보고에 필요한 판단만 추려 같은 형식으로 보여줍니다.</p>
+          </div>
+          <span class="report-position" id="legacy-position">보고용</span>
+        </header>
+        <section class="report-native-summary">
+          <p class="eyebrow">이 장이 답하는 질문</p>
+          <h1 id="legacy-question"></h1>
+          <p class="lead" id="legacy-answer"></p>
+          <div class="grid three report-facts" id="legacy-facts"></div>
+          <section class="report-diagram-section" id="legacy-diagram-section" hidden>
+            <h2 id="legacy-diagram-title"></h2>
+            <p class="report-diagram-note" id="legacy-diagram-note"></p>
+            <div class="shared-report-figure">
+              <div id="legacy-shared-diagram" aria-live="polite"></div>
+            </div>
+          </section>
+          <h2>업무 흐름</h2>
+          <div class="report-flow" id="legacy-flow"></div>
+          <h2>현재 어디까지 확인됐나</h2>
+          <table>
+            <thead><tr><th>확인 항목</th><th>현재 상태</th><th>이 상태가 의미하는 것</th></tr></thead>
+            <tbody id="legacy-status"></tbody>
+          </table>
+          <section class="scope">
+            <strong>다음 단계</strong><br>
+            <span id="legacy-next"></span>
+          </section>
+        </section>
+        <section class="detail-map" id="legacy-detail-map">
+          <h2>더 자세히 확인할 항목</h2>
+          <p id="legacy-detail-summary"></p>
+          <div class="detail-map-links" id="legacy-detail-links"></div>
+        </section>
+      </article>
+
+      <article class="page" id="topic-detail">
+        <p class="eyebrow" id="topic-group">운영 개념 상세</p>
+        <h1 id="topic-title">상세 주제를 선택하세요</h1>
+        <p class="lead" id="topic-summary"></p>
+        <section class="detail-map">
+          <h3>이 상세 설명을 요약한 보고용 페이지</h3>
+          <div class="origin-links" id="topic-origin-links"></div>
+        </section>
+        <div class="grid" id="topic-sections"></div>
+        <section id="topic-stage-section" hidden>
+          <h2>Git stage 1·2·3의 정확한 의미</h2>
+          <p>Git이 충돌 파일 하나에 보관한 세 버전입니다. 1단계, 2단계, 3단계로 차례대로 실행한다는 뜻이 아닙니다.</p>
+          <table>
+            <thead><tr><th>Git 표기</th><th>고정된 의미</th><th>이번 연습의 실제 내용</th><th>직접 확인 명령</th><th>보조 도구에서 하는 일</th></tr></thead>
+            <tbody id="topic-stage-map"></tbody>
+          </table>
+          <p class="scope" id="topic-stage-note"></p>
+        </section>
+        <section id="topic-condition-section" hidden>
+          <h2>보조 도구의 비교 조건과 중단 조건</h2>
+          <p>도구가 실제로 무엇을 비교하고, 어떤 결과일 때 자동 작성하거나 중단하는지를 순서대로 표시합니다.</p>
+          <table>
+            <thead><tr><th>판단 순서</th><th>실제로 읽고 비교하는 값</th><th>계속 진행하는 조건</th><th>중단 조건과 결과</th></tr></thead>
+            <tbody id="topic-condition-map"></tbody>
+          </table>
+          <p class="scope" id="topic-condition-note"></p>
+        </section>
+        <section id="topic-outcome-section" hidden>
+          <h2>보조 도구 결과가 나오면 무엇을 해야 하는가</h2>
+          <p>터미널 문구를 최종 성공으로 해석하지 않고, 각 결과에 맞는 담당자 조치와 중단 기준을 확인합니다.</p>
+          <table>
+            <thead><tr><th>화면·터미널 결과</th><th>정확한 뜻</th><th>담당자가 바로 할 일</th><th>하면 안 되는 일</th></tr></thead>
+            <tbody id="topic-outcome-map"></tbody>
+          </table>
+          <p class="scope" id="topic-outcome-note"></p>
+        </section>
+        <section id="topic-diagram-section" hidden>
+          <h2 id="topic-diagram-title">보고용과 동일한 브랜치 Cycle</h2>
+          <p class="shared-report-figure-note">
+            이 영역은 보고용 1차에 들어 있는 SVG를 직접 불러옵니다. 그림은 한 곳에서만 관리하고, 아래 상세 설명만 위키에서 보강합니다.
+          </p>
+          <div class="shared-report-figure">
+            <div id="topic-shared-diagram" aria-live="polite"></div>
+          </div>
+        </section>
+        <section id="topic-walkthrough-section" hidden>
+          <h2>처음부터 따라 하는 실제 예시</h2>
+          <table>
+            <thead><tr><th>순서</th><th>누가</th><th>입력·실행</th><th>확인할 결과</th></tr></thead>
+            <tbody id="topic-walkthrough"></tbody>
+          </table>
+        </section>
+        <section id="topic-comparison-section" hidden>
+          <h2 id="topic-comparison-title">실행 전후 비교</h2>
+          <div class="split-code">
+            <section>
+              <h3 id="topic-before-title">실행 전</h3>
+              <pre><code id="topic-before-example"></code></pre>
+            </section>
+            <section>
+              <h3 id="topic-after-title">실행 후</h3>
+              <pre><code id="topic-after-example"></code></pre>
+            </section>
+          </div>
+          <p class="scope" id="topic-comparison-note"></p>
+        </section>
+        <h2>흐름·명령 예시</h2>
+        <pre><code id="topic-example"></code></pre>
+        <h2>실제 결과 또는 판정 예시</h2>
+        <pre><code id="topic-result-example"></code></pre>
+        <section id="topic-evidence-section" hidden>
+          <h2>확인할 실제 파일</h2>
+          <ul id="topic-evidence"></ul>
+        </section>
+        <section id="topic-operation-section">
+          <h2>운영 중 언제 무엇을 갱신하고, 언제 그대로 두는가</h2>
+          <p id="topic-update"></p>
+          <table>
+            <thead><tr><th>운영 상황</th><th>갱신 여부</th><th>실제 대응</th><th>재실행·보관할 것</th></tr></thead>
+            <tbody id="topic-operation-cases"></tbody>
+          </table>
+        </section>
+        <section class="scope"><strong>오해하기 쉬운 부분</strong><br><span id="topic-caution"></span></section>
+      </article>
+
+      <article class="page" id="gate-index">
+        <p class="eyebrow">1. 검사기</p>
+        <h1>검사기 전체 목록</h1>
+        <p class="lead">번호가 아니라 “어떤 질문에 답하는 검사인가”를 기준으로 먼저 찾습니다. 각 검사 상세 페이지에는 현재 구현 상태를 별도로 표시합니다.</p>
+        <div class="grid">
+          <section class="card"><span class="badge">소스·등록</span><h3>T25-R·T25·T26·T30·T31·T40·T41·T93</h3><p>과거 소스 재구성 또는 현재 코드의 공식 출발점, BANK-OM ID, 실제 변경 범위, 필수 변경과 중요 경로를 확인합니다.</p></section>
+          <section class="card"><span class="badge orange">업그레이드 영향</span><h3>T42·T43·T93</h3><p>새 공식 버전이 관련 파일을 바꿨는지, 유지 부담과 경로 정책이 유효한지 확인합니다.</p></section>
+          <section class="card"><span class="badge green">테스트·실행</span><h3>T60-I·T61·T62·T63</h3><p>필수 테스트가 존재하는지, 변경을 제거하면 실패하는지, 결과가 정확한 후보에 속하는지 확인합니다.</p></section>
+          <section class="card"><span class="badge red">업그레이드·배포</span><h3>T90·T91</h3><p>업그레이드 전 과정 증거와 검증한 코드·실제 배포 파일이 동일한지 확인합니다.</p></section>
+        </div>
+      </article>
+
+      <article class="page" id="source-gates">
+        <p class="eyebrow">1-1. 검사기</p>
+        <h1>소스·등록 검사 묶음</h1>
+        <p class="lead">이 묶음은 Java·TypeScript·Python 등 파일 종류와 관계없이 Git 변경 경로를 확인합니다. 다만 파일 내부의 업무 동작이 정상인지는 Contract test가 따로 확인합니다.</p>
+        <div class="template">
+          <h3>각 개별 검사 페이지에 들어갈 내용</h3>
+          <ol>
+            <li>이 검사가 답하는 업무 질문</li>
+            <li>언제 실행하며 누가 결과를 보는가</li>
+            <li>필수 입력 파일과 입력 변수</li>
+            <li>검사기가 비교하는 순서</li>
+            <li>PASS·APPROVAL·BLOCK 조건</li>
+            <li>실제 OM_TEMP 입력·출력 예시</li>
+            <li>검사만으로 알 수 없는 것과 보완 검사</li>
+            <li>실행 명령과 관련 구현·테스트 코드</li>
+          </ol>
+        </div>
+      </article>
+
+      <article class="page" id="upgrade-gates">
+        <p class="eyebrow">1-2. 검사기</p>
+        <h1>업그레이드 영향 검사 묶음</h1>
+        <p class="lead">이전 공식 버전과 새 공식 버전의 차이가 BANK-OM 커스터마이징에 영향을 줄 가능성이 있는지 확인합니다. “영향 가능성”과 “실제 Git 충돌”은 같은 의미가 아닙니다.</p>
+        <div class="scope"><strong>구분</strong><br>T42의 APPROVAL은 관련 경로가 공식 버전에서 바뀌었다는 뜻입니다. 실제 병합 충돌 여부와 기능 오류는 병합 기록·Contract test에서 별도로 확인합니다.</div>
+      </article>
+
+      <article class="page" id="runtime-gates">
+        <p class="eyebrow">1-3. 검사기</p>
+        <h1>테스트·실행 검사 묶음</h1>
+        <p class="lead">테스트 코드가 존재한다는 사실, 커스터마이징 제거 시 테스트가 실패한다는 사실, 실제 후보에서 테스트가 성공했다는 사실을 서로 다른 검사로 나눕니다.</p>
+        <table>
+          <thead><tr><th>검사</th><th>확인하는 사실</th><th>확인하지 못하는 사실</th></tr></thead>
+          <tbody>
+            <tr><td>T60-I</td><td>등록한 Python pytest 파일과 함수가 존재</td><td>그 테스트가 실제로 성공했는지</td></tr>
+            <tr><td>T61</td><td>커스터마이징을 제거하면 필수 테스트가 실패</td><td>모든 미확인 동작이 보호되는지</td></tr>
+            <tr><td>T62</td><td>테스트 결과가 정확한 후보 commit·배포 파일에 연결</td><td>테스트 설계 자체가 충분한지</td></tr>
+            <tr><td>T63</td><td>공식 원본 대비 새 TypeScript 오류 증가 여부</td><td>Java·Python 오류나 브라우저 실제 동작</td></tr>
+          </tbody>
+        </table>
+      </article>
+
+      <article class="page" id="release-gates">
+        <p class="eyebrow">1-4. 검사기</p>
+        <h1>업그레이드·배포 검사 묶음</h1>
+        <p class="lead">소스 검사 PASS만으로 배포를 승인하지 않도록, 업그레이드 단계의 증거와 실제 배포 대상이 검증한 대상과 같은지를 확인합니다.</p>
+        <table>
+          <thead><tr><th>검사</th><th>확인하는 사실</th><th>현재 상태</th></tr></thead>
+          <tbody>
+            <tr><td>T90</td><td>같은 검사 대상에서 migration·검색·rollback 등 12개 업그레이드 단계를 모두 실행했는지 확인</td><td>판정 코드 구현 · 실제 행내 실행 증거 대기</td></tr>
+            <tr><td>T91</td><td>검증한 commit·이미지·Helm 설정과 실제 배포 대상이 같은지 확인</td><td>판정 코드 구현 · 실제 배포 환경 연결 대기</td></tr>
+          </tbody>
+        </table>
+        <div class="detail-links">
+          <button type="button" data-page="gate-detail" data-gate="t90"><strong>T90 상세 보기</strong><span>입력, 12개 단계, 판정과 아직 없는 실행 증거</span></button>
+          <button type="button" data-page="gate-detail" data-gate="t91"><strong>T91 상세 보기</strong><span>검증 대상과 실제 배포 대상 비교 방법</span></button>
+        </div>
+      </article>
+
+      <article class="page" id="gate-detail">
+        <p class="eyebrow" id="gate-group">검사기 상세</p>
+        <h1 id="gate-title">검사기를 선택하세요</h1>
+        <p class="lead" id="gate-question"></p>
+        <section class="detail-map">
+          <h3>이 상세 설명을 요약한 보고용 페이지</h3>
+          <div class="origin-links" id="gate-origin-links"></div>
+        </section>
+        <div class="status-row"><span class="neutral" id="gate-status"></span></div>
+        <section class="scope"><strong>실행 시점</strong><br><span id="gate-timing"></span></section>
+        <h2>검사 입력</h2>
+        <table>
+          <thead><tr><th>입력</th><th>검사에서 사용하는 값</th><th>실제 값 예시</th></tr></thead>
+          <tbody id="gate-inputs"></tbody>
+        </table>
+        <h2>검사기가 판단하는 순서</h2>
+        <ol id="gate-steps"></ol>
+        <h2>판정과 담당자 조치</h2>
+        <table>
+          <thead><tr><th>판정</th><th>이 검사에서의 의미</th></tr></thead>
+          <tbody id="gate-verdicts"></tbody>
+        </table>
+        <section class="scope"><strong>이 검사만으로 알 수 없는 것</strong><br><span id="gate-limit"></span></section>
+        <h2>실행 예시</h2>
+        <pre><code id="gate-command"></code></pre>
+        <h2>결과 예시</h2>
+        <pre><code id="gate-result-example"></code></pre>
+        <h2>실패 상황과 재실행</h2>
+        <pre><code id="gate-failure-example"></code></pre>
+        <section class="scope"><strong>이 검사의 완료 조건</strong><br><span id="gate-completion"></span></section>
+        <h2>결과가 남는 곳과 확인하는 사람</h2>
+        <p id="gate-output"></p>
+        <h2>실제 구현·검증 코드</h2>
+        <ul id="gate-code"></ul>
+      </article>
+
+      <article class="page" id="file-detail">
+        <p class="eyebrow">관리 파일과 변수</p>
+        <h1 id="file-title">관리 파일을 선택하세요</h1>
+        <p class="lead" id="file-purpose"></p>
+        <section class="detail-map">
+          <h3>이 상세 설명을 요약한 보고용 페이지</h3>
+          <div class="origin-links" id="file-origin-links"></div>
+        </section>
+        <code class="path" id="file-path"></code>
+        <div class="grid three">
+          <section class="card"><span class="badge">처음 만드는 시점</span><p id="file-created"></p></section>
+          <section class="card"><span class="badge orange">갱신하는 시점</span><p id="file-update"></p></section>
+          <section class="card"><span class="badge green">작성·승인 주체</span><p id="file-owner"></p></section>
+        </div>
+        <h2>어디에 사용되는가</h2>
+        <p id="file-readers"></p>
+        <h2>변수 사전</h2>
+        <table>
+          <thead><tr><th>변수</th><th>필수·형식</th><th>역할</th><th>작성 주체</th><th>실제 값 예시</th></tr></thead>
+          <tbody id="file-fields"></tbody>
+        </table>
+        <h2>갱신 예시</h2>
+        <p id="file-update-reason"></p>
+        <div class="split-code">
+          <section><h3>변경 전</h3><pre><code id="file-before"></code></pre></section>
+          <section><h3>변경 후</h3><pre><code id="file-after"></code></pre></section>
+        </div>
+        <section id="file-scope-section" hidden>
+          <h2>검사 범위로 들어가는 방식</h2>
+          <div class="flow" id="file-scope-flow"></div>
+          <section class="scope"><strong>실제 검사 결과</strong><br><span id="file-scope-outcome"></span></section>
+          <table>
+            <thead><tr><th>실제 예시</th><th>등록 위치</th><th>검사 결과</th></tr></thead>
+            <tbody id="file-scope-examples"></tbody>
+          </table>
+        </section>
+        <h2>갱신·검증 명령과 파일 변경 여부</h2>
+        <div id="file-commands"></div>
+        <section class="scope"><strong>보관 원칙</strong><br><span id="file-storage"></span></section>
+      </article>
+
+      <article class="page" id="automation">
+        <p class="eyebrow">3. 생성·갱신·보관</p>
+        <h1>자동화와 사람의 역할</h1>
+        <p class="lead">목표는 “커밋하면 자동 초안·검사가 시작되고, 담당자는 업무 의미가 필요한 항목만 승인하는 것”입니다. 현재 생성 스크립트는 있지만 전체 과정이 commit 이벤트에 자동 연결되지는 않았습니다.</p>
+        <table>
+          <thead><tr><th>시점</th><th>자동 처리 가능</th><th>사람이 결정</th><th>결과</th></tr></thead>
+          <tbody>
+            <tr><td>BANK-OM commit</td><td>변경 경로, ID 형식, Manifest 초안, 등록 묶음 재생성</td><td>required, 간접 watch, Contract, 담당자·중요도</td><td>검토할 변경안 또는 BLOCK</td></tr>
+            <tr><td>배포 후보 확정</td><td>commit·tree·artifact digest 계산</td><td>검사할 후보 승인</td><td><code>candidate-lock.yaml</code></td></tr>
+            <tr><td>환경 test 실행</td><td>test 실행, 결과 결속, digest 계산</td><td>재시도 승인·실패 조치</td><td><code>test-run-set.yaml</code>·결과</td></tr>
+            <tr><td>배포 승인</td><td>검증값과 배포값 비교</td><td>최종 승인</td><td>release lock·승인 기록</td></tr>
+          </tbody>
+        </table>
+        <div class="scope"><strong>권장 구현</strong><br>자동화가 관리 branch를 직접 덮어쓰게 하지 않고, 생성한 차이를 Pull Request로 제시하거나 차이가 남으면 검사를 BLOCK하도록 구성합니다.</div>
+      </article>
+
+      <article class="page" id="reference">
+        <p class="eyebrow">5. 참고</p>
+        <h1>판정·용어·실제 코드 위치</h1>
+        <p class="lead">본문의 흐름을 끊지 않도록 반복해서 찾는 정보만 모읍니다. 정의는 여기에서 한 번만 관리하고 각 검사 페이지에서 링크합니다.</p>
+        <table>
+          <thead><tr><th>판정</th><th>동일하게 사용할 뜻</th></tr></thead>
+          <tbody>
+            <tr><td>PASS</td><td>해당 검사가 확인하는 조건을 통과했습니다. 배포 완료를 의미하지 않습니다.</td></tr>
+            <tr><td>APPROVAL</td><td>자동 실패는 아니지만 담당자 확인과 승인 없이는 다음 단계로 넘어갈 수 없습니다.</td></tr>
+            <tr><td>BLOCK</td><td>조건 위반이 확인돼 수정 후 재검사가 필요합니다.</td></tr>
+            <tr><td>ANALYSIS ERROR</td><td>입력·도구 문제로 검사 자체가 완료되지 않았습니다. PASS로 간주하지 않습니다.</td></tr>
+            <tr><td>NOT RUN</td><td>아직 실행하지 않았으며 결과가 없습니다.</td></tr>
+          </tbody>
+        </table>
+        <p class="footer-note">실제 위키에서는 스키마 파일, Python 구현, 단위 테스트, OM_TEMP 예시 파일로 바로 이동하는 저장소 링크를 함께 제공합니다.</p>
+      </article>
+    </main>
+  </div>
+  <script src="OM_TEMP_검사운영위키_보고용.js"></script>
+  <script src="OM_TEMP_검사운영위키_데이터.js"></script>
+  <script>
+    const buttons = [...document.querySelectorAll("[data-page]")];
+    const pages = [...document.querySelectorAll(".page")];
+    const REPORT_DETAIL_MAP = {
+      "공유문서/openmetadata-phase1-sharing-preview.html": {
+        chapter: "1. 목적과 브랜치 전략",
+        summary: "보고용 1차는 목적과 전체 브랜치 Cycle을 요약합니다. 아래 상세 페이지에서 저장소 역할, 병합 지점, 충돌 위치와 ID·SHA의 차이를 각각 확인합니다.",
+        report: {
+          question: "공식 새 버전과 BANK-OM 변경은 어느 branch에서 만나고, 충돌이 나면 어디서 해결하는가?",
+          answer: "patch branch에는 공식 코드만 보관합니다. 새 공식 버전이 들어 있는 patch branch와 직전 custom branch의 BANK-OM 변경은 다음 버전의 custom branch에서 합칩니다. 이 전체 branch 병합 방식을 이 문서에서는 vendor-merge라고 부릅니다. Git 충돌은 합치는 중인 custom branch에서 담당자가 해결하며, 검사기는 코드를 대신 병합하거나 선택하지 않습니다.",
+          facts: [
+            ["공식 기준", "patch branch", "easyseop/OM_TEMP에서 해당 버전의 공식 OpenMetadata 코드만 보관합니다."],
+            ["행내 작업", "custom branch", "easyseop/OM_TEMP에서 공식 코드 위에 BANK-OM 변경과 충돌 해결 commit을 기록합니다."],
+            ["검사 운영", "easyseop/openmetadata-test", "Manifest·정책·검사 코드와 결과를 관리하며 OpenMetadata 제품 코드를 대신 보관하지 않습니다."]
+          ],
+          flow: ["공식 새 버전 준비", "patch branch 갱신", "T42 사전 영향 확인·등록 갱신", "custom branch에서 병합", "충돌 해결 commit", "검사 실행", "검증 tag·승인"],
+          status: [
+            ["브랜치 역할과 반복 Cycle", "정의 완료", "patch·custom·검사 저장소의 역할과 병합 지점을 문서화했습니다."],
+            ["OM_TEMP 1.13.0 초기 상태", "구성 완료", "공식 1.13.0과 BANK-OM-001~007 변경 이력을 준비했습니다."],
+            ["1.13.1 커밋별 재적용 진단", "부분 확인", "ID별 충돌은 확인했지만 운영 방식인 vendor-merge 전체 결과는 아닙니다."],
+            ["1.13.1 실제 vendor-merge·배포", "미확인", "병합 기록, 전체 test와 배포 승인 증거가 아직 없습니다."]
+          ],
+          next: "다음 공식 버전에서도 같은 Cycle을 반복합니다. 현재 연습에서는 실제 vendor-merge 후보를 만든 뒤 충돌 해결 기록과 전체 검사 결과를 다시 남겨야 합니다.",
+          figure: {
+            title: "브랜치 전략 한눈에 보기",
+            note: "파란색은 공식 patch branch, 주황색은 BANK-OM 변경 이력입니다. 두 흐름은 다음 버전의 custom branch에서 합쳐지며, 그 지점에서 Git 충돌이 발생할 수 있습니다. 충돌을 해결한 뒤 검사하고, 통과한 commit에 검증 tag를 붙여 다음 공식 버전에서 같은 Cycle을 반복합니다.",
+            report: "공유문서/openmetadata-phase1-sharing-preview.html",
+            selector: ".om-branch-visual"
+          }
+        },
+        coverage: { topics: ["repositories", "branches", "identity", "upgrade"] },
+        summarySources: [
+          { topic: "repositories" },
+          { topic: "branches" },
+          { topic: "identity" },
+          { topic: "upgrade" }
+        ],
+        details: [
+          { label: "저장소 역할", description: "현재 OM_TEMP·검사 저장소와 과거 참고 저장소 구분", page: "topic-detail", topic: "repositories" },
+          { label: "patch·custom branch", description: "보고용 Cycle 도식의 상세판과 충돌 지점", page: "topic-detail", topic: "branches" },
+          { label: "ID·commit·SHA", description: "기능 ID, commit 메시지와 Git 식별값 구분", page: "topic-detail", topic: "identity" },
+          { label: "업그레이드 절차", description: "다음 공식 버전에서 Cycle을 반복하는 순서", page: "topic-detail", topic: "upgrade" }
+        ]
+      },
+      "공유문서/openmetadata-phase2-verifier-table-preview.html": {
+        chapter: "2. 검사기 원리",
+        summary: "보고용 2차는 각 검사가 무엇을 확인하고 실패하면 어떻게 되는지 요약합니다. 아래 상세 페이지에서 입력값, 판단 순서, 실행 명령, 결과 파일과 예외를 확인합니다.",
+        report: {
+          question: "각 검사는 무엇을 입력받아 어떤 문제를 찾고, 결과가 나오면 무엇을 해야 하는가?",
+          answer: "검사는 Git 변경, Manifest와 관리 파일, 실행 결과를 서로 비교합니다. 각 검사는 한 가지 질문만 판정하며, PASS는 그 질문을 통과했다는 뜻일 뿐 전체 기능 정상이나 배포 완료를 의미하지 않습니다.",
+          facts: [
+            ["등록·소스", "무엇이 바뀌었나", "BANK-OM ID와 실제 변경 파일이 Manifest에 빠짐없이 등록됐는지 확인합니다."],
+            ["업그레이드 영향", "공식 변경과 어디가 겹치나", "공식 새 버전이 BANK-OM 관련 경로를 바꿨는지 찾아 담당자 검토 대상을 제시합니다."],
+            ["실행·배포", "검사한 코드가 실제 대상과 같은가", "test 결과, 검사 대상 commit과 배포 artifact가 서로 같은 대상을 가리키는지 확인합니다."]
+          ],
+          flow: ["검사 입력 준비", "등록·소스 검사", "업그레이드 영향 검사", "기능 test 실행", "결과 라벨 확인", "수정·승인·배포 판단"],
+          status: [
+            ["등록·소스 검사", "현재 사용 가능", "구현·단위 test와 OM_TEMP 결과 파일이 있으며 실제 Git 변경과 Manifest를 비교할 수 있습니다."],
+            ["공식 변경 영향 검사", "현재 사용 가능", "공식 이전·새 버전과 watch 경로를 비교하며 APPROVAL 대상을 찾습니다."],
+            ["Python 필수 test 연결", "현재 사용 가능", "pytest 파일과 test 이름 존재를 확인합니다."],
+            ["Java·TypeScript 기능 test와 행내 Runtime", "추가 연결 필요", "일부 검사 코드는 있지만 실제 환경 실행과 증거 연결이 완료되지 않았습니다."],
+            ["배포 대상 일치 확인", "환경 실행 대기", "실제 배포 artifact와 승인 기록이 있어야 최종 판정할 수 있습니다."]
+          ],
+          next: "검사명만 읽지 말고 각 상세 페이지에서 입력값, 비교 방법, 결과 라벨과 다음 조치를 확인합니다. 환경 실행 대기 항목은 PASS로 간주하지 않습니다."
+        },
+        coverage: { gates: ["t25r", "t25", "t26", "t30", "t31", "t40", "t41", "t93_scope", "t42", "t43", "t93_policy", "t60i", "t61", "t62", "t63", "t90", "t91"] },
+        summarySources: [
+          { gate: "t40" },
+          { gate: "t42" },
+          { gate: "t61" },
+          { gate: "t91" }
+        ],
+        details: [
+          { label: "검사기 전체 목록", description: "17개 상세 항목을 업무 질문 기준으로 찾기", page: "gate-index" },
+          { label: "소스·등록 검사", description: "ID, 실제 변경 범위와 필수 파일 확인", page: "source-gates" },
+          { label: "업그레이드 영향 검사", description: "공식 변경이 BANK-OM 관련 경로에 미치는 영향", page: "upgrade-gates" },
+          { label: "테스트·실행 검사", description: "테스트 존재·효력·후보 연결을 구분해 확인", page: "runtime-gates" },
+          { label: "업그레이드·배포 검사", description: "검증 대상과 실제 배포 대상의 일치 확인", page: "release-gates" }
+        ]
+      },
+      "OM_TEMP_커밋별_Manifest_등록_가이드_미리보기.html": {
+        chapter: "3. 검사 전 사전환경 설정",
+        summary: "보고용 3차는 commit에서 BANK-OM 등록자료를 준비하는 순서를 요약합니다. 아래 상세 페이지에서 사람이 결정할 값, 자동 생성 값과 관리 파일별 갱신 규칙을 확인합니다.",
+        report: {
+          question: "검사를 시작하기 전에 commit에서 어떤 관리 자료를 만들고, 누가 어떤 값을 확정하는가?",
+          answer: "생성기는 commit 메시지와 Git diff에서 BANK-OM별 변경 경로 초안을 만듭니다. 담당자는 그 초안을 검토하고 필수 구현 파일, 간접 의존 경로, 업무 동작 기준과 책임자를 확정합니다. commit만 하면 모든 판단값이 자동 확정되는 구조는 아닙니다.",
+          facts: [
+            ["Git이 제공", "commit SHA·diff", "변경 기록 식별값과 실제 변경 파일은 Git에서 읽습니다."],
+            ["생성기가 작성", "Manifest·파생 목록 초안", "같은 BANK-OM ID의 여러 commit을 합쳐 현재 버전의 변경 범위를 제안합니다."],
+            ["사람이 결정", "required·watch·Contract", "기능상 반드시 필요한 파일, 간접 의존과 정상 동작 기준은 담당자가 승인합니다."]
+          ],
+          flow: ["commit에 BANK-OM ID 기록", "Git diff 수집", "Manifest 초안 생성", "담당자 판단값 검토", "Registry·파생 파일 생성", "등록 검사"],
+          status: [
+            ["BANK-OM-001~007 Manifest", "초안 구성 완료", "OM_TEMP 1.13.0과 1.13.1 연습용 등록자료가 있습니다."],
+            ["Manifest·Registry 생성 스크립트", "현재 사용 가능", "담당자가 명령을 실행하면 검토용 초안과 파생 관리 파일을 만듭니다."],
+            ["commit 직후 완전 자동 갱신", "미구현", "현재는 commit만으로 자동 실행되지 않으며 담당자가 생성·검토 명령을 실행합니다."],
+            ["업무 기준 자동 확정", "자동화 대상 아님", "required·간접 watch·Contract·승인은 기능 담당자의 판단이 필요합니다."]
+          ],
+          next: "새 ID는 최초 등록 절차를 따르고, 기존 ID의 후속 commit은 같은 버전 Manifest의 changed_paths를 현재 전체 범위로 갱신합니다. 변경 후 등록 검사를 다시 실행합니다."
+        },
+        coverage: {
+          topics: ["registration", "followup", "automation"],
+          files: ["manifest", "registry", "contracts", "shared_paths", "source_snapshot_owners", "diff_inventory", "layout", "zones"]
+        },
+        summarySources: [
+          { topic: "registration" },
+          { topic: "automation" },
+          { file: "manifest" },
+          { file: "contracts" }
+        ],
+        details: [
+          { label: "새 BANK-OM 등록", description: "ID 발급부터 등록 검사까지의 전체 순서", page: "topic-detail", topic: "registration" },
+          { label: "기존 ID 후속 commit", description: "같은 기능을 보완할 때 ID와 Manifest 갱신 방법", page: "topic-detail", topic: "followup" },
+          { label: "자동화와 사람 승인", description: "생성기가 만드는 값과 담당자가 정하는 값", page: "topic-detail", topic: "automation" },
+          { label: "Manifest", description: "changed·required·watch·assurance의 실제 의미", page: "file-detail", file: "manifest" },
+          { label: "Registry", description: "BANK-OM ID와 Manifest·Contract 연결", page: "file-detail", file: "registry" },
+          { label: "Contract catalog", description: "파일 존재로 알 수 없는 업무 동작 기준", page: "file-detail", file: "contracts" },
+          { label: "파생 관리 파일", description: "공용 소유정보와 전체 변경 목록의 생성·검증", page: "file-detail", file: "shared_paths" },
+          { label: "경로 정책", description: "Repository layout과 Sensitive zones 운영 기준", page: "file-detail", file: "layout" }
+        ]
+      },
+      "OM_TEMP_1.13.0_1.13.1_업그레이드_실행_가이드_미리보기.html": {
+        chapter: "4. OM_TEMP 업그레이드 연습",
+        summary: "보고용 4차는 1.13.0→1.13.1 연습의 순서와 결과를 요약합니다. 아래 상세 페이지에서 영향 확인, 실제 충돌, 보조 도구의 입출력과 실행 증거를 확인합니다.",
+        report: {
+          question: "1.13.0→1.13.1 연습에서 실제로 무엇을 확인했고, 무엇은 아직 검증하지 못했는가?",
+          answer: "이번 연습은 공식 1.13.1 위에 BANK-OM 변경 기록을 ID별로 다시 적용해 충돌 위치와 소스 등록 상태를 확인한 진단입니다. BANK-OM-001~004는 각각 번역 JSON 18개에서 충돌했고, 005~007은 충돌 없이 적용됐습니다. 직전 custom branch와 새 patch branch를 통째로 합치는 목표 운영 방식(vendor-merge)과 실제 배포는 아직 검증하지 않았습니다.",
+          facts: [
+            ["실제 충돌", "001~004 · 각 18개 JSON", "공식 1.13.1의 큰 번역 구조 변경과 BANK-OM 추가가 같은 JSON 영역에 있어 Git이 자동 병합을 중단했습니다."],
+            ["충돌 없음", "005~007", "이번 커밋별 재적용 진단에서는 Git 충돌 없이 순서대로 적용됐습니다."],
+            ["보조 도구", "JSON 비중복 변경만 제안", "같은 JSON 최종 항목을 양쪽이 함께 바꾸지 않은 경우에만 작업 파일을 수정하며 승인과 commit은 하지 않습니다."]
+          ],
+          flow: ["공식 1.13.1 준비", "BANK-OM별 재적용 진단", "Git 충돌 확인", "보조 도구 또는 수동 해결", "소스 검사", "미실행 범위 기록"],
+          status: [
+            ["BANK-OM별 충돌 위치", "확인 완료", "001~004의 18개 JSON 충돌과 005~007의 무충돌 적용 결과를 기록했습니다."],
+            ["등록·소스 검사", "8종 PASS", "이번 재적용 후보에서 Git 변경과 Manifest 연결을 확인했습니다."],
+            ["Contract test", "부분 확인", "2개 PASS, 행내 서버·브라우저가 필요한 7개는 SKIP입니다."],
+            ["실제 vendor-merge 후보", "미확인", "이번 후보는 커밋별 재적용으로 만들었으므로 운영 병합 방식의 증거가 아닙니다."],
+            ["충돌 해결 승인·운영 배포", "미확인", "승인자·승인 시각과 실제 배포 증거가 없습니다."]
+          ],
+          next: "patch branch와 직전 custom branch를 실제 vendor-merge 방식으로 합친 후보를 만들고, 충돌 해결 승인·전체 test·배포 대상 일치 검사를 수행해야 합니다."
+        },
+        coverage: {
+          topics: ["upgrade", "conflicts"],
+          gates: ["t42", "t43", "t93_policy", "t90", "t91"],
+          files: ["candidate_lock", "test_run_set", "result", "patch_lock"]
+        },
+        summarySources: [
+          { topic: "upgrade" },
+          { topic: "conflicts" },
+          { gate: "t42" },
+          { file: "result" }
+        ],
+        details: [
+          { label: "공식 버전 업그레이드", description: "patch 준비부터 tag·승인까지의 전체 순서", page: "topic-detail", topic: "upgrade" },
+          { label: "Git 충돌·해결", description: "실제 JSON 충돌과 보조 도구 실행 전후", page: "topic-detail", topic: "conflicts" },
+          { label: "T42 공식 변경 영향", description: "병합 전에 다시 볼 경로를 찾는 검사", page: "gate-detail", gate: "t42" },
+          { label: "Candidate lock", description: "검사할 commit과 배포 파일 고정", page: "file-detail", file: "candidate_lock" },
+          { label: "Test run set", description: "실행한 test와 재시도 결과 기록", page: "file-detail", file: "test_run_set" },
+          { label: "검사 결과 파일", description: "판정, 이유와 실행 대상을 함께 보관", page: "file-detail", file: "result" }
+        ]
+      },
+      "공유문서/openmetadata-phase3-demo-preview.html": {
+        chapter: "5. 실제 적용과 결과 확인",
+        summary: "보고용 5차는 코드 적용과 검사 결과를 한 흐름으로 요약합니다. 아래 상세 페이지에서 코드가 남아 있는지, 테스트가 보호하는지와 결과 라벨별 조치를 확인합니다.",
+        report: {
+          question: "코드 변경부터 검사 결과까지 어떤 증거가 있어야 다음 단계로 진행할 수 있는가?",
+          answer: "Git diff로 실제 변경을 확인하고, Manifest에 그 범위와 필수 구현·동작 기준을 등록한 뒤 각 검사를 실행합니다. 결과에는 검사 대상, 판정, 이유와 미실행 범위가 함께 있어야 하며, 소스 PASS만으로 기능 정상이나 배포 승인을 선언하지 않습니다.",
+          facts: [
+            ["코드 증거", "Git diff·commit", "어떤 BANK-OM ID가 어느 파일을 어떻게 바꿨는지 확인합니다."],
+            ["등록 증거", "Manifest·Registry·Contract", "변경 범위, 필수 구현과 정상 동작 test를 같은 ID로 연결합니다."],
+            ["실행 증거", "검사 결과·test·artifact", "검사한 commit과 test·배포 대상이 동일한지 확인하고 결과 라벨별 조치를 남깁니다."]
+          ],
+          flow: ["코드 변경 확인", "Manifest 등록", "소스 검사", "기능 test", "결과 라벨 해석", "담당자 승인 또는 BLOCK"],
+          status: [
+            ["Git 변경과 Manifest 범위", "확인 가능", "T40·T93-범위가 실제 변경 경로와 등록 경로를 비교합니다."],
+            ["필수 구현 유지", "확인 가능", "T26이 required 파일과 Contract 연결을 확인합니다."],
+            ["커스터마이징 test 효력", "환경 증거 필요", "T61은 구현됐지만 변경 제거 전·후 실제 환경 test 결과가 필요합니다."],
+            ["검사 대상과 배포 대상 일치", "환경 실행 대기", "실제 artifact digest와 배포 기록이 없어 최종 배포 승인을 판정할 수 없습니다."]
+          ],
+          next: "시연에서는 실제 Git 화면, Manifest, 검사 실행 화면과 결과 라벨을 같은 대상 commit 기준으로 연결해 보여줍니다. 미실행 항목은 NOT RUN 또는 환경 실행 대기로 명시합니다."
+        },
+        coverage: {
+          topics: ["evidence", "block_action", "release"],
+          gates: ["t26", "t40", "t60i", "t61", "t62"]
+        },
+        summarySources: [
+          { gate: "t26" },
+          { gate: "t40" },
+          { gate: "t61" },
+          { topic: "evidence" },
+          { topic: "release" }
+        ],
+        details: [
+          { label: "소스·등록 검사", description: "실제 Git 변경과 Manifest 등록 범위 비교", page: "source-gates" },
+          { label: "T26 필수 변경 유지", description: "필수 구현 파일이 최종 코드에 남았는지 확인", page: "gate-detail", gate: "t26" },
+          { label: "T40 변경 범위", description: "실제 diff와 Manifest 전체 범위 비교", page: "gate-detail", gate: "t40" },
+          { label: "T61 테스트 효력", description: "커스터마이징을 제거하면 test가 실패하는지 확인", page: "gate-detail", gate: "t61" },
+          { label: "결과 읽는 순서", description: "검사 대상·판정·이유·미실행 범위 확인", page: "topic-detail", topic: "evidence" },
+          { label: "BLOCK·오류 조치", description: "판정별 수정·재검사·증거 보관 방법", page: "topic-detail", topic: "block_action" },
+          { label: "검증 tag·배포 승인", description: "소스 PASS와 실제 배포 승인을 구분", page: "topic-detail", topic: "release" }
+        ]
+      }
+    };
+    window.REPORT_DETAIL_MAP = REPORT_DETAIL_MAP;
+    const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+    })[char]);
+    function detailSelector(item) {
+      let selector = `[data-page="${item.page}"]`;
+      if (item.topic) selector += `[data-topic="${item.topic}"]`;
+      if (item.gate) selector += `[data-gate="${item.gate}"]`;
+      if (item.file) selector += `[data-file="${item.file}"]`;
+      return selector;
+    }
+    function reportButton(key) {
+      return buttons.find(button => button.dataset.legacy === key);
+    }
+    function detailButton(item) {
+      return buttons.find(button => button.matches(detailSelector(item)));
+    }
+    function bindMappedButtons(container, details) {
+      container.innerHTML = details.map((item, index) =>
+        `<button class="detail-map-link" type="button" data-map-index="${index}">
+          <strong>${escapeHTML(item.label)}</strong>
+          <small>${escapeHTML(item.description)}</small>
+        </button>`
+      ).join("");
+      container.querySelectorAll("[data-map-index]").forEach(button => {
+        button.addEventListener("click", () => {
+          detailButton(details[Number(button.dataset.mapIndex)])?.click();
+        });
+      });
+    }
+    function renderLegacySummary(map) {
+      const report = map.report;
+      document.getElementById("legacy-question").textContent = report.question;
+      document.getElementById("legacy-answer").textContent = report.answer;
+      document.getElementById("legacy-facts").innerHTML = report.facts.map(fact =>
+        `<section class="card">
+          <span class="badge">${escapeHTML(fact[0])}</span>
+          <h3>${escapeHTML(fact[1])}</h3>
+          <p>${escapeHTML(fact[2])}</p>
+        </section>`
+      ).join("");
+      const diagramSection = document.getElementById("legacy-diagram-section");
+      diagramSection.hidden = !report.figure;
+      if (report.figure) {
+        document.getElementById("legacy-diagram-title").textContent = report.figure.title;
+        document.getElementById("legacy-diagram-note").textContent = report.figure.note;
+        renderReportFigure("legacy-shared-diagram", report.figure);
+      }
+      document.getElementById("legacy-flow").innerHTML = report.flow.map((step, index) =>
+        `<span><b>${index + 1}</b>${escapeHTML(step)}</span>`
+      ).join("");
+      document.getElementById("legacy-status").innerHTML = renderRows(report.status);
+      document.getElementById("legacy-next").textContent = report.next;
+    }
+    function renderLegacyDetailMap(key) {
+      const map = REPORT_DETAIL_MAP[key];
+      const section = document.getElementById("legacy-detail-map");
+      section.hidden = !map;
+      if (!map) return;
+      document.getElementById("legacy-detail-summary").textContent =
+        "위의 보고용 요약에서 더 알아야 할 내용을 아래 위키 상세 페이지에서 확인합니다.";
+      bindMappedButtons(document.getElementById("legacy-detail-links"), map.details);
+    }
+    function renderOriginLinks(containerId, item) {
+      const origins = Object.entries(REPORT_DETAIL_MAP).filter(([, map]) =>
+        map.details.some(detail =>
+          detail.page === item.page &&
+          (!item.topic || detail.topic === item.topic) &&
+          (!item.gate || detail.gate === item.gate) &&
+          (!item.file || detail.file === item.file)
+        ) ||
+        (item.topic && map.coverage?.topics?.includes(item.topic)) ||
+        (item.gate && map.coverage?.gates?.includes(item.gate)) ||
+        (item.file && map.coverage?.files?.includes(item.file))
+      );
+      const container = document.getElementById(containerId);
+      container.innerHTML = origins.map(([key, map]) =>
+        `<button class="detail-map-link" type="button" data-report-key="${escapeHTML(key)}">
+          <strong>${escapeHTML(map.chapter)} · 보고용 요약</strong>
+        </button>`
+      ).join("") || `<span class="muted">직접 연결된 보고용 요약이 없는 공통 참고 페이지입니다.</span>`;
+      container.querySelectorAll("[data-report-key]").forEach(button => {
+        button.addEventListener("click", () => reportButton(button.dataset.reportKey)?.click());
+      });
+    }
+    function renderRows(items) {
+      return items.map(row => `<tr>${row.map(cell => `<td>${escapeHTML(cell)}</td>`).join("")}</tr>`).join("");
+    }
+    function renderGate(key) {
+      const gate = window.WIKI_GATES[key];
+      if (!gate) return;
+      document.getElementById("gate-group").textContent = gate.group;
+      document.getElementById("gate-title").textContent = gate.title;
+      document.getElementById("gate-question").textContent = gate.question;
+      renderOriginLinks("gate-origin-links", { page: "gate-detail", gate: key });
+      const statusElement = document.getElementById("gate-status");
+      statusElement.textContent = gate.status;
+      statusElement.className = ["pass", "approval", "block", "neutral"].includes(gate.statusLevel)
+        ? gate.statusLevel
+        : "neutral";
+      document.getElementById("gate-timing").textContent = gate.timing;
+      document.getElementById("gate-inputs").innerHTML = renderRows(gate.inputs);
+      document.getElementById("gate-steps").innerHTML = gate.steps.map(step => `<li>${escapeHTML(step)}</li>`).join("");
+      document.getElementById("gate-verdicts").innerHTML = renderRows(gate.verdicts);
+      document.getElementById("gate-limit").textContent = gate.limit;
+      document.getElementById("gate-command").textContent = gate.command;
+      document.getElementById("gate-result-example").textContent = gate.resultExample;
+      const stopVerdict = gate.verdicts.find(row => row[0] === "BLOCK")
+        || gate.verdicts.find(row => row[0] === "APPROVAL")
+        || gate.verdicts.find(row => row[0] === "ANALYSIS ERROR");
+      document.getElementById("gate-failure-example").textContent = gate.failureExample
+        || `${gate.title}\n판정: ${stopVerdict?.[0] || "확인 필요"}\n발생 조건 예시: ${stopVerdict?.[1] || "검사 입력이나 실행 결과를 확인하지 못함"}\n담당자 조치: 결과 이유에 표시된 코드·등록 파일·실행 입력을 보완한 뒤 같은 검사 명령을 다시 실행합니다. 이전 결과 파일은 수정하지 않고 보관합니다.`;
+      const passVerdict = gate.verdicts.find(row => row[0] === "PASS");
+      document.getElementById("gate-completion").textContent = gate.completion
+        || `${passVerdict?.[1] || "검사 판정이 완료돼야 합니다."} APPROVAL이나 ANALYSIS ERROR가 남으면 담당자 확인·승인 또는 입력 보완 후 재실행해야 하며, 최종 결과 파일을 검사 대상 commit과 함께 보관합니다.`;
+      document.getElementById("gate-output").textContent = gate.output;
+      document.getElementById("gate-code").innerHTML = gate.code.map(path => `<li><code>${escapeHTML(path)}</code></li>`).join("");
+    }
+    function renderFile(key) {
+      const file = window.WIKI_FILES[key];
+      if (!file) return;
+      document.getElementById("file-title").textContent = file.title;
+      renderOriginLinks("file-origin-links", { page: "file-detail", file: key });
+      document.getElementById("file-purpose").textContent = file.purpose;
+      document.getElementById("file-path").textContent = file.path;
+      document.getElementById("file-created").textContent = file.created;
+      document.getElementById("file-update").textContent = file.update;
+      document.getElementById("file-owner").textContent = file.owner;
+      document.getElementById("file-readers").textContent = file.readers;
+      document.getElementById("file-fields").innerHTML = renderRows(file.fields);
+      document.getElementById("file-update-reason").textContent = file.updateReason;
+      document.getElementById("file-before").textContent = file.before;
+      document.getElementById("file-after").textContent = file.after;
+      document.getElementById("file-commands").innerHTML = file.commands.map(item => {
+        if (typeof item === "string") {
+          return `<pre><code>${escapeHTML(item)}</code></pre>`;
+        }
+        return `<section class="card">
+          <span class="badge${item.label.includes("바뀜") ? " orange" : " green"}">${escapeHTML(item.label)}</span>
+          <p>${escapeHTML(item.meaning)}</p>
+          <pre><code>${escapeHTML(item.command)}</code></pre>
+        </section>`;
+      }).join("");
+      document.getElementById("file-storage").textContent = file.storage;
+      const scopeSection = document.getElementById("file-scope-section");
+      scopeSection.hidden = !file.scopeFlow;
+      document.getElementById("file-scope-flow").innerHTML = file.scopeFlow
+        ? file.scopeFlow.map(([label, value, operator]) =>
+            `${operator ? `<i>${escapeHTML(operator)}</i>` : ""}<span>${escapeHTML(label)}<br><code>${escapeHTML(value)}</code></span>`
+          ).join("")
+        : "";
+      document.getElementById("file-scope-outcome").textContent = file.scopeOutcome || "";
+      document.getElementById("file-scope-examples").innerHTML =
+        file.scopeExamples ? renderRows(file.scopeExamples) : "";
+    }
+    function renderTopic(key) {
+      const topic = window.WIKI_TOPICS[key];
+      if (!topic) return;
+      document.getElementById("topic-group").textContent = topic.group;
+      document.getElementById("topic-title").textContent = topic.title;
+      document.getElementById("topic-summary").textContent = topic.summary;
+      renderOriginLinks("topic-origin-links", { page: "topic-detail", topic: key });
+      document.getElementById("topic-sections").innerHTML = topic.sections.map(([title, body]) =>
+        `<section class="card"><h3>${escapeHTML(title)}</h3><p>${escapeHTML(body)}</p></section>`
+      ).join("");
+      const stageSection = document.getElementById("topic-stage-section");
+      const stageMap = topic.stageMap || [];
+      stageSection.hidden = stageMap.length === 0;
+      document.getElementById("topic-stage-map").innerHTML = stageMap.length
+        ? renderRows(stageMap)
+        : "";
+      document.getElementById("topic-stage-note").textContent = topic.stageNote || "";
+      const conditionSection = document.getElementById("topic-condition-section");
+      const conditionMap = topic.conditionMap || [];
+      conditionSection.hidden = conditionMap.length === 0;
+      document.getElementById("topic-condition-map").innerHTML = conditionMap.length
+        ? renderRows(conditionMap)
+        : "";
+      document.getElementById("topic-condition-note").textContent = topic.conditionNote || "";
+      const outcomeSection = document.getElementById("topic-outcome-section");
+      const outcomeMap = topic.outcomeMap || [];
+      outcomeSection.hidden = outcomeMap.length === 0;
+      document.getElementById("topic-outcome-map").innerHTML = outcomeMap.length
+        ? renderRows(outcomeMap)
+        : "";
+      document.getElementById("topic-outcome-note").textContent = topic.outcomeNote || "";
+      const diagramSection = document.getElementById("topic-diagram-section");
+      const sharedFigure = topic.sharedReportFigure;
+      diagramSection.hidden = !sharedFigure;
+      if (sharedFigure) renderSharedReportFigure(sharedFigure);
+      const walkthroughSection = document.getElementById("topic-walkthrough-section");
+      const walkthrough = topic.walkthrough || [];
+      walkthroughSection.hidden = walkthrough.length === 0;
+      document.getElementById("topic-walkthrough").innerHTML = walkthrough.length
+        ? renderRows(walkthrough)
+        : "";
+      const comparisonSection = document.getElementById("topic-comparison-section");
+      const comparison = topic.comparison;
+      comparisonSection.hidden = !comparison;
+      if (comparison) {
+        document.getElementById("topic-comparison-title").textContent = comparison.title;
+        document.getElementById("topic-before-title").textContent = comparison.beforeTitle;
+        document.getElementById("topic-before-example").textContent = comparison.before;
+        document.getElementById("topic-after-title").textContent = comparison.afterTitle;
+        document.getElementById("topic-after-example").textContent = comparison.after;
+        document.getElementById("topic-comparison-note").textContent = comparison.note;
+      }
+      document.getElementById("topic-example").textContent = topic.example;
+      document.getElementById("topic-result-example").textContent = topic.resultExample;
+      const evidenceSection = document.getElementById("topic-evidence-section");
+      const evidence = topic.evidence || [];
+      evidenceSection.hidden = evidence.length === 0;
+      document.getElementById("topic-evidence").innerHTML = evidence.map(item =>
+        `<li><a href="${escapeHTML(item[0])}" target="_blank">${escapeHTML(item[1])}</a> — ${escapeHTML(item[2])}</li>`
+      ).join("");
+      document.getElementById("topic-update").textContent = topic.update;
+      const operationCases = topic.operationCases || [];
+      document.getElementById("topic-operation-cases").innerHTML = operationCases.length
+        ? renderRows(operationCases)
+        : `<tr><td colspan="4">현재 정의된 운영 사례가 없습니다.</td></tr>`;
+      document.getElementById("topic-caution").textContent = topic.caution;
+    }
+    function showPage(id, activeButton) {
+      const target = document.getElementById(id) || document.getElementById("home");
+      pages.forEach(page => page.classList.toggle("active", page === target));
+      buttons.forEach(button => button.classList.toggle("active", button === activeButton || (!activeButton && button.dataset.page === target.id)));
+      const detail = activeButton?.dataset.gate || activeButton?.dataset.file || activeButton?.dataset.topic || "";
+      history.replaceState(null, "", "#" + target.id + (detail ? ":" + detail : ""));
+      window.scrollTo({ top: 0, behavior: "auto" });
+    }
+    const legacyButtons = buttons.filter(button => button.dataset.legacy);
+    function renderReportFigure(hostId, config) {
+      const host = document.getElementById(hostId);
+      const report = window.WIKI_REPORTS?.[config.report];
+      if (!report) {
+        host.innerHTML = '<p class="shared-report-figure-error">보고용 원문을 찾지 못했습니다. 보고용 데이터 생성 명령을 다시 실행해야 합니다.</p>';
+        return;
+      }
+      const parsed = new DOMParser().parseFromString(report.html, "text/html");
+      const figure = parsed.querySelector(config.selector);
+      if (!figure) {
+        host.innerHTML = '<p class="shared-report-figure-error">보고용 원문에서 브랜치 Cycle SVG를 찾지 못했습니다.</p>';
+        return;
+      }
+      const sourceStyles = [...parsed.querySelectorAll("style")]
+        .map(style => style.textContent)
+        .join("\n")
+        .replaceAll(":root", ":host");
+      const shadow = host.shadowRoot || host.attachShadow({ mode: "open" });
+      shadow.innerHTML = `
+        <style>
+          ${sourceStyles}
+          :host {
+            display: block;
+            width: 100%;
+            min-width: 0;
+          }
+          #om-guide-v3 {
+            width: 100%;
+            margin: 0;
+            color: var(--foreground);
+            background: transparent;
+            font-family: var(--font-sans);
+            font-size: var(--font-size-normal);
+            line-height: var(--line-height-normal);
+          }
+        </style>
+        <div id="om-guide-v3">${figure.outerHTML}</div>
+      `;
+    }
+    function renderSharedReportFigure(config) {
+      document.getElementById("topic-diagram-title").textContent = config.title;
+      renderReportFigure("topic-shared-diagram", config);
+    }
+    function loadLegacy(button) {
+      const index = legacyButtons.indexOf(button);
+      const map = REPORT_DETAIL_MAP[button.dataset.legacy];
+      document.getElementById("legacy-title").textContent =
+        map ? `${map.chapter} · 보고용 요약` : button.textContent.trim();
+      document.getElementById("legacy-position").textContent =
+        index >= 0 ? `${index + 1} / ${legacyButtons.length}` : "보고용";
+      if (!map) return;
+      renderLegacySummary(map);
+      renderLegacyDetailMap(button.dataset.legacy);
+    }
+    buttons.forEach(button => button.addEventListener("click", event => {
+      event.preventDefault();
+      if (button.dataset.gate) renderGate(button.dataset.gate);
+      if (button.dataset.file) renderFile(button.dataset.file);
+      if (button.dataset.topic) renderTopic(button.dataset.topic);
+      if (button.dataset.legacy) {
+        loadLegacy(button);
+      }
+      showPage(button.dataset.page, button);
+    }));
+    document.getElementById("search").addEventListener("input", event => {
+      const query = event.target.value.trim().toLowerCase();
+      document.querySelectorAll("#tree li").forEach(item => {
+        if (!query) {
+          item.hidden = false;
+          return;
+        }
+        item.hidden = !item.textContent.toLowerCase().includes(query);
+      });
+    });
+    const [initialPage, initialDetail] = (location.hash.slice(1) || "home").split(":");
+    const initialButton = buttons.find(button =>
+      button.dataset.page === initialPage &&
+      (!initialDetail || button.dataset.gate === initialDetail || button.dataset.file === initialDetail || button.dataset.topic === initialDetail)
+    );
+    if (initialButton?.dataset.gate) renderGate(initialButton.dataset.gate);
+    if (initialButton?.dataset.file) renderFile(initialButton.dataset.file);
+    if (initialButton?.dataset.topic) renderTopic(initialButton.dataset.topic);
+    if (initialButton?.dataset.legacy) {
+      loadLegacy(initialButton);
+    }
+    showPage(initialPage, initialButton);
+  </script>
+</body>
+</html>
