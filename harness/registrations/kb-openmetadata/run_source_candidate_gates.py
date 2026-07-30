@@ -51,6 +51,7 @@ def main() -> int:
     from acgh import policy_drift
     from acgh import survival
     from acgh import vendor_rebuild
+    from acgh import verdict
     from acgh import zones
 
     registry, manifests, inventory = vendor_rebuild.load_registration_bundle(
@@ -126,7 +127,9 @@ def main() -> int:
     print(rendered)
     if args.output:
         args.output.write_text(rendered + "\n", encoding="utf-8")
-    return 0 if all(result.verdict == "pass" for result in gates) else 1
+    return verdict.to_exit_code(
+        verdict.aggregate(result.verdict for result in gates)
+    )
 
 
 if __name__ == "__main__":

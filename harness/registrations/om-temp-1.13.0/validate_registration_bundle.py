@@ -155,12 +155,18 @@ def main() -> int:
     }
     emit_result(output, args.output)
 
-    passed = (
-        source_result.verdict == "pass"
-        and test_result.verdict == "pass"
-        and shared_owner_match
+    owner_gate = verdict.GateResult(
+        "shared-path-owners",
+        verdict.PASS if shared_owner_match else verdict.BLOCK,
+        ()
+        if shared_owner_match
+        else ("shared-path-owners.yaml != plan.shared_candidates",),
     )
-    return 0 if passed else 1
+    return verdict.to_exit_code(
+        verdict.aggregate(
+            gate.verdict for gate in (source_result, test_result, owner_gate)
+        )
+    )
 
 
 if __name__ == "__main__":

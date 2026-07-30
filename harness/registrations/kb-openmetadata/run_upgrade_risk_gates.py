@@ -156,10 +156,9 @@ def main() -> int:
         "structured_diffs": structured,
     }
     print(json.dumps(output, ensure_ascii=False, indent=2, sort_keys=True))
-    states = {result.verdict for result in gates}
-    if verdict.ANALYSIS_ERROR in states or verdict.BLOCK in states:
-        return 1
-    return 2 if verdict.APPROVAL in states else 0
+    return verdict.to_exit_code(
+        verdict.aggregate(result.verdict for result in gates)
+    )
 
 
 if __name__ == "__main__":

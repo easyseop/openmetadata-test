@@ -23,6 +23,7 @@ def main() -> int:
     from acgh import gitprim
     from acgh import upgrade_watch
     from acgh import vendor_rebuild
+    from acgh import verdict
 
     registry, manifests, _inventory = vendor_rebuild.load_registration_bundle(
         args.registration
@@ -74,7 +75,7 @@ def main() -> int:
     print(rendered)
     if args.output:
         args.output.write_text(rendered + "\n", encoding="utf-8")
-    return 0
+    return verdict.to_exit_code(result.verdict)
 
 
 if __name__ == "__main__":
