@@ -767,3 +767,77 @@ def test_policy_refusal_reports_blocked_not_analysis_error(
     assert '"code": "POLICY_REFUSED"' in printed
     assert "placeholder approver" in printed
     assert "ANALYSIS_ERROR" not in printed
+
+
+def _enable_series(registration: Path) -> None:
+    path = registration / "manifests/BANK-OM-001.yaml"
+    manifest = yaml.safe_load(path.read_text(encoding="utf-8"))
+    manifest["series"]["allowed"] = True
+    _dump(path, manifest)
+
+
+def test_reverted_required_path_blocks_and_matches_drift(prepared):
+    """prep must not hand READY to a candidate T40's lower bound rejects."""
+    from acgh import drift, layout as layout_module
+
+    repo, registration, _, _ = prepared
+    _enable_series(registration)
+    _git(repo, "checkout", "-q", "custom")
+    _commit(repo, "core/a.txt", "vendor\n", "revert\n\nCustomization-ID: BANK-OM-001")
+
+    proposal = _plan(prepared)
+    assert proposal["status"] == "BLOCKED"
+    assert [f["code"] for f in proposal["blocked"]] == ["REQUIRED_PATH_REVERTED"]
+
+    # The gate that runs later must reach the same conclusion.
+    manifests = {
+        "BANK-OM-001": yaml.safe_load(
+            (registration / "manifests/BANK-OM-001.yaml").read_text(encoding="utf-8")
+        )
+    }
+    violations = drift.check_drift(
+        str(repo),
+        "patch",
+        "custom",
+        manifests,
+        layout_module.load_layout(registration / "repository-layout.yaml"),
+    )
+    assert [v.code for v in violations] == [drift.REQUIRED_NET_MISSING]
+
+
+def test_reverted_optional_path_is_a_question_not_a_block(prepared):
+    repo, registration, _, _ = prepared
+    _enable_series(registration)
+    _git(repo, "checkout", "-q", "custom")
+    _commit(repo, "core/b.txt", "extra\n", "add b\n\nCustomization-ID: BANK-OM-001")
+    _commit(repo, "core/b.txt", "", "blank b\n\nCustomization-ID: BANK-OM-001")
+    (repo / "core/b.txt").write_text("")
+
+    proposal = _plan(prepared)
+    assert proposal["blocked"] == []
+    assert proposal["status"] == "REVIEW_REQUIRED"
+
+
+@pytest.mark.parametrize("operation", ["delete", "rename"])
+def test_removed_path_is_a_question_not_a_dead_end(prepared, operation):
+    """A legitimate delete or rename must leave the operator a next action."""
+    repo, registration, _, _ = prepared
+    _enable_series(registration)
+    _git(repo, "checkout", "-q", "custom")
+    if operation == "delete":
+        _commit(repo, "core/b.txt", "x\n", "add b\n\nCustomization-ID: BANK-OM-001")
+        (repo / "core/b.txt").unlink()
+        _git(repo, "add", "-A")
+        _git(repo, "commit", "-m", "delete b\n\nCustomization-ID: BANK-OM-001")
+    else:
+        _git(repo, "mv", "core/a.txt", "core/renamed.txt")
+        _git(repo, "commit", "-m", "rename\n\nCustomization-ID: BANK-OM-001")
+
+    proposal = _plan(prepared)
+
+    assert proposal["blocked"] == []
+    assert proposal["status"] == "REVIEW_REQUIRED"
+    codes = [item["code"] for item in proposal["review_required"]]
+    assert "REMOVED_PATH_DECISION" in codes
+    # One question per removed path, not one per detection rule.
+    assert codes.count("REMOVED_PATH_DECISION") == 1

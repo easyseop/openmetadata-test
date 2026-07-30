@@ -299,21 +299,31 @@ def _check_path_modes(
     paths: set[str],
     blocked: list[dict],
     analysis_errors: list[dict],
-) -> None:
+    reviews: list[dict],
+) -> set[str]:
+    """Judge each touched path at custom HEAD; return the ones no longer there."""
+    removed: set[str] = set()
     try:
         entries = gitprim.tree_entries(repo, custom_sha)
     except (OSError, gitprim.GitPrimitiveError) as exc:
         analysis_errors.append(_finding("TREE_READ_FAILED", str(exc)))
-        return
+        return removed
     for path in sorted(paths):
         entry = entries.get(path)
         if entry is None:
-            blocked.append(
-                _finding(
-                    "CHANGED_PATH_ABSENT_AT_HEAD",
-                    f"{path}: changed in the series but absent from custom HEAD",
-                )
+            # The series removed the file, or renamed away from it. That is a
+            # legitimate change, so ask rather than dead-end the operator; a
+            # required path that disappears is caught separately against the
+            # net diff.
+            _review(
+                reviews,
+                "REMOVED_PATH_DECISION",
+                "이 경로는 해당 BANK-OM commit이 바꿨지만 custom 최종 상태에는 "
+                "없습니다. 삭제·이름 변경이 의도한 것인지, changed_paths에 계속 "
+                "남길지 담당자가 확인해야 합니다.",
+                path=path,
             )
+            removed.add(path)
             continue
         if entry.mode == "120000":
             blocked.append(_finding("SYMLINK_PATH", f"{path}: symlink is unsupported"))
@@ -330,6 +340,7 @@ def _check_path_modes(
                 )
         except gitprim.GitPrimitiveError as exc:
             analysis_errors.append(_finding("BLOB_READ_FAILED", str(exc)))
+    return removed
 
 
 def build_plan(
@@ -487,8 +498,8 @@ def build_plan(
             )
 
     all_touched = set().union(*changed_by_id.values()) if changed_by_id else set()
-    _check_path_modes(
-        str(repo), custom_sha, all_touched, blocked, analysis_errors
+    removed_at_head = _check_path_modes(
+        str(repo), custom_sha, all_touched, blocked, analysis_errors, reviews
     )
 
     net_paths = sorted(
@@ -604,6 +615,31 @@ def build_plan(
                     f"{customization_id}: required paths not changed by its series: "
                     f"{missing_required}",
                 )
+            )
+        # touched != net. A file edited then reverted is touched but nets out,
+        # and T40's lower bound reads the net diff — so prep must judge the
+        # same way or it hands READY to a candidate the gate will block.
+        reverted_required = sorted(required & set(actual) - set(net_paths))
+        if reverted_required:
+            blocked.append(
+                _finding(
+                    "REQUIRED_PATH_REVERTED",
+                    f"{customization_id}: required paths are changed by its series "
+                    f"but absent from the final patch..custom diff: "
+                    f"{reverted_required}",
+                )
+            )
+        for path in sorted(
+            set(actual) - set(net_paths) - required - removed_at_head
+        ):
+            _review(
+                reviews,
+                "REVERTED_PATH_DECISION",
+                "이 경로는 해당 BANK-OM commit이 바꿨지만 공식 코드와 최종 결과가 "
+                "같아 최종 diff에는 없습니다. 되돌린 것이 의도한 결과인지 "
+                "담당자가 확인해야 합니다.",
+                customization_id=customization_id,
+                path=path,
             )
         after_manifest = copy.deepcopy(manifest)
         after_manifest["schema_version"] = 2
