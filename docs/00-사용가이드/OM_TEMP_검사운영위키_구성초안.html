@@ -487,6 +487,7 @@
               <li><button class="sub" data-page="file-detail" data-file="candidate_lock">상세 · Candidate lock</button></li>
               <li><button class="sub" data-page="file-detail" data-file="test_run_set">상세 · Test run set</button></li>
               <li><button class="sub" data-page="file-detail" data-file="result">상세 · 검사 결과</button></li>
+              <li><button class="sub" data-page="file-detail" data-file="release_lock">상세 · Release lock</button></li>
               <li><button class="sub" data-page="file-detail" data-file="patch_lock">참고 · Patch-lock 선택 전략</button></li>
             </ul>
           </li>
@@ -574,7 +575,7 @@
           <tbody>
             <tr><td>등록</td><td>Git diff, BANK-OM ID</td><td>Manifest·Registry·Contract</td><td>어떤 변경과 동작을 검사할지 결정</td></tr>
             <tr><td>소스 검사</td><td>공식 기준 코드, 행내 코드, 등록자료</td><td>PASS·APPROVAL·BLOCK과 이유</td><td>후보 확정 가능 여부 판단</td></tr>
-            <tr><td>후보 고정</td><td>정확한 commit, 빌드 파일 digest</td><td><code>candidate-lock.yaml</code></td><td>이후 결과가 같은 코드인지 확인</td></tr>
+            <tr><td>후보 고정</td><td>정확한 commit, 전체 파일 상태, 빌드 파일 digest</td><td>소스 검사에서는 <code>source-gate-results.json</code>의 <code>candidate_lock</code> 항목 · 배포 실행에서는 별도 <code>candidate-lock.yaml</code></td><td>이후 결과가 같은 코드인지 확인</td></tr>
             <tr><td>실행 검사</td><td>후보 고정정보, Contract test, 환경</td><td><code>test-run-set.yaml</code>·검사 결과</td><td>배포 승인 판단</td></tr>
           </tbody>
         </table>
@@ -899,6 +900,22 @@
             <tr><td>BLOCK</td><td>조건 위반이 확인돼 수정 후 재검사가 필요합니다.</td></tr>
             <tr><td>ANALYSIS ERROR</td><td>입력·도구 문제로 검사 자체가 완료되지 않았습니다. PASS로 간주하지 않습니다.</td></tr>
             <tr><td>NOT RUN</td><td>아직 실행하지 않았으며 결과가 없습니다.</td></tr>
+          </tbody>
+        </table>
+        <h2>본문에 먼저 나오는 용어</h2>
+        <p>정의보다 앞 장에서 먼저 등장하는 용어를 여기에 모읍니다. 자세한 설명은 괄호 안의 페이지에 있습니다.</p>
+        <table>
+          <thead><tr><th>용어</th><th>한 문장 정의</th><th>자세한 설명</th></tr></thead>
+          <tbody>
+            <tr><td><code>changed_paths</code></td><td>한 BANK-OM ID의 commit들이 현재 버전에서 실제로 바꾼 파일 전체 목록입니다.</td><td>3-4 Manifest</td></tr>
+            <tr><td><code>required_changed_paths</code></td><td><code>changed_paths</code> 가운데 빠지면 기능이 소실된다고 판단한 핵심 파일입니다.</td><td>3-4 Manifest</td></tr>
+            <tr><td><code>upgrade_watch.paths</code></td><td>공식 버전이 바뀌었을 때 이 기능을 다시 검토해야 하는 경로입니다.</td><td>3-4 Manifest</td></tr>
+            <tr><td><code>series.allowed</code></td><td>같은 BANK-OM ID에 commit이 여러 개 있어도 되는지를 정한 값입니다.</td><td>3-4 Manifest</td></tr>
+            <tr><td>Candidate lock</td><td>어떤 코드를 검사했는지 고정한 기록입니다. 소스 검사에서는 결과 JSON 안의 항목이고 배포 실행에서는 별도 파일입니다.</td><td>4-3 Candidate lock</td></tr>
+            <tr><td>Release lock</td><td>검사를 통과한 코드와 그 코드로 만든 배포 파일을 하나의 승격 대상으로 묶은 기록입니다. 현재 OM_TEMP에는 없습니다.</td><td>4-7 Release lock</td></tr>
+            <tr><td>patch-replay</td><td>BANK-OM commit을 하나씩 다시 적용하는 대체 통합 전략입니다. 현재 운영 전략은 vendor-merge입니다.</td><td>4-8 Patch-lock</td></tr>
+            <tr><td>준비도구(plan)</td><td>Git 사실을 계산해 등록자료 변경안만 만드는 읽기 전용 명령입니다. 등록 폴더는 바꾸지 않습니다.</td><td>3-3 자동 갱신 범위</td></tr>
+            <tr><td>제안 내용 확인값<br>(proposal digest)</td><td>제안서 전체 내용으로 계산한 SHA-256 값입니다. 승인한 변경안과 적용할 변경안이 같은지 확인합니다. Git commit SHA와 다릅니다.</td><td>3-3 자동 갱신 범위</td></tr>
           </tbody>
         </table>
         <p class="footer-note">실제 위키에서는 스키마 파일, Python 구현, 단위 테스트, OM_TEMP 예시 파일로 바로 이동하는 저장소 링크를 함께 제공합니다.</p>

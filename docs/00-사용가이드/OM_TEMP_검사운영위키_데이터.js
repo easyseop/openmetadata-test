@@ -804,6 +804,36 @@ window.WIKI_FILES = {
     ],
     storage: "실행별 불변 증거입니다. 검사 대상 Git commit SHA·실행 번호·검사기 버전과 함께 보관합니다."
   },
+  release_lock: {
+    title: "Release lock",
+    path: "배포 승격 실행별 evidence/release-lock.yaml · 현재 OM_TEMP에는 생성된 파일 없음",
+    purpose: "검사를 통과한 코드와 그 코드로 만든 배포 파일, 검사 결과를 하나의 승격 대상으로 묶습니다. Candidate lock이 '무엇을 검사했는가'를 고정한다면 Release lock은 '무엇을 배포할 것인가'를 고정합니다.",
+    created: "소스·실행·업그레이드 검사를 마치고 실제 이미지·패키지·Helm 설정을 만든 뒤, 배포 승인 검토를 시작할 때 만듭니다.",
+    update: "기존 파일을 고치지 않습니다. 코드, 이미지, 패키지, Helm 설정, 검사 결과 중 하나라도 바뀌면 새 Release lock을 만듭니다. 같은 소스에서 다시 build해도 digest가 달라지면 다른 대상입니다.",
+    owner: "배포 담당자가 승격 대상을 확정하고 실행기가 각 산출물의 내용 확인값을 계산합니다. 승인권자는 묶인 대상이 검사한 대상과 같은지 확인합니다.",
+    readers: "검사 대상과 실제 배포 대상이 같은지 확인하는 배포 일치 검사(T91)가 읽습니다.",
+    fields: [
+      ["candidate.commit_sha", "필수", "검사를 통과한 정확한 custom commit", "실행기 자동", "3a2811cf…"],
+      ["candidate_lock_digest", "필수", "이 코드를 검사할 때 사용한 Candidate lock의 내용 확인값", "실행기 자동", "sha256:…"],
+      ["artifacts[].kind", "필수", "container-image·helm-chart처럼 배포 산출물의 종류", "배포 담당자", "container-image"],
+      ["artifacts[].digest", "필수", "실제 배포 파일의 내용 확인값", "실행기 자동", "sha256:…"],
+      ["gate_results[].digest", "필수", "이 대상에 결속된 검사 결과의 내용 확인값", "실행기 자동", "sha256:…"],
+      ["approved_by", "필수", "배포 승인권자", "승인권자", "조직 사번"]
+    ],
+    before: "(현재 OM_TEMP에는 생성된 Release lock이 없습니다)",
+    after: "candidate:\n  commit_sha: 3a2811cf…\ncandidate_lock_digest: sha256:…\nartifacts:\n  - kind: container-image\n    digest: sha256:…",
+    updateReason: "전체 build와 행내 Runtime test를 마치고 실제 배포 산출물이 생겼을 때 처음 만듭니다. 아직 그 단계에 이르지 않았으므로 현재 저장소에는 이 파일이 없습니다.",
+    scopeFlow: "Candidate lock이 검사 대상 코드를 고정하고, Release lock이 그 코드로 만든 배포 파일까지 함께 묶습니다. T91은 배포 직전 관측값을 이 묶음과 하나씩 비교합니다.",
+    scopeOutcome: "묶인 값과 실제 배포 대상이 하나라도 다르면 배포를 승인하지 않습니다. 검사 후 다시 build한 경우도 다른 대상으로 봅니다.",
+    commands: [
+      {
+        label: "현재 상태",
+        meaning: "실제 build 산출물과 배포 환경 연결이 아직 없으므로 Release lock을 만드는 명령을 실행하지 않았습니다. 판정 모듈과 스키마는 구현돼 있습니다.",
+        command: "# 현재 OM_TEMP에서는 실행하지 않습니다."
+      }
+    ],
+    storage: "배포 승격 실행별 증거입니다. 만든 뒤 수정하지 않고 검사 결과·승인 기록과 함께 보관합니다. 현재는 미생성 상태 자체를 기록으로 남깁니다."
+  },
   patch_lock: {
     title: "Patch-lock",
     path: "patch-replay 전략의 patch-source-lock.yaml",
@@ -943,7 +973,7 @@ window.WIKI_TOPICS = {
       ["2. 사전 영향 확인", "T42로 공식 A→B 변경과 upgrade_watch를 비교합니다."],
       ["3. vendor-merge", "직전 custom branch에 새 공식 patch를 병합합니다."],
       ["4. 충돌 해결", "공식 변경과 BANK-OM 의도를 모두 확인해 custom branch에 해결 commit을 남깁니다."],
-      ["5. 등록 갱신", "해결 과정에서 새 파일·Contract·watch가 생기면 같은 ID의 Manifest를 갱신합니다."],
+      ["5. 등록 갱신", "해결 과정에서 새 파일·Contract·watch가 생기면 준비도구의 plan을 실행해 변경안을 만들고, 담당자가 승인한 뒤 apply로 반영합니다. 등록 폴더를 직접 편집하지 않습니다."],
       ["6. 재검사", "소스 검사, build, Contract test, 업그레이드 test와 배포 일치 검사를 실행합니다."],
       ["7. tag·승인", "같은 후보와 artifact의 검사가 끝난 뒤 verified tag와 승인 자료를 만듭니다."]
     ],
