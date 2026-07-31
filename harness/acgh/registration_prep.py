@@ -51,13 +51,15 @@ _OPTIONAL_REGISTRATION_INPUTS = frozenset(
 )
 
 
+_LFS_PREFIX = b"version https://git-lfs.github.com/spec/v1\n"
+
+
 def _utc_now() -> str:
     return (
         datetime.datetime.now(datetime.timezone.utc)
         .replace(microsecond=0)
         .isoformat()
     )
-_LFS_PREFIX = b"version https://git-lfs.github.com/spec/v1\n"
 
 
 class PreparationError(ValueError):
@@ -409,7 +411,7 @@ def build_plan(
         blocked.append(
             _finding(
                 "DIRTY_WORKTREE",
-                "product repository has committed or untracked worktree changes",
+                "product repository has uncommitted or untracked worktree changes",
             )
         )
     if merge_base != patch_sha:

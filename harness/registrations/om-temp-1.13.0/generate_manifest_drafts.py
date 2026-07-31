@@ -11,6 +11,8 @@ import argparse
 import sys
 from pathlib import Path
 
+import yaml
+
 _HARNESS = Path(__file__).resolve().parents[2]
 if str(_HARNESS) not in sys.path:
     sys.path.insert(0, str(_HARNESS))
@@ -32,7 +34,20 @@ def main() -> int:
     parser.add_argument("--custom-ref", required=True)
     parser.add_argument("--product-version", required=True)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument(
+        "--new-id-input",
+        type=Path,
+        help="사람이 작성한 신규 BANK-OM 정책 입력 YAML",
+    )
     args = parser.parse_args()
+
+    new_id_metadata = {}
+    if args.new_id_input is not None:
+        new_id_metadata = yaml.safe_load(
+            args.new_id_input.read_text(encoding="utf-8")
+        )
+        if not isinstance(new_id_metadata, dict):
+            raise SystemExit("new-ID input must be a mapping keyed by BANK-OM ID")
 
     proposal = build_plan(
         args.repo,
@@ -40,6 +55,7 @@ def main() -> int:
         patch_ref=args.patch_ref,
         custom_ref=args.custom_ref,
         product_version=args.product_version,
+        new_id_metadata=new_id_metadata,
     )
     digest = write_plan(
         args.output,
