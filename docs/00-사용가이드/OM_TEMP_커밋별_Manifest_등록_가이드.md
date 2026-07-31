@@ -1,31 +1,51 @@
 # OM_TEMP 검사 전 사전환경 설정 가이드
 
+> 최종 갱신: 2026-07-31
+>
 > 대상 코드: `easyseop/OM_TEMP`의 `custom/om-1.13.0`
 > 검사 설정 위치: `easyseop/openmetadata-test/harness/registrations/om-temp-1.13.0/`
 
-> **이 페이지가 답하는 질문:** 검사 전에 어떤 관리자료를 준비하고, 실제 변경 파일을 어떤 BANK-OM 기능에 연결하는가?
-> **이 페이지가 답하지 않는 것:** 1.13.1 충돌과 검사 결과는 4번에서 설명합니다.
-> **다음 행동:** 등록자료와 로컬 repository를 연결한 뒤 4번 업그레이드 연습으로 이동합니다.
+> **이 페이지가 답하는 것:** 검사 전에 어떤 관리자료를 준비하고, 실제 변경
+> 파일을 어떤 BANK-OM 기능에 연결하는가.
+>
+> **이 페이지가 답하지 않는 것:** 1.13.1로 올릴 때의 충돌 처리와 업그레이드
+> 결과. 그것은
+> [`OM_TEMP 1.13.0→1.13.1 업그레이드 실행 가이드`](OM_TEMP_1.13.0_1.13.1_업그레이드_실행_가이드.md)에
+> 있습니다.
+>
+> **다 읽은 뒤 할 일:** 등록자료와 로컬 저장소를 연결하고(3절), 소스 검사를
+> 실행합니다(4절).
 
-> **우리 내부에서 만든 기준자료:** Manifest·Registry·Contract와 BANK-OM ID는 OpenMetadata 공식 설정이 아니라 `easyseop/openmetadata-test`가 행내 변경을 검사하기 위해 정의한 관리 자료입니다.
+> **이 자료는 우리가 정의한 것입니다:** Manifest·Registry·Contract와 BANK-OM
+> ID는 OpenMetadata 공식 기능이 아닙니다. `easyseop/openmetadata-test`가 행내
+> 변경을 검사하려고 따로 만든 관리 자료입니다. OpenMetadata 문서에서 찾아도
+> 나오지 않습니다.
 
 ## 이 자료가 필요한 이유
 
-이 문서는 전체 가이드에서 검사기 원리를 설명한 다음에 읽습니다. 다만 실제 작업 순서는 반대가 아닙니다. **검사기를 실행하기 전에 이 기준자료를 먼저 준비해야 합니다.** 검사기 설명을 먼저 읽는 이유는 각 자료가 어느 검사에 사용되는지 이해한 뒤 설정할 수 있게 하기 위해서입니다.
+검사기는 Git의 실제 코드만 읽는 것이 아닙니다. “어떤 BANK-OM을 검사할지,
+어떤 파일과 동작을 정상으로 볼지”를 적어 둔 기준자료와 코드를 **대조**합니다.
+그 기준자료가 없으면 검사기는 무엇이 정상인지 알 수 없습니다.
 
-검사기는 Git의 실제 코드만 읽는 것이 아니라, 어떤 BANK-OM을 검사하고 어떤 파일·동작을 정상으로 판단할지 정한 기준자료와 비교합니다. 이 자료는 검사 전에 준비할 Manifest와 검사 기준자료, 로컬 OM_TEMP 연결 방법을 실제 1.13.0 예시로 설명합니다.
+읽는 순서와 만드는 순서는 반대입니다. 검사기 원리를 먼저 읽어야 각 자료가
+어느 검사에 쓰이는지 이해할 수 있지만, **실제 작업은 이 기준자료를 먼저
+준비한 뒤에 검사기를 실행합니다.**
+
+이 문서는 그 준비 과정을 실제 1.13.0 자료로 보여 줍니다.
 
 ## 언제 만들고 언제 갱신하나
 
-| 구분 | 최초 커스터마이징 등록 | 공식 버전 업그레이드 | 매 검사 실행 |
+| 구분 | 최초 맞춤 변경 등록 | 공식 버전 업그레이드 | 매 검사 실행 |
 |---|---|---|---|
 | Manifest·Registry·Contract | 최초 작성 | 기존 자료를 복사해 새 코드 기준으로 검토·갱신 | 확정본을 읽음 |
 | 공용 파일 소유정보 | 실제 diff의 중복 경로를 계산해 작성 | 새 버전 diff로 다시 계산·검토 | 확정본을 읽음 |
 | 과거 snapshot 경로 소유정보 | 기준 snapshot의 commit 이력에서 자동 생성 | 기준 snapshot SHA가 바뀔 때만 재생성 | 과거 코드 재구성 검사만 읽음 |
 | 전체 변경 목록 | Git에서 생성 | 새 버전 branch 사이에서 다시 생성 | 실제 Git diff와 비교 |
-| Patch-lock | patch-replay를 쓸 때만 작성 | 재적용 커밋이 바뀌면 새 리비전 작성 | 선택한 전략에서만 읽음 |
+| Patch-lock (선택) | 커밋을 하나씩 다시 적용하는 방식을 쓸 때만 작성 | 재적용 커밋이 바뀌면 새 리비전 작성 | 그 방식을 쓸 때만 읽음 |
 
-따라서 이 자료들은 검사 때마다 버리는 임시 파일이 아닙니다. 최초 등록자료는 계속 관리하고, 버전에 따라 달라지는 Git SHA·경로 목록만 새 버전 기준으로 다시 생성하거나 갱신합니다.
+따라서 이 자료들은 검사할 때마다 버리는 임시 파일이 아닙니다. 최초 등록자료는 계속 관리하고, 버전에 따라 달라지는 Git SHA와 경로 목록만 새 버전 기준으로 다시 생성합니다.
+
+Patch-lock만 성격이 다릅니다. 나머지는 필수이고, Patch-lock은 선택입니다. 현재 1.13.0 등록 폴더에는 Patch-lock 파일이 없으며, 지금 쓰는 방식(vendor-merge)에서는 없어도 검사가 차단되지 않습니다. 자세한 내용은 2-6에 있습니다.
 
 ## 먼저 구분할 두 식별값
 
@@ -967,9 +987,16 @@ openmetadata-spec/src/main/resources/json/schema/entity/services/connections/dat
 <details>
 <summary><strong>2-6. Patch-lock · 커밋 재적용을 선택할 때만 사용하는 순서표</strong></summary>
 
-**의미:** patch-replay 방식으로 커스터마이징 커밋을 다시 적용할 때 사용할 정확한 SHA와 순서를 고정합니다.
+**의미:** 맞춤 변경 commit을 하나씩 다시 적용하는 방식(patch-replay)을 쓸 때, 어떤 SHA를 어떤 순서로 적용할지 고정해 두는 파일입니다.
 
-**생성·갱신 시점:** 모든 전략의 필수 사전자료가 아닙니다. vendor-merge 소스 검사에서는 선택사항이며, patch-replay·복구·재현 시연을 할 때 커밋 순서가 확정된 후 만듭니다.
+두 방식의 차이를 먼저 알아 두면 이해가 쉽습니다.
+
+- **vendor-merge**(현재 기본 방식): 맞춤 변경이 들어 있는 branch에 공식 새 버전을 가져와 합칩니다. 우리 commit을 다시 적용하지 않으므로 순서표가 필요 없습니다.
+- **patch-replay**: 공식 새 버전에서 시작해 우리 commit을 처음부터 하나씩 다시 얹습니다. 이때는 순서가 틀리면 결과가 달라지므로 순서표가 필요합니다.
+
+**생성·갱신 시점:** 필수가 아닙니다. patch-replay를 쓰거나, 과거 상태를 복구하거나, 재현 시연을 할 때 commit 순서가 확정된 뒤에 만듭니다.
+
+**현재 상태:** 1.13.0 등록 폴더에는 이 파일이 없습니다. vendor-merge 방식을 쓰고 있어 필요하지 않기 때문입니다. 아래 YAML은 만들 때의 형식 예시입니다.
 
 ```yaml
 patch_series:
@@ -980,7 +1007,7 @@ patch_series:
       - 7d19c8952612e77467b0a80d6287170d814f1de1
 ```
 
-**실제 사용:** 재적용 도구는 62e39da 다음에 7d19c89를 적용합니다. 잠금에 없는 SHA나 순서 변경은 동일한 재현으로 인정하지 않습니다. 설계상 OM_TEMP 첫 vendor-merge 소스 검사에서는 Patch-lock 부재만으로 차단하지 않습니다.
+**실제 사용:** 재적용 도구는 `62e39da8...` 다음에 `7d19c895...`를 적용합니다. 이 목록에 없는 SHA를 적용하거나 순서를 바꾸면 “같은 것을 재현했다”고 인정하지 않습니다. 다시 강조하면, vendor-merge 소스 검사에서는 이 파일이 없다는 이유만으로 차단하지 않습니다.
 
 </details>
 
@@ -994,23 +1021,34 @@ patch_series:
 
 ```bash
 # 1) 읽기 전용 제안 생성 (등록 폴더는 바뀌지 않음)
+#    --output은 아직 없는 폴더여야 합니다. 있는 폴더를 주면 도구가 거절합니다.
 PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py plan \
   --repo ../om-temp-1.13.0-custom \
   --registration harness/registrations/om-temp-1.13.0 \
   --patch-ref origin/patch/om-1.13.0 \
   --custom-ref origin/custom/om-1.13.0 \
   --product-version 1.13.0 \
-  --output harness/preparation-plans/om-temp-1.13.0-YYYYMMDD-HHMM
+  --output harness/preparation-plans/om-temp-1.13.0-20260730
 
-# 2) 승인서 양식 생성 → 실제 승인자가 자리표시자와 판단 사유를 채움
+# 2) 승인서 양식 생성
+PYTHONPATH=harness ./.venv/bin/python \
+  harness/prepare_registration.py approval-template \
+  --proposal harness/preparation-plans/om-temp-1.13.0-20260730/proposal.yaml \
+  --output /approved/location/registration-approval.yaml
+#    → 실제 승인자가 REPLACE_WITH_... 자리표시자와 판단 사유를 채웁니다.
+
 # 3) 승인한 제안만 반영
+#    --result는 생략할 수 있지만, 증거로 남겨야 하므로 항상 지정합니다.
 PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py apply \
   --repo ../om-temp-1.13.0-custom \
   --registration harness/registrations/om-temp-1.13.0 \
-  --proposal harness/preparation-plans/om-temp-1.13.0-YYYYMMDD-HHMM/proposal.yaml \
-  --approval /approved/location/registration-approval.yaml
+  --proposal harness/preparation-plans/om-temp-1.13.0-20260730/proposal.yaml \
+  --approval /approved/location/registration-approval.yaml \
+  --result /approved/location/registration-apply-result.json
 
 # 4) APPLIED 뒤 등록자료 검사
+#    --registration과 --layout은 이 스크립트가 자기 폴더를 기본값으로 쓰므로
+#    생략할 수 있습니다.
 ./.venv/bin/python \
   harness/registrations/om-temp-1.13.0/validate_registration_bundle.py \
   --repo ../om-temp-1.13.0-custom \
@@ -1045,7 +1083,7 @@ PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py apply \
 
 **의미:** 검사기는 GitHub 화면을 원격으로 읽는 것이 아니라 컴퓨터에 내려받은 OM_TEMP 저장소의 변경 기록·변경 파일·최종 코드를 직접 검사합니다.
 
-**최초 준비:** 다른 노트북에서는 한 번 clone합니다. 이미 받은 뒤에는 `git fetch`로 갱신합니다. 현재 노트북에는 `work/om-temp-1.13.0-custom`에 OM_TEMP 원격 branch도 fetch되어 있으므로 다시 clone하지 않습니다.
+**최초 준비:** 처음 쓰는 컴퓨터에서는 한 번 clone하고, 이미 받아 둔 뒤에는 `git fetch`로 갱신합니다. 이 문서의 명령 예시에서 `../om-temp-1.13.0-custom`은 그 clone의 경로이며, 각자 받아 둔 실제 경로로 바꿔서 실행합니다.
 
 ```bash
 git clone https://github.com/easyseop/OM_TEMP.git
@@ -1055,7 +1093,9 @@ git rev-parse origin/patch/om-1.13.0
 git rev-parse origin/custom/om-1.13.0
 ```
 
-**검사 연결:** 검사 실행기의 `--repo`에 이 로컬 경로를 전달합니다. 검사기는 여기서 BANK-OM 변경 기록, Customization-ID, 111개 변경 경로와 최종 파일 내용을 읽습니다.
+마지막 두 명령의 출력이 문서에 적힌 SHA(`2f4f3560...`, `7d19c895...`)와 같은지 확인합니다. 다르면 원격 branch가 그 사이에 움직인 것이므로 먼저 확인해야 합니다.
+
+**검사 연결:** 검사 실행기의 `--repo`에 이 로컬 경로를 전달합니다. 검사기는 여기서 BANK-OM 변경 기록, `Customization-ID`, 111개 변경 경로와 최종 파일 내용을 읽습니다.
 
 </details>
 
@@ -1070,7 +1110,11 @@ OM_TEMP patch/om-1.13.0 Git 번호: 2f4f3560...
 두 버전의 파일 내용이 같음을 확인하는 값: da56c24d...
 ```
 
-원격 OM_TEMP의 변경 이력에는 “공식 1.13.0에서 시작했다”는 연결 기록이 없어 그대로는 공식 출발점 검사를 통과할 수 없습니다. 그래서 공식 `f329dd4a...`에서 시작해 같은 BANK-OM 변경을 순서대로 적용한 로컬 검사 branch를 만들었습니다. 로컬 검사 대상 Git 번호 `3a2811cf...`의 최종 파일 내용은 원격 custom `7d19c895...`와 같습니다. 즉, 코드는 바꾸지 않고 공식 1.13.0에서 시작했다는 이력만 확인할 수 있는 상태로 만들어 검사했습니다.
+원격 OM_TEMP의 변경 이력에는 “공식 1.13.0에서 시작했다”는 연결 기록이 없습니다. 그래서 원격 branch를 그대로 검사하면 공식 출발점 검사를 통과할 수 없습니다.
+
+해결 방법은 코드를 고치는 것이 아니라 **이력만 다시 쌓는 것**입니다. 공식 `f329dd4a...`에서 시작해 같은 BANK-OM 변경을 순서대로 적용한 검사용 branch를 로컬에 만들었습니다. 그 결과 Git 번호 `3a2811cf...`가 나왔고, 이 branch의 최종 파일 내용은 원격 custom `7d19c895...`와 **한 글자도 다르지 않습니다.**
+
+즉, 파일은 그대로 두고 “공식 1.13.0에서 출발했다”는 이력만 확인 가능한 상태로 만들어 검사했습니다. 이 branch는 로컬에만 있고 원격에 push하지 않았으며, 다시 만드는 방법은 `harness/registrations/om-temp-1.13.0/REPRODUCIBILITY.md`에 있습니다.
 
 </details>
 
@@ -1089,7 +1133,7 @@ OM_TEMP patch/om-1.13.0 Git 번호: 2f4f3560...
 | 검사명 | 무엇을 확인했나 | 실제 결과 |
 |---|---|---|
 | 공식 기준 이력 포함 | 공식 1.13.0에서 시작한 후보인지 | PASS |
-| 커스터마이징 생존 | 7개 BANK-OM의 핵심 파일과 Contract 연결이 남았는지 | PASS |
+| 맞춤 변경 생존 | 7개 BANK-OM의 핵심 파일과 Contract 연결이 남았는지 | PASS |
 | 필수 테스트 코드 존재 | 9개 Python test 파일·함수가 실제로 있는지 | PASS |
 | 커밋 작성 규칙 | 각 공식 코드 변경 커밋에 BANK-OM ID가 하나씩 있는지 | PASS |
 | ID 연결 규칙 | 미등록 ID나 잘못 나뉜 후속 커밋이 없는지 | PASS |
@@ -1101,12 +1145,22 @@ OM_TEMP patch/om-1.13.0 Git 번호: 2f4f3560...
 
 ## 현재 상태
 
-- BANK-OM-001~007 Manifest 등록본 7개 생성 완료
+**끝난 것**
+
+- BANK-OM-001~007 Manifest 7개 작성 완료
 - 실제 Git commit의 변경 파일 목록을 Manifest에 반영 완료
-- 현재 Manifest 스키마 및 기본 의미 검사 7개 통과
-- Registry 7개, Contract 7개·필수 test 9개, 공용 경로 37개, 전체 경로 111개 생성 완료
+- Manifest 스키마·의미 검사 7개 통과
+- Registry 7개, Contract 7개와 필수 test 9개, 공용 경로 37개, 전체 경로 111개 생성 완료
 - 공식 1.13.0 이력을 보존한 로컬 검사 branch 구성 완료
-- 소스 검사 8종 PASS 및 JSON 결과 저장 완료
-- 기능 담당자(owner)는 아직 미지정이므로 배포 준비 상태는 완료가 아님
-- 이 1.13.0 등록 결과에는 전체 build, 업무 동작 test와 1.13.1 업그레이드 결과가 포함되지 않음
-- 따라서 이 페이지의 결론은 **1.13.0 소스 검사 통과**이며 배포 승인 결과가 아님
+- 소스 검사 8종 PASS, 결과 JSON 저장 완료
+
+**아직 안 된 것**
+
+- 기능 담당자(`owner`)가 7개 모두 `UNASSIGNED`
+- OpenMetadata 전체 build
+- Contract test의 실제 실행(코드가 존재한다는 것만 확인함)
+- 1.13.1 업그레이드 결과
+- 운영 배포 승인
+
+따라서 이 페이지의 결론은 **“1.13.0 소스 검사를 통과했다”**까지입니다.
+배포해도 된다는 결론이 아닙니다.
