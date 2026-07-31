@@ -1,17 +1,26 @@
 # OM_TEMP 1.13.0 Manifest 작성 단계별 가이드
 
+> 최종 갱신: 2026-07-31
+
 ## 1. 이 가이드의 목적
 
 `easyseop/OM_TEMP`의 `custom/om-1.13.0` branch에는 공식 OpenMetadata
-1.13.0 코드와 BANK-OM-001~007 커스터마이징 코드가 들어 있습니다.
+1.13.0 코드와 BANK-OM-001~007 맞춤 변경 코드가 들어 있습니다.
 
-이제 해야 할 일은 각 BANK-OM 커밋이 실제로 변경한 파일을 Git에서 확인하고,
+해야 할 일은 각 BANK-OM commit이 실제로 변경한 파일을 Git에서 확인하고,
 그 결과를 `easyseop/openmetadata-test`의 Manifest에 등록하는 것입니다.
-Manifest는 커스터마이징별 변경 범위와 필수 구성요소를 검사기에 알려 주는
-YAML 파일입니다.
+Manifest는 “이 기능이 어느 파일을 바꿨고, 그중 무엇이 반드시 남아 있어야
+하는가”를 검사기에 알려 주는 YAML 파일입니다.
 
-현재 OM_TEMP에는 Manifest가 없으며, 아직 검사기 통과·검증 태그 생성·행내
-배포를 완료한 상태가 아닙니다.
+**현재 상태:** BANK-OM-001~007 Manifest 7개는 이미 작성되어
+`harness/registrations/om-temp-1.13.0/manifests/`에 있고, 스키마 검사와 등록
+검사를 통과했습니다. 아직 하지 않은 것은 제품 build, 실제 업무 동작 test,
+1.13.1 업그레이드 비교, 검증 태그 생성, 행내 배포입니다.
+
+따라서 이 문서는 두 가지로 읽으면 됩니다.
+
+- 새 버전이나 새 기능의 Manifest를 앞으로 만들 때 → 처음부터 순서대로
+- 지금 등록된 1.13.0 Manifest가 왜 이렇게 생겼는지 알고 싶을 때 → 6·7·8절
 
 ## 2. Manifest는 언제 만드는가
 
@@ -27,9 +36,11 @@ YAML 파일입니다.
    붙입니다.
 6. 배포 절차는 검증 태그가 붙은 commit만 입력으로 받습니다.
 
-개발 전에 변경 파일을 추측해 Manifest를 확정하면 실제 코드와 달라질 수
-있습니다. 반대로 Manifest 없이 배포까지 진행하면 어떤 커스터마이징이 빠졌는지
-자동으로 판단할 기준이 없습니다.
+순서를 이렇게 잡는 이유는 양쪽 실패를 모두 피하기 위해서입니다. 개발 전에
+변경 파일을 미리 적어 두면 실제 코드와 어긋납니다. 반대로 Manifest 없이
+배포까지 가면, 나중에 어떤 기능이 빠졌는지 판단할 기준 자체가 없습니다.
+그래서 **코드를 먼저 commit하고, 그 commit이 실제로 바꾼 파일로 Manifest를
+확정합니다.**
 
 ### 배포 차단 조건
 
@@ -43,9 +54,11 @@ Manifest 파일이 존재한다는 사실만으로 배포를 허용해서는 안
 - 필수 파일과 연결된 test가 검사 기준을 통과합니다.
 - 검사 결과가 배포할 코드와 동일한 Git commit SHA를 가리킵니다.
 
-OM_TEMP는 업그레이드 시연 준비를 위해 코드부터 만든 상태입니다. 이번에는
-실제 commit을 기준으로 Manifest를 역등록한 뒤 검사하며, 검사 통과 전에는
-검증 태그와 배포 승격을 만들지 않습니다.
+OM_TEMP는 업그레이드 시연을 준비하느라 코드를 먼저 만들었습니다. 그래서
+1.13.0은 예외적으로 **이미 만들어진 commit을 거꾸로 읽어 Manifest를
+작성했습니다.** 이 방식이 정상 순서는 아니지만, Manifest를 사람이 상상해서
+적은 것이 아니라 실제 commit에서 뽑았다는 점은 같습니다. 검사가 통과하기
+전에는 검증 태그도 배포 승격도 만들지 않습니다.
 
 ## 3. 작업할 저장소 두 개
 
@@ -58,9 +71,11 @@ Manifest를 OM_TEMP 안에 넣지 않습니다. 실제 제품 코드와 검사 �
 저장소에 중복 저장하면 업그레이드 과정에서 어느 쪽이 기준인지 혼동될 수
 있기 때문입니다.
 
-기존 `harness/registrations/kb-openmetadata/`는 1.13.1 기준 등록자료입니다.
-그 파일을 1.13.0 내용으로 덮어쓰지 않고, 실제 등록 작업을 시작할 때
-`harness/registrations/om-temp-1.13.0/`을 별도로 만듭니다.
+등록자료는 버전마다 폴더를 따로 씁니다. 1.13.1 기준 등록자료는
+`harness/registrations/kb-openmetadata/`에, 1.13.0은
+`harness/registrations/om-temp-1.13.0/`에 있습니다. 한쪽을 다른 쪽 내용으로
+덮어쓰지 않습니다. 덮어쓰면 “어느 버전을 기준으로 검사한 결과인가”를 구분할
+수 없게 됩니다.
 
 ## 4. 시작 전 확인
 
@@ -100,8 +115,8 @@ git diff --name-only \
 |---|---|
 | 공식 1.13.0 기준 branch | `patch/om-1.13.0` |
 | 공식 기준 snapshot SHA | `2f4f3560e7a8437e2f4f7fcafd00d32ea2d91a50` |
-| 커스터마이징 branch | `custom/om-1.13.0` |
-| 현재 커스터마이징 SHA | `7d19c8952612e77467b0a80d6287170d814f1de1` |
+| 맞춤 변경 branch | `custom/om-1.13.0` |
+| 현재 맞춤 변경 SHA | `7d19c8952612e77467b0a80d6287170d814f1de1` |
 | BANK-OM commit 수 | 8개 |
 | 두 branch 사이 변경 파일 수 | 111개 |
 
@@ -150,8 +165,10 @@ BANK-OM-007
 └─ 위 두 변경과 BANK-OM-001~006까지 모두 반영된 custom branch의 마지막 SHA 1개
 ```
 
-즉, 위 표의 SHA는 **기능별 변경 이력**이고, Candidate lock의
-`candidate.commit_sha`는 **이번에 검사할 전체 코드 상태**입니다.
+즉, 두 종류의 SHA를 구분해야 합니다. 위 표의 SHA는 **기능마다 언제 무엇을
+바꿨는지**를 남기는 이력입니다. 반면 검사 대상을 고정하는 파일(Candidate
+lock)의 `candidate.commit_sha`는 **이번에 통째로 검사할 코드 상태 하나**를
+가리킵니다. 앞은 여러 개일 수 있고, 뒤는 항상 하나입니다.
 
 목록에서 BANK-OM ID가 비어 있거나 하나의 commit에 ID가 여러 개 나오면
 Manifest를 작성하기 전에 commit 기록부터 수정해야 합니다.
@@ -191,7 +208,7 @@ git show \
 이 비교에서 `Entity.java`는 공식 OpenMetadata에 있던 파일에
 `INSTANCE_CODE` 연결을 추가한 공용 코드이고,
 `InstanceCodeResource.java`는 InstanceCode API를 제공하기 위해 새로 추가한
-커스터마이징 구현 파일입니다.
+맞춤 변경 구현 파일입니다.
 
 ### 6.2 `changed_paths` 목록 만들기
 
@@ -205,9 +222,12 @@ git show --name-only --format= \
   | sed 's/^/    - /'
 ```
 
-출력된 파일을 빠짐없이 해당 ID의 `changed_paths`에 넣습니다. 폴더 전체를
-`**`로 등록하지 않습니다. 현재 커밋에서 실제로 확인한 파일만 개별 경로로
-등록해야 다음 변경에서 범위 밖 파일을 찾을 수 있습니다.
+출력된 파일을 빠짐없이 해당 ID의 `changed_paths`에 넣습니다.
+
+**폴더 전체를 `**`로 묶어 등록하지 않습니다.** 예를 들어
+`openmetadata-ui/**`라고 적으면 그 폴더 안의 어떤 파일이 바뀌어도 “범위 안”이
+되어 버려서, 나중에 누가 관계없는 파일을 건드려도 검사가 잡아내지 못합니다.
+commit에서 실제로 확인한 파일만 하나씩 적어야 범위 밖 변경을 찾을 수 있습니다.
 
 ### 6.3 공용 파일 확인
 
@@ -235,15 +255,16 @@ openmetadata-service/src/main/java/org/openmetadata/service/Entity.java:
 
 ## 7. Manifest 항목을 정하는 기준
 
-Manifest 항목은 같은 수준의 선택지가 아니라 서로 다른 질문에 답합니다.
+Manifest 항목은 “어느 쪽에 넣을까” 하고 고르는 선택지가 아닙니다. 각 항목이
+서로 다른 질문에 답하므로, 같은 파일이 두 항목에 동시에 들어갈 수도 있습니다.
 
-| Manifest 항목 | 답해야 하는 질문 | 등록 방법 | 검사 결과 |
+| Manifest 항목 | 답해야 하는 질문 | 등록 방법 | 어겼을 때 판정 |
 |---|---|---|---|
-| `changed_paths` | 현재 버전에서 이 BANK-OM ID의 모든 commit이 실제로 변경한 파일은 무엇인가? | 같은 ID의 최초·후속 commit 전체에서 경로를 추출해 한 목록으로 합침 | 목록 밖 변경은 `BLOCK`, 목록 안 일반 파일이 최종 코드에서 바뀌지 않으면 `APPROVAL` |
-| `required_changed_paths` | 어떤 파일이 빠지거나 공식 상태로 돌아가면 이 기능의 필수 구현이 빠졌다고 즉시 판단할 수 있는가? | `changed_paths` 중 핵심 파일만 담당자가 선택 | 누락되거나 공식 원본과 같으면 `BLOCK` |
-| `upgrade_watch.paths` | 다음 공식 버전이 바뀔 때 이 기능과의 연결을 다시 검토해야 할 파일은 무엇인가? | Manifest 생성기가 실제 변경 파일을 자동 포함하고, 미수정 의존 파일은 후보 제안과 담당자 검토로 추가 | 공식 버전 사이에서 해당 경로가 바뀌면 `APPROVAL` |
-| `assurance.contracts` | 파일이 남아 있다는 사실 외에 어떤 업무 동작을 test할 것인가? | `contracts.yaml`에 정의한 계약 ID를 연결 | 계약이나 test 연결이 없으면 통과 금지 |
-| `series.depends_on` | 이 기능보다 먼저 적용돼야 하는 다른 BANK-OM은 무엇인가? | 실제 선행 기능만 등록 | 순서 위반이나 순환 관계는 `BLOCK` |
+| `changed_paths` | 이 기능의 commit들이 실제로 바꾼 파일은 무엇인가? | 같은 ID의 모든 commit에서 경로를 뽑아 한 목록으로 합침 | 목록 밖 파일을 바꾸면 `block`. 목록 안 파일인데 최종 코드에서 안 바뀌었으면 `approval` |
+| `required_changed_paths` | 그중 무엇이 없어지면 “이 기능이 빠졌다”고 즉시 말할 수 있는가? | `changed_paths` 중 핵심 파일만 담당자가 고름 | 없어졌거나 공식 원본과 똑같아졌으면 `block` |
+| `upgrade_watch.paths` | 공식 새 버전에서 무엇이 바뀌면 이 기능을 다시 봐야 하는가? | 실제 변경 파일은 도구가 자동 포함. 우리가 안 건드린 의존 파일은 담당자가 추가 | 공식 버전 사이에서 그 경로가 바뀌면 `approval` |
+| `assurance.contracts` | 파일이 남아 있다는 것 말고, 어떤 업무 동작을 test할 것인가? | `contracts.yaml`에 정의한 계약 ID를 연결 | 계약이나 test 연결이 없으면 통과시키지 않음 |
+| `series.depends_on` | 이 기능보다 먼저 적용돼야 할 다른 BANK-OM은 무엇인가? | 실제 선행 기능만 등록 | 순서가 뒤집히거나 서로 물고 돌면 `block` |
 
 ### 7.1 `changed`와 `required`의 차이
 
@@ -273,22 +294,23 @@ API 동작은 계약 test로 별도 확인합니다.
 
 ### 7.2 현재 `upgrade_watch` 등록 방법
 
-T42는 Manifest의 `upgrade_watch.paths`를 공식 버전 전후와 비교합니다. 이 목록을
-만들 때는 현재 다음 두 방식을 함께 사용합니다.
+T42 검사는 Manifest의 `upgrade_watch.paths`에 적힌 경로가 공식 버전 사이에서
+바뀌었는지 비교합니다. 이 목록은 자동과 수동을 섞어 만듭니다.
 
-1. Manifest 생성기가 각 BANK-OM 커밋의 실제 변경 파일을 Git에서 읽어
-   `changed_paths`와 `upgrade_watch.paths`에 함께 반영합니다. 사용자가
-   같은 경로를 두 번 직접 입력하지 않습니다.
-2. 커스터마이징이 직접 수정하지 않았지만 호출하거나 구조에 의존하는 공식 파일은
-   담당자가 `watch_dependencies`로 추가합니다.
-3. 새 공식 버전에서 바뀐 파일 이름을 커스터마이징 코드가 직접 참조하면 검사기가
-   추가 watch 후보와 참조한 커스터마이징 파일을 결과에 제시합니다.
-4. 후보는 자동으로 Manifest를 수정하지 않습니다. 담당자가 실제 의존 관계인지
-   확인한 뒤 등록합니다.
+1. **자동:** 도구가 각 BANK-OM commit의 실제 변경 파일을 Git에서 읽어
+   `changed_paths`와 `upgrade_watch.paths`에 함께 넣습니다. 같은 경로를 사람이
+   두 번 입력할 필요가 없습니다.
+2. **수동:** 우리가 직접 고치지는 않았지만 호출하거나 구조에 의존하는 공식
+   파일은 담당자가 `watch_dependencies`로 추가합니다.
+3. **후보 제시:** 우리 코드가 공식 파일 이름을 코드 안에서 직접 언급하고 있고
+   그 파일이 새 버전에서 바뀌면, 검사기가 “이것도 watch에 넣을까요?”라고
+   후보를 제시합니다.
+4. 후보는 **Manifest를 자동으로 고치지 않습니다.** 담당자가 실제 의존 관계인지
+   확인한 뒤 직접 등록합니다.
 
-따라서 실제 변경 파일 자동 포함과 직접 참조 후보 제시는 구현되어 있습니다.
-다만 런타임 설정, 간접 호출, 문자열 없이 연결되는 구조처럼 코드에 파일·기호 이름이
-드러나지 않는 의존 관계는 담당자가 직접 확인해야 합니다.
+여기서 자동으로 잡히는 것은 코드에 파일 이름이나 기호 이름이 드러나는
+경우뿐입니다. 런타임 설정으로 연결되거나, 이름 없이 간접 호출되는 의존
+관계는 도구가 알 수 없으므로 담당자가 직접 확인해야 합니다.
 
 ## 8. BANK-OM-007 후속 commit 처리
 
@@ -356,8 +378,11 @@ PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py plan \
   --patch-ref origin/patch/om-1.13.0 \
   --custom-ref origin/custom/om-1.13.0 \
   --product-version 1.13.0 \
-  --output harness/preparation-plans/om-temp-1.13.0-YYYYMMDD-HHMM
+  --output harness/preparation-plans/om-temp-1.13.0-20260730
 ```
+
+`--output`은 아직 없는 폴더여야 합니다. 이미 있는 폴더를 주면 도구가 예전
+제안을 덮어쓰지 않고 거절합니다. 실행할 때마다 날짜를 붙여 새 폴더를 씁니다.
 
 `plan`은 Git이 확정할 수 있는 전체 변경 파일을 ID별 `changed_paths`로
 계산합니다. BANK-OM-007처럼 commit이 두 개면 두 commit의 경로를 한 목록으로
@@ -366,43 +391,48 @@ PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py plan \
 
 전체 단계와 상태별 대응은
 [`OM_TEMP 검사 전 준비도구 쉬운 사용법`](OM_TEMP_검사전_준비도구_쉬운사용법.md)에
-있습니다. 같은 폴더의 `generate_manifest_drafts.py`는 옛 파일명을 유지하기
-위한 wrapper이며 위 `plan`과 같은 인자를 받습니다.
+있습니다.
+
+등록 폴더 안의 `generate_manifest_drafts.py`는 예전 파일 이름을 그대로 두기
+위한 껍데기입니다. 위 `plan`과 같은 일을 하고 같은 인자를 받습니다. 다만
+`--registration`은 자기 폴더가 기본값이라 생략할 수 있습니다. 새로 작성하는
+자동화는 이 파일 대신 `harness/prepare_registration.py plan`을 직접
+호출합니다.
 
 `harness/registrations/kb-openmetadata/materialize_exact_scopes.py`는 기존
 1.13.1 등록자료 전용이므로 이번 1.13.0 생성에는 사용하지 않습니다.
 
 ### 9.2 파일 위치
 
-`easyseop/openmetadata-test`에서 새 등록 폴더를 준비합니다.
-
-```bash
-cd openmetadata-test
-mkdir -p harness/registrations/om-temp-1.13.0/manifests
-```
+1.13.0 등록 폴더는 이미 만들어져 있습니다. 현재 실제 구성은 다음과 같습니다.
 
 ```text
 harness/registrations/om-temp-1.13.0/
-├── customization-registry.yaml
-├── contracts.yaml
-├── patch-source-lock.yaml
-├── shared-path-owners.yaml
-├── source-snapshot-path-owners.yaml
-├── source-diff-paths.txt
-└── manifests/
-    ├── BANK-OM-001.yaml
-    ├── BANK-OM-002.yaml
-    ├── BANK-OM-003.yaml
-    ├── BANK-OM-004.yaml
-    ├── BANK-OM-005.yaml
-    ├── BANK-OM-006.yaml
-    └── BANK-OM-007.yaml
+├── customization-registry.yaml        # 기준 SHA, 활성 ID, 담당자
+├── contracts.yaml                     # 업무 계약과 필수 test
+├── repository-layout.yaml             # 경로를 어느 영역으로 분류할지
+├── sensitive-zones.yaml               # 특별히 주의해서 볼 경로
+├── shared-path-owners.yaml            # 여러 ID가 함께 바꾼 파일
+├── source-snapshot-path-owners.yaml   # 과거 snapshot 시점의 파일별 ID
+├── source-diff-paths.txt              # patch↔custom 차이 111개 경로
+├── REPRODUCIBILITY.md                 # 후보를 다시 만드는 방법
+├── manifests/
+│   ├── BANK-OM-001.yaml
+│   │   … BANK-OM-007.yaml 까지 7개
+├── registration-validation-results.json   # 등록 검사 5종 결과
+└── source-gate-results.json               # 소스 게이트 결과
 ```
 
-현재 이 폴더와 BANK-OM-001~007 Manifest 등록본은 생성되어 있습니다.
-Manifest 7개는 현재 스키마 및 기본 의미 검사를 통과했습니다. 다만 제품 build,
-업무 동작 test, 1.13.1 업그레이드 비교는 아직 실행 전이므로 배포 승인 상태는
-아닙니다.
+새 버전용 폴더를 처음부터 만들 때는 위 파일들을 같은 이름으로 준비합니다.
+
+```bash
+cd openmetadata-test
+mkdir -p harness/registrations/om-temp-<버전>/manifests
+```
+
+Manifest 7개는 스키마 검사와 등록 검사를 통과한 상태입니다. 다만 제품 build,
+실제 업무 동작 test, 1.13.1 업그레이드 비교는 아직 실행 전이므로 배포 승인
+상태가 아닙니다.
 
 ### 9.3 BANK-OM-001 기본 형태
 
@@ -459,15 +489,18 @@ Manifest만 만들면 전체 검사를 실행할 수 없습니다. 다음 자료
 
 | 자료 | 기록할 내용 |
 |---|---|
-| `customization-registry.yaml` | 공식 기준 SHA, 커스터마이징 SHA, 활성 ID, 담당 조직, 중요도, Manifest·계약 파일 연결 |
-| `contracts.yaml` | 각 BANK-OM 기능이 정상이라고 판단할 업무 조건과 test |
-| `shared-path-owners.yaml` | 둘 이상의 BANK-OM commit이 함께 변경한 파일과 실제 ID |
-| `source-snapshot-path-owners.yaml` | 최초 등록에 사용한 과거 snapshot 시점의 파일별 BANK-OM ID. 과거 코드 재구성 검사 전용 자동 생성 자료 |
+| `customization-registry.yaml` | 공식 기준 SHA(`upstream_sha`), snapshot SHA, 활성 ID, 담당 조직, 중요도, Manifest·계약 파일 연결 |
+| `contracts.yaml` | 각 BANK-OM 기능이 정상이라고 판단할 업무 조건과 그것을 확인할 test |
+| `repository-layout.yaml` | 어떤 경로가 제품 코드이고 어떤 경로가 검사 정책인지의 분류 규칙 |
+| `sensitive-zones.yaml` | 변경되면 특별히 주의해서 봐야 하는 경로 |
+| `shared-path-owners.yaml` | 둘 이상의 BANK-OM commit이 함께 변경한 파일과 그 ID들 |
+| `source-snapshot-path-owners.yaml` | 최초 등록에 쓴 과거 snapshot 시점의 파일별 BANK-OM ID. 과거 코드 재구성 검사(T25-R) 전용 자동 생성 자료 |
 | `source-diff-paths.txt` | `patch/om-1.13.0`과 `custom/om-1.13.0` 사이의 111개 변경 파일 |
-| `patch-source-lock.yaml` | 001~007 commit SHA와 적용 순서. 007은 두 SHA를 순서대로 기록 |
 
-Manifest는 정책과 파일 범위를 저장하고, Git commit SHA와 적용 순서는
-patch-lock이 저장합니다. Manifest에 commit SHA를 넣지 않습니다.
+**Manifest에는 Git commit SHA를 넣지 않습니다.** Manifest는 “어느 파일이 이
+기능의 범위인가”만 담고, “어느 commit이 그렇게 만들었는가”는 Registry의
+`source` 항목과 Git 이력이 담습니다. 둘을 섞으면 commit이 하나 늘 때마다
+Manifest를 고쳐야 하고, 그러면 Manifest가 Git 사실과 어긋나기 쉬워집니다.
 
 `source-snapshot-path-owners.yaml`과 `shared-path-owners.yaml`은 이름이
 비슷하지만 시점이 다릅니다. 예를 들어
@@ -494,8 +527,12 @@ commit도 같은 파일을 수정했으므로 현재 버전 기준 후자에는
 
 ## 12. 버전별 태그 생성 시점
 
-태그는 branch가 계속 이동해도 검사한 코드 시점을 다시 찾을 수 있게 하는
-고정 표식입니다. 태그는 다음 두 종류로 구분합니다.
+branch는 새 commit이 쌓이면 계속 앞으로 움직입니다. 그래서 “그때 검사한 그
+코드”를 branch 이름으로 가리키면 나중에 다른 코드를 가리키게 됩니다. 태그는
+움직이지 않는 표식이라 이 문제를 막습니다.
+
+**현재 OM_TEMP 원격에는 태그가 하나도 없습니다.** 아래는 앞으로 만들 때의
+규칙입니다. 태그는 두 종류로 구분합니다.
 
 | 태그 예시 | 붙일 commit | 생성 조건 |
 |---|---|---|
@@ -529,23 +566,25 @@ branch 이름이나 `latest` 같은 움직이는 값을 넣지 않습니다.
 
 ## 13. 이번 작업의 완료 기준과 다음 단계
 
-### 이번 Manifest 작성 단계의 완료 기준
+### Manifest 작성 단계의 완료 기준
 
-- BANK-OM-001~007 Manifest가 1.13.0 실제 commit을 기준으로 작성됨
-- BANK-OM-007의 두 commit이 구분되어 등록됨
-- 111개 변경 파일이 빠짐없이 ID에 연결되거나 미등록 사유가 기록됨
-- 공용 파일 소유 ID가 실제 diff와 일치함
-- 계약과 필수 test의 담당 검토가 끝남
-- Manifest와 등록 묶음의 스키마 검사가 통과함
+| 기준 | 현재 |
+|---|---|
+| BANK-OM-001~007 Manifest가 1.13.0 실제 commit을 기준으로 작성됨 | 완료 |
+| BANK-OM-007의 두 commit이 구분되어 등록됨 | 완료 |
+| 111개 변경 파일이 빠짐없이 ID에 연결되거나 미등록 사유가 기록됨 | 완료 |
+| 공용 파일 소유 ID가 실제 diff와 일치함 | 완료 |
+| Manifest와 등록 묶음의 스키마 검사가 통과함 | 완료(등록 검사 5종 통과) |
+| 계약과 필수 test의 담당자 검토가 끝남 | **미완료 — 담당 조직이 모두 `UNASSIGNED`** |
 
 ### 다음 단계
 
-1. OM_TEMP 1.13.0 등록 묶음을 검사기에 연결합니다.
-2. 소스 gate와 가능한 test를 실행합니다.
-3. 결과가 가리키는 Git commit SHA를 확인합니다.
-4. 통과 범위가 명확한 검증 태그를 만듭니다.
+1. Registry의 `owner: UNASSIGNED` 7건에 실제 조직을 배정합니다.
+2. 소스 게이트와 실행 가능한 test를 돌립니다.
+3. 결과가 가리키는 Git commit SHA가 검사한 코드와 같은지 확인합니다.
+4. 무엇이 통과한 태그인지 설명에 적어 검증 태그를 만듭니다.
 5. 공식 1.13.1 기준 branch를 만들고 001~007을 다시 적용해 충돌을 확인합니다.
-6. 동일한 Manifest·검사 흐름으로 1.13.1 결과를 비교합니다.
+6. 같은 Manifest·검사 흐름으로 1.13.1 결과를 비교합니다.
 
-검사 결과와 태그가 생기기 전까지 OM_TEMP의 `custom/om-1.13.0`은
-커스터마이징 코드가 들어 있는 시연 준비 상태이며, 배포 승인 상태가 아닙니다.
+검사 결과와 태그가 생기기 전까지 OM_TEMP의 `custom/om-1.13.0`은 맞춤 변경
+코드가 들어 있는 시연 준비 상태이며, 배포 승인 상태가 아닙니다.
