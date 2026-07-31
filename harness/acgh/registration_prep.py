@@ -14,10 +14,12 @@ watch list are never inferred.
 from __future__ import annotations
 
 import copy
+import datetime
 import difflib
 import hashlib
 import json
 import os
+import socket
 import tempfile
 from collections import defaultdict
 from pathlib import Path
@@ -37,9 +39,24 @@ _REGISTRATION_INPUTS = (
     "customization-registry.yaml",
     "contracts.yaml",
     "repository-layout.yaml",
+    "sensitive-zones.yaml",
+    "source-diff-paths.txt",
     "source-snapshot-path-owners.yaml",
     "shared-path-owners.yaml",
 )
+# Policy inputs prep never reads itself, but the later gates do: the approver
+# judged the proposal under these rules, so a change must invalidate it.
+_OPTIONAL_REGISTRATION_INPUTS = frozenset(
+    {"sensitive-zones.yaml", "source-diff-paths.txt"}
+)
+
+
+def _utc_now() -> str:
+    return (
+        datetime.datetime.now(datetime.timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+    )
 _LFS_PREFIX = b"version https://git-lfs.github.com/spec/v1\n"
 
 
@@ -120,15 +137,20 @@ def proposal_digest(proposal: dict) -> str:
 
 def registration_state_digest(registration: Path) -> str:
     """Digest only human/policy inputs that must remain stable until apply."""
-    payload: dict[str, str] = {}
+    payload: dict[str, str | None] = {}
     paths = [registration / name for name in _REGISTRATION_INPUTS]
     paths.extend(sorted((registration / "manifests").glob("BANK-OM-*.yaml")))
     for path in paths:
+        relative = path.relative_to(registration).as_posix()
+        if not path.exists() and relative in _OPTIONAL_REGISTRATION_INPUTS:
+            # Recorded as absent rather than skipped, so a policy file that
+            # appears between plan and apply also invalidates the approval.
+            payload[relative] = None
+            continue
         if not path.is_file() or path.is_symlink():
             raise PreparationError(
                 f"registration input is missing or not a regular file: {path}"
             )
-        relative = path.relative_to(registration).as_posix()
         payload[relative] = hashlib.sha256(path.read_bytes()).hexdigest()
     return verdict.canonical_digest(payload)
 
@@ -1177,10 +1199,6 @@ def apply_plan(
         relative: _safe_target(registration, relative)
         for relative in sorted(writes)
     }
-    originals = {
-        relative: target.read_bytes() if target.exists() else None
-        for relative, target in targets.items()
-    }
     lock_path = registration / ".registration-apply.lock"
     try:
         lock_descriptor = os.open(
@@ -1189,12 +1207,32 @@ def apply_plan(
             0o600,
         )
     except FileExistsError as exc:
-        raise ApplyLockError(f"registration apply lock exists: {lock_path}") from exc
+        raise ApplyLockError(
+            f"registration apply lock exists: {lock_path}. Read it to identify "
+            "the owning run before removing it."
+        ) from exc
     try:
         with os.fdopen(lock_descriptor, "w", encoding="utf-8") as lock:
-            lock.write(digest + "\n")
+            # A killed process cannot clean this up, so record who to ask.
+            lock.write(
+                _yaml_bytes(
+                    {
+                        "proposal_digest": digest,
+                        "pid": os.getpid(),
+                        "host": socket.gethostname(),
+                        "started_at": _utc_now(),
+                        "registration": registration.name,
+                    }
+                ).decode("utf-8")
+            )
             lock.flush()
             os.fsync(lock.fileno())
+        # Read the current bytes only once the lock is held, so a rollback
+        # cannot restore content another writer replaced in the meantime.
+        originals = {
+            relative: target.read_bytes() if target.exists() else None
+            for relative, target in targets.items()
+        }
         if gitprim.worktree_is_dirty(str(repo)):
             raise StaleProposalError(
                 "product repository changed before apply lock was acquired"

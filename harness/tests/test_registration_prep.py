@@ -841,3 +841,49 @@ def test_removed_path_is_a_question_not_a_dead_end(prepared, operation):
     assert "REMOVED_PATH_DECISION" in codes
     # One question per removed path, not one per detection rule.
     assert codes.count("REMOVED_PATH_DECISION") == 1
+
+
+def test_stale_lock_identifies_its_owner(prepared, tmp_path, monkeypatch):
+    """A killed apply cannot clean up, so the lock must say who to ask."""
+    repo, registration, output, proposal = _applied_pair(prepared, tmp_path)
+    _write(output / "approval.yaml", _approve(proposal))
+
+    captured: dict[str, bytes] = {}
+    real_write = P._atomic_write
+
+    def capture_then_fail(path, content):
+        captured["lock"] = (registration / ".registration-apply.lock").read_bytes()
+        raise OSError("disk full")
+
+    monkeypatch.setattr(P, "_atomic_write", capture_then_fail)
+    with pytest.raises(OSError):
+        P.apply_plan(
+            repo,
+            registration,
+            proposal_path=output / "proposal.yaml",
+            approval_path=output / "approval.yaml",
+        )
+    monkeypatch.setattr(P, "_atomic_write", real_write)
+
+    owner = yaml.safe_load(captured["lock"].decode("utf-8"))
+    assert owner["proposal_digest"] == P.proposal_digest(proposal)
+    assert owner["pid"] and owner["host"] and owner["started_at"]
+    assert owner["registration"] == registration.name
+    # The failure path still releases the lock.
+    assert (registration / ".registration-apply.lock").exists() is False
+
+
+def test_sensitive_zone_policy_change_invalidates_the_approval(prepared, tmp_path):
+    """The approver judged under a policy; changing it must not be silent."""
+    repo, registration, output, proposal = _applied_pair(prepared, tmp_path)
+    _write(output / "approval.yaml", _approve(proposal))
+
+    _dump(registration / "sensitive-zones.yaml", {"zones": {"frozen": ["core/**"]}})
+
+    with pytest.raises(P.StaleProposalError, match="registration inputs changed"):
+        P.apply_plan(
+            repo,
+            registration,
+            proposal_path=output / "proposal.yaml",
+            approval_path=output / "approval.yaml",
+        )
