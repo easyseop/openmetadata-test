@@ -1,8 +1,14 @@
 # BANK-OM 등록·후속 변경 운영규칙
 
+> 최종 갱신: 2026-07-31
+
 이 문서는 BANK-OM ID를 발급하고, 코드 변경과 Manifest·Git 커밋·검사 결과를
 연결하는 단일 기준 문서다. 사람용 가이드와 향후 LLM 위키는 이 문서를 기준으로
-설명하며, 코드나 스키마와 충돌하면 실제 검사기 스키마를 먼저 확인한다.
+설명한다.
+
+문서와 코드가 어긋나면 **코드가 기준이다.** 이 문서가 아니라 실제 검사기
+스키마(`harness/acgh/schema/`)를 먼저 확인하고, 어긋난 부분은 이 문서를
+고친다.
 
 ## 1. 현재 구현 상태
 
@@ -44,7 +50,7 @@
 
 | 항목 | 쉬운 뜻 | 현재 검사 결과 |
 |---|---|---|
-| `changed_paths` | 현재 OpenMetadata 버전에서 같은 BANK-OM ID가 변경한 파일 전체 | 명단 밖 변경은 block, 일반 파일 누락은 approval |
+| `changed_paths` | 현재 OpenMetadata 버전에서 같은 BANK-OM ID가 변경한 파일 전체 | 목록에 없는 파일을 변경하면 block, 목록에 있는 일반 파일이 최종 코드에서 안 바뀌었으면 approval |
 | `required_changed_paths` | 누락만으로 필수 기능 소실을 확정할 파일 | 누락·공식 원본과 동일하면 block |
 | `upgrade_watch.paths` | 실제 변경 경로와 담당자가 등록한 의존 경로 | 공식 A→B에서 바뀌면 approval |
 | `assurance` | 실제 동작을 확인할 계약·기술 테스트 | 테스트 연결이 없거나 실패하면 통과 금지 |
@@ -99,11 +105,11 @@ upgrade_watch:
 검사하되 watch 자동 포함을 보류하고 BANK-OM별 한 개의 담당자 판단 항목으로
 묶는다. 기존 watch 값은 승인 없이 삭제하지 않는다.
 
-행내에서 직접 수정하지 않았지만 커스터마이징이 의존하는 경로는 담당자가
-`watch_dependencies`로 등록한다. 새 공식 버전에서 바뀐 파일 이름을
-커스터마이징 코드가 직접 참조하면 `watch_suggest.py`가 후보 경로와 참조한 파일을
-제시한다. 이 제안은 Manifest를 자동 수정하거나 승인하지 않으며 담당자가 확인한
-뒤 반영한다.
+행내에서 직접 수정하지 않았지만 행내 기능이 의존하는 경로는 담당자가
+`watch_dependencies`로 등록한다. 새 공식 버전에서 바뀐 파일 이름을 행내 코드가
+직접 참조하면 `watch_suggest.py`가 후보 경로와 참조한 파일을 함께 제시한다.
+이 제안은 Manifest를 자동으로 고치지도, 승인하지도 않는다. 담당자가 확인한 뒤
+직접 반영한다.
 
 T42는 이전 공식 버전과 새 공식 버전 사이의 Git 변경 경로를
 `upgrade_watch.paths`와 비교한다. 경로가 겹치면 충돌 확정이 아니라
@@ -122,9 +128,10 @@ T42는 이전 공식 버전과 새 공식 버전 사이의 Git 변경 경로를
    `provenance: source-snapshot`, snapshot 이후 새 기능은
    `candidate-follow-up`이다. 후자를 생략하면 과거 소스 재구성 검사가
    실패하므로 기본값에 의존하지 않는다.
-3. 업무 정상 조건과 필수 테스트를 `contracts.yaml`에 작성하고
-   `customization_ids`에 새 ID를 역방향으로 연결한다. 준비도구는 계약 내용을
-   대신 만들지 않는다.
+3. 업무 정상 조건과 필수 테스트를 `contracts.yaml`에 작성한다. 연결은 양쪽에
+   적는다 — Manifest의 `contracts`는 기능 → 계약 방향이고, `contracts.yaml`의
+   `customization_ids`는 계약 → 기능 방향이다. 뒤쪽에도 새 ID를 추가해야
+   한다. 준비도구는 계약 내용을 대신 만들지 않는다.
 4. 제품 커밋 메시지에 `Customization-ID: BANK-OM-NNN`을 넣는다.
 5. `plan`을 `--new-id-input`과 함께 실행한다. `plan`은 실제 변경 파일을
    `changed_paths`로 계산하고, 그중 공식 patch branch에 존재하는 경로만
@@ -136,7 +143,8 @@ T42는 이전 공식 버전과 새 공식 버전 사이의 Git 변경 경로를
 7. 승인서에 제안 내용 확인값과 판단 사유를 적고 `apply`를 실행한다. 승인
    이후 제품 commit이나 등록 입력이 달라졌으면 `apply`가 중단한다.
 8. patch-replay 전략을 사용할 때만 Git commit SHA와 적용 순서를 patch-lock에
-   기록한다.
+   기록한다. 현재 기본 전략인 vendor-merge에서는 이 단계를 건너뛰며, 실제로
+   1.13.0·1.13.1 등록 폴더에 patch-lock 파일은 없다.
 9. 등록자료 검사 5종을 실행한 뒤
    T10·T25·T26·T30·T31·T40·T42·T60-I·T93 검사를 실행한다.
 
@@ -157,7 +165,7 @@ T42는 이전 공식 버전과 새 공식 버전 사이의 Git 변경 경로를
    나오므로 의도한 결과인지 확인한다.
 5. 승인 후 `apply`를 실행해 승인한 변경안만 반영한다.
 6. patch-replay 전략을 사용할 때만 새 Git commit SHA와 적용 순서를
-   patch-lock에 추가한다.
+   patch-lock에 추가한다. vendor-merge에서는 해당 없음.
 7. 관련 계약·테스트를 갱신하고 등록자료 검사와 전체 소스 검사를 다시
    실행한다.
 
@@ -227,15 +235,15 @@ LLM 위키는 이 문서를 원본으로 사용하고 다음 항목을 반드시
 
 | 위치 | 저장하는 것 | 현재 상태 |
 |---|---|---|
-| `easyseop/OpenMetadata` | 처음 분석한 커스터마이징 코드 보관·참고 | `849ae756…`는 과거 소스 검사 후보이며 현재 OM_TEMP 업그레이드 대상이 아님 |
-| `easyseop/OM_TEMP` | 1.13.0→1.13.1 업그레이드·검사 재현용 제품 코드 | private 저장소에 1.13.0 patch/custom branch가 있고 1.13.1 결과는 아직 다른 작업 노트북의 로컬에만 있음 |
-| `easyseop/openmetadata-test` | BANK-OM Manifest·검사기·검사 결과·운영규칙 | `codex/strict-manifest-gates`에서 관리 |
+| `easyseop/OpenMetadata` | 처음 분석한 행내 변경 코드 보관·참고 | `849ae756…`는 과거 소스 검사 후보이며 현재 OM_TEMP 업그레이드 대상이 아님 |
+| `easyseop/OM_TEMP` | 1.13.0→1.13.1 업그레이드·검사 재현용 제품 코드 | private 저장소에 1.13.0 `patch`/`custom` branch가 있음. 1.13.1 두 branch는 원격에 없고 작업 환경 로컬에만 있어 지금은 재현 불가 |
+| `easyseop/openmetadata-test` | BANK-OM Manifest·검사기·검사 결과·운영규칙 | 현재 작업 branch는 `claude/markdown-file-feedback-26933w` |
 
 `easyseop/OpenMetadata`의 BANK-OM-001~011 코드는
-`codex/bank-vendor-1.13.1-rebuild` 브랜치에 보관돼 있다. 이 중 008~011은
-기술 보완용 임시 ID이며 사용자 확정 전에는 승인된 업무 커스터마이징으로
-표현하지 않는다. 현재 반복 업그레이드 시연은 BANK-OM-001~007만 사용한
-`easyseop/OM_TEMP`를 기준으로 한다.
+`codex/bank-vendor-1.13.1-rebuild` 브랜치에 보관돼 있다. 이 중 008~011은 UI
+타입 정합성을 맞추려고 붙인 기술 보완용 임시 ID다. 사용자가 확정하기 전에는
+승인된 업무 기능으로 표현하지 않는다. 현재 반복 업그레이드 시연은
+BANK-OM-001~007만 사용하는 `easyseop/OM_TEMP`를 기준으로 한다.
 
 BANK-OM 변경관리표·검사 결과·인수인계 문서는 제품 저장소에 중복 보관하지
 않고 `easyseop/openmetadata-test`에서 관리한다. LLM 위키는 두 저장소를

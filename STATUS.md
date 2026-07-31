@@ -1,7 +1,9 @@
 # Current implementation status
 
-> Updated: 2026-07-30 KST
-> Branch: `codex/strict-manifest-gates`
+> Updated: 2026-07-31 KST
+> Branch: `claude/markdown-file-feedback-26933w`
+> (branched from `codex/strict-manifest-gates`; carries the runner exit-code,
+> apply-provenance and guide-rewrite work)
 > Latest local implementation: `b63ce67bd303865224339a0dfe6e4becb252bea6`
 > Latest remotely verified head:
 > `7ee1fdb2dfdd4dd513f9df615aca9d332c094b9c`
