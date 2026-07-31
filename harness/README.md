@@ -20,13 +20,41 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 pip install jsonschema pathspec pyyaml pytest
 OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata \
   python -m pytest harness/tests tests/bank/contracts
-# 고정 mirror 연결 시 323개: 316 pass·7 operational skip
+# 고정 mirror + product repo 연결 시 405개: 398 pass·7 operational skip
+#   (2026-07-31 CI run 30606935109 기준)
+# mirror·product repo 없이 실행하면 395 pass·10 skip — 늘어난 3개 skip이
+#   mirror 의존 테스트이며, 실패가 아니다
 bash harness/fixtures/fetch_upstream.sh            # 실제 OM 미러(없으면 미러 테스트 자동 skip)
 ```
 
 Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
 
-## 구현 모듈 (현재 323개 테스트: 316 pass·7 operational skip)
+## 실행기 종료코드
+
+게이트 실행기 4개는 모두 `verdict.aggregate()` → `verdict.to_exit_code()`를
+거친다. 손으로 쓴 `return 0`/`return 1`은 남아 있지 않으며
+`tests/test_runner_exit_codes.py`가 AST로 이를 검사한다.
+
+| 판정 | 종료코드 | 뜻 |
+|---|---:|---|
+| `pass` | 0 | 통과 |
+| `block` | 1 | 규칙을 적용해 거절 |
+| `approval` | 2 | 사람 판단 필요 |
+| `analysis_error` | 3 | 판단 자체를 못 함 |
+
+집계 severity rank(`pass < approval < block < analysis_error`)와 종료코드
+순서는 **일부러 다르다.** 종료코드로 `max()`를 하면 `2(approval)`가
+`1(block)`을 이겨 차단이 승인필요로 뒤집힌다(P0-3). 게이트가 하나도 없으면
+`aggregate([])`는 `analysis_error`를 낸다(P0-4, fail-closed).
+
+> **운영 주의:** `run_upgrade_watch.py`는 이전에 판정과 무관하게 `0`을
+> 반환했다. 지금 저장된 1.13.1 결과의 gate 판정이 `approval`이므로 이 실행기는
+> **`2`를 반환한다.** `$?`가 0인지만 보는 스크립트가 있으면 고쳐야 한다.
+> 다만 이 실행기는 어느 workflow에서도 호출하지 않으므로 CI는 영향받지 않는다.
+> CI가 부르는 것은 `run_source_candidate_gates.py`(8개 게이트 전부 `pass` →
+> `0`)와 `run_source_patch_kills.py`뿐이다.
+
+## 구현 모듈 (CI 기준 405개 테스트: 398 pass·7 operational skip)
 
 | 모듈 | 담당 | 루트 README 검증기# / 영역 |
 |---|---|---|

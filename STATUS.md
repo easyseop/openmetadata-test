@@ -8,9 +8,10 @@
 > Latest remotely verified head:
 > `7ee1fdb2dfdd4dd513f9df615aca9d332c094b9c`
 > Latest sharing/rehearsal CI:
-> [`30468709056`](https://github.com/easyseop/openmetadata-test/actions/runs/30468709056)
-> (`Source candidate`, success; 381 passed, 7 operational skips, source gates
-> and 2 source patch-kill experiments passed)
+> [`30606935109`](https://github.com/easyseop/openmetadata-test/actions/runs/30606935109)
+> (`Source candidate` on `claude/markdown-file-feedback-26933w` @ `e58fea3`,
+> success; 398 passed, 7 operational skips, 8 source gates all `pass`,
+> 2 source patch-kill experiments passed)
 > Last verified implementation commit: `5f54687`
 > Fixed-mirror CI compatibility fix: `f661796`
 > Strict-scope and stage 2·3 batch verified: 2026-07-28 10:18 KST
