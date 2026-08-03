@@ -108,11 +108,35 @@ expect "옮길 변경 기록 수" "${#BANK_SHAS[@]}" "8"
 
 # ── 2. 공식 배포본 받기 ─────────────────────────────────────
 step "2. 공식 1.13.0 / 1.13.1 배포본 받기"
-run "git -C '$OM_TEMP' fetch --filter=blob:none --no-tags '$UPSTREAM_URL' \
+
+# --filter=blob:none 을 쓰지 않는다.
+#
+# 필터를 걸면 git 이 promisor remote 를 등록하고, 파일 내용이 필요할 때마다
+# 그 자리에서 원격을 다시 부른다. 그 호출이 실패하는 환경에서는 예행연습이
+# 한참 뒤 단계에서 갑자기 죽는다. 필요한 두 시점을 지금 완전히 받아 두면
+# 이후로는 네트워크가 끊겨도 끝까지 돈다.
+#
+# 대신 --depth 1 로 그 두 시점만 받는다. 전체 이력까지 받으면 2.8GB·3분이
+# 되지만, 이렇게 하면 200MB·15초 안팎이고 필요한 것은 다 들어 있다.
+run "git -C '$OM_TEMP' fetch --depth 1 --no-tags '$UPSTREAM_URL' \
   'refs/tags/$TAG_A:refs/tags/OFFICIAL_1_13_0' \
   'refs/tags/$TAG_B:refs/tags/OFFICIAL_1_13_1'"
 expect "공식 1.13.0 고유번호" "$(git -C "$OM_TEMP" rev-parse OFFICIAL_1_13_0^{commit})" "$SHA_A"
 expect "공식 1.13.1 고유번호" "$(git -C "$OM_TEMP" rev-parse OFFICIAL_1_13_1^{commit})" "$SHA_B"
+
+# 받은 것이 정말 온전한지 여기서 확인한다.
+# 파일 내용을 실제로 한 번 읽어 본다. 빠져 있으면 3단계나 5단계에서
+# 알아보기 어려운 오류로 터지는 대신, 여기서 원인과 함께 멈춘다.
+PROBE="openmetadata-ui/src/main/resources/ui/package.json"
+for tag in OFFICIAL_1_13_0 OFFICIAL_1_13_1; do
+  git -C "$OM_TEMP" cat-file blob "$tag:$PROBE" >/dev/null 2>&1 || die \
+"$tag 의 파일 내용을 읽지 못했습니다. 공식 배포본을 온전히 받지 못한 상태입니다.
+    아래를 실행해 다시 받은 뒤 예행연습을 재시도하십시오:
+      git -C '$OM_TEMP' fetch --depth 1 --no-tags --refetch '$UPSTREAM_URL' \\
+        'refs/tags/$TAG_A:refs/tags/OFFICIAL_1_13_0' \\
+        'refs/tags/$TAG_B:refs/tags/OFFICIAL_1_13_1'"
+done
+ok "공식 배포본 두 시점의 파일 내용까지 확인했습니다"
 
 # ── 3. 적용 전 영향 확인 (T42) ──────────────────────────────
 step "3. 적용 전 영향 확인 — 공식 변경이 우리 기능에 닿는가"
