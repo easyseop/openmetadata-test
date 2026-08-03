@@ -189,10 +189,16 @@ for sha in "${BANK_SHAS[@]}"; do
     die "$id: JSON 이외 파일이 부딪혔습니다. 자동 정리 대상이 아니므로 코드 담당자가 직접 해결해야 합니다"
   fi
 
-  leaf="$(PYTHONPATH="$GOV/harness" "$PY" "$GOV/harness/tools/resolve_nonoverlapping_json_conflicts.py" \
-          --repo "$WORK/tree" | grep -oE 'leaf changes=[0-9]+' | head -1 | cut -d= -f2)"
-  [ -n "$leaf" ] || die "$id: 정리 도구가 아무것도 처리하지 못했습니다. 양쪽이 같은 항목을 고쳤을 수 있습니다"
-  ok "$id  되살린 항목 ${leaf}개"
+  # 정리 도구는 파일마다 한 줄씩 낸다. 첫 줄만 읽으면 파일 하나의 값이
+  # 전체 합계처럼 보이므로, 모든 줄을 더한다.
+  resolved="$(PYTHONPATH="$GOV/harness" "$PY" "$GOV/harness/tools/resolve_nonoverlapping_json_conflicts.py" \
+              --repo "$WORK/tree")"
+  [ -n "$resolved" ] || die "$id: 정리 도구가 아무것도 처리하지 못했습니다. 양쪽이 같은 항목을 고쳤을 수 있습니다"
+  printf '%s\n' "$resolved" | sed 's/^/    /'
+  fixed="$(printf '%s\n' "$resolved" | grep -c 'leaf changes=')"
+  leaf="$(printf '%s\n' "$resolved" | grep -oE 'leaf changes=[0-9]+' | cut -d= -f2 \
+          | awk '{sum += $1} END {print sum + 0}')"
+  ok "$id  파일 ${fixed}개에서 항목 ${leaf}개를 되살렸습니다"
 
   git -C "$WORK/tree" add -A
   GIT_EDITOR=true git -C "$WORK/tree" cherry-pick --continue >/dev/null
@@ -200,8 +206,9 @@ for sha in "${BANK_SHAS[@]}"; do
 done
 
 echo
-printf '  %-14s %-12s %8s %8s\n' 기능 원본기록 부딪힘 되살림
-awk -F'\t' '{printf "  %-14s %-12s %8s %8s\n",$1,$2,$3,$4}' "$CONFLICT_LOG"
+printf '  %-14s %-12s %10s %12s\n' 기능 원본기록 부딪힌파일 되살린항목
+awk -F'\t' '{printf "  %-14s %-12s %10s %12s\n",$1,$2,$3,$4}' "$CONFLICT_LOG"
+echo "  (부딪힌파일 = 충돌한 파일 수, 되살린항목 = 그 파일들 안에서 되살린 항목 수의 합)"
 
 # ── 6. 결과 확인 ────────────────────────────────────────────
 step "6. 만들어진 후보 확인"

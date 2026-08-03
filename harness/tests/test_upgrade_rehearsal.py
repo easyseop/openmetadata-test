@@ -170,3 +170,31 @@ def test_refuses_a_product_repo_with_the_wrong_starting_point(tmp_path: Path):
     )
     assert done.returncode != 0, "잘못된 출발점을 통과시키면 안 된다"
     assert "중단" in done.stdout + done.stderr
+
+
+def test_resolved_leaf_counts_are_summed_not_sampled():
+    """정리 도구는 파일마다 한 줄을 낸다. 첫 줄만 읽으면 안 된다.
+
+    ``head -1`` 로 읽으면 파일 하나의 항목 수가 전체 합계인 것처럼 표에
+    찍힌다. 실제 예행연습에서 BANK-OM-001 은 18개 파일에서 파일당 9개,
+    합계 162개를 되살리는데 9로 보고되고 있었다.
+    """
+    body = SCRIPT.read_text(encoding="utf-8")
+    capture = [
+        line for line in body.splitlines()
+        if "leaf changes=" in line and "grep" in line
+    ]
+    assert capture, "되살린 항목 수를 읽는 줄을 찾지 못했다"
+    for line in capture:
+        assert "head -1" not in line, (
+            "첫 줄만 읽으면 파일 하나의 값이 합계로 보고된다: " + line.strip()
+        )
+    assert "sum += $1" in body, "모든 파일의 항목 수를 더해야 한다"
+
+
+def test_conflict_table_header_names_its_units():
+    """'부딪힘/되살림' 은 단위를 숨긴다. 파일 수와 항목 수는 다른 단위다."""
+    body = SCRIPT.read_text(encoding="utf-8")
+    assert "부딪힌파일" in body and "되살린항목" in body, (
+        "요약표 머리글이 세는 단위를 밝혀야 한다"
+    )
