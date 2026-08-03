@@ -195,9 +195,17 @@ def test_resolved_leaf_counts_are_summed_not_sampled():
 def test_conflict_table_header_names_its_units():
     """'부딪힘/되살림' 은 단위를 숨긴다. 파일 수와 항목 수는 다른 단위다."""
     body = SCRIPT.read_text(encoding="utf-8")
-    assert "부딪힌파일" in body and "되살린항목" in body, (
+    assert "충돌파일" in body and "해결파일" in body and "되살린항목" in body, (
         "요약표 머리글이 세는 단위를 밝혀야 한다"
     )
+
+
+def test_conflict_wording_is_consistent():
+    """화면 문구는 충돌/해결로 통일한다. '부딪힘'과 '정리'를 섞지 않는다."""
+    body = SCRIPT.read_text(encoding="utf-8")
+    assert "부딪" not in body, "충돌을 '부딪힘'으로 부르지 않는다"
+    for phrase in ("정리 도구", "자동 정리 대상", "정리한파일"):
+        assert phrase not in body, f"해결을 '정리'로 부르지 않는다: {phrase}"
 
 
 def test_overlap_refusal_is_explained_not_left_to_set_e():

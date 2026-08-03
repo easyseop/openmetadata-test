@@ -59,7 +59,7 @@ done
 
 PATCH_SHA="$(git -C "$OM_TEMP" rev-parse "$PATCH_REF")"
 CUSTOM_SHA="$(git -C "$OM_TEMP" rev-parse "$CUSTOM_REF")"
-expect "1.13.0 공식 기준 branch" "$PATCH_SHA" "2f4f3560e7a8437e2f4f7fcafd00d32ea2d91a50"
+expect "1.13.0 제품 원본 branch" "$PATCH_SHA" "2f4f3560e7a8437e2f4f7fcafd00d32ea2d91a50"
 expect "1.13.0 행내 branch"      "$CUSTOM_SHA" "7d19c8952612e77467b0a80d6287170d814f1de1"
 
 DIFF_N="$(git -C "$OM_TEMP" diff --name-only "$PATCH_REF..$CUSTOM_REF" | wc -l | tr -d ' ')"
@@ -107,7 +107,7 @@ ok "변경 기록 ${#BANK_SHAS[@]}건 모두 이름표가 정확히 하나입니
 expect "옮길 변경 기록 수" "${#BANK_SHAS[@]}" "8"
 
 # ── 2. 공식 배포본 받기 ─────────────────────────────────────
-step "2. 공식 1.13.0 / 1.13.1 배포본 받기"
+step "2. OpenMetadata 1.13.0 / 1.13.1 배포본 받기"
 
 # --filter=blob:none 을 쓰지 않는다.
 #
@@ -121,8 +121,8 @@ step "2. 공식 1.13.0 / 1.13.1 배포본 받기"
 run "git -C '$OM_TEMP' fetch --depth 1 --no-tags '$UPSTREAM_URL' \
   'refs/tags/$TAG_A:refs/tags/OFFICIAL_1_13_0' \
   'refs/tags/$TAG_B:refs/tags/OFFICIAL_1_13_1'"
-expect "공식 1.13.0 고유번호" "$(git -C "$OM_TEMP" rev-parse OFFICIAL_1_13_0^{commit})" "$SHA_A"
-expect "공식 1.13.1 고유번호" "$(git -C "$OM_TEMP" rev-parse OFFICIAL_1_13_1^{commit})" "$SHA_B"
+expect "OpenMetadata 1.13.0 기록 번호" "$(git -C "$OM_TEMP" rev-parse OFFICIAL_1_13_0^{commit})" "$SHA_A"
+expect "OpenMetadata 1.13.1 기록 번호" "$(git -C "$OM_TEMP" rev-parse OFFICIAL_1_13_1^{commit})" "$SHA_B"
 
 # 받은 것이 정말 온전한지 여기서 확인한다.
 # 파일 내용을 실제로 한 번 읽어 본다. 빠져 있으면 3단계나 5단계에서
@@ -136,10 +136,10 @@ for tag in OFFICIAL_1_13_0 OFFICIAL_1_13_1; do
         'refs/tags/$TAG_A:refs/tags/OFFICIAL_1_13_0' \\
         'refs/tags/$TAG_B:refs/tags/OFFICIAL_1_13_1'"
 done
-ok "공식 배포본 두 시점의 파일 내용까지 확인했습니다"
+ok "OpenMetadata 두 시점의 파일 내용까지 확인했습니다"
 
 # ── 3. 적용 전 영향 확인 (T42) ──────────────────────────────
-step "3. 적용 전 영향 확인 — 공식 변경이 우리 기능에 닿는가"
+step "3. 적용 전 영향 확인 — 새 버전 변경이 우리 기능에 닿는가"
 WATCH_OUT="$WORK/upgrade-watch.json"
 mkdir -p "$WORK"
 set +e
@@ -159,7 +159,7 @@ case "$WATCH_EXIT" in
 esac
 
 # ── 4. 작업 폴더 준비 ───────────────────────────────────────
-step "4. 공식 1.13.1 위에 작업 폴더 만들기"
+step "4. OpenMetadata 1.13.1 위에 작업 폴더 만들기"
 [ -e "$WORK/tree" ] && die "$WORK/tree 이(가) 이미 있습니다. 지우거나 다른 경로를 지정하십시오"
 run "git -C '$OM_TEMP' worktree add -q -b rehearsal/patch-1.13.1 '$WORK/tree' OFFICIAL_1_13_1"
 run "git -C '$WORK/tree' switch -q -c rehearsal/custom-1.13.1"
@@ -181,15 +181,15 @@ for sha in "${BANK_SHAS[@]}"; do
   fi
 
   n="$(git -C "$WORK/tree" diff --name-only --diff-filter=U | wc -l | tr -d ' ')"
-  warn "$id  부딪힌 파일 ${n}개 — 정리 도구를 실행합니다"
+  warn "$id  충돌한 파일 ${n}개 — 충돌 해결 도구를 실행합니다"
 
   nonjson="$(git -C "$WORK/tree" diff --name-only --diff-filter=U | grep -v '\.json$' || true)"
   if [ -n "$nonjson" ]; then
     printf '%s\n' "$nonjson"
-    die "$id: JSON 이외 파일이 부딪혔습니다. 자동 정리 대상이 아니므로 코드 담당자가 직접 해결해야 합니다"
+    die "$id: JSON 이외 파일이 충돌했습니다. 자동 해결 대상이 아니므로 코드 담당자가 직접 해결해야 합니다"
   fi
 
-  # 정리 도구는 파일마다 한 줄씩 낸다. 첫 줄만 읽으면 파일 하나의 값이
+  # 충돌 해결 도구는 파일마다 한 줄씩 낸다. 첫 줄만 읽으면 파일 하나의 값이
   # 전체 합계처럼 보이므로, 모든 줄을 더한다.
   #
   # 양쪽이 같은 항목을 고쳤으면 도구가 거부한다. set -e 에 맡기면 파이썬
@@ -205,12 +205,12 @@ for sha in "${BANK_SHAS[@]}"; do
     자동으로 정할 수 없으므로 코드 담당자가 직접 결정해야 합니다.
     위 overlapping leaf changes 줄에 그 항목 이름이 있습니다."
   fi
-  [ -n "$resolved" ] || die "$id: 정리 도구가 아무것도 처리하지 못했습니다. 양쪽이 같은 항목을 고쳤을 수 있습니다"
+  [ -n "$resolved" ] || die "$id: 충돌 해결 도구가 아무것도 처리하지 못했습니다. 양쪽이 같은 항목을 고쳤을 수 있습니다"
   printf '%s\n' "$resolved" | sed 's/^/    /'
   fixed="$(printf '%s\n' "$resolved" | grep -c 'leaf changes=')"
   leaf="$(printf '%s\n' "$resolved" | grep -oE 'leaf changes=[0-9]+' | cut -d= -f2 \
           | awk '{sum += $1} END {print sum + 0}')"
-  ok "$id  파일 ${fixed}개에서 항목 ${leaf}개를 되살렸습니다"
+  ok "$id  충돌 ${n}개 중 ${fixed}개 해결 · 항목 ${leaf}개 되살림"
 
   git -C "$WORK/tree" add -A
   GIT_EDITOR=true git -C "$WORK/tree" cherry-pick --continue >/dev/null
@@ -218,19 +218,19 @@ for sha in "${BANK_SHAS[@]}"; do
 done
 
 echo
-printf '  %-14s %-12s %10s %10s %12s\n' 기능 원본기록 부딪힌파일 정리한파일 되살린항목
+printf '  %-14s %-12s %10s %10s %12s\n' 기능 원본기록 충돌파일 해결파일 되살린항목
 awk -F'\t' '{printf "  %-14s %-12s %10s %10s %12s\n",$1,$2,$3,$4,$5}' "$CONFLICT_LOG"
-echo "  (앞의 두 열은 파일 수 — 부딪힌 것을 남김없이 정리했는지 나란히 비교합니다.)"
-echo "  (되살린항목 은 단위가 다릅니다 — 그 파일들 안의 항목 수 합계입니다.)"
+echo "  (충돌파일 = 해결파일 이면 남김없이 해결한 것입니다. 둘 다 파일 수입니다.)"
+echo "  (되살린항목 은 단위가 다릅니다 — 그 파일들 안에서 되살린 항목 수의 합계입니다.)"
 
 # ── 6. 결과 확인 ────────────────────────────────────────────
 step "6. 만들어진 후보 확인"
 CAND="$(git -C "$WORK/tree" rev-parse HEAD)"
 NEW_DIFF="$(git -C "$WORK/tree" diff --name-only OFFICIAL_1_13_1..HEAD | wc -l | tr -d ' ')"
 NEW_N="$(git -C "$WORK/tree" rev-list --count OFFICIAL_1_13_1..HEAD)"
-echo "  검사 후보 고유번호 : $CAND"
+echo "  검사 후보 기록 번호 : $CAND"
 expect "옮겨진 변경 기록 수" "$NEW_N" "8"
-expect "공식 1.13.1 대비 변경 파일 수" "$NEW_DIFF" "$DIFF_N"
+expect "OpenMetadata 1.13.1 대비 변경 파일 수" "$NEW_DIFF" "$DIFF_N"
 
 cat > "$WORK/candidate.txt" <<EOF
 candidate_sha=$CAND
