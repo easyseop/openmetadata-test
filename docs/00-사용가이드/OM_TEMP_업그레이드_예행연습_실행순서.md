@@ -53,12 +53,12 @@
 | ✅ | 2부 G3b | 이름표 상세 2장 | `Customization-ID:` |
 | ✅ | 2부 G4 | 공식 릴리스 | `1.13.1-release` · `afcb2d2` |
 | ✅ | 2부 G5 ★ | 공식 두 버전 비교 | `Files changed 834` |
-| ☐ | **2부 G6** | **등록표 실물 3장** | `required_changed_paths` |
+| ✅ | 2부 G6 | 등록표 실물 3장 | `required_changed_paths` |
 | ☐ | **3부** | **예행연습 실행** | 요약표 8행 |
 | ☐ | **4부 ★★** | **재현 확인** | `e490ed82dd…` |
 | ☐ | 5부 (선택) | 등록표 만드는 과정 | `REVIEW_REQUIRED` |
 
-> **남은 것은 네 가지입니다** — 1부 6번, G6, 3부, 4부.
+> **남은 것은 세 가지입니다** — 1부 6번, 3부, 4부.
 > 1부 6번은 터미널 한 줄이고, 3부와 4부가 시연의 본체입니다.
 
 ### 이미 찍혀 있는 캡처도 있습니다
@@ -69,7 +69,7 @@
 
 | 종류 | 어디서 나온 것 |
 |---|---|
-| GitHub 화면 (G1 · G2 · G3 · G3b · G4 · G5) | 이번 시연 담당자가 직접 찍은 것 |
+| GitHub 화면 (G1 ~ G6 전부) | 이번 시연 담당자가 직접 찍은 것 |
 | 터미널 화면 (④~⑩) | 2026-08-03 다른 컴퓨터에서 전 과정을 돌려 찍은 것 |
 
 터미널 쪽을 남의 컴퓨터 것으로 두는 데는 이유가 있습니다. **"만든 사람
@@ -501,8 +501,16 @@ github.com/easyseop/openmetadata-test/blob/claude/markdown-file-feedback-26933w/
 **보여야 할 것:** `changed_paths` 목록의 끝부분과, 강조된
 `required_changed_paths` 두 줄
 
-> 📸 **G6** — 115줄 전체를 보이시려면 위·중간·아래 세 장으로 나눠 찍으면
-> 됩니다.
+> 📸 **G6** — 115줄이라 위·중간·아래 세 장으로 나눠 찍습니다.
+>
+> ![등록표 위쪽](assets/업그레이드시연/G06-1-등록표-위.png)
+> <sub>1~26줄. 머리말 6줄과 `changed_paths` 시작</sub>
+>
+> ![등록표 필수 경로](assets/업그레이드시연/G06-2-등록표-필수경로.png)
+> <sub>56~58줄이 노랗게 강조된 부분. 이 화면이 G6의 핵심입니다</sub>
+>
+> ![등록표 아래쪽](assets/업그레이드시연/G06-3-등록표-아래.png)
+> <sub>88~115줄. `upgrade_watch` 끝과 `assurance`·`series`</sub>
 
 ### 이 파일 한 장의 구조
 
@@ -597,6 +605,81 @@ BANK-OM-004와 005는 **새로 만든 파일이 하나도 없습니다.** 원래
 그래서 5부의 `plan` 이 `required_changed_paths` 를 자동으로 못 정하고 사람에게
 묻는 것입니다. **"이게 없으면 이 기능은 죽은 것"** 은 코드를 읽어서 나오는
 사실이 아니라 업무 판단이기 때문입니다.
+
+### 그럼 등록표를 처음 만들 때 required 는 비어 있나
+
+**아닙니다. 비워 둘 수 없습니다.** 새 기능에 번호를 발급할 때 사람이 반드시
+적어 넣어야 하는 항목입니다.
+
+새 BANK-OM 번호를 만들려면 `plan` 에 **입력 파일을 하나 더** 줍니다.
+
+```bash
+… plan … --new-id-input ~/om-work/new-id.yaml
+```
+
+그 파일에 아래 여덟 항목이 **모두** 있어야 합니다. 하나라도 빠지면
+`INVALID_NEW_CUSTOMIZATION` 으로 막힙니다.
+
+```yaml
+BANK-OM-008:
+  title: 예금 상품 코드                 # 기능 이름
+  owner: 데이터관리부 홍길동             # 담당자
+  owner_status: assigned              # assigned | pending
+  criticality: high                   # low | medium | high | critical
+  kind: core-patch                    # core-patch | extension | governance
+  provenance: candidate-follow-up
+  required_changed_paths:             # ★ 없어지면 안 되는 파일
+  - openmetadata-spec/…/depositCode.json
+  contracts:                          # 정상이라고 판단할 조건
+  - CONTRACT-DEPOSIT-CODE
+```
+
+> `contracts` 에 적는 이름은 **`contracts.yaml` 에 이미 등록돼 있어야 하고**,
+> 그쪽에도 이 번호가 적혀 있어야 합니다. 한쪽만 적으면
+> `lacks reverse binding` 으로 막힙니다. 양쪽이 서로를 가리켜야 "이 기능은
+> 이 조건으로 판정한다"가 성립하기 때문입니다.
+
+기계가 채우는 것과 사람이 채우는 것이 정확히 갈립니다.
+
+| 항목 | 누가 | 근거 |
+|---|---|---|
+| `changed_paths` | **기계** | Git 기록에서 그대로 읽음 |
+| `upgrade_watch.paths` | **기계** | `changed_paths` 중 공식에도 있는 것 |
+| `required_changed_paths` | **사람** | 코드에 없는 판단 |
+| `title` · `owner` · `criticality` | **사람** | 〃 |
+| `contracts` | **사람** | 〃 |
+
+`kind: core-patch` 인 기능은 `required_changed_paths` 가 **빈 목록이어도
+안 됩니다.** 최소 한 개는 지목해야 등록표 자체가 읽히지 않고 오류로 멈춥니다.
+
+```
+core-patch must declare at least one required_changed_paths entry
+```
+
+지금 등록된 7개는 **전부 `core-patch`** 이고, 그래서 전부 1개 이상을
+가지고 있습니다.
+
+적어 넣는 경로는 **`changed_paths` 안에 있는 것이어야** 합니다. 손대지도
+않은 파일을 "없어지면 안 된다"고 지목할 수는 없기 때문입니다. 벗어나면
+이렇게 막힙니다.
+
+```
+required path not covered by current changed scope: '…'
+```
+
+### 이미 있는 기능에 파일이 새로 늘어났을 때도 묻습니다
+
+번호를 새로 만들 때만이 아닙니다. 기존 기능이 **전에 없던 파일을 건드리면**
+`plan` 이 그 파일 하나하나에 대해 다시 묻습니다.
+
+```
+REQUIRED_PATH_DECISION
+새 변경 파일이 빠질 때 기능이 소실되는지 판단하고
+required_changed_paths 추가 여부를 확인해야 합니다.
+```
+
+**정리하면 — `required` 는 처음에도 사람이 정하고, 파일이 늘어날 때마다
+다시 사람에게 묻습니다.** 기계가 이 값을 스스로 채우는 경로는 없습니다.
 
 ### 등록표 7장을 합치면 G2의 111이 됩니다
 
