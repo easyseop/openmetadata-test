@@ -1,0 +1,265 @@
+
+[1;36m━━ 0. 사전 점검 ━━[0m
+[32m  OK  제품 저장소가 깨끗합니다[0m
+[32m  OK  1.13.0 공식 기준 branch = 2f4f3560e7a8437e2f4f7fcafd00d32ea2d91a50[0m
+[32m  OK  1.13.0 행내 branch = 7d19c8952612e77467b0a80d6287170d814f1de1[0m
+[32m  OK  두 branch 사이 변경 파일 수 = 111[0m
+
+[1;36m━━ 1. 기능별 변경 기록과 이름표 확인 ━━[0m
+[36m$[0m git log --reverse origin/patch/om-1.13.0..origin/custom/om-1.13.0
+4df83b311f | BANK-OM-001 | add InstanceCode customization
+68ebed4801 | BANK-OM-002 | add QueryReport customization
+57ee1b3b23 | BANK-OM-003 | add Data Assertions customization
+274f2b79b4 | BANK-OM-004 | add bank column view customization
+d983f7c540 | BANK-OM-005 | fix Korean IME handling
+010750c514 | BANK-OM-006 | add Sybase customization
+62e39da8be | BANK-OM-007 | add Tibero customization
+7d19c89526 | BANK-OM-007 | complete Tibero service connection coverage
+[32m  OK  변경 기록 8건 모두 이름표가 정확히 하나입니다[0m
+[32m  OK  옮길 변경 기록 수 = 8[0m
+
+[1;36m━━ 2. 공식 1.13.0 / 1.13.1 배포본 받기 ━━[0m
+[36m$[0m git -C '/Users/seop/om-work/OM_TEMP' fetch --depth 1 --no-tags 'https://github.com/open-metadata/OpenMetadata.git'   'refs/tags/1.13.0-release:refs/tags/OFFICIAL_1_13_0'   'refs/tags/1.13.1-release:refs/tags/OFFICIAL_1_13_1'
+From https://github.com/open-metadata/OpenMetadata
+ * [new tag]           1.13.0-release -> OFFICIAL_1_13_0
+ * [new tag]           1.13.1-release -> OFFICIAL_1_13_1
+[32m  OK  공식 1.13.0 고유번호 = f329dd4a7e47134a2bd5a06af6181b0ee527ddd9[0m
+[32m  OK  공식 1.13.1 고유번호 = afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9[0m
+[32m  OK  공식 배포본 두 시점의 파일 내용까지 확인했습니다[0m
+
+[1;36m━━ 3. 적용 전 영향 확인 — 공식 변경이 우리 기능에 닿는가 ━━[0m
+{
+  "affected_customizations": [
+    {
+      "changed_configuration_keys": [],
+      "changed_dependencies": [],
+      "changed_watch_path_count": 22,
+      "changed_watch_paths": [
+        "openmetadata-service/src/main/java/org/openmetadata/service/Entity.java",
+        "openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java",
+        "openmetadata-spec/src/main/resources/elasticsearch/indexMapping.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json"
+      ],
+      "customization_id": "BANK-OM-001"
+    },
+    {
+      "changed_configuration_keys": [],
+      "changed_dependencies": [],
+      "changed_watch_path_count": 23,
+      "changed_watch_paths": [
+        "openmetadata-service/src/main/java/org/openmetadata/service/Entity.java",
+        "openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java",
+        "openmetadata-spec/src/main/resources/elasticsearch/indexMapping.json",
+        "openmetadata-spec/src/main/resources/elasticsearch/jp/query_index_mapping.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json"
+      ],
+      "customization_id": "BANK-OM-002"
+    },
+    {
+      "changed_configuration_keys": [],
+      "changed_dependencies": [],
+      "changed_watch_path_count": 19,
+      "changed_watch_paths": [
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json"
+      ],
+      "customization_id": "BANK-OM-003"
+    },
+    {
+      "changed_configuration_keys": [],
+      "changed_dependencies": [],
+      "changed_watch_path_count": 20,
+      "changed_watch_paths": [
+        "openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaTable/SchemaTable.component.tsx",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json"
+      ],
+      "customization_id": "BANK-OM-004"
+    },
+    {
+      "changed_configuration_keys": [],
+      "changed_dependencies": [],
+      "changed_watch_path_count": 1,
+      "changed_watch_paths": [
+        "openmetadata-ui/src/main/resources/ui/package.json"
+      ],
+      "customization_id": "BANK-OM-005"
+    },
+    {
+      "changed_configuration_keys": [],
+      "changed_dependencies": [],
+      "changed_watch_path_count": 4,
+      "changed_watch_paths": [
+        "openmetadata-ui/src/main/resources/ui/src/generated/api/services/ingestionPipelines/createIngestionPipeline.ts",
+        "openmetadata-ui/src/main/resources/ui/src/generated/entity/services/ingestionPipelines/ingestionPipeline.ts",
+        "openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/workflow.ts",
+        "openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts"
+      ],
+      "customization_id": "BANK-OM-006"
+    },
+    {
+      "changed_configuration_keys": [],
+      "changed_dependencies": [],
+      "changed_watch_path_count": 1,
+      "changed_watch_paths": [
+        "openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts"
+      ],
+      "customization_id": "BANK-OM-007"
+    }
+  ],
+  "gate": {
+    "meaning": "approval은 자동 실패가 아니라, 영향을 받은 BANK-OM을 검토한 뒤 적용하라는 뜻이다.",
+    "name": "upgrade-watch",
+    "reasons": [
+      "BANK-OM-001: upstream A->B changed paths=22 (e.g. openmetadata-service/src/main/java/org/openmetadata/service/Entity.java)",
+      "BANK-OM-002: upstream A->B changed paths=23 (e.g. openmetadata-service/src/main/java/org/openmetadata/service/Entity.java)",
+      "BANK-OM-003: upstream A->B changed paths=19 (e.g. openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json)",
+      "BANK-OM-004: upstream A->B changed paths=20 (e.g. openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaTable/SchemaTable.component.tsx)",
+      "BANK-OM-005: upstream A->B changed paths=1 (e.g. openmetadata-ui/src/main/resources/ui/package.json)",
+      "BANK-OM-006: upstream A->B changed paths=4 (e.g. openmetadata-ui/src/main/resources/ui/src/generated/api/services/ingestionPipelines/createIngestionPipeline.ts)",
+      "BANK-OM-007: upstream A->B changed paths=1 (e.g. openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts)"
+    ],
+    "verdict": "approval"
+  },
+  "upstream": {
+    "base": "OFFICIAL_1_13_0",
+    "changed_path_count": 834,
+    "target": "OFFICIAL_1_13_1"
+  }
+}
+  종료코드 2  [33m  !!  확인 필요 — 담당자가 영향 경로를 검토해야 합니다 (실패 아님)[0m
+
+[1;36m━━ 4. 공식 1.13.1 위에 작업 폴더 만들기 ━━[0m
+[36m$[0m git -C '/Users/seop/om-work/OM_TEMP' worktree add -q -b rehearsal/patch-1.13.1 '/Users/seop/om-work/openmetadata-test/../upgrade-rehearsal/tree' OFFICIAL_1_13_1
+[36m$[0m git -C '/Users/seop/om-work/openmetadata-test/../upgrade-rehearsal/tree' switch -q -c rehearsal/custom-1.13.1
+[32m  OK  작업 폴더: /Users/seop/om-work/openmetadata-test/../upgrade-rehearsal/tree[0m
+
+[1;36m━━ 5. 기능 8건을 하나씩 옮겨 얹기 ━━[0m
+
+[36m$[0m git cherry-pick 4df83b311f   # BANK-OM-001
+[33m  !!  BANK-OM-001  부딪힌 파일 18개 — 정리 도구를 실행합니다[0m
+[32m  OK  BANK-OM-001  되살린 항목 9개[0m
+
+[36m$[0m git cherry-pick 68ebed4801   # BANK-OM-002
+[33m  !!  BANK-OM-002  부딪힌 파일 18개 — 정리 도구를 실행합니다[0m
+[32m  OK  BANK-OM-002  되살린 항목 11개[0m
+
+[36m$[0m git cherry-pick 57ee1b3b23   # BANK-OM-003
+[33m  !!  BANK-OM-003  부딪힌 파일 18개 — 정리 도구를 실행합니다[0m
+[32m  OK  BANK-OM-003  되살린 항목 5개[0m
+
+[36m$[0m git cherry-pick 274f2b79b4   # BANK-OM-004
+[33m  !!  BANK-OM-004  부딪힌 파일 18개 — 정리 도구를 실행합니다[0m
+[32m  OK  BANK-OM-004  되살린 항목 9개[0m
+
+[36m$[0m git cherry-pick d983f7c540   # BANK-OM-005
+[32m  OK  BANK-OM-005  충돌 없음[0m
+
+[36m$[0m git cherry-pick 010750c514   # BANK-OM-006
+[32m  OK  BANK-OM-006  충돌 없음[0m
+
+[36m$[0m git cherry-pick 62e39da8be   # BANK-OM-007
+[32m  OK  BANK-OM-007  충돌 없음[0m
+
+[36m$[0m git cherry-pick 7d19c89526   # BANK-OM-007
+[32m  OK  BANK-OM-007  충돌 없음[0m
+
+  기능         원본기록 부딪힘 되살림
+  BANK-OM-001    4df83b311f         18        9
+  BANK-OM-002    68ebed4801         18       11
+  BANK-OM-003    57ee1b3b23         18        5
+  BANK-OM-004    274f2b79b4         18        9
+  BANK-OM-005    d983f7c540          0        0
+  BANK-OM-006    010750c514          0        0
+  BANK-OM-007    62e39da8be          0        0
+  BANK-OM-007    7d19c89526          0        0
+
+[1;36m━━ 6. 만들어진 후보 확인 ━━[0m
+  검사 후보 고유번호 : d48bb28f2df53d62a75177734effb3b033c6ba7e
+[32m  OK  옮겨진 변경 기록 수 = 8[0m
+[32m  OK  공식 1.13.1 대비 변경 파일 수 = 111[0m
+
+[1;36m━━ 예행연습 완료 ━━[0m
+  작업 폴더    : /Users/seop/om-work/openmetadata-test/../upgrade-rehearsal/tree
+  검사 후보    : d48bb28f2df53d62a75177734effb3b033c6ba7e
+  요약 파일    : /Users/seop/om-work/openmetadata-test/../upgrade-rehearsal/candidate.txt
+  영향 확인    : /Users/seop/om-work/openmetadata-test/../upgrade-rehearsal/upgrade-watch.json
+  충돌 기록    : /Users/seop/om-work/openmetadata-test/../upgrade-rehearsal/conflicts.tsv
+
+  다음 단계는 등록자료를 이 후보에 맞추는 것입니다. 등록자료는 손으로
+  고치지 않고 준비도구의 plan -> 승인 -> apply 를 사용합니다. 절차는
+  docs/00-사용가이드/OM_TEMP_검사전_준비도구_쉬운사용법.md 에 있습니다.
+
+  정리하려면:
+    git -C "/Users/seop/om-work/OM_TEMP" worktree remove "/Users/seop/om-work/openmetadata-test/../upgrade-rehearsal/tree"
+    git -C "/Users/seop/om-work/OM_TEMP" branch -D rehearsal/patch-1.13.1 rehearsal/custom-1.13.1
