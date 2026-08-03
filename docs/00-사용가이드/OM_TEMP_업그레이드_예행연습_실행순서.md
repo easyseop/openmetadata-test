@@ -261,6 +261,9 @@ github.com/easyseop/OM_TEMP/branches
 
 `patch/om-1.13.0` 과 `custom/om-1.13.0` 이 목록에 보이면 됩니다.
 
+`custom/om-1.13.0` 줄의 **`Ahead 8`** 도 함께 나오면 더 좋습니다. 우리 기능
+8건이 공식 코드 위에 얹혀 있다는 것을 GitHub이 직접 센 값입니다.
+
 > 📸 **G1**
 
 ## G2. 우리가 손댄 파일이 111개다 ★
@@ -269,9 +272,37 @@ github.com/easyseop/OM_TEMP/branches
 github.com/easyseop/OM_TEMP/compare/patch/om-1.13.0...custom/om-1.13.0
 ```
 
-화면 위쪽 **`111 changed files`** 가 핵심입니다.
+화면 위쪽 **`8 commits`** 와 **`111 files changed`** 가 핵심입니다.
 
 > 📸 **G2** — 발표에서 "이 숫자는 GitHub이 세어준 것"이라고 말할 수 있는 근거
+
+> ⚠️ **오른쪽 초록색 `Create pull request` 버튼을 누르지 마십시오.**
+> 두 갈래를 합치자는 요청이 저장소에 실제로 만들어집니다. 우리는 보기만
+> 하는 중입니다. 실수로 누르셨으면 만들어진 페이지에서 `Close pull request`
+> 로 닫으면 되고, 그것만으로 코드가 바뀌지는 않습니다.
+
+### 왼쪽·오른쪽 방향이 맞는지
+
+```
+base: patch/om-1.13.0        ← 기준점 (공식 코드만)
+compare: custom/om-1.13.0    ← 비교 대상 (공식 + 우리 기능)
+```
+
+GitHub은 **기준점에는 없고 비교 대상에만 있는 것**을 보여줍니다. 그래서 이
+방향이면 결과가 곧 **우리가 더한 것**입니다. 뒤집으면 같은 111개가 나오지만
+"빼는 것"으로 표시돼 읽기 헷갈립니다.
+
+### 아래 기록 목록도 같이 보십시오
+
+5번에서 터미널로 확인한 것과 같은 기록입니다. GitHub은 7자리, 예행연습
+스크립트는 10자리로 보여줄 뿐 같은 것입니다.
+
+| GitHub 화면 | 5번 터미널 |
+|---|---|
+| `add InstanceCode customization` · `4df83b3` | `4df83b311f` |
+| `add QueryReport customization` · `68ebed4` | `68ebed4801` |
+| `add Data Assertions customization` · `57ee1b3` | `57ee1b3b23` |
+| `add bank column view customization` · `274f2b7` | `274f2b79b4` |
 
 주소가 열리지 않으면 브랜치 이름의 `/` 때문일 수 있습니다. 그때는
 저장소에서 **Compare** 버튼을 누르고 드롭다운으로 왼쪽 `patch/om-1.13.0`,
