@@ -1896,18 +1896,43 @@ git commit -m "demo: OpenMetadata 1.13.1 source snapshot (시연용 임시)"
 git push -u origin demo/web-conflict
 ```
 
+```bash
+# ③ 비교할 쪽도 올립니다 — 갈래 전체가 아니라 기록 하나만
+git -C ~/om-work/OM_TEMP push origin 4df83b311f:refs/heads/demo/one-commit
+```
+
 그다음 브라우저에서 **Pull request 를 만듭니다.**
 
 ```
-github.com/easyseop/OM_TEMP/compare/demo/web-conflict...custom/om-1.13.0
+github.com/easyseop/OM_TEMP/compare/demo/web-conflict...demo/one-commit
 ```
 
 | 고를 것 | 값 |
 |---|---|
 | base (기준) | `demo/web-conflict` |
-| compare (비교) | `custom/om-1.13.0` |
+| compare (비교) | `demo/one-commit` |
 
 **`Create pull request` 를 누르십시오.** (합치는 것이 아니라 만드는 것입니다.)
+
+### 왜 갈래 전체가 아니라 기록 하나인가
+
+충돌 개수는 어느 쪽이든 **18개로 같습니다.** 충돌하는 네 기능이 모두 같은
+번역 파일 18개를 손대기 때문입니다. 다른 것은 **화면이 얼마나 복잡한가**
+입니다.
+
+| 무엇을 비교하나 | PR 의 커밋 | PR 의 바뀐 파일 | 충돌 |
+|---|---|---|---|
+| **기록 하나** (`4df83b311f` BANK-OM-001) | **1건** | **48개** | 18개 |
+| 갈래 전체 (`custom/om-1.13.0`) | 8건 | 111개 | 18개 |
+
+**기록 하나로 하면 화면이 절반 이하로 줄고, 커밋 목록에 기능 하나만
+보입니다.** 발표에서 "이 기능 하나를 얹으려니 파일 18개가 충돌했다"를
+그대로 말할 수 있습니다.
+
+> **왜 하필 첫 번째 기록인가** — 나중 기록을 고르면 그 앞의 기록들이
+> 조상으로 딸려 와 PR 에 같이 들어갑니다. BANK-OM-002 를 고르면 2건,
+> BANK-OM-004 를 고르면 4건이 됩니다. **커밋 1건짜리 PR 이 되는 것은
+> 첫 번째 기록뿐입니다.**
 
 ### 볼 수 있는 화면 세 가지
 
@@ -1981,8 +2006,8 @@ github.com/easyseop/OM_TEMP/blame/4df83b311f/openmetadata-ui/src/main/resources/
 
 ```bash
 # ① 브라우저에서 PR 을 Close (Merge 아님)
-# ② 원격 임시 갈래 삭제
-git -C ~/om-work/OM_TEMP push origin --delete demo/web-conflict
+# ② 원격 임시 갈래 두 개 삭제
+git -C ~/om-work/OM_TEMP push origin --delete demo/web-conflict demo/one-commit
 
 # ③ 로컬 정리
 cd ~
