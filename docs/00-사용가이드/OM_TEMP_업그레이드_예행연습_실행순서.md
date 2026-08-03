@@ -1824,31 +1824,15 @@ cd ~/om-work/openmetadata-test
 
 **이렇게 나옵니다.**
 
-```text
-충돌한 파일 1개 (JSON 1개, 그 외 0개)
+![충돌 지점 · 파일 하나](assets/업그레이드시연/T09b-충돌지점-한파일.png)
+<sub>충돌로 멈춘 직후 그대로 실행한 화면. 3,383줄이 통째로 충돌했지만
+실제로 넣을 것은 9개 항목이고 겹침은 0개입니다</sub>
 
-── openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
-   새 버전이 바꾼 항목  118개 · 우리가 넣는 항목   9개 · 겹침 없음
-     label.code-group                             Code Group
-     label.code-name                              Code Name
-     label.code-value                             Code Value
-     label.instance-code                          인스턴스 코드
-     label.instance-code-lowercase-plural         인스턴스 코드
-     label.instance-code-plural                   인스턴스 코드
-     label.sort-order                             Sort Order
-     message.instance-code-description            Manage common/reference codes used as shared…
-     message.instance-code-group-description      The {{codeGroupName}} code group contains…
+**`--file` 을 빼면 18개 전체**를 훑습니다. 마지막에 합계가 나옵니다.
 
-────────────────────────────────────────────────────────────────────
-우리가 넣는 항목 합계 9개 · 겹치는 항목 0개
-겹치는 항목이 없으므로 새 버전 내용을 그대로 두고 우리 항목만 끼워 넣으면 됩니다.
-```
-
-**`--file` 을 빼면 18개 전체**를 훑습니다. 마지막 줄에 합계가 나옵니다.
-
-```text
-우리가 넣는 항목 합계 162개 · 겹치는 항목 0개
-```
+![충돌 지점 · 18개 전체](assets/업그레이드시연/T09c-충돌지점-18개.png)
+<sub>`--max-items 3` 으로 파일마다 세 줄만 보이게 한 것입니다.
+마지막 줄의 합계 162개 · 겹침 0개가 요약표의 `되살린항목` 과 같은 값입니다</sub>
 
 **이 한 장이 이 절의 결론입니다.** 3,383줄이 통째로 충돌했지만 실제 쟁점은
 9개 항목이고, 그중 새 버전과 겹치는 것은 **하나도 없습니다.** 겹치는 항목이
