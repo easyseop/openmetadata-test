@@ -1844,10 +1844,80 @@ git -C ~/om-work/OM_TEMP worktree remove --force ~/om-work/conflict-demo
 git -C ~/om-work/OM_TEMP branch -D demo/conflict
 ```
 
-> **웹(GitHub)에서는 지금 볼 수 없습니다.** 충돌은 두 코드를 합치려고
-> 시도할 때 생기는 것이라, 합쳐 보기 전에는 어디에도 없습니다. 5부에서
-> 1.13.1 갈래를 원격에 올린 뒤 Pull request 를 만들면 GitHub 화면에서도
-> 볼 수 있게 됩니다.
+### 웹(GitHub)에서 보는 법
+
+**충돌은 합치려고 시도할 때 생기므로, GitHub 도 합쳐 볼 대상이 있어야
+보여 줍니다.** 비교 화면(`compare`)에는 안 나옵니다. **Pull request 를
+만들어야** 나옵니다.
+
+시연용으로 임시 갈래 하나를 올리면 볼 수 있습니다.
+
+```bash
+# ① OM_TEMP 안에 1.13.1 내용만 담은 임시 갈래를 만듭니다
+#    (1.13.0 스냅샷의 자식으로 만들어야 GitHub 이 비교할 기준을 갖습니다)
+git -C ~/om-work/OM_TEMP worktree add -b demo/web-conflict \
+  ~/om-work/web-conflict origin/patch/om-1.13.0
+cd ~/om-work/web-conflict
+git read-tree -u --reset OFFICIAL_1_13_1
+git add -A
+git commit -m "demo: OpenMetadata 1.13.1 source snapshot (시연용 임시)"
+
+# ② 원격에 올립니다 — 이름에 demo/ 를 붙여 임시임을 표시합니다
+git push -u origin demo/web-conflict
+```
+
+그다음 브라우저에서 **Pull request 를 만듭니다.**
+
+```
+github.com/easyseop/OM_TEMP/compare/demo/web-conflict...custom/om-1.13.0
+```
+
+| 고를 것 | 값 |
+|---|---|
+| base (기준) | `demo/web-conflict` |
+| compare (비교) | `custom/om-1.13.0` |
+
+**`Create pull request` 를 누르십시오.** (합치는 것이 아니라 만드는 것입니다.)
+
+### 볼 수 있는 화면 세 가지
+
+| | 화면 | 무엇이 보이나 |
+|---|---|---|
+| **W1** | PR 만들기 화면 | `Can't automatically merge` 라는 회색 표시 |
+| **W2** | 만들어진 PR 아래쪽 | **`This branch has conflicts that must be resolved`** 와 **충돌 파일 18개 목록** |
+| **W3** | `Resolve conflicts` 버튼을 누른 화면 | `<<<<<<<` `=======` `>>>>>>>` 표시가 그대로 보이는 편집기 |
+
+**W2 가 발표에 가장 좋습니다.** 충돌한 파일 18개가 이름과 함께 나열되고,
+그 목록이 터미널의 `충돌한 파일 18개` 와 같다는 것을 나란히 보여줄 수
+있습니다.
+
+> **W3 는 안 열릴 수도 있습니다.** 충돌 파일이 218KB · 3,383줄이라 GitHub
+> 이 "너무 커서 웹에서 해결할 수 없다"고 할 수 있습니다. 그때는 W2 까지만
+> 캡처하시면 됩니다. 앞의 터미널 방법(④⑤)이 그 안을 보여주는 몫을 합니다.
+
+### ⚠️ 하지 말아야 할 것과 정리
+
+> **`Merge pull request` 를 누르지 마십시오.** 이 PR 은 화면을 보기 위한
+> 것이고, 합치면 임시 갈래에 실제로 반영됩니다.
+
+캡처가 끝나면 정리합니다.
+
+```bash
+# ① 브라우저에서 PR 을 Close (Merge 아님)
+# ② 원격 임시 갈래 삭제
+git -C ~/om-work/OM_TEMP push origin --delete demo/web-conflict
+
+# ③ 로컬 정리
+cd ~
+git -C ~/om-work/OM_TEMP worktree remove --force ~/om-work/web-conflict
+git -C ~/om-work/OM_TEMP branch -D demo/web-conflict
+```
+
+> 📸 **W1** · **W2** · **W3**
+
+> **5부를 하고 나면 임시 갈래가 필요 없습니다.** 5부에서 `patch/om-1.13.1`
+> 을 정식으로 올리므로, 그 뒤에는 `patch/om-1.13.1` 을 base 로 같은 PR 을
+> 만들면 됩니다. 지금 보시려는 것이면 위 임시 갈래를 쓰십시오.
 
 ### 요약표
 
