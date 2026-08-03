@@ -37,11 +37,30 @@ def git(repo: Path, *args: str) -> bytes:
     ).stdout
 
 
+def read_stage(repo: Path, stage: int, path: str) -> bytes:
+    return git(repo, "show", f":{stage}:{path}")
+
+
 def load_stage(repo: Path, stage: int, path: str) -> dict:
-    value = json.loads(git(repo, "show", f":{stage}:{path}"))
+    value = json.loads(read_stage(repo, stage, path))
     if not isinstance(value, dict):
         raise ValueError(f"{path}: JSON root must be an object")
     return value
+
+
+def detect_indent(raw: bytes, default: int = 4) -> int:
+    """Read the indent width from the side we are keeping.
+
+    The resolved file is re-serialized, not text-patched, so the writer picks
+    the layout. Hardcoding a width silently reformats the whole file whenever
+    upstream uses a different one, which shows up as a full-file diff that has
+    nothing to do with the customization. Follow the incoming version instead.
+    """
+    for line in raw.decode("utf-8").split("\n")[1:]:
+        stripped = line.lstrip(" ")
+        if stripped and stripped != line:
+            return len(line) - len(stripped)
+    return default
 
 
 def flatten(value: object, prefix: tuple[str, ...] = ()) -> dict:
@@ -107,9 +126,11 @@ def main() -> int:
         if overlap:
             names = [".".join(item) for item in sorted(overlap)]
             raise ValueError(f"{path}: overlapping leaf changes: {names}")
-        plans.append((path, official, bank_changes))
+        plans.append((path, official, bank_changes, detect_indent(
+            read_stage(repo, 2, path)
+        )))
 
-    for path, merged, bank_changes in plans:
+    for path, merged, bank_changes, indent in plans:
         for change in bank_changes:
             apply_change(merged, change)
         target = repo / path
@@ -117,13 +138,16 @@ def main() -> int:
             json.dumps(
                 merged,
                 ensure_ascii=False,
-                indent=4,
+                indent=indent,
                 separators=(",", ": "),
             )
             + "\n",
             encoding="utf-8",
         )
-        print(f"resolved {path}: BANK-OM leaf changes={len(bank_changes)}")
+        print(
+            f"resolved {path}: BANK-OM leaf changes={len(bank_changes)} "
+            f"(indent={indent})"
+        )
     return 0
 
 
