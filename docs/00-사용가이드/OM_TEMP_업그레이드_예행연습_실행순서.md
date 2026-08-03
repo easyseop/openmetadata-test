@@ -28,12 +28,12 @@
 `openmetadata-test` 폴더 안에서, `OM_TEMP` 폴더를 **가리키며** 실행합니다.
 이것만 기억하시면 헷갈릴 일이 없습니다.
 
-## 캡처는 모두 16장입니다
+## 캡처는 모두 18장입니다
 
 | 종류 | 장수 | 표기 |
 |---|---|---|
 | 터미널 화면 | 10장 | 📸 ① ~ ⑩ |
-| GitHub 화면 | 6장 | 📸 G1 ~ G6 |
+| GitHub 화면 | 8장 | 📸 G1 ~ G6 (G3b 2장 포함) |
 
 ★ 표시한 것(⑦ ⑧ ⑩ G2 G5)이 발표에서 가장 중요한 다섯 장입니다.
 
@@ -314,9 +314,75 @@ GitHub은 **기준점에는 없고 비교 대상에만 있는 것**을 보여줍
 github.com/easyseop/OM_TEMP/commits/custom/om-1.13.0
 ```
 
-`add InstanceCode customization` 부터 아래로 8건이 나열됩니다.
+> 📸 **G3** — 목록 전체. **맨 아래 줄까지 나오게** 찍으십시오.
 
-> 📸 **G3**
+### 맨 아래 줄이 출발점입니다
+
+목록 맨 아래에 `Import official OpenMetadata 1.13.0 source snapshot` ·
+`2f4f356` 이 있습니다. 이것이 5번에서 확인한 `2f4f3560e7…`, 곧 **공식 코드만
+있는 출발점**입니다. 그 위로 우리 기능 8건이 쌓여 있습니다.
+
+```text
+7d19c89  complete Tibero service connection coverage   ← 맨 위 = custom/om-1.13.0
+62e39da  add Tibero customization
+010750c  add Sybase customization
+d983f7c  fix Korean IME handling                         우리 기능 8건
+274f2b7  add bank column view customization
+57ee1b3  add Data Assertions customization
+68ebed4  add QueryReport customization
+4df83b3  add InstanceCode customization
+─────────────────────────────────────────
+2f4f356  Import official OpenMetadata 1.13.0 snapshot  ← 맨 아래 = 출발점(공식)
+```
+
+5번에서 터미널로 설명한 구조가 **이 한 화면에 다 들어 있습니다.** 발표에서
+"공식 코드 위에 우리 기능을 쌓았다"를 말할 때 이 그림 하나면 됩니다.
+
+## G3b. 이름표가 붙은 실제 화면 ★
+
+목록에서 아무 기록이나 눌러 상세 화면을 엽니다. **두 개를 골라 주십시오.**
+
+```
+github.com/easyseop/OM_TEMP/commit/4df83b3     ← 큰 기능
+github.com/easyseop/OM_TEMP/commit/d983f7c     ← 작은 기능
+```
+
+**보여야 할 것:** 제목 아래의 `Customization-ID:` 줄과 `N files changed`
+
+> 📸 **G3b-1**, **G3b-2**
+
+### 왜 이게 중요한가
+
+```
+add InstanceCode customization
+Customization-ID: BANK-OM-001      ← 이 한 줄
+```
+
+이 줄이 **"이 변경은 어느 기능의 작업인가"를 코드에 직접 새겨 넣은 것**입니다.
+검사기는 이 줄을 읽어 등록표와 대조합니다. 줄이 없거나 두 개면 검사가 즉시
+멈춥니다. 이 시스템 전체가 이 한 줄 위에 서 있습니다.
+
+### 크기가 다른 둘을 고르는 이유
+
+| 기록 | 기능 | 바꾼 파일 |
+|---|---|---|
+| `4df83b3` | BANK-OM-001 기준코드 | **48개** |
+| `d983f7c` | BANK-OM-005 한글 입력 | **1개** |
+
+같은 "기능 하나"인데 규모가 48배 차이납니다. **기능마다 크기가 제각각이어도
+똑같이 이름표 하나로 관리된다**는 것을 보여주는 대비입니다.
+
+참고로 8건 전체의 파일 수는 다음과 같습니다.
+
+```text
+BANK-OM-001  48개    BANK-OM-005   1개
+BANK-OM-002  55개    BANK-OM-006  18개
+BANK-OM-003  25개    BANK-OM-007   8개
+BANK-OM-004  33개    BANK-OM-007   2개 (후속)
+```
+
+`4df83b3` 화면의 `1 parent 2f4f356` 도 함께 나오면 좋습니다. 첫 기능이
+**출발점 바로 위에 얹혀 있다**는 증거입니다.
 
 ## G4. 공식 1.13.1이 실제로 배포돼 있다
 
