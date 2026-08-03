@@ -176,7 +176,7 @@ for sha in "${BANK_SHAS[@]}"; do
 
   if git -C "$WORK/tree" cherry-pick "$sha" >/dev/null 2>&1; then
     ok "$id  충돌 없음"
-    printf '%s\t%s\t0\t0\n' "$id" "$short" >> "$CONFLICT_LOG"
+    printf '%s\t%s\t0\t0\t0\n' "$id" "$short" >> "$CONFLICT_LOG"
     continue
   fi
 
@@ -214,13 +214,14 @@ for sha in "${BANK_SHAS[@]}"; do
 
   git -C "$WORK/tree" add -A
   GIT_EDITOR=true git -C "$WORK/tree" cherry-pick --continue >/dev/null
-  printf '%s\t%s\t%s\t%s\n' "$id" "$short" "$n" "$leaf" >> "$CONFLICT_LOG"
+  printf '%s\t%s\t%s\t%s\t%s\n' "$id" "$short" "$n" "$fixed" "$leaf" >> "$CONFLICT_LOG"
 done
 
 echo
-printf '  %-14s %-12s %10s %12s\n' 기능 원본기록 부딪힌파일 되살린항목
-awk -F'\t' '{printf "  %-14s %-12s %10s %12s\n",$1,$2,$3,$4}' "$CONFLICT_LOG"
-echo "  (부딪힌파일 = 충돌한 파일 수, 되살린항목 = 그 파일들 안에서 되살린 항목 수의 합)"
+printf '  %-14s %-12s %10s %10s %12s\n' 기능 원본기록 부딪힌파일 정리한파일 되살린항목
+awk -F'\t' '{printf "  %-14s %-12s %10s %10s %12s\n",$1,$2,$3,$4,$5}' "$CONFLICT_LOG"
+echo "  (앞의 두 열은 파일 수 — 부딪힌 것을 남김없이 정리했는지 나란히 비교합니다.)"
+echo "  (되살린항목 은 단위가 다릅니다 — 그 파일들 안의 항목 수 합계입니다.)"
 
 # ── 6. 결과 확인 ────────────────────────────────────────────
 step "6. 만들어진 후보 확인"
