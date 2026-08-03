@@ -2094,7 +2094,7 @@ $ git cherry-pick d983f7c540   # BANK-OM-005
 </blockquote>
 <h4>"커밋 번호별로 머지하면 되지 않나" — 해 봤습니다</h4>
 <p>가장 자주 나오는 대안이라 실제로 8번 머지해 보았습니다.</p>
-<p><strong>먼저, 공식 1.13.1 태그에 대고 기록 하나를 머지하면 시작조차 못 합니다.</strong></p>
+<p><strong>먼저, 공식 1.13.1 태그에 대고 커밋 하나를 머지하면 시작조차 못 합니다.</strong></p>
 <pre><code>$ git merge 4df83b311f
 fatal: refusing to merge unrelated histories
 </code></pre>
@@ -2218,8 +2218,8 @@ fatal: refusing to merge unrelated histories
 <li><strong>후보가 공식 1.13.1 에서 출발하지 않게 됩니다.</strong> 우리 스냅샷에서
    출발한 것이 되어, "이 후보는 공식 1.13.1 을 바탕으로 만들었다"를
    Git으로 증명할 수 없습니다.</li>
-<li><strong>1.13.0 이력이 후보에 딸려 옵니다.</strong> 머지는 기록 하나만 가져오는 것이
-   아니라 <strong>그 기록의 조상 전부</strong>를 붙이기 때문입니다. <code>4df83b311f</code> 의
+<li><strong>1.13.0 이력이 후보에 딸려 옵니다.</strong> 머지는 커밋 하나만 가져오는 것이
+   아니라 <strong>그 커밋의 조상 전부</strong>를 붙이기 때문입니다. <code>4df83b311f</code> 의
    조상에는 <code>2f4f3560e7 Import official OpenMetadata 1.13.0 source snapshot</code>
    이 들어 있습니다.</li>
 </ol>
@@ -2257,15 +2257,15 @@ fatal: refusing to merge unrelated histories
 <td><strong>예</strong></td>
 </tr>
 <tr>
-<td>후보의 조상에 <strong>공식 1.13.1 기록</strong>(<code>afcb2d2cd7</code>)이 있나</td>
+<td>후보의 조상에 <strong>공식 1.13.1 커밋</strong>(<code>afcb2d2cd7</code>)이 있나</td>
 <td><strong>예</strong></td>
 <td><strong>아니오</strong></td>
 </tr>
 </tbody>
 </table></div>
 <p><strong>두 번째 줄이 진짜 문제입니다.</strong> 머지를 하려면 우리 저장소 안에 1.13.1
-스냅샷을 <strong>직접 만들어야</strong> 했습니다. 그 순간 후보는 우리가 만든 기록에서
-출발한 것이 되고, <strong>공식이 낸 그 기록에서 출발했다는 사실을 Git이 더는
+스냅샷을 <strong>직접 만들어야</strong> 했습니다. 그 순간 후보는 우리가 만든 커밋에서
+출발한 것이 되고, <strong>공식이 낸 그 커밋에서 출발했다는 사실을 Git이 더는
 보증해 주지 못합니다.</strong></p>
 <blockquote>
 <p>"이 후보는 공식 1.13.1 을 바탕으로 만들었습니다" 를 <strong>말이 아니라 Git으로
@@ -2480,7 +2480,7 @@ label.sort-order             = Sort Order
 <pre><code>중단: BANK-OM-001: JSON 이외 파일이 충돌했습니다. 자동 해결 대상이 아니므로
     코드 담당자가 직접 해결해야 합니다
 </code></pre>
-<p><strong>"우리 것으로 덮어쓴다"도, "우리 기록을 고친다"도 자동으로 하지 않습니다.</strong>
+<p><strong>"우리 것으로 덮어쓴다"도, "우리 커밋을 고친다"도 자동으로 하지 않습니다.</strong>
 그건 업무 판단이라 사람 몫입니다. 이번 실행에서는 겹친 것이 하나도 없어서
 8건 모두 자동으로 넘어갔습니다.</p>
 <blockquote>
