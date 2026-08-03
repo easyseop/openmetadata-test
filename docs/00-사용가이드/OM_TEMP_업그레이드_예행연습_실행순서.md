@@ -1433,6 +1433,62 @@ fatal: refusing to merge unrelated histories
 **파일 내용은 한 글자도 다르지 않습니다.** 말씀하신 대로 결과물만 보면
 커밋별 머지로도 됩니다.
 
+### 8건이 어떻게 16건이 되나 — 실제 기록입니다
+
+`git merge` 는 **명령 한 번에 기록을 하나 새로 만듭니다.** 두 줄기를 잇는
+매듭이고, 이름이 `Merge commit '...'` 입니다. 8번 머지했으니 매듭도 8개
+생깁니다.
+
+```text
+[ 커밋별로 8번 머지한 결과 — git log --graph ]
+
+*   08dbbd0530 Merge commit '7d19c89526' into try/each   ← 매듭 8
+|\
+| * 7d19c89526 complete Tibero service connection coverage
+* | b0ceb77f99 Merge commit '62e39da8be' into try/each   ← 매듭 7
+|\|
+| * 62e39da8be add Tibero customization
+* | 3f92bc5c1b Merge commit '010750c514' into try/each   ← 매듭 6
+|\|
+| * 010750c514 add Sybase customization
+        ⋮   (같은 모양이 반복)
+* | 59678fd35d Merge commit '4df83b311f' into try/each   ← 매듭 1
+|\|
+| * 4df83b311f add InstanceCode customization
+* | b63242d7a7 Import official OpenMetadata 1.13.1 source snapshot
+|/
+* 2f4f3560e7 Import official OpenMetadata 1.13.0 source snapshot  ← 여기로 이어짐
+```
+
+**추가되는 것은 `Merge commit …` 8개입니다.** 우리 기록 8건은 그대로 있고,
+그 위에 매듭이 8개 얹혀 16건이 됩니다. 그리고 맨 아래를 보시면 두 줄기가
+`2f4f3560e7` **1.13.0 스냅샷에서 갈라져 나온 것**으로 남습니다.
+
+같은 명령을 체리픽 결과에 대고 찍으면 이렇습니다.
+
+```text
+[ 체리픽 결과 — git log --graph ]
+
+* 17bbbcdf67 complete Tibero service connection coverage
+* fa17da1620 add Tibero customization
+* 2505217935 add Sybase customization
+* 2990ea7244 fix Korean IME handling
+* 423c29ca37 add bank column view customization
+* 4d655064b2 add Data Assertions customization
+* 4529312ea0 add QueryReport customization
+* 55d0e1bd7f add InstanceCode customization
+* afcb2d2cd7 chore(release): Prepare Branch for `1.13.1`   ← 공식 1.13.1
+```
+
+**한 줄로 곧게 8건이고, 매듭이 없고, 맨 아래가 공식 1.13.1 입니다.**
+
+두 방식이 기록을 다루는 방법이 다릅니다.
+
+| | 우리 기록 8건을 | 매듭 | 맨 아래 |
+|---|---|---|---|
+| `cherry-pick` | **복사해서 새 번호로 다시 만듦**<br>`4df83b311f` → `55d0e1bd7f` | 없음 | 공식 1.13.1 |
+| `merge` | **원본을 그대로 데려옴**<br>`4df83b311f` 그대로 | **8개 생김** | 1.13.0 스냅샷 |
+
 문제는 아래 세 줄입니다.
 
 1. **머지할 때마다 이름표 없는 기록이 하나씩 더 생깁니다.** 8번 머지하면
