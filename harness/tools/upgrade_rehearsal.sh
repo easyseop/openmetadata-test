@@ -51,6 +51,12 @@ if [ -n "$(git -C "$OM_TEMP" status --porcelain)" ]; then
 fi
 ok "제품 저장소가 깨끗합니다"
 
+for ref in "$PATCH_REF" "$CUSTOM_REF"; do
+  git -C "$OM_TEMP" rev-parse --verify --quiet "$ref^{commit}" >/dev/null || die \
+"제품 저장소에 $ref 이(가) 없습니다. 먼저 받아 주십시오:
+    git -C '$OM_TEMP' fetch origin patch/om-1.13.0 custom/om-1.13.0"
+done
+
 PATCH_SHA="$(git -C "$OM_TEMP" rev-parse "$PATCH_REF")"
 CUSTOM_SHA="$(git -C "$OM_TEMP" rev-parse "$CUSTOM_REF")"
 expect "1.13.0 공식 기준 branch" "$PATCH_SHA" "2f4f3560e7a8437e2f4f7fcafd00d32ea2d91a50"
@@ -61,20 +67,40 @@ expect "두 branch 사이 변경 파일 수" "$DIFF_N" "111"
 
 # ── 1. 기능별 변경 기록 확인 ─────────────────────────────────
 step "1. 기능별 변경 기록과 이름표 확인"
-run "git -C '$OM_TEMP' log --reverse \
-  --format='%h | %(trailers:key=Customization-ID,valueonly,separator=%x2C) | %s' \
-  '$PATCH_REF..$CUSTOM_REF'"
 
-mapfile -t BANK_SHAS < <(git -C "$OM_TEMP" rev-list --reverse "$PATCH_REF..$CUSTOM_REF")
+# 변경 기록 목록을 읽는다.
+#
+# macOS 기본 Bash 는 3.2 이므로 다음 두 가지를 피해야 한다.
+#   - mapfile/readarray  : Bash 4 전용 내장 명령이라 아예 없다
+#   - 빈 배열의 "${arr[@]}" 전개 : set -u 에서 unbound variable 로 죽는다
+# 그래서 먼저 문자열로 받아 비었는지 확인한 뒤에만 배열을 만든다.
+BANK_SHA_LIST="$(git -C "$OM_TEMP" rev-list --reverse "$PATCH_REF..$CUSTOM_REF")"
+[ -n "$BANK_SHA_LIST" ] || die "$PATCH_REF..$CUSTOM_REF 사이에 변경 기록이 없습니다"
 
-# 기록마다 이름표가 정확히 하나인지 개별 확인한다.
-# (여러 기록을 한 번에 출력하면 이름표가 줄바꿈으로 섞여 오판할 수 있다)
+BANK_SHAS=()
+while IFS= read -r line; do
+  [ -n "$line" ] || continue
+  BANK_SHAS[${#BANK_SHAS[@]}]="$line"
+done <<EOF
+$BANK_SHA_LIST
+EOF
+
+# 화면에 찍는 기록 번호는 항상 10자리로 고정한다.
+# %h 나 rev-parse --short 는 저장소의 core.abbrev 설정에 따라 자릿수가
+# 달라지므로, 전체 SHA 에서 앞 10자리를 직접 잘라 쓴다.
+printf '\033[36m$\033[0m git log --reverse %s..%s\n' "$PATCH_REF" "$CUSTOM_REF"
 MISSING=""
 for sha in "${BANK_SHAS[@]}"; do
-  ids="$(git -C "$OM_TEMP" log -1 \
-        --format='%(trailers:key=Customization-ID,valueonly)' "$sha" | grep -c . || true)"
-  short="$(git -C "$OM_TEMP" rev-parse --short "$sha")"
-  [ "$ids" = "1" ] || MISSING="$MISSING $short(${ids}개)"
+  sha10="$(printf '%s' "$sha" | cut -c1-10)"
+  id="$(git -C "$OM_TEMP" log -1 \
+        --format='%(trailers:key=Customization-ID,valueonly,separator=%x2C)' "$sha" \
+        | tr -d '\n')"
+  subject="$(git -C "$OM_TEMP" log -1 --format='%s' "$sha")"
+  printf '%s | %s | %s\n' "$sha10" "${id:-(이름표 없음)}" "$subject"
+
+  n="$(git -C "$OM_TEMP" log -1 \
+       --format='%(trailers:key=Customization-ID,valueonly)' "$sha" | grep -c . || true)"
+  [ "$n" = "1" ] || MISSING="$MISSING $sha10(${n}개)"
 done
 [ -z "$MISSING" ] || die "이름표가 하나가 아닌 변경 기록:$MISSING"
 ok "변경 기록 ${#BANK_SHAS[@]}건 모두 이름표가 정확히 하나입니다"
@@ -121,7 +147,7 @@ CONFLICT_LOG="$WORK/conflicts.tsv"
 : > "$CONFLICT_LOG"
 for sha in "${BANK_SHAS[@]}"; do
   id="$(git -C "$OM_TEMP" log -1 --format='%(trailers:key=Customization-ID,valueonly)' "$sha" | tr -d '\n')"
-  short="$(git -C "$OM_TEMP" rev-parse --short "$sha")"
+  short="$(printf '%s' "$sha" | cut -c1-10)"   # core.abbrev 와 무관하게 10자리
   printf '\n\033[36m$\033[0m git cherry-pick %s   # %s\n' "$short" "$id"
 
   if git -C "$WORK/tree" cherry-pick "$sha" >/dev/null 2>&1; then
