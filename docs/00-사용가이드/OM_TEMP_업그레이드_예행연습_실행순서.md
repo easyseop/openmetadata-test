@@ -680,6 +680,303 @@ cat ~/om-work/upgrade-rehearsal/candidate.txt
 
 ---
 
+# 5부 · 등록표는 어떻게 만들어지나 (선택)
+
+> **4부까지가 시연의 본체입니다.** 여기는 "그 등록표는 누가 어떻게 만드느냐"는
+> 질문이 나왔을 때 펼치는 부분입니다. 발표에서 건너뛰어도 앞의 결론은
+> 그대로입니다.
+
+G6 에서 본 `BANK-OM-001.yaml` 같은 파일을 **등록표(Manifest)** 라고 부릅니다.
+기능 하나가 어느 파일을 건드리는지, 그중 무엇이 없어지면 안 되는지를 적어 둔
+문서입니다. 검사기는 코드가 아니라 **이 문서를 기준으로** 판정합니다.
+
+## 손으로 고치는 것이 금지돼 있습니다
+
+등록표는 검사의 기준입니다. 기준을 사람이 자유롭게 고칠 수 있으면 검사는
+의미가 없어집니다. 그래서 **세 단계로 나눠 놓았습니다.**
+
+```text
+plan  ──────►  담당자 승인  ──────►  apply
+(조사)          (사람 판단)          (반영)
+
+읽기만 함        질문에 답함         승인한 그대로만 씀
+아무것도         등록 폴더를         제안이 조금이라도
+안 바꿈          안 건드림           바뀌면 거부
+```
+
+| 단계 | 하는 일 | 등록 폴더를 바꾸나 |
+|---|---|---|
+| `plan` | Git 사실을 계산해 **제안서**를 만듦 | **아니오** |
+| 승인 | 사람이 질문에 답하고 승인서를 씀 | 아니오 |
+| `apply` | 승인서와 제안서가 정확히 맞을 때만 반영 | **예** |
+
+기계가 하는 것은 **Git에서 읽을 수 있는 사실**뿐입니다 — 어느 변경 기록이
+어느 파일을 바꿨는가. 기계가 하지 않는 것은 **업무 판단**입니다 — 그중
+무엇이 없어지면 안 되는가, 담당자는 누구인가.
+
+## 1. plan — 조사만 합니다
+
+검사 저장소 최상위에서 실행합니다.
+
+```bash
+cd ~/om-work/openmetadata-test
+
+./.venv/bin/python harness/prepare_registration.py plan \
+  --repo ~/om-work/OM_TEMP \
+  --registration harness/registrations/om-temp-1.13.0 \
+  --patch-ref origin/patch/om-1.13.0 \
+  --custom-ref origin/custom/om-1.13.0 \
+  --product-version 1.13.0 \
+  --output ~/om-work/plan-out
+```
+
+**실제 출력입니다.**
+
+```json
+{
+  "analysis_error_count": 0,
+  "blocked_count": 0,
+  "change_count": 0,
+  "output": "/Users/…/om-work/plan-out",
+  "proposal_digest": "sha256:488e95b2b836b22906bee57f4c133ca7e3ee829da1a479bc51a71908456fb059",
+  "review_count": 5,
+  "status": "REVIEW_REQUIRED"
+}
+```
+
+> 📸 **⑪**
+
+> **지문(`proposal_digest`)이 위와 달라도 정상입니다.** 이 값은 등록표·담당자
+> 목록 같은 입력 파일의 현재 내용을 요약한 것이라, 그중 하나라도 바뀌면
+> 달라집니다. 같아야 하는 것은 지문이 아니라 **`patch SHA`·`custom SHA` 두
+> 개**입니다. 지문은 "승인한 그 제안과 지금 반영하려는 제안이 같은가"를
+> 대조하는 데만 씁니다.
+
+**종료코드는 2 입니다.** 실패가 아닙니다. 3부 구간 3에서 본 것과 같은 뜻으로,
+**사람이 답할 질문이 남았다**는 표시입니다.
+
+| 상태 | 종료코드 | 뜻 |
+|---|---|---|
+| `READY` | 0 | 질문 없음. 바로 승인으로 |
+| `REVIEW_REQUIRED` | 2 | **사람이 답할 질문이 있음** ← 지금 이것 |
+| `BLOCKED` | 1 | 안전하게 반영할 수 없음. 원인을 고치고 다시 |
+| `ANALYSIS_ERROR` | 3 | 판단 자체가 불가능. **통과로 보면 안 됨** |
+
+### plan 이 정말 아무것도 안 바꿨는지 확인
+
+```bash
+git -C ~/om-work/openmetadata-test status --porcelain
+```
+
+**아무것도 안 나옵니다.** 조사 결과는 전부 `--output` 으로 지정한 바깥
+폴더에만 쌓입니다. "조사는 읽기 전용"이라는 말이 문서상의 약속이 아니라
+이 한 줄로 확인된다는 점이 요점입니다.
+
+### 생기는 파일
+
+```bash
+ls ~/om-work/plan-out
+```
+
+| 파일 | 내용 |
+|---|---|
+| `summary.md` | 사람이 먼저 읽는 한 장짜리 요약 |
+| `review-required.yaml` | **담당자가 답해야 할 질문 목록** |
+| `proposal.yaml` | 제안 전문. 다음 단계의 입력 |
+| `proposal-digest.txt` | 제안 내용의 지문(digest) |
+| `commit-inventory.yaml` | 변경 기록별로 어느 파일을 바꿨는지 |
+| `current-diff-paths.txt` | 지금 두 갈래의 파일 차이 |
+| `diff.patch` | 등록표가 어떻게 바뀌는지. **이번엔 0바이트** |
+| `proposed-registration/` | 바뀔 등록표 원본. **이번엔 비어 있음** |
+
+마지막 두 개가 비어 있는 것이 이번 결과의 핵심입니다. **자동 변경 0건** —
+기계가 고칠 것은 하나도 없고, 남은 것은 전부 사람이 답할 질문이라는 뜻입니다.
+
+## 2. 질문 읽기 — 기계가 답하지 않는 것
+
+```bash
+cat ~/om-work/plan-out/summary.md
+head -30 ~/om-work/plan-out/review-required.yaml
+```
+
+이번에 나온 질문 5건입니다.
+
+| 번호 | 기능 | 파일 수 | 질문 |
+|---|---|---|---|
+| `REVIEW-0001` | BANK-OM-001 | 16개 | 공식에 없는 행내 전용 파일을 계속 지켜볼 것인가 |
+| `REVIEW-0002` | BANK-OM-002 | 18개 | 〃 |
+| `REVIEW-0003` | BANK-OM-003 | 3개 | 〃 |
+| `REVIEW-0004` | BANK-OM-006 | 3개 | 〃 |
+| `REVIEW-0005` | BANK-OM-007 | 3개 | 〃 |
+
+> 📸 **⑫**
+
+### 왜 이건 기계가 못 정하나
+
+이 파일들은 **공식 OpenMetadata 에는 없고 우리만 만든 것**입니다. 공식이
+바꿀 리 없는 파일이니 감시 목록에서 빼도 되고, 그래도 남겨 두는 편이 안전할
+수도 있습니다.
+
+**어느 쪽도 코드를 읽어서는 알 수 없습니다.** 그 기능을 운영에서 어떻게 쓰는지
+아는 사람만 답할 수 있습니다. 그래서 기계가 임의로 정하지 않고 멈춰 서서
+묻습니다.
+
+## 3. 승인서 쓰기
+
+빈 서식을 받습니다. `--proposal` 에는 **폴더가 아니라 `proposal.yaml` 파일**을
+줍니다.
+
+```bash
+./.venv/bin/python harness/prepare_registration.py approval-template \
+  --proposal ~/om-work/plan-out/proposal.yaml \
+  --output ~/om-work/approval.yaml
+```
+
+```yaml
+schema_version: 1
+proposal_digest: sha256:488e95b2b836b22906bee57f4c133ca7e3ee829da1a479bc51a71908456fb059
+approved_by: REPLACE_WITH_APPROVER_ID
+approved_at: REPLACE_WITH_RFC3339_TIME
+decisions:
+- finding_id: REVIEW-0001
+  decision: accept_proposal
+  reason: REPLACE_WITH_REVIEW_REASON
+  …
+```
+
+`REPLACE_WITH_…` 세 자리를 채웁니다.
+
+| 자리 | 채우는 값 | 예 |
+|---|---|---|
+| `approved_by` | 승인자 ID | `hong.gildong` |
+| `approved_at` | 승인 시각 (시차 포함) | `2026-08-03T14:00:00+09:00` |
+| `reason` | **질문별 판단 사유** | `운영 중 사용 중인 화면이라 감시 유지` |
+
+> **사유는 질문마다 따로 씁니다.** 다섯 건에 같은 문장을 붙여 넣는 것은
+> 형식상 통과하지만, 나중에 "왜 그렇게 정했느냐"에 답할 근거가 없어집니다.
+> 이 승인서가 그대로 감사 기록으로 남습니다.
+
+> **시각은 시차까지 적어야 합니다.** `2026-08-03T14:00` 처럼 `+09:00` 이
+> 없으면 거부됩니다. 어느 지역 시간인지 모르면 승인 시점이 특정되지
+> 않기 때문입니다.
+
+## 4. 채우지 않으면 어떻게 되나
+
+서식 그대로 반영을 시도해 봅니다.
+
+```bash
+./.venv/bin/python harness/prepare_registration.py apply \
+  --repo ~/om-work/OM_TEMP \
+  --registration harness/registrations/om-temp-1.13.0 \
+  --proposal ~/om-work/plan-out/proposal.yaml \
+  --approval ~/om-work/approval.yaml
+```
+
+```json
+{
+  "code": "POLICY_REFUSED",
+  "message": "approval still contains placeholder approver",
+  "status": "BLOCKED"
+}
+```
+
+**종료코드 1 로 막힙니다.** 등록 폴더는 그대로입니다.
+
+발표에서 보여줄 값어치가 있는 화면입니다. "승인 절차가 형식적인 것 아니냐"는
+물음에 **빈 승인서로는 실제로 반영이 안 된다**는 것을 그 자리에서 보여줄 수
+있습니다.
+
+> 📸 **⑬**
+
+`apply` 가 거부하는 경우는 이것 말고도 있습니다.
+
+| 상황 | 왜 막나 |
+|---|---|
+| 승인서의 지문이 제안서와 다름 | 승인한 제안이 아닌 다른 것을 반영하려는 것 |
+| 두 갈래가 그 사이 움직임 | 승인 시점과 코드가 달라짐 |
+| 등록표·담당자 목록이 그 사이 바뀜 | 승인자가 본 기준이 아님 |
+| 질문에 빠짐없이 답하지 않음 | 답하지 않은 판단이 남음 |
+| 다른 사람이 같은 폴더에 반영 중 | 동시에 쓰면 결과가 섞임 |
+
+**"승인한 그 순간의 상태가 아니면 반영하지 않는다"** — 한 줄로 이겁니다.
+
+## 5. 제대로 채우면
+
+```json
+{
+  "status": "APPLIED",
+  "approved_by": "hong.gildong",
+  "patch_sha": "2f4f3560e7a8437e2f4f7fcafd00d32ea2d91a50",
+  "custom_head_sha": "7d19c8952612e77467b0a80d6287170d814f1de1",
+  "proposal_digest": "sha256:488e95b2b836b22906bee57f4c133ca7e3ee829da1a479bc51a71908456fb059",
+  "written_files": ["commit-inventory.yaml", "current-diff-paths.txt"]
+}
+```
+
+`written_files` 가 **실제로 쓴 파일 전부**입니다. 승인서에 없는 파일은
+쓰지 않습니다.
+
+> **시연으로 여기까지 해 보셨다면 되돌려 두십시오.** `apply` 는 등록 폴더에
+> 실제로 파일을 씁니다.
+>
+> ```bash
+> cd ~/om-work/openmetadata-test
+> git status --porcelain          # 무엇이 생겼는지 먼저 확인
+> git checkout -- harness/registrations/
+> git clean -f harness/registrations/
+> ```
+
+## 등록표 안에는 무엇이 적혀 있나
+
+`BANK-OM-005`(한글 입력 보정) 전문입니다. 가장 짧아서 전체가 한눈에 들어옵니다.
+
+```yaml
+customization_id: BANK-OM-005
+status: active
+kind: core-patch
+title: 한글 입력 조합 보정
+implementation:
+  changed_paths:                     # 이 기능이 손댄 파일 전부
+  - …/SchemaEditor/SchemaEditor.tsx
+  required_changed_paths:            # 그중 없어지면 안 되는 것
+  - …/SchemaEditor/SchemaEditor.tsx
+upgrade_watch:
+  paths:                             # 공식이 바꾸면 확인해야 할 것
+  - …/ui/package.json
+  - …/SchemaEditor/SchemaEditor.tsx
+assurance:
+  contracts:
+  - CONTRACT-KOREAN-IME              # 정상이라고 판단할 조건
+```
+
+세 줄만 구분하시면 됩니다.
+
+| 항목 | 뜻 | 없으면 |
+|---|---|---|
+| `changed_paths` | 이 기능이 **손댄 파일 전부** | 범위를 알 수 없음 |
+| `required_changed_paths` | 그중 **하나라도 사라지면 실패** | 기능이 조용히 지워져도 통과함 |
+| `upgrade_watch.paths` | 공식이 이 파일을 바꾸면 **확인 필요** | 3부 구간 3의 `18/9` 같은 숫자가 안 나옴 |
+
+3부 구간 3에서 본 `18/9` 는 **`upgrade_watch.paths` 18개 중 공식이 실제로
+9개를 건드렸다**는 뜻이었습니다. 그 18이 어디서 나온 숫자인지가 여기 있습니다.
+
+`package.json` 이 감시 목록에 있는 이유도 같습니다. 코드를 직접 고치지
+않아도 **딸려 쓰는 라이브러리 버전이 바뀌면** 한글 입력이 깨질 수 있기
+때문입니다.
+
+## 더 자세한 절차
+
+새 기능에 번호를 새로 발급하거나 등록표를 처음부터 쓰는 절차는 이 문서 범위
+밖입니다.
+
+| 자료 | 다루는 것 |
+|---|---|
+| [`OM_TEMP 검사 전 준비도구 쉬운 사용법`](OM_TEMP_검사전_준비도구_쉬운사용법.md) | 역할별로 누가 무엇을 하는지, 상태값 읽는 법 |
+| [`OM_TEMP Manifest 작성 단계별 가이드`](OM_TEMP_Manifest_작성_단계별_가이드.md) | 항목 하나하나를 정하는 기준 |
+| [`BANK-OM 등록 정책`](../02-설계/bank_om_registration_policy.md) | 번호 발급 규칙과 저장소 역할 |
+
+---
+
 # 막혔을 때
 
 | 화면에 나오는 말 | 원인 | 대처 |
@@ -711,17 +1008,16 @@ cat ~/om-work/upgrade-rehearsal/candidate.txt
 | 운영 배포 승인 | 별도 |
 
 등록표를 맞추는 절차는 손으로 고치는 것이 금지되어 있고, 반드시
-`조사 → 담당자 승인 → 반영` 3단계를 거칩니다. 그래서 이 스크립트에
-넣지 않았습니다. 절차는
-[`OM_TEMP 검사 전 준비도구 쉬운 사용법`](OM_TEMP_검사전_준비도구_쉬운사용법.md)에
-있습니다.
+`조사 → 담당자 승인 → 반영` 3단계를 거칩니다. 사람 승인이 중간에 들어가야
+하므로 예행연습 스크립트에 넣지 않았습니다. **그 3단계를 실제로 돌려 본
+기록이 5부**에 있습니다.
 
 ## 함께 보는 자료
 
 | 자료 | 용도 |
 |---|---|
-| `assets/업그레이드시연/` | 이 순서를 실제로 돌려 찍은 캡처 16장과 실행 로그 |
-| `OM_TEMP_검사전_준비도구_쉬운사용법.md` | 예행연습 다음 단계(등록자료 맞추기) 절차 |
+| `assets/업그레이드시연/` | 이 순서를 실제로 돌려 찍은 캡처와 실행 로그 |
+| `OM_TEMP_검사전_준비도구_쉬운사용법.md` | 5부의 절차를 역할별로 나눠 설명한 것 |
 | `OM_TEMP_1.13.0_1.13.1_업그레이드_실행_가이드.md` | 충돌 상세와 배경 설명 |
 
 ---

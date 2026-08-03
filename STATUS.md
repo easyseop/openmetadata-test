@@ -79,6 +79,14 @@ an exact approval decision set and rechecks the proposal digest, both Git refs,
 the registration-input digest, and an exclusive lock before atomic writes with
 rollback.
 
+`approved_at` is now parsed rather than trusted to the schema. The declared
+`format: date-time` is only advisory unless an optional jsonschema format
+package is installed, so any string previously passed; apply now refuses a
+value it cannot read back and one carrying no UTC offset. In the other
+direction, `approval-template` emits an unquoted placeholder, so replacing it
+in place leaves a bare RFC3339 scalar that YAML parses into a datetime; that
+is normalized to the same instant instead of being refused over quoting.
+
 The former hardcoded OM_TEMP Manifest draft generator now delegates to the
 range analyzer. Candidate lock schema v2 explicitly distinguishes
 `source-tree` from `build-artifact`; legacy schema v1 remains read-compatible.

@@ -976,12 +976,44 @@ def load_proposal(path: Path) -> dict:
     )
 
 
+def _require_rfc3339(value: str) -> None:
+    """Parse `approved_at` here rather than trusting the schema.
+
+    The schema declares ``format: date-time``, but jsonschema only enforces
+    that format when an optional validator package is installed. Without it
+    any string passes, so an approval record could carry a timestamp nobody
+    can read back. Parse it explicitly and refuse a naive one: an approval
+    without a UTC offset does not pin a moment.
+    """
+    text = value[:-1] + "+00:00" if value[-1:] in ("Z", "z") else value
+    try:
+        parsed = datetime.datetime.fromisoformat(text)
+    except ValueError:
+        raise PolicyRefusal(
+            f"approved_at is not an RFC3339 timestamp: {value!r}"
+        ) from None
+    if parsed.tzinfo is None:
+        raise PolicyRefusal(
+            f"approved_at must carry a UTC offset, e.g. +09:00: {value!r}"
+        )
+
+
 def _load_approval(path: Path) -> dict:
-    return _validate(
-        _load_yaml(path, "registration approval"),
+    raw = _load_yaml(path, "registration approval")
+    approved_at = raw.get("approved_at")
+    if isinstance(approved_at, (datetime.datetime, datetime.date)):
+        # `approval-template` emits an unquoted placeholder, so replacing it
+        # in place leaves a bare scalar that YAML parses into a datetime and
+        # the schema then rejects as "not of type string". That is the
+        # approver's normal editing path; normalize to the same instant
+        # instead of refusing an approval over quoting.
+        raw = dict(raw, approved_at=approved_at.isoformat())
+    approval = _validate(
+        raw,
         "registration-approval.schema.json",
         "registration approval",
     )
+    return approval
 
 
 def _safe_target(registration: Path, relative: str) -> Path:
@@ -1166,6 +1198,9 @@ def apply_plan(
         for item in approval["decisions"]
     ):
         raise PolicyRefusal("approval contains a placeholder or blank reason")
+    if approval["approved_at"] == "REPLACE_WITH_RFC3339_TIME":
+        raise PolicyRefusal("approval still contains placeholder approval time")
+    _require_rfc3339(approval["approved_at"])
 
     if gitprim.worktree_is_dirty(str(repo)):
         raise StaleProposalError("product repository worktree is dirty")

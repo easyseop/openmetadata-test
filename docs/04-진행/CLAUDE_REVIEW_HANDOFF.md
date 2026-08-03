@@ -2292,3 +2292,50 @@ gates와 source patch-kill 2건도 통과했다. 90일 artifact
 다음 검토 대상은 1단계 읽기 전용 Git 분석기다. `plan`·`apply`, artifact
 kind 구분, bank-only watch 처리, symlink·submodule·LFS mode 차단과 1.13.1
 재검증은 아직 구현하지 않았다. 이 미구현 범위를 운영 완료로 해석하지 않는다.
+
+## 2026-08-03 · 승인서 시각 검증과 예행연습 5부
+
+브랜치 `claude/markdown-file-feedback-26933w`.
+
+예행연습 실행순서 문서에 등록표 작성 절차(5부)를 쓰기 위해 실제
+`plan → approval-template → apply` 를 돌리다 결함 두 가지를 확인했다.
+
+1. `approval-template` 이 `approved_at: REPLACE_WITH_RFC3339_TIME` 을
+   따옴표 없이 내보낸다. 승인자가 그 자리를 시각으로 바꾸면 YAML 이 이를
+   `datetime` 으로 파싱하고, 스키마가 `is not of type 'string'` 으로
+   거절한다. 오류 문구에 Python repr 이 그대로 노출돼 원인을 알기 어렵다.
+2. 그 스키마의 `format: date-time` 은 선택 패키지가 없으면 검사되지 않는다.
+   `"언젠가"` 같은 값도 통과했다. 승인 기록의 시각이 사실상 자유 문자열이었다.
+
+`harness/acgh/registration_prep.py` 에서 `_load_approval` 이 datetime 을
+같은 시각의 ISO 8601 문자열로 정규화하고, `apply_plan` 이 자리표시자 검사
+직후 `_require_rfc3339` 로 실제 파싱한다. 시차가 없는 값은 `PolicyRefusal`
+(BLOCKED) 로 거절한다. 승인 시각이 지역을 특정하지 못하면 승인 시점이
+고정되지 않기 때문이다. 자리표시자 그대로일 때는 기존의 "placeholder
+approver" 문구가 먼저 나오도록 검사 순서를 유지했다.
+
+회귀 시험 8건을 `harness/tests/test_registration_prep.py` 에 추가했다 —
+따옴표 없는 시각 수용 1건, 읽을 수 없는 값 거절 5건(`언젠가`, 날짜만,
+시차 없음, 비 ISO 형식, 빈 문자열), `Z`·`+09:00` 두 형태 수용 2건.
+거절 경로에서 등록 폴더가 그대로인 것도 함께 확인한다.
+
+검증: `python3 -m pytest` 로 `420 passed, 10 skipped`. 이전 기준선은
+`412 passed, 10 skipped` 였고 증가분 8건이 위 신규 시험이다.
+
+문서: `docs/00-사용가이드/OM_TEMP_업그레이드_예행연습_실행순서.md` 의
+5부가 목차·체크리스트에만 있고 본문이 없던 상태였다. 이번에 실제 실행
+출력으로 채웠다 — `REVIEW_REQUIRED`·종료코드 2, 자동 변경 0건·사람 판단
+5건, `plan` 실행 후 `git status --porcelain` 이 비어 있음(읽기 전용 확인),
+빈 승인서의 `POLICY_REFUSED`·종료코드 1, 채운 승인서의 `APPLIED` 와
+`written_files` 2건. 제안 지문은 등록 입력 내용에 따라 달라지므로 고정값이
+아니라는 주의를 함께 적었다.
+
+시연 캡처의 GitHub 화면 6장을 담당자 직접 촬영본으로 교체했다. 이전 캡처는
+폭 1600px 창에서 찍혀 `111 files changed` 와 `Files changed 834` 가 잘려
+있었다. 원본은 `assets/업그레이드시연/증거/코덱스-깃허브화면/` 에 남겼다.
+터미널 캡처는 제3자 실행본을 그대로 둔다 — 재현성 근거이므로 출처가
+바뀌면 의미가 없어진다.
+
+작업 트리는 깨끗하고 커밋은 푸시했다. 다음 실행 단계는 문서 3부·4부를
+담당자가 직접 완주하는 것이다. 5부의 `apply` 를 시연으로 실행했다면
+`git checkout -- harness/registrations/` 로 되돌려야 한다.

@@ -258,6 +258,99 @@ def test_followup_path_requires_human_decision_then_applies_atomically(
     assert applied["upgrade_watch"]["paths"] == ["core/a.txt"]
 
 
+def test_apply_accepts_an_unquoted_yaml_timestamp(prepared, tmp_path):
+    """`approval-template` emits an unquoted placeholder for `approved_at`.
+
+    Replacing it in place leaves a bare RFC3339 scalar, which YAML parses into
+    a datetime rather than a string. That is the approver's normal editing
+    path, so it must not be refused over quoting.
+    """
+    repo, registration, _, _ = prepared
+    proposal = _plan(prepared)
+    output = tmp_path / "proposal"
+    P.write_plan(output, proposal, registration=registration)
+
+    template = P.approval_template(proposal)
+    assert template["approved_at"] == "REPLACE_WITH_RFC3339_TIME"
+
+    approval = tmp_path / "approval.yaml"
+    approval.write_text(
+        yaml.safe_dump(template, allow_unicode=True, sort_keys=False).replace(
+            "REPLACE_WITH_APPROVER_ID", "reviewer@example.com"
+        )
+        .replace("REPLACE_WITH_RFC3339_TIME", "2026-07-30T12:00:00+09:00")
+        .replace("REPLACE_WITH_REVIEW_REASON", "business owner reviewed this"),
+        encoding="utf-8",
+    )
+    assert "approved_at: 2026-07-30T12:00:00+09:00" in approval.read_text()
+
+    result = P.apply_plan(
+        repo,
+        registration,
+        proposal_path=output / "proposal.yaml",
+        approval_path=approval,
+    )
+    assert result["status"] == "APPLIED"
+    assert result["approved_by"] == "reviewer@example.com"
+
+
+@pytest.mark.parametrize(
+    "approved_at",
+    [
+        "언젠가",
+        "2026-07-30",
+        "2026-07-30T12:00:00",
+        "30/07/2026 12:00",
+        "",
+    ],
+)
+def test_apply_refuses_an_unreadable_approved_at(prepared, tmp_path, approved_at):
+    """The schema's `format: date-time` is inert without an optional package.
+
+    Normalizing a YAML datetime must not become a way in for anything else,
+    and a timestamp with no UTC offset does not pin a moment.
+    """
+    repo, registration, _, _ = prepared
+    proposal = _plan(prepared)
+    output = tmp_path / "proposal"
+    P.write_plan(output, proposal, registration=registration)
+
+    approval_data = _approve(proposal)
+    approval_data["approved_at"] = approved_at
+    approval = tmp_path / "approval.yaml"
+    _dump(approval, approval_data)
+
+    with pytest.raises(P.PreparationError):
+        P.apply_plan(
+            repo,
+            registration,
+            proposal_path=output / "proposal.yaml",
+            approval_path=approval,
+        )
+    assert (registration / "commit-inventory.yaml").exists() is False
+
+
+@pytest.mark.parametrize("approved_at", ["2026-07-30T03:00:00Z", "2026-07-30T12:00:00+09:00"])
+def test_apply_accepts_both_rfc3339_offset_forms(prepared, tmp_path, approved_at):
+    repo, registration, _, _ = prepared
+    proposal = _plan(prepared)
+    output = tmp_path / "proposal"
+    P.write_plan(output, proposal, registration=registration)
+
+    approval_data = _approve(proposal)
+    approval_data["approved_at"] = approved_at
+    approval = tmp_path / "approval.yaml"
+    _dump(approval, approval_data)
+
+    result = P.apply_plan(
+        repo,
+        registration,
+        proposal_path=output / "proposal.yaml",
+        approval_path=approval,
+    )
+    assert result["status"] == "APPLIED"
+
+
 def test_idless_commit_blocks(prepared):
     repo, _, _, _ = prepared
     _git(repo, "checkout", "-q", "custom")
