@@ -198,3 +198,19 @@ def test_conflict_table_header_names_its_units():
     assert "부딪힌파일" in body and "되살린항목" in body, (
         "요약표 머리글이 세는 단위를 밝혀야 한다"
     )
+
+
+def test_overlap_refusal_is_explained_not_left_to_set_e():
+    """양쪽이 같은 항목을 고치면 정리 도구가 0이 아닌 상태로 끝난다.
+
+    `set -e` 에 맡기면 운영자 화면에 파이썬 traceback 만 남는다. 상태를
+    직접 받아 무엇을 해야 하는지 한국어로 설명해야 한다.
+    """
+    body = SCRIPT.read_text(encoding="utf-8")
+    call = body.index("resolve_nonoverlapping_json_conflicts.py")
+    window = body[call - 400:call + 700]
+    assert "set +e" in window, "정리 도구 호출을 set -e 에 맡기면 안 된다"
+    assert "resolve_status" in window, "종료 상태를 직접 받아야 한다"
+    assert "코드 담당자가 직접 결정" in window, (
+        "겹쳤을 때 사람이 무엇을 해야 하는지 알려야 한다"
+    )

@@ -191,8 +191,20 @@ for sha in "${BANK_SHAS[@]}"; do
 
   # 정리 도구는 파일마다 한 줄씩 낸다. 첫 줄만 읽으면 파일 하나의 값이
   # 전체 합계처럼 보이므로, 모든 줄을 더한다.
+  #
+  # 양쪽이 같은 항목을 고쳤으면 도구가 거부한다. set -e 에 맡기면 파이썬
+  # traceback 만 뜨고 끝나므로, 상태를 직접 받아 한국어로 설명한다.
+  set +e
   resolved="$(PYTHONPATH="$GOV/harness" "$PY" "$GOV/harness/tools/resolve_nonoverlapping_json_conflicts.py" \
-              --repo "$WORK/tree")"
+              --repo "$WORK/tree" 2>"$WORK/resolve-error.txt")"
+  resolve_status=$?
+  set -e
+  if [ "$resolve_status" -ne 0 ]; then
+    sed 's/^/    /' "$WORK/resolve-error.txt"
+    die "$id: 새 버전과 우리가 같은 항목을 고쳤습니다. 어느 쪽을 남길지는
+    자동으로 정할 수 없으므로 코드 담당자가 직접 결정해야 합니다.
+    위 overlapping leaf changes 줄에 그 항목 이름이 있습니다."
+  fi
   [ -n "$resolved" ] || die "$id: 정리 도구가 아무것도 처리하지 못했습니다. 양쪽이 같은 항목을 고쳤을 수 있습니다"
   printf '%s\n' "$resolved" | sed 's/^/    /'
   fixed="$(printf '%s\n' "$resolved" | grep -c 'leaf changes=')"
