@@ -52,7 +52,7 @@
 | ✅ | 2부 G3 | 변경 기록 목록 | 8건 + 맨 아래 `2f4f356` |
 | ✅ | 2부 G3b | 이름표 상세 2장 | `Customization-ID:` |
 | ✅ | 2부 G4 | 공식 릴리스 | `1.13.1-release` · `afcb2d2` |
-| ✅ | 2부 G5 ★ | 공식 두 버전 비교 | `834 files changed` |
+| ✅ | 2부 G5 ★ | 공식 두 버전 비교 | `Files changed 834` |
 | ☐ | **2부 G6** | **등록표 실물** | `required_changed_paths` |
 | ☐ | **3부** | **예행연습 실행** | 요약표 8행 |
 | ☐ | **4부 ★★** | **재현 확인** | `e490ed82dd…` |
@@ -63,10 +63,20 @@
 
 ### 이미 찍혀 있는 캡처도 있습니다
 
-2026-08-03 에 다른 컴퓨터에서 전 과정을 돌려 찍은 캡처 16장이
-[`assets/업그레이드시연/`](assets/업그레이드시연/) 에 이미 들어 있습니다.
-**새로 찍지 않아도 발표 자료는 완성돼 있습니다.** 지금 하시는 것은 발표 전
-직접 돌려 보는 예행연습입니다.
+[`assets/업그레이드시연/`](assets/업그레이드시연/) 에 캡처가 들어 있고,
+아래 본문에도 그대로 붙여 두었습니다. **새로 찍지 않아도 발표 자료는
+완성돼 있습니다.** 출처는 두 갈래입니다.
+
+| 종류 | 어디서 나온 것 |
+|---|---|
+| GitHub 화면 (G1 · G2 · G3 · G3b · G4 · G5) | 이번 시연 담당자가 직접 찍은 것 |
+| 터미널 화면 (④~⑩) | 2026-08-03 다른 컴퓨터에서 전 과정을 돌려 찍은 것 |
+
+터미널 쪽을 남의 컴퓨터 것으로 두는 데는 이유가 있습니다. **"만든 사람
+컴퓨터에서만 되는 것 아니냐"** 는 물음에 답하는 근거이기 때문입니다.
+GitHub 화면은 누가 봐도 같은 페이지이므로 직접 찍은 쪽이 선명합니다.
+
+지금 하시는 것은 발표 전 직접 돌려 보는 예행연습입니다.
 
 ---
 
@@ -179,8 +189,8 @@ git rev-parse origin/patch/om-1.13.0 origin/custom/om-1.13.0
 
 > 📸 **③** 위 두 번호가 보이는 화면.
 >
-> ![출발점 두 번호](assets/업그레이드시연/T03-출발점-두개.png)
-> <sub>실제로 이렇게 나옵니다 (2026-08-03 실행)</sub>
+> ![출발점 두 번호](assets/업그레이드시연/T03b-출발점-두개-직접실행.png)
+> <sub>실제로 이렇게 나옵니다. 맨 아래 두 줄이 위 기대값과 같습니다</sub>
 
 ### 두 명령이 하는 일이 다릅니다
 
@@ -301,7 +311,7 @@ github.com/easyseop/OM_TEMP/branches
 > 📸 **G1**
 >
 > ![브랜치 목록](assets/업그레이드시연/G01-브랜치-목록.png)
-> <sub>실제로 이렇게 나옵니다 (2026-08-03 실행)</sub>
+> <sub>실제로 이렇게 나옵니다. `patch/om-1.13.0` 가 Default, `custom/om-1.13.0` 가 Ahead 8</sub>
 
 ## G2. 우리가 손댄 파일이 111개다 ★
 
@@ -314,7 +324,7 @@ github.com/easyseop/OM_TEMP/compare/patch/om-1.13.0...custom/om-1.13.0
 > 📸 **G2** — 발표에서 "이 숫자는 GitHub이 세어준 것"이라고 말할 수 있는 근거
 >
 > ![두 갈래 비교 111개](assets/업그레이드시연/G02-두브랜치-비교-111.png)
-> <sub>실제로 이렇게 나옵니다 (2026-08-03 실행)</sub>
+> <sub>실제로 이렇게 나옵니다. `8 commits` · `111 files changed` · `1 contributor`</sub>
 
 > ⚠️ **오른쪽 초록색 `Create pull request` 버튼을 누르지 마십시오.**
 > 두 갈래를 합치자는 요청이 저장소에 실제로 만들어집니다. 우리는 보기만
@@ -357,7 +367,7 @@ github.com/easyseop/OM_TEMP/commits/custom/om-1.13.0
 > 📸 **G3** — 목록 전체. **맨 아래 줄까지 나오게** 찍으십시오.
 >
 > ![변경 기록 8건](assets/업그레이드시연/G03-변경기록-8건.png)
-> <sub>실제로 이렇게 나옵니다 (2026-08-03 실행)</sub>
+> <sub>실제로 이렇게 나옵니다. 맨 아래 `Import official OpenMetadata 1.13.0 source snapshot` 이 출발점이고 그 위에 8건이 쌓여 있습니다</sub>
 
 ### 맨 아래 줄이 출발점입니다
 
@@ -393,6 +403,12 @@ github.com/easyseop/OM_TEMP/commit/d983f7c     ← 작은 기능
 **보여야 할 것:** 제목 아래의 `Customization-ID:` 줄과 `N files changed`
 
 > 📸 **G3b-1**, **G3b-2**
+>
+> ![이름표 BANK-OM-001](assets/업그레이드시연/G03b-1-이름표-BANK-OM-001.png)
+> <sub>큰 기능 — `Customization-ID: BANK-OM-001`, `48 files changed`</sub>
+>
+> ![이름표 BANK-OM-005](assets/업그레이드시연/G03b-2-이름표-BANK-OM-005.png)
+> <sub>작은 기능 — `Customization-ID: BANK-OM-005`, `1 file changed`</sub>
 
 ### 왜 이게 중요한가
 
@@ -438,7 +454,7 @@ github.com/open-metadata/OpenMetadata/releases/tag/1.13.1-release
 > 📸 **G4**
 >
 > ![공식 1.13.1 릴리스](assets/업그레이드시연/G04-공식-1.13.1-릴리스.png)
-> <sub>실제로 이렇게 나옵니다 (2026-08-03 실행)</sub>
+> <sub>실제로 이렇게 나옵니다. 제목 옆 `afcb2d2` 가 터미널이 대조하는 번호입니다</sub>
 
 `afcb2d2` 는 3부 구간 2에서 터미널이 확인하는 `afcb2d2cd7e7c28f1d0ce…` 와
 같은 번호입니다. **우리가 받아온 것이 공식이 낸 바로 그것**이라는 연결이
@@ -456,12 +472,14 @@ github.com/open-metadata/OpenMetadata/releases/tag/1.13.1-release
 github.com/open-metadata/OpenMetadata/compare/1.13.0-release...1.13.1-release
 ```
 
-화면 위쪽 **`834 changed files`** 가 핵심입니다.
+화면 위쪽 탭에 있는 **`Files changed 834`** 가 핵심입니다. 그 왼쪽의
+`Commits 168` 은 공식이 두 버전 사이에 쌓은 변경 기록 수입니다 — 우리 쪽
+8건과 대비됩니다.
 
 > 📸 **G5** — G2의 111과 나란히 놓고 "축이 다른 두 숫자"를 설명하는 데 씁니다
 >
 > ![공식 두 버전 비교 834개](assets/업그레이드시연/G05-공식-두버전-비교-834.png)
-> <sub>실제로 이렇게 나옵니다 (2026-08-03 실행)</sub>
+> <sub>실제로 이렇게 나옵니다. `Commits 168` · `Files changed 834`</sub>
 
 ## G6. 검사 기준은 어디에 적혀 있나
 
