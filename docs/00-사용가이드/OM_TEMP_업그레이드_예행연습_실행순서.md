@@ -1811,6 +1811,52 @@ grep -n '^<<<<<<<\|^=======\|^>>>>>>>' $F
 git diff :2:$F :3:$F | grep '^+' | grep 'instance-code\|code-group\|sort-order'
 ```
 
+**그런데 ④⑤ 는 파일 이름과 항목 이름을 미리 알아야 합니다.** 그럴 필요
+없이 **충돌 지점만 뽑아 주는 도구**가 있습니다.
+
+```bash
+# 검사 저장소에서 실행합니다. 읽기만 하고 아무것도 고치지 않습니다.
+cd ~/om-work/openmetadata-test
+./.venv/bin/python harness/tools/show_conflict_points.py \
+  --repo ~/om-work/conflict-demo \
+  --file openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+```
+
+**이렇게 나옵니다.**
+
+```text
+충돌한 파일 1개 (JSON 1개, 그 외 0개)
+
+── openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+   새 버전이 바꾼 항목  118개 · 우리가 넣는 항목   9개 · 겹침 없음
+     label.code-group                             Code Group
+     label.code-name                              Code Name
+     label.code-value                             Code Value
+     label.instance-code                          인스턴스 코드
+     label.instance-code-lowercase-plural         인스턴스 코드
+     label.instance-code-plural                   인스턴스 코드
+     label.sort-order                             Sort Order
+     message.instance-code-description            Manage common/reference codes used as shared…
+     message.instance-code-group-description      The {{codeGroupName}} code group contains…
+
+────────────────────────────────────────────────────────────────────
+우리가 넣는 항목 합계 9개 · 겹치는 항목 0개
+겹치는 항목이 없으므로 새 버전 내용을 그대로 두고 우리 항목만 끼워 넣으면 됩니다.
+```
+
+**`--file` 을 빼면 18개 전체**를 훑습니다. 마지막 줄에 합계가 나옵니다.
+
+```text
+우리가 넣는 항목 합계 162개 · 겹치는 항목 0개
+```
+
+**이 한 장이 이 절의 결론입니다.** 3,383줄이 통째로 충돌했지만 실제 쟁점은
+9개 항목이고, 그중 새 버전과 겹치는 것은 **하나도 없습니다.** 겹치는 항목이
+있으면 `← 겹침` 표시가 붙고 마지막 줄이 **"코드 담당자가 어느 쪽을 남길지
+정해야 합니다"** 로 바뀝니다.
+
+> 📸 **⑨-3** — 발표에 쓰기 가장 좋은 화면입니다.
+
 **④ 에서 나오는 화면**
 
 ```
@@ -1890,6 +1936,12 @@ github.com/easyseop/OM_TEMP/compare/demo/web-conflict...custom/om-1.13.0
 **W2 가 발표에 가장 좋습니다.** 충돌한 파일 18개가 이름과 함께 나열되고,
 그 목록이 터미널의 `충돌한 파일 18개` 와 같다는 것을 나란히 보여줄 수
 있습니다.
+
+> **웹에서는 충돌 지점을 찾을 수 없습니다.** 이 파일은 2번째 줄부터
+> 5,555번째 줄까지가 **하나의 통짜 충돌**이라, 편집기를 열어도 넘겨 갈
+> "다음 충돌"이 없습니다. 위아래로 스크롤해도 문구 목록만 3,300줄
+> 지나갑니다. **지점을 보는 것은 위의 `show_conflict_points.py` 가 합니다.**
+> 웹 화면은 "무엇이 충돌했는지(파일 18개)"를 보여주는 몫입니다.
 
 > **W3 는 안 열릴 수도 있습니다.** 충돌 파일이 218KB · 3,383줄이라 GitHub
 > 이 "너무 커서 웹에서 해결할 수 없다"고 할 수 있습니다. 그때는 W2 까지만

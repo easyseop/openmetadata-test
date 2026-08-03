@@ -222,3 +222,17 @@ def test_overlap_refusal_is_explained_not_left_to_set_e():
     assert "코드 담당자가 직접 결정" in window, (
         "겹쳤을 때 사람이 무엇을 해야 하는지 알려야 한다"
     )
+
+
+def test_conflict_viewer_never_writes(tmp_path: Path):
+    """충돌 지점 보기 도구는 읽기 전용이어야 한다.
+
+    운영자가 충돌 화면을 캡처하려고 돌리는 도구다. 이것이 파일을 고치거나
+    충돌을 해결해 버리면, 뒤이어 도는 해결 도구가 무엇을 했는지 알 수 없다.
+    """
+    viewer = SCRIPT.parent / "show_conflict_points.py"
+    assert viewer.is_file(), "show_conflict_points.py 가 있어야 한다"
+    body = viewer.read_text(encoding="utf-8")
+    for forbidden in ("write_text(", "open(", '"add"', '"commit"', '"checkout"'):
+        assert forbidden not in body, f"읽기 전용이어야 한다: {forbidden}"
+    assert '"show"' in body, "Git 스테이지를 읽어야 한다"
