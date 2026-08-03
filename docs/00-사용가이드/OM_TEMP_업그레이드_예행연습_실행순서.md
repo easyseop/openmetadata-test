@@ -146,10 +146,11 @@ python3 --version      # 3.9 이상이면 됩니다
 두 폴더를 나란히 두면 경로가 짧아집니다.
 
 ```bash
+# 두 저장소를 나란히 둘 작업 폴더를 만들고 그리로 들어갑니다
 mkdir -p ~/om-work && cd ~/om-work
 
-git clone https://github.com/easyseop/openmetadata-test.git
-git clone https://github.com/easyseop/OM_TEMP.git
+git clone https://github.com/easyseop/openmetadata-test.git   # 검사 도구와 기준
+git clone https://github.com/easyseop/OM_TEMP.git             # 검사받을 제품 코드
 ```
 
 > 📸 **①** 두 개가 모두 내려받아진 터미널 화면
@@ -158,15 +159,20 @@ git clone https://github.com/easyseop/OM_TEMP.git
 
 ```bash
 cd ~/om-work/openmetadata-test
-git switch claude/markdown-file-feedback-26933w
-git pull --ff-only
+git switch claude/markdown-file-feedback-26933w   # 이 시연에 쓰는 갈래로 옮깁니다
+git pull --ff-only                                # 최신 내용을 받아옵니다
 ```
 
 ## 4. 파이썬 준비물 설치
 
 ```bash
+# 이 폴더 전용 파이썬 공간(.venv)을 만듭니다. 컴퓨터 전체 설정은 건드리지 않습니다
 python3 -m venv .venv
+
+# 검사 도구가 쓰는 준비물 세 개를 그 안에만 설치합니다
 ./.venv/bin/pip install "PyYAML>=6.0" "jsonschema>=4.18" "pathspec>=0.11"
+
+# 셋 다 제대로 들어갔는지 불러와 봅니다
 ./.venv/bin/python -c "import yaml, jsonschema, pathspec; print('준비 완료')"
 ```
 
@@ -176,7 +182,11 @@ python3 -m venv .venv
 
 ```bash
 cd ~/om-work/OM_TEMP
+
+# 두 갈래를 GitHub 에서 내 컴퓨터로 받아옵니다 (작업 중인 파일은 안 건드립니다)
 git fetch origin patch/om-1.13.0 custom/om-1.13.0
+
+# 받아온 두 갈래가 지금 어느 코드를 가리키는지 번호로 찍어 봅니다
 git rev-parse origin/patch/om-1.13.0 origin/custom/om-1.13.0
 ```
 
@@ -254,6 +264,7 @@ git rev-parse origin/patch/om-1.13.0 origin/custom/om-1.13.0
 ## 6. 작업 폴더가 깨끗한지
 
 ```bash
+# 아직 기록하지 않은 변경을 한 줄씩 보여줍니다 (--porcelain 은 짧게 출력하라는 뜻)
 git status --porcelain
 ```
 
@@ -821,14 +832,88 @@ required_changed_paths 추가 여부를 확인해야 합니다.
 
 # 3부 · 예행연습 실행
 
+## 무엇을 예행연습하는 것인가
+
+**상황을 이렇게 놓고 시작합니다.**
+
+> 우리는 공식 OpenMetadata **1.13.0** 위에 행내 기능 7개를 얹어 쓰고 있습니다.
+> 오늘 공식이 **1.13.1** 을 냈습니다. 이제 올려야 합니다.
+
+이 스크립트는 그 업그레이드를 **실제로 한 번 해 봅니다.** 공식 1.13.1을
+받아 와서, 그 위에 우리 기능 8건을 **처음부터 다시 얹어** 새 코드 덩어리를
+만듭니다. 이렇게 만들어진 것을 **후보**라고 부릅니다.
+
+```text
+     공식 1.13.0 ──── 우리 기능 8건 ────► 지금 쓰는 코드
+          │
+          │  공식이 834개 파일을 바꿈
+          ▼
+     공식 1.13.1 ──── 우리 기능 8건 ────► 후보  ← 이걸 만드는 것
+                       (다시 얹기)
+```
+
+## 무엇을 확인하려는 것인가
+
+네 가지입니다.
+
+| | 확인하는 것 | 어디서 나오나 |
+|---|---|---|
+| 1 | 공식이 바꾼 834개가 **우리 기능 어디에 닿는가** | 구간 3 |
+| 2 | 우리 기능 8건이 새 코드 위에 **실제로 다시 얹히는가** | 구간 5 |
+| 3 | 얹다가 부딪힌 곳이 **자동으로 풀리는 종류인가** | 구간 5 |
+| 4 | 이 결과가 **누가 돌려도 같은가** | 4부 |
+
+네 번째가 이 시연의 결론입니다. "우리가 해 보니 되더라"가 아니라 "누가
+해도 같은 결과가 나온다"를 말할 수 있어야 하기 때문입니다.
+
+## 무엇은 확인하지 않는가
+
+**여기서 확인하는 것은 "코드를 읽어서 알 수 있는 것"까지입니다.**
+
+| 확인하지 않는 것 | 언제 하나 |
+|---|---|
+| 프로그램이 빌드되는가 | 별도 단계 |
+| 화면이 뜨고 기능이 실제로 도는가 | 별도 단계 |
+| 등록표를 새 코드에 맞추는 것 | 5부 — 사람 승인이 필요해서 뺐습니다 |
+
+## 무엇을 건드리지 않는가
+
+시연이라 걱정되실 수 있어 미리 적어 둡니다.
+
+| | |
+|---|---|
+| 원격 저장소 (GitHub) | **아무것도 올리지 않습니다** |
+| 등록 폴더 | 건드리지 않습니다 |
+| OM_TEMP 의 기존 브랜치 | 바꾸지 않습니다 |
+| 만들어지는 곳 | `~/om-work/upgrade-rehearsal/` 새 폴더 안에만 |
+
+되돌리려면 그 폴더를 지우면 됩니다. 0부 ① 의 세 줄이 그것입니다.
+
+## 실행
+
 **반드시 `openmetadata-test` 폴더에서** 실행합니다.
 
 ```bash
+# ① 검사 도구가 있는 저장소로 이동합니다.
+#    검사 대상(OM_TEMP)이 아니라 검사 도구 쪽에서 명령을 칩니다.
 cd ~/om-work/openmetadata-test
+
+# ② 예행연습을 실행합니다. 아래 한 줄이 세 부분으로 되어 있습니다.
+#
+#    PYTHON=./.venv/bin/python
+#        1부 4번에서 만든 전용 파이썬을 쓰라는 뜻입니다.
+#        컴퓨터에 원래 깔린 파이썬에는 필요한 준비물이 없어서 지정해 줍니다.
+#
+#    harness/tools/upgrade_rehearsal.sh
+#        예행연습 스크립트. 검사 저장소 안에 들어 있습니다.
+#
+#    ~/om-work/OM_TEMP
+#        검사할 제품 코드가 있는 폴더. 읽기만 하고 바꾸지 않습니다.
 PYTHON=./.venv/bin/python harness/tools/upgrade_rehearsal.sh ~/om-work/OM_TEMP
 ```
 
-화면이 6개 구간으로 흘러갑니다. 구간마다 캡처하십시오.
+화면이 6개 구간으로 흘러갑니다. 구간마다 캡처하십시오. 중간에 멈추면
+맨 아래 **막혔을 때** 표를 보시면 됩니다.
 
 ## 구간 0 — 사전 점검
 
@@ -945,6 +1030,9 @@ $ git cherry-pick d983f7c540   # BANK-OM-005
 가르는 지점**입니다.
 
 ```bash
+# 만들어진 후보 폴더의 '파일 내용 전체'를 번호 하나로 요약해 찍습니다.
+#   -C <폴더>     그 폴더에서 실행하라는 뜻
+#   HEAD^{tree}   지금 상태의 파일 내용 (만든 시각은 빼고)
 git -C ~/om-work/upgrade-rehearsal/tree rev-parse HEAD^{tree}
 ```
 
@@ -962,6 +1050,7 @@ e490ed82dd9cfe58833b2050a233aae7496541ab
 ## 고유번호가 저와 다른 것은 정상입니다
 
 ```bash
+# 이번 실행에서 만들어진 후보의 정보를 그대로 출력합니다
 cat ~/om-work/upgrade-rehearsal/candidate.txt
 ```
 
@@ -1028,6 +1117,15 @@ cd ~/om-work/openmetadata-test
   --output ~/om-work/plan-out
 ```
 
+| 붙인 값 | 뜻 |
+|---|---|
+| `--repo` | 읽을 제품 코드 폴더 |
+| `--registration` | 대조할 등록 폴더 |
+| `--patch-ref` | 공식 코드만 있는 갈래 |
+| `--custom-ref` | 우리 기능까지 있는 갈래 |
+| `--product-version` | 어느 버전의 등록인지 |
+| `--output` | 조사 결과를 쌓을 **바깥** 폴더 |
+
 **실제 출력입니다.**
 
 ```json
@@ -1063,6 +1161,7 @@ cd ~/om-work/openmetadata-test
 ### plan 이 정말 아무것도 안 바꿨는지 확인
 
 ```bash
+# 조사 후 검사 저장소에 바뀐 것이 있는지 봅니다
 git -C ~/om-work/openmetadata-test status --porcelain
 ```
 
@@ -1073,6 +1172,7 @@ git -C ~/om-work/openmetadata-test status --porcelain
 ### 생기는 파일
 
 ```bash
+# 조사 결과로 어떤 파일들이 생겼는지 봅니다
 ls ~/om-work/plan-out
 ```
 
@@ -1093,8 +1193,8 @@ ls ~/om-work/plan-out
 ## 2. 질문 읽기 — 기계가 답하지 않는 것
 
 ```bash
-cat ~/om-work/plan-out/summary.md
-head -30 ~/om-work/plan-out/review-required.yaml
+cat ~/om-work/plan-out/summary.md                  # 한 장짜리 요약부터 봅니다
+head -30 ~/om-work/plan-out/review-required.yaml   # 담당자가 답할 질문 목록 앞 30줄
 ```
 
 이번에 나온 질문 5건입니다.
@@ -1129,6 +1229,11 @@ head -30 ~/om-work/plan-out/review-required.yaml
   --proposal ~/om-work/plan-out/proposal.yaml \
   --output ~/om-work/approval.yaml
 ```
+
+| 붙인 값 | 뜻 |
+|---|---|
+| `--proposal` | 방금 만든 제안서 **파일** (폴더가 아닙니다) |
+| `--output` | 여기에 빈 승인서를 만들어 줍니다 |
 
 ```yaml
 schema_version: 1
@@ -1169,6 +1274,13 @@ decisions:
   --proposal ~/om-work/plan-out/proposal.yaml \
   --approval ~/om-work/approval.yaml
 ```
+
+| 붙인 값 | 뜻 |
+|---|---|
+| `--repo` | 갈래가 승인 때와 그대로인지 다시 확인 |
+| `--registration` | 실제로 반영할 등록 폴더 |
+| `--proposal` | 승인받은 바로 그 제안서 |
+| `--approval` | 채워 넣은 승인서 |
 
 ```json
 {
