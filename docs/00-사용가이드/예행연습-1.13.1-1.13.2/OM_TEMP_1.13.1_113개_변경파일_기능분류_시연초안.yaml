@@ -1,0 +1,792 @@
+schema_version: 1
+artifact_status: demo_provisional
+notice: 시연용 분류 후보입니다. 실제 Manifest·Registry 등록 또는 운영 승인 자료로 사용할 수 없습니다.
+source:
+  repository: easyseop/OM_TEMP
+  official_branch: official/om-1.13.1
+  official_sha: e6199070c35f717f7ced512bb7b435b9d46b33a3
+  custom_branch: custom/om-1.13.1
+  custom_sha: 59dae915342eaa3bdca1f9571bfa2ba4533c9a6f
+  mapping_reference: harness/registrations/kb-openmetadata/manifests/BANK-OM-001.yaml ~ BANK-OM-007.yaml
+decision_scope:
+  shared_path_multi_id_linking: demo_approved
+  operational_registration: not_approved
+  bank_om_001_to_007_assignment: review_required
+  excluded_paths_restore_to_official: previously_decided
+summary:
+  changed_paths: 113
+  added: 43
+  modified: 70
+  exclusive_paths: 74
+  shared_paths: 37
+  excluded_paths: 2
+  shared_path_id_pairs: 114
+customizations:
+- customization_id: BANK-OM-001
+  title: InstanceCode
+- customization_id: BANK-OM-002
+  title: QueryReport
+- customization_id: BANK-OM-003
+  title: Data Assertions
+- customization_id: BANK-OM-004
+  title: 은행 컬럼 확장 표시
+- customization_id: BANK-OM-005
+  title: 한글 IME 보정
+- customization_id: BANK-OM-006
+  title: Sybase
+- customization_id: BANK-OM-007
+  title: Tibero
+paths:
+- path: .claude/settings.json
+  git_change: modified
+  classification: excluded
+  customization_ids: []
+  decision: restore_official_before_candidate
+- path: bootstrap/sql/migrations/native/1.13.1/mysql/schemaChanges.sql
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  decision: demo_multi_id_link
+- path: bootstrap/sql/migrations/native/1.13.1/postgres/schemaChanges.sql
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  decision: demo_multi_id_link
+- path: docker/development/docker-compose.yml
+  git_change: modified
+  classification: excluded
+  customization_ids: []
+  decision: restore_official_before_candidate
+- path: openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  decision: demo_multi_id_link
+- path: openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  decision: demo_multi_id_link
+- path: openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/InstanceCodeRepository.java
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-001
+  decision: demo_single_id_link
+- path: openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/QueryReportRepository.java
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-service/src/main/java/org/openmetadata/service/resources/instancecode/InstanceCodeMapper.java
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-001
+  decision: demo_single_id_link
+- path: openmetadata-service/src/main/java/org/openmetadata/service/resources/instancecode/InstanceCodeResource.java
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-001
+  decision: demo_single_id_link
+- path: openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/QueryReportMapper.java
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/QueryReportResource.java
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-service/src/main/java/org/openmetadata/service/search/SearchIndexFactory.java
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  decision: demo_multi_id_link
+- path: openmetadata-service/src/main/java/org/openmetadata/service/search/indexes/InstanceCodeIndex.java
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-001
+  decision: demo_single_id_link
+- path: openmetadata-service/src/main/java/org/openmetadata/service/search/indexes/QueryReportIndex.java
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-spec/src/main/resources/elasticsearch/en/instance_code_index_mapping.json
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-001
+  decision: demo_single_id_link
+- path: openmetadata-spec/src/main/resources/elasticsearch/en/query_index_mapping.json
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-spec/src/main/resources/elasticsearch/en/query_report_index_mapping.json
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-spec/src/main/resources/elasticsearch/indexMapping.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  decision: demo_multi_id_link
+- path: openmetadata-spec/src/main/resources/elasticsearch/jp/instance_code_index_mapping.json
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-001
+  decision: demo_single_id_link
+- path: openmetadata-spec/src/main/resources/elasticsearch/jp/query_index_mapping.json
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-spec/src/main/resources/elasticsearch/jp/query_report_index_mapping.json
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-spec/src/main/resources/elasticsearch/ru/instance_code_index_mapping.json
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-001
+  decision: demo_single_id_link
+- path: openmetadata-spec/src/main/resources/elasticsearch/ru/query_index_mapping.json
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-spec/src/main/resources/elasticsearch/ru/query_report_index_mapping.json
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-spec/src/main/resources/elasticsearch/zh/instance_code_index_mapping.json
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-001
+  decision: demo_single_id_link
+- path: openmetadata-spec/src/main/resources/elasticsearch/zh/query_index_mapping.json
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-spec/src/main/resources/elasticsearch/zh/query_report_index_mapping.json
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-spec/src/main/resources/json/schema/api/data/createInstanceCode.json
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-001
+  decision: demo_single_id_link
+- path: openmetadata-spec/src/main/resources/json/schema/api/data/createQueryReport.json
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-spec/src/main/resources/json/schema/entity/data/instanceCode.json
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-001
+  decision: demo_single_id_link
+- path: openmetadata-spec/src/main/resources/json/schema/entity/data/queryReport.json
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/sybaseConnection.json
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-006
+  decision: demo_single_id_link
+- path: openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/tiberoConnection.json
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-007
+  decision: demo_single_id_link
+- path: openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-006
+  - BANK-OM-007
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-sybase.svg
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-006
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-tibero.svg
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-007
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/components/DataAssetSummaryPanelV1/DataAssetSummaryPanelV1.tsx
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-004
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-005
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaTable/SchemaTable.component.tsx
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-004
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/components/Explore/ExploreTree/ExploreTree.tsx
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-004
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/components/InstanceCode/InstanceCodeListPage.tsx
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-001
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/components/MyData/MyDataFailedAssertions/MyDataFailedAssertions.component.tsx
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-003
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/components/QueryReport/QueryReportListPage.tsx
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/components/QueryReport/QueryReportQueryEditor/QueryReportQueryEditor.component.tsx
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/components/SearchedData/SearchedData.tsx
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-004
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/constants/TableKeys.constants.ts
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-004
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/constants/constants.ts
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/context/PermissionProvider/PermissionProvider.interface.ts
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/enums/Explore.enum.ts
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/enums/entity.enum.ts
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/enums/search.enum.ts
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/api/automations/createWorkflow.ts
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-006
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/api/data/createInstanceCode.ts
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-001
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/api/data/createQueryReport.ts
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/api/services/createDatabaseService.ts
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-006
+  - BANK-OM-007
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/api/services/ingestionPipelines/createIngestionPipeline.ts
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-006
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/entity/automations/testServiceConnection.ts
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-006
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/entity/automations/workflow.ts
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-006
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/entity/data/database.ts
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-004
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/entity/data/databaseSchema.ts
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-004
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/entity/data/instanceCode.ts
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-001
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/entity/data/queryReport.ts
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/entity/data/storedProcedure.ts
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-004
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/entity/data/table.ts
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-004
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/sybaseConnection.ts
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-006
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/tiberoConnection.ts
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-007
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-006
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/entity/services/databaseService.ts
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-006
+  - BANK-OM-007
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/entity/services/ingestionPipelines/ingestionPipeline.ts
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-006
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/testSuitePipeline.ts
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-006
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/workflow.ts
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-006
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/interface/search.interface.ts
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-004
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  - BANK-OM-004
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  - BANK-OM-004
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  - BANK-OM-004
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  - BANK-OM-004
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  - BANK-OM-004
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  - BANK-OM-004
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  - BANK-OM-004
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  - BANK-OM-004
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  - BANK-OM-004
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  - BANK-OM-004
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  - BANK-OM-004
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  - BANK-OM-004
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  - BANK-OM-004
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  - BANK-OM-004
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  - BANK-OM-004
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  - BANK-OM-004
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  - BANK-OM-004
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  - BANK-OM-004
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  - BANK-OM-003
+  - BANK-OM-004
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/pages/DataAssertionsPage/DataAssertionsPage.tsx
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-003
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/pages/InstanceCodeDetailsPage/InstanceCodeDetailsPage.tsx
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-001
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/pages/InstanceCodeGroupDetailsPage/InstanceCodeGroupDetailsPage.tsx
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-001
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/pages/MyDataPage/MyDataPage.component.tsx
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-003
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/pages/QueryReportDetailsPage/QueryReportDetailsPage.tsx
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/pages/QueryReportYearDetailsPage/QueryReportYearDetailsPage.tsx
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/rest/dataAssertionsAPI.ts
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-003
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/rest/instanceCodeAPI.ts
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-001
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/rest/queryAPI.ts
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/rest/queryReportAPI.ts
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-006
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-006
+  - BANK-OM-007
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/utils/EntityUtilClassBase.ts
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-004
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/utils/EntityUtils.interface.ts
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-004
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/utils/EntityUtils.tsx
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-004
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/utils/QueryReportUtils.ts
+  git_change: added
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-002
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/utils/RouterUtils.ts
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-001
+  - BANK-OM-002
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/utils/SearchClassBase.ts
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-004
+  decision: demo_single_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts
+  git_change: modified
+  classification: shared
+  customization_ids:
+  - BANK-OM-006
+  - BANK-OM-007
+  decision: demo_multi_id_link
+- path: openmetadata-ui/src/main/resources/ui/src/utils/ServiceUtils.tsx
+  git_change: modified
+  classification: exclusive
+  customization_ids:
+  - BANK-OM-006
+  decision: demo_single_id_link

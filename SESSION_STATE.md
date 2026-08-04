@@ -1,5 +1,14 @@
 # 세션 상태 / 인수인계 (SESSION_STATE)
 
+> **2026-08-04 최신 시연 초안:** 실제 OM_TEMP 1.13.1 branch를 비교해 113개
+> 변경 경로(추가 43·수정 70)를 전용 74·공용 37·제외 2로 분류한 전체 YAML을
+> 만들었다. 사용자는 공용 파일을 관련 BANK-OM ID 여러 개에 연결하는 방식을
+> 시연용으로 선택했다. 같은 경로·ID 조합의 중복은 허용하지 않으며 37개 공용
+> 경로에서 114개 고유 조합을 생성했다. `shared-code-definitions` 시연 초안의
+> assertions는 모두 비어 있어 실제 검사 입력이 아니다. 다음 작업은 실제 diff로
+> 114개 정의를 채우고 BANK-OM-001~007 업무 분류와 함께 승인받는 것이다. 상세
+> 상태와 경로는 `docs/04-진행/CODEX_HANDOFF.md`의 `0-current`를 따른다.
+
 > **2026-07-30 최신 작업:** 검사 전 등록자료 준비 자동화를 구현했다.
 > 구현 commit은 `b63ce67bd303865224339a0dfe6e4becb252bea6`이다.
 > `harness/prepare_registration.py`는 읽기 전용 `plan`, 미승인 template,
