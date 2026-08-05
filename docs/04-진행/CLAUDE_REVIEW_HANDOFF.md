@@ -1,5 +1,316 @@
 # Claude 독립 검토 인수인계
 
+## 2026-07-30 최우선 후속 개발 — 검사 결과·종료코드·원인 출력 통일
+
+### 개발 목적
+
+현재 검사기는 `pass`, `approval`, `block`, `analysis_error`라는 네 가지
+판정 모델을 가지고 있지만, 실행 명령마다 종료코드와 원인 출력 방식이 다르다.
+따라서 운영자가 터미널 종료코드만 보거나 CI가 종료코드만 읽으면 다음 상태를
+서로 잘못 해석할 수 있다.
+
+- 검사는 정상적으로 끝났지만 담당자 검토가 필요한 `approval`
+- 정책을 위반해 진행할 수 없는 `block`
+- 파일·입력·Git 상태 문제로 검사를 완료하지 못한 `analysis_error`
+- 검사 조건을 모두 충족한 `pass`
+
+Claude의 다음 최우선 개발은 모든 검사 실행기에 같은 결과 계약을 적용하는 것이다.
+운영 위키 문구를 먼저 바꾸지 말고, 코드·테스트·실제 결과 파일을 먼저 완성한 뒤
+위키와 사용법을 동기화한다.
+
+### 공통 판정과 종료코드 계약
+
+검사 결과는 `FAIL`이라는 별도 판정을 만들지 않고 아래 네 상태만 사용한다.
+
+| 판정 | 의미 | 프로세스 종료코드 |
+|---|---|---:|
+| `pass` | 검사 조건을 모두 충족함 | `0` |
+| `block` | 검사 결과 정책 위반을 발견해 진행을 중단함 | `1` |
+| `approval` | 자동 통과가 아니며 담당자 검토·승인이 필요함 | `2` |
+| `analysis_error` | 입력·파일·Git·실행환경 문제로 검사를 완료하지 못함 | `3` |
+
+`harness/acgh/verdict.py`의 `EXIT_CODE`를 정본으로 사용한다. 여러 검사 결과를
+합칠 때는 `verdict.aggregate()`로 최종 판정을 만들고
+`verdict.to_exit_code()`로 종료코드를 계산한다. `all(pass) else 1`처럼 여러
+상태를 하나의 숫자로 축약하지 않는다.
+
+명령 옵션 누락과 잘못된 경로도 traceback만 출력하지 않는다. 가능한 경우
+`analysis_error` 결과로 변환한다. Python `argparse`의 기본 종료코드 `2`는
+`approval`과 충돌하므로, 운영용 통합 명령에서는 입력 오류를 구조화된
+`analysis_error`와 종료코드 `3`으로 변환하는 방식을 적용한다.
+
+### 모든 실행기가 남겨야 하는 공통 결과
+
+각 실행기는 성공·정책 위반·검토 필요·분석 실패 중 어느 상태로 끝나더라도
+터미널과 결과 JSON 또는 YAML에서 다음 내용을 확인할 수 있어야 한다.
+
+```yaml
+schema_version: 1
+command: source
+verdict: analysis_error
+exit_code: 3
+code: MISSING_REGISTRATION_FILE
+reasons:
+  - contracts.yaml 파일이 없습니다.
+next_actions:
+  - 버전별 등록 폴더에 contracts.yaml을 준비한 뒤 같은 명령을 다시 실행합니다.
+outputs:
+  result_file: harness/registrations/om-temp-1.13.0/source-gate-results.json
+gates: []
+```
+
+필수 규칙은 다음과 같다.
+
+1. `reasons`는 모든 판정에서 비어 있지 않아야 한다.
+   - `pass`도 무엇을 확인해 통과했는지 적는다.
+   - 위반 사항이 없다는 사실만 근거라면 `검사한 N개 항목에서 위반 0건`처럼
+     검사 범위를 함께 적는다.
+2. `block`, `approval`, `analysis_error`에는 사람이 바로 수행할 수 있는
+   `next_actions`를 적는다.
+3. 여러 검사를 한 번에 실행하면 각 gate의 `verdict`와 `reasons`를 보존하고,
+   최상위 `verdict`는 네 상태의 심각도 규칙으로 집계한다.
+4. 검사 시작 전 사전조건 오류도 가능한 결과 파일을 만든다. 결과 파일 경로를
+   계산하지 못한 경우에도 같은 JSON을 표준 출력에 남긴다.
+5. 사람이 읽는 안내 문장은 표준 오류 출력으로 보내고, 기계가 읽는 JSON은
+   표준 출력 또는 지정 결과 파일에서 깨지지 않게 분리한다.
+6. 결과 파일에 적힌 `exit_code`와 실제 프로세스 종료코드는 반드시 같아야 한다.
+7. 기존 결과 소비자가 읽는 필드는 호환성을 유지한다. 필드 의미를 바꿔야 하면
+   schema version을 올리고 마이그레이션 테스트를 추가한다.
+
+### 현재 실행기별 확인된 문제와 개발 작업
+
+| 대상 | 현재 동작 | Claude가 개발할 내용 |
+|---|---|---|
+| `harness/prepare_registration.py` | `READY/BLOCKED/REVIEW_REQUIRED/ANALYSIS_ERROR/APPLIED` 종료코드는 구분하지만 plan 터미널 결과는 건수 중심이고 상세 원인은 제안 파일을 열어야 함 | 공통 결과 형식에 상세 원인·다음 조치·결과 파일 경로를 포함한다. 기존 proposal과 승인 계약은 유지한다. |
+| `harness/registrations/om-temp-1.13.0/validate_registration_bundle.py` | 정상 분석 실패는 종료코드 `3`이지만 일반 BLOCK은 `1`; 각 check의 `detail`이 개수 중심이고 하위 `reasons`가 누락됨 | 각 check에 실제 판정 근거와 다음 조치를 넣고 `verdict.aggregate()`로 최종 결과를 만든다. |
+| `harness/registrations/kb-openmetadata/run_source_candidate_gates.py` | 결과 JSON에는 gate별 `reasons`가 있지만 전체 종료코드는 `모두 pass면 0, 아니면 1`; 일부 PASS의 reasons가 빈 배열 | 네 상태 종료코드를 보존하고 모든 PASS에 검사 범위·확인 근거를 넣는다. 등록자료·Git 로딩 단계 예외도 구조화한다. |
+| `harness/run_upgrade_watch.py` | 영향이 발견되어 `approval`이어도 항상 종료코드 `0` | 영향 없음은 `pass/0`, 검토 필요는 `approval/2`, 분석 실패는 `analysis_error/3`으로 반환한다. 영향 ID·경로와 다음 검토 절차를 유지한다. |
+| `harness/registrations/kb-openmetadata/run_upgrade_risk_gates.py` | gate별 reasons는 있으나 `block`과 `analysis_error`가 모두 종료코드 `1` | `verdict.aggregate()`와 공통 종료코드를 사용한다. T43 PASS도 비교한 지표·기준값을 reasons에 기록한다. |
+| `harness/registrations/kb-openmetadata/run_runtime_contracts.py` | 검사 실행 후 결과에는 reasons와 expected exit code가 있으나 dirty worktree·필수 test 누락 등 사전 오류는 traceback으로 끝날 수 있음 | 사전 오류까지 `analysis_error/3` 결과로 저장한다. 실패한 test ID, 실제 outcome과 재실행 조건을 터미널 요약에도 표시한다. |
+| `harness/registrations/kb-openmetadata/run_source_patch_kills.py` 및 runtime patch-kill | 정상 gate 결과는 공통 verdict를 사용하지만 오래된 계획·commit 불일치·누락 입력은 traceback으로 끝날 수 있음 | 모든 사전조건 오류를 구조화하고 결과 파일을 남긴다. `block`과 실행환경 오류를 구분한다. |
+| `harness/registrations/kb-openmetadata/compare_ui_typecheck.py` | verdict, reasons, exit code를 함께 출력해 현재 가장 공통 계약에 가까움 | 공통 결과 schema와 `next_actions`, 결과 파일 경로만 맞춘다. 기존 비교 의미는 변경하지 않는다. |
+| `harness/tools/resolve_nonoverlapping_json_conflicts.py` | 성공 시 처리 파일·항목 수만 출력하고 겹치는 항목·비 JSON 충돌·JSON 오류는 traceback과 종료코드 `1` | 겹치는 항목과 비 JSON 충돌은 수동 해결이 필요한 `block/1`, Git stage·JSON 분석 실패는 `analysis_error/3`으로 나누고 구조화된 결과를 남긴다. |
+| `harness/om_workflow.py` | 하위 명령 종료코드를 전달하지만 자체 입력 오류는 `2`를 사용해 `approval`과 숫자가 겹침 | 통합 명령 자체의 입력 오류를 `analysis_error/3`으로 통일하고 하위 결과 파일 위치·최종 판정·다음 조치를 한 화면에 요약한다. |
+| T90 `harness/acgh/upgrade_run.py` | `GateResult`를 만드는 내부 함수와 단위 테스트는 있으나 운영자가 실행할 통합 CLI가 없음 | 실제 upgrade-test-run 자료를 입력받아 공통 결과를 쓰는 CLI와 `om_workflow.py` 하위 명령을 만든다. |
+| T91 `harness/acgh/release.py` | `GateResult`를 만드는 내부 함수와 단위 테스트는 있으나 운영자가 실행할 통합 CLI가 없음 | Release lock과 실제 배포 관측값을 입력받아 공통 결과를 쓰는 CLI와 `om_workflow.py` 하위 명령을 만든다. |
+
+### 특별히 보존해야 하는 현재 의미
+
+- T42의 `approval`은 자동 실패가 아니라 vendor-merge 전에 담당자가 영향받은
+  BANK-OM ID와 경로를 검토해야 한다는 뜻이다. 다만 CI가 이 상태를 놓치지
+  않도록 종료코드는 `2`여야 한다.
+- T43은 실제 지표가 hard 기준을 넘으면 `block`, soft 기준만 넘으면
+  `approval`, 모두 기준 안이면 `pass`, 지표나 정책을 해석하지 못하면
+  `analysis_error`다.
+- T61은 BANK-OM 제거 후 필수 test가 예상대로 실패해야 통과하는 음성 대조
+  검사다. test 실패 자체를 무조건 `block`으로 해석하지 않는다.
+- T62는 실행된 Contract test가 없거나 필수 test가 누락됐을 때 PASS로
+  표시하지 않는다.
+- T90은 12단계를 직접 실행하는 도구가 아니라 담당자 또는 CI가 실행해 남긴
+  결과 자료의 존재와 성공 여부를 판정한다.
+- T91은 배포 파일을 다시 빌드하지 않고 검증한 동일 commit·이미지·Helm
+  digest가 승격됐는지 확인한다.
+
+### 구현 순서
+
+1. 공통 결과 schema와 결과 작성 helper를 `harness/acgh/`에 만든다.
+2. 공통 helper에 네 상태 집계·종료코드·비어 있지 않은 reasons 검증을 넣는다.
+3. `om_workflow.py`, T42, 소스검사, 위험검사처럼 종료코드가 현재 명백히
+   다른 실행기부터 수정한다.
+4. 등록검사·T61·T62·JSON 충돌 보조 도구의 사전 오류를 구조화한다.
+5. T90·T91 운영 CLI와 통합 명령을 추가한다.
+6. 기존 결과 파일 호환 테스트와 현재 OM_TEMP 1.13.0 회귀 검사를 실행한다.
+7. 구현과 실제 결과가 모두 완성된 뒤 운영 위키의 검사기별
+   `판정·원인·다음 조치·결과 파일` 설명을 갱신한다.
+
+### 필수 테스트
+
+각 운영 실행기에 대해 최소한 다음 사례를 자동 테스트한다.
+
+- PASS: 종료코드 `0`, 비어 있지 않은 근거, 결과 파일 생성
+- BLOCK: 종료코드 `1`, 위반 코드·원인·다음 조치, 결과 파일 생성
+- APPROVAL: 종료코드 `2`, 검토할 ID·경로·기준, 결과 파일 생성
+- ANALYSIS_ERROR: 종료코드 `3`, 누락·파싱·Git·환경 오류 원인, 가능한 결과
+  파일 생성
+- 결과 JSON/YAML의 `exit_code`와 실제 프로세스 종료코드 일치
+- 여러 gate를 실행했을 때 가장 심각한 판정으로 최종 verdict 집계
+- PASS gate의 빈 `reasons` 거부
+- 예외 traceback이 사용자 결과의 유일한 원인이 되지 않음
+- 기존 v1 결과 소비자와의 호환 또는 명시적인 schema migration
+- `om_workflow.py`를 통한 실행과 개별 runner 직접 실행의 verdict·exit code 일치
+
+### 완료 조건
+
+다음 조건을 모두 만족하기 전에는 이 작업을 완료로 표시하지 않는다.
+
+1. 모든 운영 runner가 같은 네 상태와 종료코드를 사용한다.
+2. 모든 상태가 사람이 이해할 수 있는 원인과 다음 조치를 남긴다.
+3. 사전조건 오류도 구조화된 결과를 남기며 traceback만으로 끝나지 않는다.
+4. T42 approval과 analysis error를 CI 종료코드로 구분할 수 있다.
+5. T90·T91을 `om_workflow.py`에서 실제 실행할 수 있다.
+6. 현재 OM_TEMP 1.13.0 등록검사 5종과 소스검사 8종 회귀 결과가 유지된다.
+7. 새 테스트와 기존 전체 테스트, `git diff --check`를 통과한다.
+8. 실제 생성 결과 예시를 인수인계에 첨부한 뒤 운영 위키를 현재 동작과
+   동기화한다.
+
+### 개발 시작점
+
+- `harness/acgh/verdict.py`
+- `harness/om_workflow.py`
+- `harness/prepare_registration.py`
+- `harness/registrations/om-temp-1.13.0/validate_registration_bundle.py`
+- `harness/registrations/kb-openmetadata/run_source_candidate_gates.py`
+- `harness/run_upgrade_watch.py`
+- `harness/registrations/kb-openmetadata/run_upgrade_risk_gates.py`
+- `harness/registrations/kb-openmetadata/run_runtime_contracts.py`
+- `harness/registrations/kb-openmetadata/run_source_patch_kills.py`
+- `harness/registrations/kb-openmetadata/compare_ui_typecheck.py`
+- `harness/tools/resolve_nonoverlapping_json_conflicts.py`
+- `harness/acgh/upgrade_run.py`
+- `harness/acgh/release.py`
+
+## 2026-07-30 현재 최신 운영 위키·통합 실행 도구 인수인계
+
+### 현재 상태
+
+- 작업 브랜치: `codex/strict-manifest-gates`
+- 현재 worktree 기준 commit: `d7aa807f0ae2a0e33a418194efa6d4b91c57321d`
+- 아래 최신 위키·통합 실행 도구 변경은 현재 worktree에 있으며 아직 하나의
+  완료 commit으로 확정되거나 원격에 push됐다고 간주하지 않는다.
+- Claude는 개발을 시작하기 전에 `git status --short`와 `git diff`로 아래
+  파일의 현재 변경을 보존한 상태인지 확인한다. 사용자 작업을 reset하거나
+  덮어쓰지 않는다.
+
+### 최신 HTML과 생성 원본
+
+| 역할 | 경로 | 관리 방법 |
+|---|---|---|
+| 사용자가 여는 최신 독립 실행 HTML | `docs/00-사용가이드/OM_TEMP_operations_wiki_Claude_review_20260729.html` | 생성 결과다. 내용 수정은 아래 데이터·템플릿에서 먼저 한다. |
+| 위키 내용 정본 | `docs/00-사용가이드/OM_TEMP_검사운영위키_데이터.js` | 검사기·관리파일·운영 절차·명령 예시의 실제 문장을 수정한다. |
+| 위키 화면·명령 카드 정본 | `docs/00-사용가이드/OM_TEMP_검사운영위키_구성초안.html` | 목차, 레이아웃, 명령별 입력·출력·사용처 렌더링을 수정한다. |
+| 보고용 데이터 생성 결과 | `docs/00-사용가이드/OM_TEMP_검사운영위키_보고용.js` | 생성 스크립트로 다시 만든다. 직접 고치지 않는다. |
+| 문장 검토 데이터 | `docs/00-사용가이드/OM_TEMP_검사운영위키_문장검토.js` | 문장 검토 빌드로 다시 만든다. 직접 고치지 않는다. |
+
+파일명에는 `20260729`가 남아 있지만 현재 worktree의 독립 실행 HTML은
+2026-07-30 변경까지 다시 생성한 최신 로컬 결과다. 날짜가 있는 이전 검토
+패키지나 복사본을 내용 정본으로 사용하지 않는다.
+
+### 최신 위키에 반영된 내용
+
+1. 운영자가 긴 내부 Python 명령과 파일 경로를 모두 입력하지 않도록
+   `harness/om_workflow.py` 통합 실행 도구를 추가했다.
+2. 대부분의 준비·검사는 제품 코드 저장소 경로와 제품 버전만 받는다.
+   통합 도구가 다음 항목을 자동으로 찾는다.
+   - `harness/registrations/om-temp-<버전>/`
+   - `repository-layout.yaml`
+   - `sensitive-zones.yaml`
+   - Manifest·Registry·Contract
+   - 기본 결과 파일·폴더
+   - 버전별 OpenMetadata 포크·커스텀 브랜치
+3. 지원 작업은 `plan`, `approval-template`, `apply`, `bootstrap`,
+   `validate`, `source`, `watch`, `risk`, `runtime`, `patch-kill`,
+   `typecheck`, `resolve-json`이다.
+4. 각 shell 명령을 별도 카드로 분리하고 다음 정보를 표시한다.
+   - 실행 위치
+   - 운영자가 직접 바꿀 값
+   - 사전 준비·입력
+   - 생성되는 출력
+   - 그 출력이 다음 어느 검사에서 사용되는지
+5. T25는 “검사할 커스텀 브랜치가 선택한 공식 OpenMetadata 버전에서
+   만들어졌는가”라는 질문으로 설명한다.
+6. T25-R은 Git commit 기록을 잃고 코드 폴더만 남은 비상 복구 검사이며,
+   Git 이력이 남아 있는 현재 OM_TEMP에는 실행하지 않는다고 명시한다.
+7. 3-3 자동화 절에는 검사 전 준비 파일별 자동화 여부·실행 명령·사람이
+   직접 판단할 값을 구분한 표와 전체 `plan → 승인 → apply → validate →
+   source` 절차가 있다.
+8. `용어 사용 규칙`처럼 작성자용 메타 설명은 사용자 본문에서 제거했다.
+
+### 통합 실행 도구 관련 파일
+
+- `harness/om_workflow.py`
+- `harness/tests/test_om_workflow.py`
+- `docs/00-사용가이드/OM_TEMP_통합실행도구_사용법.md`
+
+기본 소스 검사 예시는 다음과 같다.
+
+```bash
+./.venv/bin/python harness/om_workflow.py source \
+  --repo /path/to/OM_TEMP \
+  --version 1.13.0
+```
+
+`/path/to/OM_TEMP`와 제품 버전 외에 새 공식 commit, 실제 충돌률, 실제
+배포 파일처럼 도구가 추측하면 안 되는 값은 해당 작업에서만 추가 입력한다.
+Contract 업무 조건, required·간접 watch, owner, 충돌 해결 코드와 최종
+승인은 사람이 판단한다.
+
+### 위키 재생성 절차
+
+검사기 동작 또는 사용자 설명을 수정한 뒤 검사기 저장소 최상위 폴더에서
+다음 순서로 실행한다.
+
+```bash
+node --check docs/00-사용가이드/OM_TEMP_검사운영위키_데이터.js
+```
+
+```bash
+cd docs/00-사용가이드
+```
+
+```bash
+node generate_wiki_report_data.mjs
+```
+
+```bash
+node build_sentence_review.mjs build
+```
+
+```bash
+node build_claude_review_package.mjs
+```
+
+```bash
+git diff --check
+```
+
+명령은 한 단계씩 실행한다. 생성 HTML만 직접 고치면 다음 빌드에서 수정이
+사라지므로 반드시 데이터와 템플릿을 먼저 수정한다.
+
+### 현재까지 수행한 검증
+
+- `harness/tests/test_om_workflow.py`
+- `harness/tests/test_source_candidate_workflow.py`
+- `harness/tests/test_registration_validation_workflow.py`
+- 위 세 파일의 집중 테스트: `8 passed`
+- 실제 OM_TEMP 1.13.0 결정론적 후보 기준 등록자료 검사: 5종 PASS
+- 같은 후보 기준 소스 검사: T25·T26·T30·T31·T40·T41·T60-I·T93,
+  8종 PASS
+- 독립 실행 HTML 재생성: 성공
+- 브라우저 확인:
+  - T25 새 질문과 짧은 통합 명령 표시
+  - T25-R 비상용 범위와 현재 OM_TEMP 미실행 설명
+  - 3-3 통합 실행 도구, 자동화 범위 표, 명령별 입력·출력 표시
+  - 기존 긴 `run_source_candidate_gates.py` 운영 명령 미표시
+- `git diff --check`: 통과
+
+이 검증은 현재 로컬 worktree의 구현·문서 검증이다. 전체 OpenMetadata build,
+운영환경 Contract test, 실제 배포, 검증 완료 태그와 릴리즈 브랜치 승인을
+완료했다는 뜻이 아니다.
+
+### 검사 결과 통일 개발 후 위키에 반영할 위치
+
+앞 절의 “검사 결과·종료코드·원인 출력 통일” 개발을 완료한 뒤에만 다음
+위키 내용을 바꾼다.
+
+- 2장 각 검사기 상세의 판정·원인·다음 조치
+- 2-1 검사기 전체 목록의 종료코드와 결과 파일
+- 3-3 자동화 절의 통합 명령 결과 해석
+- 4장 충돌 보조 도구의 구조화된 BLOCK·ANALYSIS_ERROR 결과 예시
+- T90·T91 실행 명령, 입력, 출력과 결과 예시
+
+코드만 바꾸고 위키를 갱신하지 않거나 위키만 먼저 바꾸는 것을 완료로
+처리하지 않는다.
+
 ## 2026-07-30 추가 검토 대상
 
 사전준비 자동화 설계 검토 후속 구현이 완료됐다. Claude는 아래를 우선

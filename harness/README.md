@@ -37,6 +37,8 @@ Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
 | `candidate.py` | 통합 전략·candidate-lock·결과 입력 결속 | 11 / A2·A3 |
 | `ancestry.py` | vendor 공통 이력·승인 target 포함 검증 | 1 / A2 |
 | `vendor_rebuild.py` | root snapshot 재구성 계획·공유 hunk 소유·candidate 검증 | 1 / A1·A2 |
+| `shared_code.py` | 공용 파일의 BANK-OM ID별 승인 코드 정의·구조화 값 검사 | A1·A4 |
+| `registration_prep.py` | 등록 변경안 plan·digest 승인·원자 apply | A1·A6 |
 | `survival.py`·`registry.py` | active ID 생존·7개 snapshot + candidate-follow-up 등록 그래프 | 1·14·15 / A1·A2 |
 | `contracts.py` | contract 결속·required selector 파일/함수 구현 존재 | 14·15 / A6 |
 | `conflicts.py`·`routing.py` | merge 해결 증거·vendor/replay 명시 라우팅 | 1 / A2 |

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bank.local/acgh/shared-code-definitions.schema.json",
+  "title": "BANK-OM shared-file code definitions",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "definitions"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "definitions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "customization_id", "assertions"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "customization_id": {
+            "type": "string",
+            "pattern": "^BANK-OM-[0-9]{3,}$"
+          },
+          "assertions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["id", "matcher", "fragment"],
+                  "properties": {
+                    "id": {"type": "string", "minLength": 1},
+                    "matcher": {"const": "code_fragment"},
+                    "fragment": {"type": "string", "minLength": 1},
+                    "occurrences": {"type": "integer", "minimum": 1, "default": 1}
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["id", "matcher", "pointer", "expected"],
+                  "properties": {
+                    "id": {"type": "string", "minLength": 1},
+                    "matcher": {"enum": ["json_value", "yaml_value"]},
+                    "pointer": {"type": "string", "pattern": "^/"},
+                    "expected": {}
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

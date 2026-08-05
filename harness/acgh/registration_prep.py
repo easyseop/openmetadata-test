@@ -30,6 +30,7 @@ from acgh import gitprim
 from acgh import layout as layout_module
 from acgh import manifest as manifest_module
 from acgh import registry as registry_module
+from acgh import shared_code
 from acgh import verdict
 
 _SCHEMA_ROOT = Path(__file__).parent / "schema"
@@ -41,6 +42,7 @@ _REGISTRATION_INPUTS = (
     "shared-path-owners.yaml",
 )
 _LFS_PREFIX = b"version https://git-lfs.github.com/spec/v1\n"
+_SHARED_CODE_DEFINITIONS = "shared-code-definitions.yaml"
 
 
 class PreparationError(ValueError):
@@ -113,6 +115,12 @@ def registration_state_digest(registration: Path) -> str:
     """Digest only human/policy inputs that must remain stable until apply."""
     payload: dict[str, str] = {}
     paths = [registration / name for name in _REGISTRATION_INPUTS]
+    registry_data = _load_yaml(
+        registration / "customization-registry.yaml", "customization registry"
+    )
+    source = registry_data.get("source", {})
+    if source.get("shared_code_definitions") == _SHARED_CODE_DEFINITIONS:
+        paths.append(registration / _SHARED_CODE_DEFINITIONS)
     paths.extend(sorted((registration / "manifests").glob("BANK-OM-*.yaml")))
     for path in paths:
         if not path.is_file() or path.is_symlink():
@@ -131,6 +139,11 @@ def _load_registration(registration: Path):
     )
     registry = registry_module.parse_registry(registry_data)
     catalog = contracts.load_catalog(registration / "contracts.yaml")
+    shared_catalog = None
+    if registry.source.get("shared_code_definitions") == _SHARED_CODE_DEFINITIONS:
+        shared_catalog = shared_code.load_catalog(
+            registration / _SHARED_CODE_DEFINITIONS
+        )
 
     manifests: dict[str, dict] = {}
     for path in sorted((registration / "manifests").glob("BANK-OM-*.yaml")):
@@ -142,7 +155,7 @@ def _load_registration(registration: Path):
             )
         manifests[customization_id] = data
     registry_module.validate_references(registry, manifests, catalog)
-    return layout, registry_data, registry, catalog, manifests
+    return layout, registry_data, registry, catalog, manifests, shared_catalog
 
 
 def _finding(code: str, message: str) -> dict:
@@ -342,9 +355,14 @@ def build_plan(
     new_id_metadata = new_id_metadata or {}
 
     try:
-        layout, registry_data, registry, catalog, manifests = _load_registration(
-            registration
-        )
+        (
+            layout,
+            registry_data,
+            registry,
+            catalog,
+            manifests,
+            shared_catalog,
+        ) = _load_registration(registration)
     except (
         OSError,
         UnicodeError,
@@ -353,6 +371,7 @@ def build_plan(
         layout_module.LayoutError,
         manifest_module.ManifestError,
         registry_module.RegistryError,
+        shared_code.SharedCodeError,
     ) as exc:
         raise PreparationError(f"cannot load registration policy: {exc}") from exc
     try:
@@ -717,6 +736,23 @@ def build_plan(
                 "shared-path-owners.yaml does not equal multi-owner source paths",
             )
         )
+    if shared_catalog is not None:
+        shared_result = shared_code.check_shared_code_definitions(
+            str(repo),
+            custom_sha,
+            shared_catalog,
+            normalized_shared,
+        )
+        if shared_result.verdict == verdict.ANALYSIS_ERROR:
+            analysis_errors.extend(
+                _finding("SHARED_CODE_DEFINITION_INVALID", reason)
+                for reason in shared_result.reasons
+            )
+        elif shared_result.verdict == verdict.BLOCK:
+            blocked.extend(
+                _finding("SHARED_CODE_DEFINITION_MISSING", reason)
+                for reason in shared_result.reasons
+            )
 
     inventory = {
         "schema_version": 1,

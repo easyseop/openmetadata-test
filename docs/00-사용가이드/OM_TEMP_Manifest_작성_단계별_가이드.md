@@ -241,7 +241,7 @@ Manifest 항목은 같은 수준의 선택지가 아니라 서로 다른 질문�
 |---|---|---|---|
 | `changed_paths` | 현재 버전에서 이 BANK-OM ID의 모든 commit이 실제로 변경한 파일은 무엇인가? | 같은 ID의 최초·후속 commit 전체에서 경로를 추출해 한 목록으로 합침 | 목록 밖 변경은 `BLOCK`, 목록 안 일반 파일이 최종 코드에서 바뀌지 않으면 `APPROVAL` |
 | `required_changed_paths` | 어떤 파일이 빠지거나 공식 상태로 돌아가면 이 기능의 필수 구현이 빠졌다고 즉시 판단할 수 있는가? | `changed_paths` 중 핵심 파일만 담당자가 선택 | 누락되거나 공식 원본과 같으면 `BLOCK` |
-| `upgrade_watch.paths` | 다음 공식 버전이 바뀔 때 이 기능과의 연결을 다시 검토해야 할 파일은 무엇인가? | Manifest 생성기가 실제 변경 파일을 자동 포함하고, 미수정 의존 파일은 후보 제안과 담당자 검토로 추가 | 공식 버전 사이에서 해당 경로가 바뀌면 `APPROVAL` |
+| `upgrade_watch.paths` | 다음 공식 버전이 바뀔 때 이 기능과의 연결을 다시 검토해야 할 파일은 무엇인가? | 준비도구가 실제 변경 파일 중 공식 OpenMetadata 포크 브랜치에도 존재하는 경로만 자동 제안하고, 행내 전용 파일과 미수정 의존 파일은 담당자가 추가 여부를 판단 | 공식 버전 사이에서 해당 경로가 바뀌면 `APPROVAL` |
 | `assurance.contracts` | 파일이 남아 있다는 사실 외에 어떤 업무 동작을 test할 것인가? | `contracts.yaml`에 정의한 계약 ID를 연결 | 계약이나 test 연결이 없으면 통과 금지 |
 | `series.depends_on` | 이 기능보다 먼저 적용돼야 하는 다른 BANK-OM은 무엇인가? | 실제 선행 기능만 등록 | 순서 위반이나 순환 관계는 `BLOCK` |
 
@@ -273,17 +273,19 @@ API 동작은 계약 test로 별도 확인합니다.
 
 ### 7.2 현재 `upgrade_watch` 등록 방법
 
-T42는 Manifest의 `upgrade_watch.paths`를 공식 버전 전후와 비교합니다. 이 목록을
-만들 때는 현재 다음 두 방식을 함께 사용합니다.
+T42는 Manifest의 `upgrade_watch.paths`를 이전 공식 버전과 새 공식 버전 사이의
+변경 경로와 비교합니다. 이 목록은 다음 순서로 정합니다.
 
-1. Manifest 생성기가 각 BANK-OM 커밋의 실제 변경 파일을 Git에서 읽어
-   `changed_paths`와 `upgrade_watch.paths`에 함께 반영합니다. 사용자가
-   같은 경로를 두 번 직접 입력하지 않습니다.
-2. 커스터마이징이 직접 수정하지 않았지만 호출하거나 구조에 의존하는 공식 파일은
+1. 준비도구가 각 BANK-OM 커밋의 실제 변경 파일을 Git에서 읽어
+   `changed_paths` 후보에 반영합니다.
+2. 실제 변경 파일 중 공식 OpenMetadata 포크 브랜치에도 존재하는 경로만
+   `upgrade_watch.paths` 후보로 자동 제안합니다. 행내에만 있는 신규 파일은
+   공식 버전 비교 대상이 아니므로 자동 제안하지 않습니다.
+3. 커스터마이징이 직접 수정하지 않았지만 호출하거나 구조에 의존하는 공식 파일은
    담당자가 `watch_dependencies`로 추가합니다.
-3. 새 공식 버전에서 바뀐 파일 이름을 커스터마이징 코드가 직접 참조하면 검사기가
+4. 새 공식 버전에서 바뀐 파일 이름을 커스터마이징 코드가 직접 참조하면 검사기가
    추가 watch 후보와 참조한 커스터마이징 파일을 결과에 제시합니다.
-4. 후보는 자동으로 Manifest를 수정하지 않습니다. 담당자가 실제 의존 관계인지
+5. 후보는 자동으로 Manifest를 수정하지 않습니다. 담당자가 실제 의존 관계인지
    확인한 뒤 등록합니다.
 
 따라서 실제 변경 파일 자동 포함과 직접 참조 후보 제시는 구현되어 있습니다.
@@ -345,24 +347,43 @@ Manifest는 “현재 버전에서 검사할 10개 파일”을 정의하고, Gi
 
 ### 9.1 자동 생성 도구 사용 여부
 
-현재 저장소에는 OM_TEMP 1.13.0 commit을 읽어 Manifest 등록본을 다시 만드는
-`harness/registrations/om-temp-1.13.0/generate_manifest_drafts.py`가 있습니다.
-다음 명령을 실행하면 기록된 Git commit의 전체 변경 파일을 다시 추출해
-BANK-OM-001~007 Manifest 7개를 생성합니다.
+현재 운영에서는 준비도구가 Git 이력과 기존 등록자료를 비교해 Manifest
+변경안을 만듭니다. `plan`은 실제 등록자료를 바꾸지 않으며, 담당자가 같은
+변경안을 승인한 뒤 `apply`가 승인된 내용만 반영합니다.
 
 ```bash
-./.venv/bin/python \
-  harness/registrations/om-temp-1.13.0/generate_manifest_drafts.py \
-  --repo <OM_TEMP가-있는-절대경로>
+PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py plan \
+  --repo /path/to/OM_TEMP \
+  --registration harness/registrations/om-temp-1.13.0 \
+  --patch-ref origin/fork/om-1.13.0 \
+  --custom-ref origin/custom/om-1.13.0 \
+  --product-version 1.13.0 \
+  --output harness/preparation-plans/om-temp-1.13.0-YYYYMMDD
+
+PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py \
+  approval-template \
+  --proposal harness/preparation-plans/om-temp-1.13.0-YYYYMMDD/proposal.yaml \
+  --output /approved/location/registration-approval.yaml
+
+# 담당자가 proposal·diff·질문을 확인하고 승인서를 작성한 뒤 실행
+PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py apply \
+  --repo /path/to/OM_TEMP \
+  --registration harness/registrations/om-temp-1.13.0 \
+  --proposal harness/preparation-plans/om-temp-1.13.0-YYYYMMDD/proposal.yaml \
+  --approval /approved/location/registration-approval.yaml \
+  --result /approved/location/registration-apply-result.json
 ```
 
-스크립트는 Git이 확정할 수 있는 전체 변경 파일을 ID별 `changed_paths`로
-자동 생성합니다. BANK-OM-007처럼 commit이 두 개면 두 commit의 경로를 한
-목록으로 합칩니다. `required`, 미수정 의존 파일, 계약은 기능 의미를
-판단해야 하므로 스크립트 안의 명시적인 검토값으로 관리합니다.
+준비도구는 Git이 확정할 수 있는 전체 변경 파일을 ID별 `changed_paths`
+변경안으로 만듭니다. BANK-OM-007처럼 commit이 두 개면 두 commit의 경로를
+한 목록으로 합칩니다. `required`, 미수정 의존 파일, Contract는 기능 의미를
+판단해야 하므로 담당자가 검토합니다. Registry는 필요한 변경이 proposal에
+포함된 경우에만 갱신합니다.
 
-`harness/registrations/kb-openmetadata/materialize_exact_scopes.py`는 기존
-1.13.1 등록자료 전용이므로 이번 1.13.0 생성에는 사용하지 않습니다.
+`generate_manifest_drafts.py`는 이전 자동화 호환용 wrapper입니다. 현재 운영
+가이드의 정식 명령은 위 `prepare_registration.py`이며, 과거 인자로 직접
+실행하지 않습니다. `harness/registrations/kb-openmetadata/materialize_exact_scopes.py`는
+기존 1.13.1 등록자료 전용이므로 이번 1.13.0 준비에는 사용하지 않습니다.
 
 ### 9.2 파일 위치
 

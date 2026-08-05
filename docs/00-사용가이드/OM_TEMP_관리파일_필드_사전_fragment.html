@@ -141,7 +141,7 @@ series:
         <article>
           <h3><code>paths</code></h3>
           <p><b>의미</b> 공식 업그레이드 전후에 변경 여부를 비교할 파일 경로입니다.</p>
-          <p><b>작성</b> Manifest 생성기가 실제 변경 경로를 포함하고, 커스터마이징이 직접 의존하지만 수정하지 않은 파일은 제안 결과를 사람이 검토해 추가합니다.</p>
+          <p><b>작성</b> 준비도구가 실제 변경 경로 중 공식 OpenMetadata 포크 브랜치에도 존재하는 경로만 자동 제안하고, 행내 전용 파일과 커스터마이징이 직접 의존하지만 수정하지 않은 파일은 담당자가 추가 여부를 판단합니다.</p>
           <p><b>사용·결과</b> 새 공식 버전에서 경로가 바뀌면 자동 통과시키지 않고 담당자 검토 대상으로 표시합니다.</p>
           <p><b>실제 예시</b> BANK-OM-001이 의존하는 <code>CollectionDAO.java</code>가 공식 1.13.0→1.13.1 사이에서 바뀌면 T42가 APPROVAL을 내고 저장 연결을 다시 확인하게 합니다.</p>
         </article>
@@ -239,7 +239,7 @@ series:
         <p>기존 파일만 다시 수정하든 새 파일을 추가하든, 같은 업무 기능의 보완이면 commit 메시지에 기존 ID를 그대로 남깁니다.</p>
         <pre><code>git commit -m "Tibero 서비스 연결 처리 보완" \
   -m "Customization-ID: BANK-OM-007"</code></pre>
-        <p>생성기는 이 ID와 Git diff를 읽습니다. 기존 등록 파일만 다시 수정했다면 Manifest 경로 목록은 바꾸지 않습니다. 새 파일이 보이면 현재 버전 <code>changed_paths</code> 초안에 합치고, 실제 변경 파일은 <code>upgrade_watch.paths</code>에도 포함합니다. 새 파일이 기능 필수 요소인지, 같은 기능의 연장인지, Contract를 바꿔야 하는지는 담당자가 승인합니다.</p>
+        <p>준비도구는 이 ID와 Git diff를 읽습니다. 기존 등록 파일만 다시 수정했다면 Manifest 경로 목록은 바꾸지 않습니다. 새 파일이 보이면 현재 버전 <code>changed_paths</code> 변경안에 합칩니다. 그중 공식 OpenMetadata 포크 브랜치에도 존재하는 경로만 <code>upgrade_watch.paths</code> 후보로 제안합니다. 행내 전용 파일과 간접 의존 경로를 watch에 넣을지, 새 파일이 기능 필수 요소인지, 같은 기능의 연장인지, Contract를 바꿔야 하는지는 담당자가 판단하고 승인합니다.</p>
         <pre><code>BANK-OM-007
 62e39da8...  최초 8개 파일
 7d19c895...  후속 2개 파일
@@ -307,7 +307,7 @@ changed_paths  현재 검사 범위 10개</code></pre>
   <section class="fd-section" id="inventory">
     <div class="fd-heading">
       <span>04</span>
-      <div><h2>공용 파일 소유정보와 전체 변경 목록</h2><p>여러 기능이 함께 수정한 파일과 공식 원본 대비 모든 변경 경로를 기록합니다.</p></div>
+      <div><h2>경로–BANK-OM 연결표와 전체 변경 목록</h2><p>여러 기능이 함께 수정한 파일과 공식 원본 대비 모든 변경 경로를 기록합니다. 여기서 연결표는 파일의 권한 소유자를 뜻하지 않고, 해당 경로를 변경한 BANK-OM ID를 뜻합니다.</p></div>
     </div>
     <div class="fd-fields">
       <article>
@@ -326,7 +326,7 @@ changed_paths  현재 검사 범위 10개</code></pre>
         <h3><code>source-diff-paths.txt</code></h3>
         <p><b>구조</b> 공식 원본과 행내 snapshot 사이에서 다른 root 기준 파일 경로를 한 줄에 하나씩 적습니다.</p>
         <p><b>작성</b> Git diff로 생성합니다. OM_TEMP 1.13.0 등록본은 111개입니다.</p>
-        <p><b>사용·결과</b> 실제 diff, 모든 Manifest 범위, 공용 파일 소유정보가 전체 변경을 빠짐없이 설명하는지 확인합니다.</p>
+        <p><b>사용·결과</b> 실제 diff, 모든 Manifest 범위, 현재 공용 경로–BANK-OM 연결표가 전체 변경을 빠짐없이 설명하는지 확인합니다.</p>
       </article>
     </div>
   </section>

@@ -6,12 +6,14 @@ const directory = dirname(fileURLToPath(import.meta.url));
 const sourceHtmlName = "OM_TEMP_검사운영위키_구성초안.html";
 const reportDataName = "OM_TEMP_검사운영위키_보고용.js";
 const wikiDataName = "OM_TEMP_검사운영위키_데이터.js";
+const sentenceReviewName = "OM_TEMP_검사운영위키_문장검토.js";
 const outputHtmlName = "OM_TEMP_operations_wiki_Claude_review_20260729.html";
 
-const [sourceHtml, rawReportData, wikiData] = await Promise.all([
+const [sourceHtml, rawReportData, wikiData, sentenceReviewData] = await Promise.all([
   readFile(join(directory, sourceHtmlName), "utf8"),
   readFile(join(directory, reportDataName), "utf8"),
   readFile(join(directory, wikiDataName), "utf8"),
+  readFile(join(directory, sentenceReviewName), "utf8"),
 ]);
 
 const reviewRoutes = new Map([
@@ -116,8 +118,13 @@ const embedScript = (sourceName, source) =>
 
 const reportScriptTag = `<script src="${reportDataName}"></script>`;
 const wikiScriptTag = `<script src="${wikiDataName}"></script>`;
+const sentenceReviewScriptTag = `<script src="${sentenceReviewName}"></script>`;
 
-if (!sourceHtml.includes(reportScriptTag) || !sourceHtml.includes(wikiScriptTag)) {
+if (
+  !sourceHtml.includes(reportScriptTag) ||
+  !sourceHtml.includes(wikiScriptTag) ||
+  !sourceHtml.includes(sentenceReviewScriptTag)
+) {
   throw new Error("Expected local data script tags were not found in the source HTML.");
 }
 
@@ -131,11 +138,16 @@ const standaloneHtml = sourceHtml
     "<title>OpenMetadata 커스터마이징 검사 운영 위키 · Claude 검토용</title>"
   )
   .replace(reportScriptTag, embedScript(reportDataName, reportData))
-  .replace(wikiScriptTag, embedScript(wikiDataName, portableWikiData));
+  .replace(wikiScriptTag, embedScript(wikiDataName, portableWikiData))
+  .replace(
+    sentenceReviewScriptTag,
+    embedScript(sentenceReviewName, sentenceReviewData),
+  );
 
 if (
   standaloneHtml.includes(reportScriptTag) ||
-  standaloneHtml.includes(wikiScriptTag)
+  standaloneHtml.includes(wikiScriptTag) ||
+  standaloneHtml.includes(sentenceReviewScriptTag)
 ) {
   throw new Error("A local data script dependency remains in the standalone HTML.");
 }

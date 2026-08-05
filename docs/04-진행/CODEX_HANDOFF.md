@@ -1,6 +1,51 @@
 # Codex 작업 인수인계
 
-## 0-latest. 2026-07-30 검사 전 준비 자동화 구현
+## 0-latest. 2026-08-04 공용 파일 ID별 코드 정의 검사 구현
+
+### 작업 목적
+
+`shared-path-owners.yaml`은 공용 파일과 BANK-OM ID의 연결만 확인한다. 같은
+파일에 BANK-OM-001·002가 기록돼 있어도 최종 코드에는 001 구현만 남는
+오탐 가능성이 있었다. 공용 파일 안에서 각 ID에 승인된 실제 코드 정의가
+남아 있는지 별도로 검사하도록 보강했다.
+
+### 구현 내용
+
+- `harness/acgh/shared_code.py`: 공용 경로의 BANK-OM ID별 코드 정의 검사
+- `harness/acgh/schema/shared-code-definitions.schema.json`: 관리파일 schema
+- `harness/generate_shared_code_definition_draft.py`: 모든 `공용 경로 + ID`
+  조합의 빈 초안 생성
+- `customization-registry.schema.json`: 새 등록 묶음에서
+  `source.shared_code_definitions: shared-code-definitions.yaml` 선언 허용
+- `registration_prep.py`: 위 선언이 있으면 정의파일을 proposal digest에
+  포함하고 최종 custom commit과 비교
+- 신규 기능 test 12개와 관련 집중 test 35개 통과
+
+Java·TypeScript·TSX·SQL은 주석과 공백을 제외한 코드 토큰을 비교한다. 문자열
+안에 예시 코드가 있거나 주석에 이름만 남은 경우에는 통과하지 않는다. JSON과
+YAML은 pointer와 실제 값을 함께 비교한다. 형식 오류나 모든 공용 경로·ID
+조합을 다 정의하지 않은 경우 `ANALYSIS_ERROR`, 승인한 코드 정의가 최종 custom
+commit에서 사라졌거나 값이 달라진 경우 `BLOCK`이다.
+
+### 호환성과 실제 1.13.1 등록 상태
+
+기존 1.13.0·과거 1.13.1 등록을 소급 변경하지 않는다. Registry에서
+`shared_code_definitions`를 선언한 새 등록 묶음부터 필수 검사로 동작한다.
+현재 준비 중인 실제 1.13.1 기준 Manifest·Registry·Contract는 사용자와 함께
+작성하기로 했으므로 실제 `shared-code-definitions.yaml`도 아직 생성하지 않았다.
+다음 Manifest 정의 단계에서 37개 공용 파일의 실제 diff를 확인해 작성하고 같은
+proposal로 승인한다. 기존 재적용 연습용 `om-temp-1.13.1` 등록 폴더에 임의로
+덮어쓰지 않는다.
+
+이 검사는 코드 정의의 존재·값을 확인할 뿐 실행 동작을 증명하지 않는다. API,
+DB, 검색, 화면 동작은 Contract test가 별도로 확인해야 한다.
+
+전체 `harness/tests`는 사용자 작업 중인 미추적 `test_om_workflow.py`를 제외하고
+390개를 수집해 353개 통과, 외부 환경 의존 37개 skip, 실패 0개다.
+`test_om_workflow.py`는 `from harness import om_workflow` import 오류로 전체 수집을
+막고 있어 이번 변경에서 수정하지 않았다.
+
+## 0-previous. 2026-07-30 검사 전 준비 자동화 구현
 
 독립 검토를 받은 등록자료 준비 설계의 0~6단계를 구현했다.
 구현 commit은 `b63ce67bd303865224339a0dfe6e4becb252bea6`이다.

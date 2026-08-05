@@ -12,6 +12,8 @@ import json
 import sys
 from pathlib import Path
 
+import yaml
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -49,8 +51,10 @@ def main() -> int:
     from acgh import layout
     from acgh import manifest as manifest_module
     from acgh import policy_drift
+    from acgh import shared_code
     from acgh import survival
     from acgh import vendor_rebuild
+    from acgh import verdict
     from acgh import zones
 
     registry, manifests, inventory = vendor_rebuild.load_registration_bundle(
@@ -113,6 +117,34 @@ def main() -> int:
         args.repo, target, head, manifests
     )
     gates = [t25, t26, t60_i, t30, t31, t40, t41, t93]
+    shared_definitions = registry.source.get("shared_code_definitions")
+    if shared_definitions is not None:
+        try:
+            shared_owners = yaml.safe_load(
+                (args.registration / "shared-path-owners.yaml").read_text(
+                    encoding="utf-8"
+                )
+            )
+            shared_gate = shared_code.check_shared_code_definitions(
+                args.repo,
+                head,
+                shared_code.load_catalog(
+                    args.registration / shared_definitions
+                ),
+                shared_owners,
+            )
+        except (
+            OSError,
+            UnicodeError,
+            yaml.YAMLError,
+            shared_code.SharedCodeError,
+        ) as exc:
+            shared_gate = verdict.GateResult(
+                "shared-code-definitions",
+                verdict.ANALYSIS_ERROR,
+                (str(exc),),
+            )
+        gates.append(shared_gate)
     output = {
         "candidate_lock": lock.canonical(),
         "candidate_lock_digest": lock.digest(),

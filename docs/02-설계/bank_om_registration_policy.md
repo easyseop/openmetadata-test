@@ -15,6 +15,7 @@
 | 실제 변경 경로의 `upgrade_watch.paths` 자동 포함 | 구현 완료 | 공식 patch tree에 있는 경로만 자동 포함, 행내 신규 경로는 기능별 사람 판단 |
 | 직접 참조된 공식 변경 파일의 watch 후보 제안 | 구현 완료·담당자 검토 필요 | `watch_suggest.py` |
 | 담당자 `owner` 저장·검증 | 구현 완료·실제 배정 대기 | 별도 `customization-registry.yaml`, T29 |
+| 공용 파일의 ID별 실제 코드 정의 검사 | 구현·단위 테스트 완료, 실제 1.13.1 정의 승인 대기 | `shared-code-definitions.yaml`, `shared_code.py` |
 
 “구현 완료”, “담당자 확인 필요”, “행내 환경 대기”와 “추가 개발 예정”을
 위키에서 섞어 설명하지 않는다.
@@ -60,6 +61,56 @@
 - 공용 파일은 파일 전체의 차이만으로 특정 코드 생존을 증명하기 어려우므로
   코드 내용 검사와 동작 검사를 함께 사용한다.
 
+### 공용 파일의 ID별 코드 정의
+
+`shared-path-owners.yaml`은 한 파일을 어떤 BANK-OM ID가 함께 사용하는지
+기록한다. 이 연결표만으로는 각 ID의 코드가 최종 파일에 실제로 남아 있는지
+판단할 수 없다. 예를 들어 `Entity.java`가 BANK-OM-001과 BANK-OM-002에
+연결돼 있어도, 최종 파일에 BANK-OM-001 코드만 남을 수 있다.
+
+새 등록 묶음에서 이 검사를 사용하려면 Registry의 `source`에 다음 파일을
+선언한다.
+
+```yaml
+source:
+  shared_code_definitions: shared-code-definitions.yaml
+```
+
+`shared-code-definitions.yaml`은 각 `공용 경로 + BANK-OM ID` 조합마다 승인한
+실제 코드 정의를 기록한다. Java·TypeScript·TSX·SQL은 주석과 공백을 제외한
+전체 코드 조각을 검사하고, JSON·YAML은 경로와 값을 함께 검사한다. 주석에
+이름만 남아 있거나 같은 이름의 값이 달라진 경우에는 통과하지 않는다.
+
+```yaml
+schema_version: 1
+definitions:
+  - path: openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
+    customization_id: BANK-OM-001
+    assertions:
+      - id: instance-code-entity-registration
+        matcher: code_fragment
+        fragment: |
+          public static final String INSTANCE_CODE = "instanceCode";
+  - path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+    customization_id: BANK-OM-002
+    assertions:
+      - id: query-report-label
+        matcher: json_value
+        pointer: /label/query-report
+        expected: 보고서 프로젝트
+```
+
+초안 생성기는 `shared-path-owners.yaml`에서 공용 경로와 ID 조합을 모두 만들지만
+`assertions`는 비워 둔다. 어떤 코드 조각이 해당 업무 기능을 증명하는지는 Git이
+결정할 수 없기 때문이다. 담당자가 실제 diff를 확인해 정의를 채운 뒤
+Manifest·Registry·Contract와 같은 proposal에서 승인한다. Registry가 이 파일을
+선언하면 준비도구는 파일 내용을 proposal digest에 포함하고 최종 custom commit의
+코드와 비교한다. 정의 누락·형식 오류는 `ANALYSIS_ERROR`, 승인한 정의의 누락이나
+값 불일치는 `BLOCK`이다.
+
+이 검사는 소스 정의의 존재와 값을 확인한다. API 호출, DB 저장, 화면 동작처럼
+실행 결과가 정상인지는 Contract test가 별도로 확인한다.
+
 실제 예시는 다음과 같다.
 
 ```yaml
@@ -87,8 +138,8 @@ upgrade_watch:
 
 ### 현재 watch 운영
 
-현재 OM_TEMP Manifest 생성기는 각 BANK-OM commit의 실제 변경 경로를 Git에서
-읽고 `changed_paths`와 `upgrade_watch.paths`의 직접 변경 경로 초안을 만든다.
+현재 검사 전 준비도구는 각 BANK-OM commit의 실제 변경 경로를 Git에서 읽고
+`changed_paths`와 `upgrade_watch.paths`의 직접 변경 경로 변경안을 만든다.
 같은 ID의 후속 commit에서 새 파일이 추가되면 기존 목록과 별도 필드로 나누지
 않고 현재 버전의 `changed_paths`에 합친다.
 
@@ -114,20 +165,27 @@ T42는 이전 공식 버전과 새 공식 버전 사이의 Git 변경 경로를
 ## 4. 최초 등록 절차
 
 1. 관리 담당자가 미사용 BANK-OM ID를 발급한다.
-2. 실제 커밋의 변경 파일을 확인해 `changed_paths`에 개별 파일로
-   등록한다.
-3. 누락만으로 기능 소실을 확정할 파일을 `required_changed_paths`로 지정한다.
-4. Manifest 생성기가 실제 변경 경로를 `upgrade_watch.paths`에 포함했는지
-   확인하고, 직접 수정하지 않은 의존 경로를 추가한다.
-5. 직접 참조 후보가 있으면 담당자가 근거를 검토해 반영 여부를 결정한다.
-6. 업무 계약과 실제 테스트를 `assurance`에 연결한다.
-7. 별도 Registry에 담당 조직·상태와 `provenance`를 기록한다. 최초 source
+2. 제품 commit 본문에 `Customization-ID: BANK-OM-NNN`을 기록한다.
+3. Contract에 정상이라고 판단할 업무 동작과 필수 test를 기록하고 새 ID를
+   연결한다.
+4. 공용 변경 파일이 있으면 `shared-path-owners.yaml`로 ID 연결을 확정하고,
+   초안 생성 후 `shared-code-definitions.yaml`에 ID별 실제 코드 정의를 작성한다.
+5. 준비도구의 `plan`을 실행한다. 도구는 실제 commit 변경 파일과 기존
+   등록자료를 비교해 Manifest·Registry 변경안과 사람이 답할 질문을 만든다.
+6. 담당자는 `changed_paths`, `required_changed_paths`,
+   `upgrade_watch.paths`, 의존 경로, 담당 조직과 Contract 연결을 검토한다.
+7. 담당자는 proposal의 digest와 질문별 판단 근거를 승인서에 기록한다.
+8. `apply`는 승인한 변경안과 현재 Git·등록자료가 그대로일 때만 변경 대상
+   Manifest와 `commit-inventory.yaml`, `current-diff-paths.txt`를 반영한다.
+   Registry 변경이 필요한 경우에는 proposal에 표시된 변경도 함께 반영한다.
+   Contract는 자동으로 수정하지 않는다.
+9. Registry에는 담당 조직·상태와 `provenance`를 기록한다. 최초 source
    snapshot에 있던 기능은 `source-snapshot`, snapshot 이후 새 기능은
    `candidate-follow-up`을 명시한다.
-8. 제품 커밋 메시지에 `Customization-ID: BANK-OM-NNN`을 넣는다.
-9. patch-replay 전략을 사용할 때만 Git commit SHA와 적용 순서를 patch-lock에
+10. patch-replay 전략을 사용할 때만 Git commit SHA와 적용 순서를 patch-lock에
    기록한다.
-10. T10·T25·T26·T30·T31·T40·T42·T60-I·T93 검사를 실행한다.
+11. 등록자료 검증과 T10·T25·T26·T30·T31·T40·T60-I·T93 검사를 실행한다.
+    T42는 공식 버전 업그레이드에서만 vendor-merge 전에 실행한다.
 
 ## 5. 같은 ID의 후속 커밋 절차
 
@@ -136,11 +194,17 @@ T42는 이전 공식 버전과 새 공식 버전 사이의 Git 변경 경로를
 
 1. Manifest의 `series.allowed`가 `true`인지 확인한다.
 2. 후속 커밋에도 `Customization-ID: BANK-OM-007`을 넣는다.
-3. 새 파일을 현재 버전 Manifest의 `changed_paths`에 추가한다.
-4. 파일이 필수 구성요소이면 `required_changed_paths`에도 추가한다.
-5. patch-replay 전략을 사용할 때만 새 Git commit SHA와 적용 순서를
+3. 준비도구의 `plan`을 실행해 같은 ID의 commit 이력과 새 변경 경로를
+   자동으로 찾는다.
+4. 담당자는 새 경로가 필수인지, 공식 버전 영향 감시 대상인지, Contract를
+   바꿔야 하는지 검토하고 proposal을 승인한다.
+5. `apply`로 승인한 Manifest와 파생 등록자료 변경안을 반영한다. Registry
+   변경이 필요한 경우에는 proposal에 해당 변경을 함께 표시한다.
+6. patch-replay 전략을 사용할 때만 새 Git commit SHA와 적용 순서를
    patch-lock에 추가한다.
-6. 관련 계약·테스트를 갱신하고 전체 소스 검사를 다시 실행한다.
+7. 관련 Contract·test가 바뀌었다면 담당자가 직접 갱신한다.
+8. 등록자료 검증과 T30·T31·T40·T60-I·T93 등 영향을 받는 소스 검사를 다시
+   실행한다. 같은 공식 버전 안의 후속 commit에는 T42를 실행하지 않는다.
 
 ```yaml
 implementation:
@@ -154,6 +218,24 @@ implementation:
 series:
   allowed: true
 ```
+
+## 6. 공식 버전 업그레이드 절차
+
+1. 새 공식 버전만 담은 OpenMetadata 포크 브랜치를 준비한다.
+2. T42로 이전 공식 버전과 새 공식 버전을 비교해 영향을 받을 BANK-OM ID와
+   경로를 먼저 찾는다.
+3. 직전 커스텀 브랜치와 새 OpenMetadata 포크 브랜치를 vendor-merge한다.
+4. Git 충돌이 있으면 담당자가 코드를 선택·수정하고 해결 commit을 남긴다.
+5. 최종 커스텀 브랜치 commit을 기준으로 `plan → 담당자 승인 → apply`를
+   실행한다.
+6. 등록자료 검사, 소스 검사, build, Contract test, T90 운영 단계 결과 검사를
+   순서대로 수행한다.
+7. 승인된 동일 commit에 검증 완료 tag와 Release lock을 만들고, 조직의
+   승격 절차에 따라 릴리즈 브랜치에 반영한다.
+
+T42는 병합 결과를 검사하지 않는다. 새 공식 버전이 watch 경로를 바꿨는지
+병합 전에 알리는 검사다. vendor-merge 뒤 최종 커스텀 브랜치의 등록·소스 상태는
+다른 검사 단계에서 확인한다.
 
 현재 버전 Manifest는 과거 최초 범위를 보관하는 문서가 아니라 현재 검사 범위를
 정의하는 문서다. 따라서 최초 8개와 후속 2개를 합친 10개를

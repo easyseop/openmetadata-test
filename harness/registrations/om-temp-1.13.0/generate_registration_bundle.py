@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Generate the OM_TEMP 1.13.0 source-registration bundle.
+"""Bootstrap the initial OM_TEMP 1.13.0 source-registration bundle.
+
+Do not use this script for normal follow-up commits or version upgrades. It
+contains the historical 1.13.0 snapshot and human policy values below and
+writes the registration bundle directly. Normal operations must use
+``harness/prepare_registration.py plan``, review/approval, and ``apply``.
 
 Git supplies the pinned source inventory and shared-path candidates. Human
 decisions (titles, criticality, business invariants, and required tests) stay
@@ -220,7 +225,12 @@ def main() -> None:
     parser.add_argument(
         "--patch-ref",
         default="patch/om-1.13.0",
-        help="Local patch branch/tag whose tree must equal upstream-sha",
+        help=(
+            "Local official-code branch/tag whose tree must equal upstream-sha. "
+            "The option name is retained for compatibility; new operations use "
+            "an OpenMetadata fork branch such as fork/om-1.13.0. This bootstrap "
+            "default preserves the historical OM_TEMP branch name."
+        ),
     )
     parser.add_argument(
         "--ancestry-preserved",

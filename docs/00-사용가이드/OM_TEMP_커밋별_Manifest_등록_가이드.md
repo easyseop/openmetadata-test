@@ -20,8 +20,8 @@
 | 구분 | 최초 커스터마이징 등록 | 공식 버전 업그레이드 | 매 검사 실행 |
 |---|---|---|---|
 | Manifest·Registry·Contract | 최초 작성 | 기존 자료를 복사해 새 코드 기준으로 검토·갱신 | 확정본을 읽음 |
-| 공용 파일 소유정보 | 실제 diff의 중복 경로를 계산해 작성 | 새 버전 diff로 다시 계산·검토 | 확정본을 읽음 |
-| 과거 snapshot 경로 소유정보 | 기준 snapshot의 commit 이력에서 자동 생성 | 기준 snapshot SHA가 바뀔 때만 재생성 | 과거 코드 재구성 검사만 읽음 |
+| 현재 공용 경로–BANK-OM 연결표 | 실제 diff의 중복 경로를 계산해 작성 | 새 버전 diff로 다시 계산·검토 | 확정본을 읽음 |
+| 과거 코드 경로–BANK-OM 연결표 | 기준 snapshot의 commit 이력에서 자동 생성 | 기준 snapshot SHA가 바뀔 때만 재생성 | 과거 코드 재구성 검사만 읽음 |
 | 전체 변경 목록 | Git에서 생성 | 새 버전 branch 사이에서 다시 생성 | 실제 Git diff와 비교 |
 | Patch-lock | patch-replay를 쓸 때만 작성 | 재적용 커밋이 바뀌면 새 리비전 작성 | 선택한 전략에서만 읽음 |
 
@@ -852,7 +852,7 @@ series:
 | `required_changed_paths` | 기능이 적용됐음을 판단하는 핵심 구현 파일 | 파일이 없거나 공식 원본과 같아지면 기능이 빠진 것으로 보고 차단 |
 | `upgrade_watch.paths` | 공식 버전 변경 비교 검사가 확인할 경로 | 공식 새 버전에서 해당 경로가 바뀌면 자동 통과하지 않고 재검토를 요구 |
 
-공식 버전 변경 비교 검사(검사기 내부 이름 `T42`)는 이전 버전과 새 버전의 OpenMetadata에서 지정 경로가 바뀌었는지 확인하는 검사입니다. `upgrade_watch.paths`에는 현재 T42 구현에 맞춰 해당 ID의 변경 범위 전체와 직접 수정하지 않았지만 기능이 의존하는 공식 파일을 함께 넣었습니다. 따라서 watch에 있다고 해서 그 파일을 이 커밋이 반드시 수정했다는 뜻은 아닙니다.
+공식 버전 변경 비교 검사(검사기 내부 이름 `T42`)는 이전 공식 버전과 새 공식 버전 사이에서 지정 경로가 바뀌었는지 확인합니다. 준비도구는 `changed_paths` 중 공식 OpenMetadata 포크 브랜치에도 존재하는 경로만 `upgrade_watch.paths` 후보로 제안합니다. 행내 전용 파일과 직접 수정하지 않은 의존 경로는 담당자가 기능 관계를 확인해 추가합니다. 따라서 watch에 있다고 해서 그 파일을 해당 커밋이 반드시 수정했다는 뜻은 아닙니다.
 
 [Manifest의 `assurance`·`series`와 나머지 관리파일 필드까지 보는 전체 필드 사전](OM_TEMP_관리파일_필드_사전_미리보기.html)
 
@@ -907,7 +907,7 @@ entries:
 </details>
 
 <details>
-<summary><strong>2-3. 공용 파일 소유정보 · 한 파일을 함께 변경한 ID</strong></summary>
+<summary><strong>2-3. 현재 공용 경로–BANK-OM 연결표 · 한 파일을 함께 변경한 ID</strong></summary>
 
 **의미:** 현재 버전에서 여러 BANK-OM이 같은 파일을 정상적으로 변경했다는 사실과 실제 소유 ID를 기록합니다.
 
@@ -930,7 +930,7 @@ openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService
 </details>
 
 <details>
-<summary><strong>2-4. 과거 snapshot 경로 소유정보 · 재구성 시점 전용</strong></summary>
+<summary><strong>2-4. 과거 코드 경로–BANK-OM 연결표 · 재구성 시점 전용</strong></summary>
 
 **의미:** 최초 등록에 사용한 과거 행내 code snapshot에서 각 변경 파일이 어느 BANK-OM 기능에 속했는지 기록합니다. 현재 Manifest 범위를 나누는 자료가 아니라 T25-R 과거 코드 재구성 검사 전용 자동 생성 자료입니다.
 
@@ -946,9 +946,9 @@ openmetadata-ui/.../serviceConnection.ts:
 </details>
 
 <details>
-<summary><strong>2-5. 전체 변경 목록 · patch와 custom 사이의 111개 경로</strong></summary>
+<summary><strong>2-5. 전체 변경 목록 · OpenMetadata 포크와 커스텀 브랜치 사이의 111개 경로</strong></summary>
 
-**의미:** `patch/om-1.13.0`과 `custom/om-1.13.0` 사이에서 최종적으로 달라진 모든 파일 경로입니다.
+**의미:** `fork/om-1.13.0`과 `custom/om-1.13.0` 사이에서 최종적으로 달라진 모든 파일 경로입니다.
 
 **생성·갱신 시점:** 검사 대상 commit이 확정된 뒤 Git으로 생성하며, 업그레이드 버전마다 다시 생성합니다. 사람이 111개를 직접 작성하지 않습니다.
 
@@ -987,12 +987,29 @@ patch_series:
 <details>
 <summary><strong>2-7. 실제 생성 명령과 사전검증 결과</strong></summary>
 
-첫 명령은 Git diff에서 자동 계산할 수 있는 Registry 뼈대, 공용 경로와 111개 목록을 만듭니다. Contract의 정상 조건과 담당자는 사람이 검토해야 하므로 자동 생성값을 그대로 배포 승인으로 사용하지 않습니다.
+일반 운영에서는 준비도구가 Git 이력과 기존 등록자료를 비교해 변경안을 만듭니다. `plan`은 실제 등록자료를 바꾸지 않으며, 담당자가 같은 변경안을 승인한 뒤 `apply`가 변경 대상 Manifest와 파생 등록자료를 반영합니다. Registry 변경이 필요한 경우에만 제안에 포함되며 Contract는 사람이 직접 작성합니다.
 
 ```bash
-./.venv/bin/python \
-  harness/registrations/om-temp-1.13.0/generate_registration_bundle.py \
-  --repo ../om-temp-1.13.0-custom
+PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py plan \
+  --repo /path/to/OM_TEMP \
+  --registration harness/registrations/om-temp-1.13.0 \
+  --patch-ref origin/fork/om-1.13.0 \
+  --custom-ref origin/custom/om-1.13.0 \
+  --product-version 1.13.0 \
+  --output harness/preparation-plans/om-temp-1.13.0-YYYYMMDD
+
+PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py \
+  approval-template \
+  --proposal harness/preparation-plans/om-temp-1.13.0-YYYYMMDD/proposal.yaml \
+  --output /approved/location/registration-approval.yaml
+
+# 담당자가 proposal과 질문을 검토하고 승인서를 작성한 뒤 실행
+PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py apply \
+  --repo /path/to/OM_TEMP \
+  --registration harness/registrations/om-temp-1.13.0 \
+  --proposal harness/preparation-plans/om-temp-1.13.0-YYYYMMDD/proposal.yaml \
+  --approval /approved/location/registration-approval.yaml \
+  --result /approved/location/registration-apply-result.json
 
 ./.venv/bin/python \
   harness/registrations/om-temp-1.13.0/validate_registration_bundle.py \
@@ -1005,7 +1022,7 @@ patch_series:
 | Manifest 구조와 작성 규칙 | PASS · 7개 | 필수 항목과 경로 규칙이 맞는지 |
 | Registry·Manifest·Contract 연결 | PASS · 7개 ID | 세 자료가 같은 BANK-OM을 가리키는지 |
 | Git 전체 변경 목록 | PASS · 111개 경로 | 저장한 목록과 실제 Git diff가 같은지 |
-| 공용 파일 소유정보 | PASS · 37개 경로 | 중복 경로의 모든 BANK-OM이 등록됐는지 |
+| 현재 공용 경로–BANK-OM 연결표 | PASS · 37개 경로 | 중복 경로의 모든 BANK-OM이 등록됐는지 |
 | 필수 테스트 코드 존재 | PASS · 9개 | 등록한 Python test 파일과 함수가 실제로 있는지 |
 
 이 PASS는 **검사 입력자료가 서로 일치한다**는 뜻입니다. 아직 test 실행 성공이나 배포 승인을 뜻하지 않습니다.
@@ -1024,8 +1041,8 @@ patch_series:
 ```bash
 git clone https://github.com/easyseop/OM_TEMP.git
 cd OM_TEMP
-git fetch origin patch/om-1.13.0 custom/om-1.13.0
-git rev-parse origin/patch/om-1.13.0
+git fetch origin fork/om-1.13.0 custom/om-1.13.0
+git rev-parse origin/fork/om-1.13.0
 git rev-parse origin/custom/om-1.13.0
 ```
 
@@ -1034,13 +1051,13 @@ git rev-parse origin/custom/om-1.13.0
 </details>
 
 <details>
-<summary><strong>3-2. 공식 1.13.0과 OM_TEMP patch 기준 연결 주의사항</strong></summary>
+<summary><strong>3-2. 공식 1.13.0과 OM_TEMP 공식 코드 기준 연결 주의사항</strong></summary>
 
 OM_TEMP는 공식 OpenMetadata의 과거 변경 이력 전체를 가져오지 않고, 공식 1.13.0 파일만 새로운 Git 변경 기록으로 저장했습니다. 따라서 파일 내용이 같아도 두 Git 번호는 다릅니다.
 
 ```text
 공식 OpenMetadata 1.13.0 Git 번호: f329dd4a...
-OM_TEMP patch/om-1.13.0 Git 번호: 2f4f3560...
+OM_TEMP 과거 공식 코드 브랜치 Git 번호: 2f4f3560...
 두 버전의 파일 내용이 같음을 확인하는 값: da56c24d...
 ```
 

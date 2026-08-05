@@ -32,7 +32,7 @@ def markdown() -> str:
 
 > 공식 기준: OpenMetadata `1.13.0-release` → `1.13.1-release`
 >
-> 로컬 branch: `patch/om-1.13.1`, `custom/om-1.13.1`
+> 로컬 브랜치: `fork/om-1.13.1`, `custom/om-1.13.1`
 >
 > 최종 검사 대상 Git 번호: `dee330ebd5abfe33e1ac61e1ca31879746a1b423`
 
@@ -54,6 +54,24 @@ def markdown() -> str:
 여기서 **Manifest**는 BANK-OM별 변경 경로, 반드시 유지할 구현 경로, 공식
 업그레이드 때 확인할 경로와 연결 test를 기록한 커스터마이징 등록 문서입니다.
 
+### 정식 운영에서 따를 전체 순서
+
+이 연습의 커밋별 재적용 순서와 정식 운영 절차를 혼동하면 안 됩니다. 정식
+운영에서는 다음 순서를 사용합니다.
+
+```text
+새 공식 버전의 OpenMetadata 포크 브랜치 준비
+→ T42로 이전 공식 버전과 새 공식 버전의 영향 경로 확인
+→ 직전 커스텀 브랜치와 새 포크 브랜치를 vendor-merge
+→ Git 충돌 해결
+→ 최종 커스텀 브랜치 기준 plan → 담당자 승인 → apply
+→ 등록자료 검사 → 소스 검사 → build·Contract test → T90
+→ 검증 완료 tag·Release lock → 릴리즈 브랜치 승격
+```
+
+T42는 병합 결과를 검사하는 단계가 아니라, 새 공식 버전이 BANK-OM의 watch
+경로를 바꿨는지 병합 전에 알려주는 단계입니다.
+
 ## 2. 적용 전에 확인한 영향
 
 이 결과는 **공식 변경 영향 확인 검사(upgrade-watch, T42)**가 만들었습니다.
@@ -66,21 +84,24 @@ def markdown() -> str:
 
 `upgrade_watch.paths`는 현재 다음 방식으로 등록합니다.
 
-- Manifest 생성기가 해당 BANK-OM commit에서 실제 변경한 전체 경로를 Git에서
-  읽어 자동으로 포함합니다.
+- 준비도구(plan)가 BANK-OM commit의 실제 변경 경로 중 **공식 OpenMetadata 포크
+  브랜치에도 존재하는 경로**를 자동 후보로 제안합니다.
+- 공식 코드에 없는 행내 전용 파일과 간접 의존 경로는 담당자 질문으로 남겨 사람이
+  watch 포함 여부를 결정합니다.
 - 행내에서 수정하지 않았지만 기능이 의존하는 경로는 담당자가
   `watch_dependencies`에 적습니다.
 - 새 공식 버전에서 바뀐 파일 이름을 커스터마이징 코드가 직접 참조하면 검사기가
   추가 watch 후보와 참조 근거를 제시합니다. 담당자가 확인한 뒤 Manifest에
   반영합니다.
 
-따라서 실제 변경 경로 자동 포함과 직접 참조 후보 제시는 현재 구현되어 있습니다.
+따라서 공식 코드에도 있는 직접 변경 경로의 자동 제안과 직접 참조 후보 제시는 현재
+구현되어 있습니다.
 다만 간접 호출이나 런타임 설정처럼 코드에 이름이 드러나지 않는 의존 관계는
 담당자가 직접 확인해야 합니다.
 
 이 단계의 Git 비교 대상은 **공식 이전 버전과 공식 새 버전**입니다.
-행내 branch로 실행할 때는 공식 코드만 담은 `patch/om-1.13.0`과
-`patch/om-1.13.1`을 비교해도 같은 결과가 나옵니다. 커스터마이징이 들어간
+제품 코드 저장소에서 실행할 때는 공식 코드만 담은 `fork/om-1.13.0`과
+`fork/om-1.13.1`을 비교해도 같은 결과가 나옵니다. 커스터마이징이 들어간
 `custom/...` branch는 이 비교에 사용하지 않고, 영향 검토가 끝난 뒤 BANK-OM
 재적용과 소스 검사 단계에서 별도로 확인합니다.
 
@@ -94,16 +115,17 @@ def markdown() -> str:
 | BANK-OM-006 | 4개 |
 | BANK-OM-007 | 1개 |
 
-## 3. branch 생성과 커스터마이징 적용
+## 3. 브랜치 생성과 커스터마이징 적용
 
 ```bash
-git worktree add -b patch/om-1.13.1 \\
+git worktree add -b fork/om-1.13.1 \\
   ../om-temp-1.13.1-upgrade 1.13.1-release
 git -C ../om-temp-1.13.1-upgrade switch -c custom/om-1.13.1
 ```
 
-`patch/om-1.13.1`은 공식 1.13.1 코드만 보관합니다. `custom/om-1.13.1`은
-그 위에 BANK-OM 커밋을 적용한 검사 대상 branch입니다. 두 branch는 현재 로컬에만
+`fork/om-1.13.1`은 공식 1.13.1 코드만 보관하는 OpenMetadata 포크 브랜치입니다.
+`custom/om-1.13.1`은 그 위에 BANK-OM 커밋을 적용한 검사 대상 커스텀 브랜치입니다.
+두 브랜치는 현재 로컬에만
 있고 GitHub에는 아직 push하지 않았습니다.
 
 이 단계의 최종 검사 대상 Git 번호 `dee330ebd5...`는 공식 버전 번호나
@@ -142,8 +164,8 @@ branch 전체를 병합해도 같은 코드 구간이 겹치면 충돌할 수 �
 
 이번에는 BANK-OM별 충돌 파일을 바로 식별하려고 `cherry-pick`을 사용했습니다.
 따라서 아래 결과가 증명하는 범위는 **commit별 재적용에서 발생한 충돌과 해결
-과정**입니다. 실제 운영 전략을 `vendor-merge`로 정한다면 patch branch와 custom
-branch를 실제 방식으로 합친 뒤 검사기까지 실행하는 별도 운영경로 검증이
+과정**입니다. 실제 운영 전략을 `vendor-merge`로 정한다면 OpenMetadata 포크
+브랜치와 커스텀 브랜치를 실제 방식으로 합친 뒤 검사기까지 실행하는 별도 운영경로 검증이
 필요합니다.
 
 ```text
@@ -387,8 +409,14 @@ commit 본문에 있는 `Customization-ID: BANK-OM-001`에서 확인할 수 있�
 ## 5. 1.13.1 기준자료 다시 생성
 
 1.13.0 자료를 그대로 검사하지 않고 `om-temp-1.13.1` 등록 폴더를 새로
-만들었습니다. Manifest와 Contract의 업무 기준은 재사용하고, 공식 SHA·검사 대상
-SHA·전체 diff·공용 경로·정책 파일은 1.13.1 기준으로 다시 생성했습니다.
+만들었습니다. 새 버전 운영에서는 최종 커스텀 브랜치를 기준으로 준비도구의
+`plan → 담당자 승인 → apply`를 실행합니다. 도구는 Manifest와 파생 등록자료의
+변경안을 만들고, Registry 변경이 필요한 경우에만 proposal에 함께 표시합니다.
+Contract는 업무 동작과 필수 test가 달라진 경우 담당자가 직접 갱신합니다.
+
+이번 연습 자료는 자동화 도입 전에 만든 과거 진단 결과이므로 공식 SHA·검사 대상
+SHA·전체 diff·공용 경로·정책 파일을 1.13.1 기준으로 다시 생성했습니다. 이
+과거 생성 방식을 일반 후속 commit의 운영 명령으로 사용하지 않습니다.
 
 | 자료 | 실제 결과 |
 |---|---:|
@@ -444,7 +472,7 @@ URL이 준비된 행내 환경에서 나머지 7개를 실행해야 합니다.
 | 전체 코드가 build되는지 | 미충족 | Java·Maven·Yarn 환경이 없어 미실행 |
 | 실제 업무 기능이 정상 동작하는지 | 부분 충족 | 2개 PASS, 7개는 행내 서버·브라우저가 없어 SKIP |
 | 사람이 충돌 해결을 승인했는지 | 미충족 | 선택·승인자·승인 시각 기록 없음 |
-| 배포 가능한 상태인지 | 미충족 | build·남은 test·승인·검증 tag가 필요 |
+| 배포 가능한 상태인지 | 미충족 | build·남은 test·승인·검증 완료 태그·Release lock·릴리즈 브랜치 승격이 필요 |
 
 따라서 현재 검사기로는 **공식 변경 영향, BANK-OM commit 적용, 파일 범위,
 필수 구현 파일과 테스트 코드의 존재**까지 확인할 수 있습니다. 하지만
@@ -550,6 +578,13 @@ code{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}} p code,li code,t
   <strong>결론:</strong> 커밋별 재적용으로 만든 후보에서 BANK-OM-001~007의 소스 범위는 확인했습니다.
   그러나 실제 vendor-merge 기록, 전체 build, Contract test 7개, 담당자 승인과 배포 검증은 남아 있습니다.
 </section>
+<section class="summary">
+  <strong>정식 운영 순서:</strong> 새 공식 버전의 OpenMetadata 포크 브랜치 준비
+  → T42 사전 영향 확인 → vendor-merge → 충돌 해결 → 최종 커스텀 브랜치 기준
+  plan·담당자 승인·apply → 등록·소스·build·Contract test·T90 검사
+  → 검증 완료 tag·Release lock → 릴리즈 브랜치 승격. T42는 병합 결과 검사가
+  아니라 병합 전에 공식 변경 영향을 알리는 검사입니다.
+</section>
 <table><thead><tr><th>단계</th><th>현재 자동으로 하는 일</th><th>담당자가 해야 하는 일</th></tr></thead><tbody>
   <tr><td>사전 설정</td><td>Git에서 실제 변경 파일을 읽어 Manifest 초안을 만듦</td><td>파일을 어느 BANK-OM으로 묶을지, 필수 파일·간접 영향·업무 테스트 기준을 확정</td></tr>
   <tr><td>업그레이드 영향 확인</td><td>공식 두 버전의 변경 파일과 감시 경로를 비교</td><td>APPROVAL로 표시된 변경이 행내 기능에 미치는 영향 검토</td></tr>
@@ -571,7 +606,7 @@ code{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}} p code,li code,t
     <tr><td>005</td><td>1개</td><td>package.json</td></tr><tr><td>006</td><td>4개</td><td>ServiceIconUtils.ts</td></tr>
     <tr><td>007</td><td>1개</td><td>ServiceIconUtils.ts</td></tr>
   </tbody></table>
-  <p class="note"><strong>어떤 코드끼리 비교했나?</strong> 이 단계는 커스터마이징이 없는 공식 1.13.0과 공식 1.13.1의 Git 변경 경로를 비교합니다. 행내에서는 공식 코드만 담은 <code>patch/om-1.13.0</code>과 <code>patch/om-1.13.1</code>을 비교해도 같습니다. <code>custom/...</code> branch는 영향 검토 후 BANK-OM 재적용과 소스 검사에서 별도로 확인합니다.</p>
+  <p class="note"><strong>어떤 코드끼리 비교했나?</strong> 이 단계는 커스터마이징이 없는 공식 1.13.0과 공식 1.13.1의 Git 변경 경로를 비교합니다. 제품 코드 저장소에서는 공식 코드만 담은 <code>fork/om-1.13.0</code>과 <code>fork/om-1.13.1</code>을 비교합니다. <code>custom/...</code> 브랜치는 영향 검토 후 BANK-OM 병합과 소스 검사에서 별도로 확인합니다.</p>
   <h3 class="subhead">watch 경로는 어떻게 등록됐나?</h3>
   <table><thead><tr><th>등록 내용</th><th>이번 자료의 방식</th><th>한계</th></tr></thead><tbody>
     <tr><td>BANK-OM commit이 실제 변경한 경로</td><td><span class="status-ok">Manifest 생성기가 Git에서 자동 포함</span></td><td>파일 관계의 의미까지 판단하는 것은 아님</td></tr>
@@ -581,10 +616,10 @@ code{{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}} p code,li code,t
   <p>실제 변경 경로 자동 포함과 직접 참조 후보 제시는 현재 동작합니다. 후보는 자동으로 Manifest를 수정하지 않으며, 간접 의존 관계는 담당자가 확인해 등록합니다.</p>
 </div></details>
 
-<details open><summary><span class="n">2</span><span class="title"><strong>branch 생성</strong><small>공식 코드와 커스터마이징 적용 코드를 분리</small></span></summary>
+<details open><summary><span class="n">2</span><span class="title"><strong>브랜치 생성</strong><small>공식 코드·검사 후보·운영 배포 기준을 분리</small></span></summary>
 <div class="body">
-  <div class="flow"><div><b>공식 버전 표시(tag)</b>1.13.1-release</div><div><b>공식 코드 branch</b>patch/om-1.13.1</div><div><b>행내 코드 branch</b>custom/om-1.13.1</div><div><b>검사한 Git 번호</b>dee330ebd5...</div></div>
-  <pre><code>git worktree add -b patch/om-1.13.1 ../om-temp-1.13.1-upgrade 1.13.1-release
+  <div class="flow"><div><b>공식 버전 표시(tag)</b>1.13.1-release</div><div><b>OpenMetadata 포크 브랜치</b>fork/om-1.13.1</div><div><b>커스텀 브랜치</b>custom/om-1.13.1</div><div><b>검증 완료 태그</b>verified/om-1.13.1-bank.1</div><div><b>운영 릴리즈 브랜치</b>release/om-1.13.1</div></div>
+  <pre><code>git worktree add -b fork/om-1.13.1 ../om-temp-1.13.1-upgrade 1.13.1-release
 git -C ../om-temp-1.13.1-upgrade switch -c custom/om-1.13.1</code></pre>
   <p><strong><code>dee330ebd5...</code>는 무엇인가?</strong> 공식 버전 번호나 BANK-OM ID가 아닙니다. 공식 1.13.1 위에 BANK-OM-001~007의 변경 기록 8개를 모두 적용한 뒤, Git이 그 최종 코드 상태에 부여한 번호입니다.</p>
   <div class="flow"><div><b>공식 시작점</b><code>afcb2d2...</code><br>공식 1.13.1</div><div><b>순차 적용</b>BANK-OM-001~006</div><div><b>마지막 기능</b>BANK-OM-007과 후속 보완</div><div><b>최종 코드 상태</b><code>dee330ebd5...</code><br>검사기가 고정한 대상</div></div>
@@ -787,7 +822,8 @@ plan_digest: sha256:...</code></pre>
 
 <details><summary><span class="n">4</span><span class="title"><strong>1.13.1 기준자료 생성</strong><small>버전별 SHA와 diff를 다시 고정</small></span></summary>
 <div class="body">
-  <p>업무 기준인 Manifest와 Contract는 재사용했습니다. 공식 SHA, 검사 대상 SHA, 전체 변경 목록, 공용 경로와 정책 SHA는 1.13.1 기준으로 다시 생성했습니다.</p>
+  <p>새 버전 운영에서는 최종 커스텀 브랜치를 기준으로 준비도구의 <code>plan → 담당자 승인 → apply</code>를 실행합니다. 도구는 Manifest와 파생 등록자료의 변경안을 만들고, Registry 변경이 필요한 경우에만 proposal에 표시합니다. Contract는 업무 동작이나 필수 test가 달라진 경우 담당자가 직접 갱신합니다.</p>
+  <p class="note">아래 수치는 자동화 도입 전에 만든 이번 과거 진단 결과입니다. 당시에는 공식 SHA, 검사 대상 SHA, 전체 변경 목록, 공용 경로와 정책 SHA를 1.13.1 기준으로 다시 생성했습니다. 이 방식을 일반 후속 commit의 운영 명령으로 사용하지 않습니다.</p>
   <table><thead><tr><th>자료</th><th>실제 결과</th></tr></thead><tbody>
     <tr><td>Manifest / Registry</td><td>7개 / 7개 ID</td></tr><tr><td>Contract</td><td>7개, 필수 Python test 9개</td></tr>
     <tr><td>전체 변경 경로</td><td>111개</td></tr><tr><td>공용 경로</td><td>37개</td></tr>
@@ -833,7 +869,7 @@ plan_digest: sha256:...</code></pre>
     <tr><td>전체 코드 build</td><td class="status-no">미충족</td><td>Java·Maven·Yarn 환경이 없어 미실행</td></tr>
     <tr><td>실제 업무 기능 동작</td><td class="status-part">부분 충족</td><td>필수 2개 PASS, 7개는 행내 서버·브라우저가 없어 SKIP</td></tr>
     <tr><td>사람의 충돌 해결 승인</td><td class="status-no">미충족</td><td>선택·승인자·승인 시각 기록 없음</td></tr>
-    <tr><td>배포 가능한 상태</td><td class="status-no">미충족</td><td>build·남은 test·승인·검증 tag 필요</td></tr>
+    <tr><td>배포 가능한 상태</td><td class="status-no">미충족</td><td>build·남은 test·승인·검증 완료 태그·Release lock·릴리즈 브랜치 승격 필요</td></tr>
   </tbody></table>
   <p class="note"><strong>현재 검사기로 확인 가능한 범위:</strong> 공식 변경 영향, BANK-OM commit 적용, 변경 파일 범위, 필수 구현 파일과 테스트 코드의 존재입니다. 실제 vendor-merge 수행 여부는 이번 증거로 확인되지 않았습니다.</p>
   <p class="warning"><strong>아직 증명하지 못한 범위:</strong> 전체 build 성공, 실제 화면·API 업무 동작, 사람의 승인과 배포 안전성입니다. 따라서 현재 결과는 <strong>소스 수준 업그레이드 검증 완료</strong>이지 <strong>배포 승인 완료</strong>가 아닙니다.</p>

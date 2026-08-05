@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OM_TEMP 1.13.1 실제 커스터마이징 기준환경 예행연습</title>
+  <style>
+    :root { --navy:#14213d; --blue:#2563eb; --pale:#eff6ff; --orange:#ea580c; --green:#15803d; --ink:#172033; --muted:#596579; --line:#d9e2ef; --paper:#fff; --bg:#f4f7fb; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; color:var(--ink); background:var(--bg); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif; line-height:1.72; }
+    .layout { display:grid; grid-template-columns:260px minmax(0,980px); gap:28px; max-width:1320px; margin:auto; padding:28px; }
+    nav { position:sticky; top:20px; align-self:start; background:#fff; border:1px solid var(--line); border-radius:18px; padding:22px; box-shadow:0 10px 30px rgba(20,33,61,.06); }
+    nav strong { display:block; font-size:14px; color:var(--blue); margin-bottom:12px; }
+    nav a { display:block; color:#445066; text-decoration:none; padding:7px 0; font-size:14px; }
+    nav a:hover { color:var(--blue); }
+    main { min-width:0; }
+    .hero { color:#fff; border-radius:26px; padding:46px; background:linear-gradient(135deg,#152b61,#2d63e2); box-shadow:0 24px 60px rgba(37,99,235,.18); }
+    .hero .eyebrow { display:inline-block; border:1px solid rgba(255,255,255,.4); border-radius:999px; padding:6px 12px; font-size:13px; }
+    h1 { margin:18px 0 10px; font-size:40px; line-height:1.25; letter-spacing:-.04em; }
+    .hero p { margin:0; color:#dbeafe; font-size:18px; }
+    .stop { margin-top:24px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.28); border-radius:16px; padding:16px 18px; }
+    section { background:#fff; margin-top:22px; padding:34px; border:1px solid var(--line); border-radius:22px; box-shadow:0 12px 36px rgba(20,33,61,.05); }
+    h2 { margin:0 0 18px; font-size:26px; letter-spacing:-.025em; }
+    h3 { margin:30px 0 10px; font-size:20px; }
+    h4 { margin:24px 0 8px; font-size:17px; }
+    p { margin:8px 0 14px; }
+    .flow { display:grid; grid-template-columns:1fr 44px 1fr 44px 1fr; align-items:center; gap:8px; margin:24px 0; }
+    .node { min-height:132px; padding:22px 18px; border-radius:18px; border:2px solid #93b4ff; background:var(--pale); text-align:center; }
+    .node.orange { border-color:#fdba74; background:#fff7ed; }
+    .node.stop-node { border-color:#fca5a5; background:#fff1f2; }
+    .arrow { text-align:center; font-size:28px; color:var(--blue); }
+    .badge { display:inline-block; border-radius:999px; padding:4px 9px; font-size:12px; font-weight:700; color:#1e40af; background:#dbeafe; }
+    .badge.green { color:#166534; background:#dcfce7; }
+    .badge.orange { color:#9a3412; background:#ffedd5; }
+    table { width:100%; border-collapse:collapse; margin:16px 0; font-size:14px; }
+    th,td { padding:12px 13px; border:1px solid var(--line); text-align:left; vertical-align:top; }
+    th { background:#f1f5f9; }
+    code { font-family:"SFMono-Regular",Consolas,monospace; }
+    pre { overflow:auto; background:#101827; color:#e5edf9; border-radius:14px; padding:17px 19px; line-height:1.55; font-size:13px; }
+    pre code { white-space:pre-wrap; overflow-wrap:anywhere; }
+    .meta { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+    .card { border:1px solid var(--line); border-radius:15px; padding:16px; background:#fbfdff; }
+    .card strong { display:block; margin-bottom:4px; }
+    .result { border-left:5px solid var(--green); background:#f0fdf4; padding:16px 18px; border-radius:12px; }
+    .warning { border-left:5px solid var(--orange); background:#fff7ed; padding:16px 18px; border-radius:12px; }
+    .io { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0; }
+    .io div { padding:13px 15px; border-radius:12px; background:#f8fafc; border:1px solid var(--line); }
+    ul { padding-left:22px; }
+    footer { color:var(--muted); text-align:center; padding:26px; font-size:13px; }
+    @media (max-width:900px) { .layout{display:block;padding:14px} nav{position:static;margin-bottom:16px}.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}.meta,.io{grid-template-columns:1fr}.hero{padding:30px}h1{font-size:31px} }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <nav>
+    <strong>예행연습 목차</strong>
+    <a href="#purpose">1. 목적과 종료점</a>
+    <a href="#inputs">2. 입력 기준</a>
+    <a href="#result">3. 실제 결과</a>
+    <a href="#run">4. 단계별 실행</a>
+    <a href="#verify">5. 검증 결과</a>
+    <a href="#stop">6. 여기서 멈추는 이유</a>
+    <a href="#next">7. 다음 시작점</a>
+  </nav>
+  <main>
+    <header class="hero">
+      <span class="eyebrow">실제 코드 기준환경 · 2026-08-04</span>
+      <h1>OM_TEMP 1.13.1<br>실제 커스터마이징 기준환경 예행연습</h1>
+      <p>공식 1.13.1과 실제 kb_openmetadata 코드를 정확히 복원하고, 등록자료 작성 직전에서 멈춥니다.</p>
+      <div class="stop"><strong>이번 종료점</strong> — Manifest·Registry·Contract를 만들지 않은 상태의 <code>official/om-1.13.1</code> + <code>custom/om-1.13.1</code></div>
+      <div class="stop"><strong>연속 작업기록</strong> — 목적·결정·검증·다음 시작점은 <code>OM_TEMP_작업기록_및_인수인계.md</code>에 누적합니다.</div>
+    </header>
+
+    <section id="purpose">
+      <h2>1. 무엇을 만드는가</h2>
+      <div class="flow">
+        <div class="node"><span class="badge">공식 기준</span><h3>official/om-1.13.1</h3><p>OpenMetadata 공식 1.13.1 전체 파일 상태</p></div>
+        <div class="arrow">→</div>
+        <div class="node orange"><span class="badge orange">실제 행내 코드</span><h3>custom/om-1.13.1</h3><p>kb_openmetadata의 실제 커스터마이징 전체 파일 상태</p></div>
+        <div class="arrow">→</div>
+        <div class="node stop-node"><span class="badge orange">STOP</span><h3>등록 전 중단</h3><p>Manifest·Registry·Contract는 사용자와 함께 작성</p></div>
+      </div>
+      <div class="warning"><strong>release branch는 만들지 않습니다.</strong> 최초 기준환경은 업그레이드 검사 통과 결과가 아닙니다. 이후 1.13.2 업그레이드와 검사·승인을 통과한 코드에서 처음 만듭니다.</div>
+    </section>
+
+    <section id="inputs">
+      <h2>2. 복원에 사용한 입력</h2>
+      <table>
+        <thead><tr><th>구분</th><th>값</th><th>뜻</th></tr></thead>
+        <tbody>
+          <tr><td>공식 commit</td><td><code>afcb2d2cd7e7…</code></td><td>공식 1.13.1 릴리스 코드 위치</td></tr>
+          <tr><td>공식 tree</td><td><code>a8290d23b0fb…</code></td><td>공식 1.13.1 전체 파일 상태 번호</td></tr>
+          <tr><td>실제 snapshot commit</td><td><code>2c2347043235…</code></td><td>로컬 kb_openmetadata에서 복원한 코드 위치</td></tr>
+          <tr><td>실제 snapshot tree</td><td><code>1df344b65844…</code></td><td>실제 커스터마이징 전체 파일 상태 번호</td></tr>
+        </tbody>
+      </table>
+      <p><strong>commit</strong>은 이력의 위치, <strong>tree</strong>는 그 위치의 전체 파일 상태입니다. “실제 원본과 같은가”는 tree 번호와 전체 diff로 확인합니다.</p>
+    </section>
+
+    <section id="result">
+      <h2>3. 완료된 결과</h2>
+      <div class="meta">
+        <div class="card"><span class="badge green">완료</span><strong>official/om-1.13.1</strong><code>e6199070c35f717f…</code><p>공식 1.13.1 tree와 일치</p></div>
+        <div class="card"><span class="badge green">완료</span><strong>custom/om-1.13.1</strong><code>59dae915342eaa3b…</code><p>실제 kb_openmetadata tree와 일치</p></div>
+      </div>
+      <div class="result"><strong>원격 위치</strong> — 두 브랜치 모두 <code>easyseop/OM_TEMP</code>에 푸시했습니다.</div>
+    </section>
+
+    <section id="run">
+      <h2>4. 단계별 실행</h2>
+      <h3>4-1. 별도 작업 폴더 만들기</h3>
+      <div class="io"><div><strong>입력</strong><br>OM_TEMP 접근 권한</div><div><strong>출력</strong><br>기존 작업과 분리된 복제본</div></div>
+      <pre><code>git clone --filter=blob:none --no-checkout https://github.com/easyseop/OM_TEMP.git work/om-temp-real-1.13.1</code></pre>
+
+      <h3>4-2. 실제 원본 연결하기</h3>
+      <div class="io"><div><strong>입력</strong><br>로컬 kb_openmetadata 복제본</div><div><strong>출력</strong><br><code>kb-source/main</code>과 공식 태그</div></div>
+      <pre><code>git remote add kb-source /path/to/review-kb-openmetadata</code></pre>
+      <pre><code>git fetch kb-source refs/remotes/origin/main:refs/remotes/kb-source/main refs/tags/1.13.1-release:refs/tags/1.13.1-release</code></pre>
+
+      <h3>4-3. 공식 스냅샷 기록하기</h3>
+      <p>OM_TEMP의 기존 스냅샷 방식에 맞춰 공식 전체 이력 대신 공식 1.13.1 파일 상태와 원본 commit 정보를 기록합니다.</p>
+      <pre><code>git commit-tree a8290d23b0fb7a4bdc860c2ff414d799f66417c5 \
+  -p 2f4f3560e7a8437e2f4f7fcafd00d32ea2d91a50 \
+  -m 'Import official OpenMetadata 1.13.1 source snapshot' \
+  -m 'Upstream-Tag: 1.13.1-release' \
+  -m 'Upstream-Commit: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9' \
+  -m 'Upstream-Tree: a8290d23b0fb7a4bdc860c2ff414d799f66417c5'</code></pre>
+
+      <h3>4-4. 실제 커스터마이징 기록하기</h3>
+      <p>공식 스냅샷을 부모로 두고 실제 kb_openmetadata tree를 그대로 기록합니다. BANK-OM 기능별 등록은 아직 하지 않습니다.</p>
+      <pre><code>git commit-tree 1df344b65844307fb4637f427778afa4d3b13bf7 \
+  -p e6199070c35f717f7ced512bb7b435b9d46b33a3 \
+  -m 'Restore actual kb_openmetadata 1.13.1 customization baseline' \
+  -m 'Source-Snapshot: 2c2347043235aa2a4ecba4729774c770fcee5d67' \
+  -m 'Source-Tree: 1df344b65844307fb4637f427778afa4d3b13bf7'</code></pre>
+    </section>
+
+    <section id="verify">
+      <h2>5. 무엇을 확인했고 결과가 무엇인가</h2>
+      <table>
+        <thead><tr><th>확인 질문</th><th>명령</th><th>실제 결과</th></tr></thead>
+        <tbody>
+          <tr><td>실제 원본과 파일이 같은가?</td><td><code>git diff --quiet custom/om-1.13.1 kb-source/main</code></td><td><strong>종료 코드 0</strong> — 차이 없음</td></tr>
+          <tr><td>전체 파일 상태 번호가 같은가?</td><td><code>git rev-parse …^{tree}</code></td><td><strong>1df344b65844…</strong>로 동일</td></tr>
+          <tr><td>공식 대비 몇 파일이 다른가?</td><td><code>git diff --name-only … | wc -l</code></td><td><strong>113</strong></td></tr>
+          <tr><td>custom이 official 다음에 이어지는가?</td><td><code>git merge-base --is-ancestor …</code></td><td><strong>종료 코드 0</strong> — 올바른 관계</td></tr>
+          <tr><td>작업 폴더에 미기록 변경이 남았는가?</td><td><code>git status --porcelain</code></td><td><strong>빈 출력</strong> — 깨끗함</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="stop">
+      <h2>6. 등록자료를 지금 만들지 않는 이유</h2>
+      <p>113개 파일 차이를 기능 단위로 나누려면 “이 파일은 어떤 BANK-OM 기능에 속하는가”라는 업무 판단이 필요합니다. 이 판단을 자동으로 확정하면 잘못된 Manifest와 Contract가 생길 수 있습니다.</p>
+      <table>
+        <thead><tr><th>다음 산출물</th><th>사용자와 함께 정할 내용</th></tr></thead>
+        <tbody>
+          <tr><td>Manifest</td><td>기능별 필수·허용·감시 경로</td></tr>
+          <tr><td>Registry</td><td>BANK-OM ID, 담당자, 상태, 기준 commit 이력</td></tr>
+          <tr><td>Contract</td><td>기능이 정상이라고 볼 업무 동작과 필수 test</td></tr>
+        </tbody>
+      </table>
+      <div class="warning"><strong>현재 상태:</strong> 검사 입력을 만들기 직전의 정확한 코드 기준환경만 완료됐습니다.</div>
+    </section>
+
+    <section id="next">
+      <h2>7. 다음 세션은 여기서 시작</h2>
+      <ul>
+        <li>원격 두 브랜치와 commit을 재확인합니다.</li>
+        <li>공식 대비 113개 변경 목록을 기능 단위로 분류합니다.</li>
+        <li>기존 BANK-OM ID에 속하는 변경과 새 ID가 필요한 변경을 구분합니다.</li>
+        <li>Manifest → Registry → Contract 순서로 초안을 함께 검토합니다.</li>
+        <li>사용자 승인 뒤에만 등록자료를 반영하고 검사를 실행합니다.</li>
+      </ul>
+    </section>
+    <footer>OM_TEMP 1.13.1 actual customization baseline rehearsal · generated 2026-08-04</footer>
+  </main>
+</div>
+</body>
+</html>

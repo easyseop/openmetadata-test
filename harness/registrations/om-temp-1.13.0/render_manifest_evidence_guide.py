@@ -197,8 +197,8 @@ def render() -> str:
         "| 구분 | 최초 커스터마이징 등록 | 공식 버전 업그레이드 | 매 검사 실행 |",
         "|---|---|---|---|",
         "| Manifest·Registry·Contract | 최초 작성 | 기존 자료를 복사해 새 코드 기준으로 검토·갱신 | 확정본을 읽음 |",
-        "| 공용 파일 소유정보 | 실제 diff의 중복 경로를 계산해 작성 | 새 버전 diff로 다시 계산·검토 | 확정본을 읽음 |",
-        "| 과거 snapshot 경로 소유정보 | 기준 snapshot의 commit 이력에서 자동 생성 | 기준 snapshot SHA가 바뀔 때만 재생성 | 과거 코드 재구성 검사만 읽음 |",
+        "| 현재 공용 경로–BANK-OM 연결표 | 실제 diff의 중복 경로를 계산해 작성 | 새 버전 diff로 다시 계산·검토 | 확정본을 읽음 |",
+        "| 과거 코드 경로–BANK-OM 연결표 | 기준 snapshot의 commit 이력에서 자동 생성 | 기준 snapshot SHA가 바뀔 때만 재생성 | 과거 코드 재구성 검사만 읽음 |",
         "| 전체 변경 목록 | Git에서 생성 | 새 버전 branch 사이에서 다시 생성 | 실제 Git diff와 비교 |",
         "| Patch-lock | patch-replay를 쓸 때만 작성 | 재적용 커밋이 바뀌면 새 리비전 작성 | 선택한 전략에서만 읽음 |",
         "",
@@ -354,12 +354,12 @@ def render() -> str:
             "| `required_changed_paths` | 기능이 적용됐음을 판단하는 핵심 구현 파일 | 파일이 없거나 공식 원본과 같아지면 기능이 빠진 것으로 보고 차단 |",
             "| `upgrade_watch.paths` | 공식 버전 변경 비교 검사가 확인할 경로 | 공식 새 버전에서 해당 경로가 바뀌면 자동 통과하지 않고 재검토를 요구 |",
             "",
-            "공식 버전 변경 비교 검사(검사기 내부 이름 `T42`)는 이전 버전과 "
-            "새 버전의 OpenMetadata에서 지정 경로가 "
-            "바뀌었는지 확인하는 검사입니다. `upgrade_watch.paths`에는 현재 T42 "
-            "구현에 맞춰 해당 ID의 변경 범위 전체와 "
-            "직접 수정하지 않았지만 기능이 의존하는 공식 파일을 함께 넣었습니다. "
-            "따라서 watch에 있다고 해서 그 파일을 이 커밋이 반드시 수정했다는 뜻은 아닙니다.",
+            "공식 버전 변경 비교 검사(검사기 내부 이름 `T42`)는 이전 공식 버전과 "
+            "새 공식 버전 사이에서 지정 경로가 바뀌었는지 확인합니다. 준비도구는 "
+            "`changed_paths` 중 공식 OpenMetadata 포크 브랜치에도 존재하는 경로만 "
+            "`upgrade_watch.paths` 후보로 제안합니다. 행내 전용 파일과 직접 수정하지 "
+            "않은 의존 경로는 담당자가 기능 관계를 확인해 추가합니다. 따라서 watch에 "
+            "있다고 해서 그 파일을 해당 커밋이 반드시 수정했다는 뜻은 아닙니다.",
             "",
             "[Manifest의 `assurance`·`series`와 나머지 관리파일 필드까지 보는 전체 필드 사전]"
             "(OM_TEMP_관리파일_필드_사전_미리보기.html)",
@@ -437,7 +437,7 @@ def render() -> str:
             "</details>",
             "",
             "<details>",
-            "<summary><strong>2-3. 공용 파일 소유정보 · 한 파일을 함께 변경한 ID</strong></summary>",
+            "<summary><strong>2-3. 현재 공용 경로–BANK-OM 연결표 · 한 파일을 함께 변경한 ID</strong></summary>",
             "",
             "**의미:** 현재 버전에서 여러 BANK-OM이 같은 파일을 정상적으로 변경했다는 "
             "사실과 실제 소유 ID를 기록합니다.",
@@ -466,7 +466,7 @@ def render() -> str:
             "</details>",
             "",
             "<details>",
-            "<summary><strong>2-4. 과거 snapshot 경로 소유정보 · 재구성 시점 전용</strong></summary>",
+            "<summary><strong>2-4. 과거 코드 경로–BANK-OM 연결표 · 재구성 시점 전용</strong></summary>",
             "",
             "**의미:** 최초 등록에 사용한 과거 행내 code snapshot에서 각 변경 파일이 "
             "어느 BANK-OM 기능에 속했는지 기록합니다. 현재 Manifest 범위를 나누는 "
@@ -489,9 +489,9 @@ def render() -> str:
             "</details>",
             "",
             "<details>",
-            "<summary><strong>2-5. 전체 변경 목록 · patch와 custom 사이의 111개 경로</strong></summary>",
+            "<summary><strong>2-5. 전체 변경 목록 · OpenMetadata 포크와 커스텀 브랜치 사이의 111개 경로</strong></summary>",
             "",
-            "**의미:** `patch/om-1.13.0`과 `custom/om-1.13.0` 사이에서 최종적으로 "
+            "**의미:** `fork/om-1.13.0`과 `custom/om-1.13.0` 사이에서 최종적으로 "
             "달라진 모든 파일 경로입니다.",
             "",
             "**생성·갱신 시점:** 검사 대상 commit이 확정된 뒤 Git으로 생성하며, "
@@ -544,14 +544,33 @@ def render() -> str:
             "<details>",
             "<summary><strong>2-7. 실제 생성 명령과 사전검증 결과</strong></summary>",
             "",
-            "첫 명령은 Git diff에서 자동 계산할 수 있는 Registry 뼈대, 공용 경로와 "
-            "111개 목록을 만듭니다. Contract의 정상 조건과 담당자는 사람이 검토해야 "
-            "하므로 자동 생성값을 그대로 배포 승인으로 사용하지 않습니다.",
+            "일반 운영에서는 준비도구가 Git 이력과 기존 등록자료를 비교해 변경안을 "
+            "만듭니다. `plan`은 실제 등록자료를 바꾸지 않으며, 담당자가 같은 변경안을 "
+            "승인한 뒤 `apply`가 변경 대상 Manifest와 파생 등록자료를 반영합니다. "
+            "Registry 변경이 필요한 경우에만 제안에 포함되며 Contract는 사람이 직접 "
+            "작성합니다.",
             "",
             "```bash",
-            "./.venv/bin/python \\",
-            "  harness/registrations/om-temp-1.13.0/generate_registration_bundle.py \\",
-            "  --repo ../om-temp-1.13.0-custom",
+            "PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py plan \\",
+            "  --repo /path/to/OM_TEMP \\",
+            "  --registration harness/registrations/om-temp-1.13.0 \\",
+            "  --patch-ref origin/fork/om-1.13.0 \\",
+            "  --custom-ref origin/custom/om-1.13.0 \\",
+            "  --product-version 1.13.0 \\",
+            "  --output harness/preparation-plans/om-temp-1.13.0-YYYYMMDD",
+            "",
+            "PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py \\",
+            "  approval-template \\",
+            "  --proposal harness/preparation-plans/om-temp-1.13.0-YYYYMMDD/proposal.yaml \\",
+            "  --output /approved/location/registration-approval.yaml",
+            "",
+            "# 담당자가 proposal과 질문을 검토하고 승인서를 작성한 뒤 실행",
+            "PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py apply \\",
+            "  --repo /path/to/OM_TEMP \\",
+            "  --registration harness/registrations/om-temp-1.13.0 \\",
+            "  --proposal harness/preparation-plans/om-temp-1.13.0-YYYYMMDD/proposal.yaml \\",
+            "  --approval /approved/location/registration-approval.yaml \\",
+            "  --result /approved/location/registration-apply-result.json",
             "",
             "./.venv/bin/python \\",
             "  harness/registrations/om-temp-1.13.0/validate_registration_bundle.py \\",
@@ -564,7 +583,7 @@ def render() -> str:
             "| Manifest 구조와 작성 규칙 | PASS · 7개 | 필수 항목과 경로 규칙이 맞는지 |",
             "| Registry·Manifest·Contract 연결 | PASS · 7개 ID | 세 자료가 같은 BANK-OM을 가리키는지 |",
             "| Git 전체 변경 목록 | PASS · 111개 경로 | 저장한 목록과 실제 Git diff가 같은지 |",
-            "| 공용 파일 소유정보 | PASS · 37개 경로 | 중복 경로의 모든 BANK-OM이 등록됐는지 |",
+            "| 현재 공용 경로–BANK-OM 연결표 | PASS · 37개 경로 | 중복 경로의 모든 BANK-OM이 등록됐는지 |",
             "| 필수 테스트 코드 존재 | PASS · 9개 | 등록한 Python test 파일과 함수가 실제로 있는지 |",
             "",
             "이 PASS는 **검사 입력자료가 서로 일치한다**는 뜻입니다. 아직 test 실행 "
@@ -588,8 +607,8 @@ def render() -> str:
             "```bash",
             "git clone https://github.com/easyseop/OM_TEMP.git",
             "cd OM_TEMP",
-            "git fetch origin patch/om-1.13.0 custom/om-1.13.0",
-            "git rev-parse origin/patch/om-1.13.0",
+            "git fetch origin fork/om-1.13.0 custom/om-1.13.0",
+            "git rev-parse origin/fork/om-1.13.0",
             "git rev-parse origin/custom/om-1.13.0",
             "```",
             "",
@@ -600,7 +619,7 @@ def render() -> str:
             "</details>",
             "",
             "<details>",
-            "<summary><strong>3-2. 공식 1.13.0과 OM_TEMP patch 기준 연결 주의사항</strong></summary>",
+            "<summary><strong>3-2. 공식 1.13.0과 OM_TEMP 공식 코드 기준 연결 주의사항</strong></summary>",
             "",
             "OM_TEMP는 공식 OpenMetadata의 과거 변경 이력 전체를 가져오지 않고, 공식 "
             "1.13.0 파일만 새로운 Git 변경 기록으로 저장했습니다. 따라서 파일 내용이 "
@@ -608,7 +627,7 @@ def render() -> str:
             "",
             "```text",
             "공식 OpenMetadata 1.13.0 Git 번호: f329dd4a...",
-            "OM_TEMP patch/om-1.13.0 Git 번호: 2f4f3560...",
+            "OM_TEMP 과거 공식 코드 브랜치 Git 번호: 2f4f3560...",
             "두 버전의 파일 내용이 같음을 확인하는 값: da56c24d...",
             "```",
             "",
@@ -788,7 +807,7 @@ def render_html() -> str:
       </details>
 
       <details class="reference">
-        <summary><span>2-3</span><strong>공용 파일 소유정보</strong><small>같은 파일을 변경한 BANK-OM 목록</small></summary>
+        <summary><span>2-3</span><strong>현재 공용 경로–BANK-OM 연결표</strong><small>같은 파일을 변경한 BANK-OM 목록</small></summary>
         <div class="reference-body">
           <div class="explain-grid">
             <p><b>의미</b>여러 기능이 같은 공식 파일을 정상적으로 함께 변경했음을 기록합니다.</p>
@@ -840,10 +859,27 @@ databaseService.json:
       <details class="reference">
         <summary><span>2-6</span><strong>실제 생성·사전검증</strong><small>자동 생성 뒤 사람이 검토</small></summary>
         <div class="reference-body">
-          <p>첫 명령은 Git diff에서 계산할 수 있는 목록을 생성합니다. Contract의 정상 조건과 담당자는 사람이 검토해야 합니다.</p>
-          <pre><code>./.venv/bin/python \\
-  harness/registrations/om-temp-1.13.0/generate_registration_bundle.py \\
-  --repo ../om-temp-1.13.0-custom
+          <p><code>plan</code>은 Git과 기존 등록자료를 비교해 읽기 전용 변경안을 만듭니다. 담당자가 같은 변경안을 승인한 뒤 <code>apply</code>가 Manifest와 파생 등록자료를 반영합니다. Registry는 변경이 필요할 때만 제안에 포함되며 Contract는 사람이 직접 작성합니다.</p>
+          <pre><code>PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py plan \\
+  --repo /path/to/OM_TEMP \\
+  --registration harness/registrations/om-temp-1.13.0 \\
+  --patch-ref origin/fork/om-1.13.0 \\
+  --custom-ref origin/custom/om-1.13.0 \\
+  --product-version 1.13.0 \\
+  --output harness/preparation-plans/om-temp-1.13.0-YYYYMMDD
+
+PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py \\
+  approval-template \\
+  --proposal harness/preparation-plans/om-temp-1.13.0-YYYYMMDD/proposal.yaml \\
+  --output /approved/location/registration-approval.yaml
+
+# 담당자가 proposal과 질문을 확인하고 승인서를 작성한 뒤 실행
+PYTHONPATH=harness ./.venv/bin/python harness/prepare_registration.py apply \\
+  --repo /path/to/OM_TEMP \\
+  --registration harness/registrations/om-temp-1.13.0 \\
+  --proposal harness/preparation-plans/om-temp-1.13.0-YYYYMMDD/proposal.yaml \\
+  --approval /approved/location/registration-approval.yaml \\
+  --result /approved/location/registration-apply-result.json
 
 ./.venv/bin/python \\
   harness/registrations/om-temp-1.13.0/validate_registration_bundle.py \\
@@ -855,7 +891,7 @@ databaseService.json:
               <tr><td>Manifest 구조와 규칙</td><td><em class="pass">PASS · 7개</em></td><td>필수 항목과 경로 규칙</td></tr>
               <tr><td>Registry·Manifest·Contract 연결</td><td><em class="pass">PASS · 7개 ID</em></td><td>세 자료가 같은 BANK-OM을 가리키는지</td></tr>
               <tr><td>Git 전체 변경 목록</td><td><em class="pass">PASS · 111개</em></td><td>저장 목록과 실제 Git diff가 같은지</td></tr>
-              <tr><td>공용 파일 소유정보</td><td><em class="pass">PASS · 37개</em></td><td>중복 경로의 모든 BANK-OM 등록 여부</td></tr>
+              <tr><td>현재 공용 경로–BANK-OM 연결표</td><td><em class="pass">PASS · 37개</em></td><td>중복 경로의 모든 BANK-OM 등록 여부</td></tr>
               <tr><td>필수 테스트 코드 존재</td><td><em class="pass">PASS · 9개</em></td><td>Python test 파일과 함수 존재 여부</td></tr>
             </tbody>
           </table>
@@ -872,12 +908,12 @@ databaseService.json:
             <p><b>의미</b>검사기는 GitHub 화면이 아니라 로컬 repository의 commit·diff·파일을 읽습니다.</p>
             <p><b>만드는 시점</b>새 노트북에서는 한 번 clone하고, 이후에는 검사 전에 fetch합니다.</p>
             <p><b>실제 사용</b>실행 명령의 <code>--repo</code>에 로컬 OM_TEMP 경로를 전달합니다.</p>
-            <p><b>확인 결과</b>patch와 custom branch의 SHA가 예상값인지 확인한 뒤에만 검사를 시작합니다.</p>
+            <p><b>확인 결과</b>OpenMetadata 포크 브랜치와 커스텀 브랜치의 SHA가 예상값인지 확인한 뒤에만 검사를 시작합니다.</p>
           </div>
           <pre><code>git clone https://github.com/easyseop/OM_TEMP.git
 cd OM_TEMP
-git fetch origin patch/om-1.13.0 custom/om-1.13.0
-git rev-parse origin/patch/om-1.13.0
+git fetch origin fork/om-1.13.0 custom/om-1.13.0
+git rev-parse origin/fork/om-1.13.0
 git rev-parse origin/custom/om-1.13.0</code></pre>
         </div>
       </details>
@@ -885,10 +921,10 @@ git rev-parse origin/custom/om-1.13.0</code></pre>
       <details class="reference">
         <summary><span>3-2</span><strong>공식 버전에서 시작했다는 이력 연결</strong><small>코드 내용은 그대로 유지</small></summary>
         <div class="reference-body">
-          <p>OM_TEMP의 patch branch는 공식 OpenMetadata의 과거 변경 이력 전체를 가져오지 않고,
+          <p>현재 OM_TEMP 원격의 과거 <code>patch/om-1.13.0</code> 브랜치는 공식 OpenMetadata의 과거 변경 이력 전체를 가져오지 않고,
           공식 1.13.0 파일만 새로운 Git 변경 기록으로 저장했습니다. 파일 내용은 같아도 “공식 코드에서 시작했다”는 연결 기록은 없습니다.</p>
           <pre><code>공식 OpenMetadata 1.13.0 Git 번호  f329dd4a...
-OM_TEMP patch/om-1.13.0 Git 번호   2f4f3560...
+OM_TEMP 과거 공식 코드 브랜치 Git 번호  2f4f3560...
 두 버전의 파일 내용이 같음을 확인하는 값  da56c24d...</code></pre>
           <div class="explain-grid">
             <p><b>왜 별도 연결했나</b>검사기는 파일 내용뿐 아니라 공식 1.13.0에서 시작한 코드인지도 확인합니다. 파일만 같고 시작 이력이 없으면 통과시킬 수 없습니다.</p>
@@ -1086,7 +1122,7 @@ details.reference {{ margin:10px 0; border:1px solid var(--line); border-radius:
       <tbody>
         <tr><td>Manifest·Registry·Contract</td><td>최초 기능 등록</td><td>새 코드 기준으로 검토·갱신</td></tr>
         <tr><td>현재 공용 파일·전체 변경 목록</td><td>실제 Git diff 확정 후</td><td>새 branch diff로 다시 생성</td></tr>
-        <tr><td>과거 snapshot 경로 소유정보</td><td>기준 snapshot의 commit 이력 확정 후</td><td>기준 snapshot SHA가 바뀔 때만 재생성</td></tr>
+        <tr><td>과거 코드 경로–BANK-OM 연결표</td><td>기준 snapshot의 commit 이력 확정 후</td><td>기준 snapshot SHA가 바뀔 때만 재생성</td></tr>
         <tr><td>Patch-lock</td><td>patch-replay를 선택할 때만</td><td>재적용 commit이 바뀔 때 새 revision</td></tr>
       </tbody>
     </table>
@@ -1101,8 +1137,8 @@ details.reference {{ margin:10px 0; border:1px solid var(--line); border-radius:
           <tr><td><strong>Manifest</strong></td><td>BANK-OM 한 기능의 코드 변경과 검증 기준</td><td>ID·상태·kind, changed·required, watch, Contract·test 연결</td><td>기능 생존, 변경 범위, 공식 업그레이드 영향과 실제 경로 일치 검사에 사용합니다.</td></tr>
           <tr><td><strong>Registry</strong></td><td>검사해야 할 BANK-OM 전체 목록과 관리 상태</td><td>customization_id, title, owner·상태, criticality, Manifest·Contract 경로</td><td>활성·폐기 ID, 미등록 ID, 담당자와 연결 자료 누락을 확인할 때 사용합니다.</td></tr>
           <tr><td><strong>Contracts</strong></td><td>파일 존재만으로 알 수 없는 업무 동작의 정상 조건</td><td>Contract ID, invariant, required_tests, customization_ids</td><td>필수 test 코드 존재, 커스터마이징 제거본의 실패, 실제 기능 실행 결과를 확인할 때 사용합니다.</td></tr>
-          <tr><td><strong>현재 공용 파일 소유정보</strong></td><td>현재 버전에서 한 파일을 여러 BANK-OM이 함께 변경했다는 관계</td><td>공용 파일 경로와 현재 버전의 BANK-OM ID 목록</td><td>현재 버전 범위 검사에서 같은 파일의 변경을 한 BANK-OM에 잘못 귀속하지 않도록 사용합니다.</td></tr>
-          <tr><td><strong>과거 snapshot 경로 소유정보</strong></td><td>최초 등록에 사용한 과거 코드 시점의 파일별 BANK-OM 관계</td><td>과거 snapshot 경로와 그 시점까지 변경한 BANK-OM ID</td><td>T25-R이 과거 코드를 기능별로 재구성할 때만 사용합니다. 현재 범위 검사는 이 파일을 읽지 않습니다.</td></tr>
+          <tr><td><strong>현재 공용 경로–BANK-OM 연결표</strong></td><td>현재 버전에서 한 파일을 여러 BANK-OM이 함께 변경했다는 관계</td><td>공용 파일 경로와 현재 버전의 BANK-OM ID 목록</td><td>현재 버전 범위 검사에서 같은 파일의 변경을 한 BANK-OM에 잘못 귀속하지 않도록 사용합니다.</td></tr>
+          <tr><td><strong>과거 코드 경로–BANK-OM 연결표</strong></td><td>최초 등록에 사용한 과거 코드 시점의 파일별 BANK-OM 관계</td><td>과거 snapshot 경로와 그 시점까지 변경한 BANK-OM ID</td><td>T25-R이 과거 코드를 기능별로 재구성할 때만 사용합니다. 현재 범위 검사는 이 파일을 읽지 않습니다.</td></tr>
           <tr><td><strong>전체 변경 목록</strong></td><td>공식 원본과 행내 snapshot 사이에서 실제로 달라진 모든 파일</td><td>root 기준 파일 경로 111개</td><td>Manifest 전체 범위가 실제 Git diff를 빠짐없이 설명하는지 사전검증할 때 사용합니다.</td></tr>
           <tr><td><strong>Repository layout</strong></td><td>경로를 공식 코드·행내 정책·확장·미분류로 나누는 규칙</td><td>공식 기준 SHA, 경로 문법, 영역별 root, 미분류 처리 방식</td><td>커밋의 관리 대상 여부, 민감 경로와 미분류 새 모듈을 판단할 때 사용합니다.</td></tr>
           <tr><td><strong>Sensitive zones</strong></td><td>보안·인증·설정·DB 관련 경로의 위험 등급</td><td>frozen·protected·watched 경로 목록</td><td>변경 경로를 즉시 차단, 담당자 승인 또는 결과 표시 대상으로 구분할 때 사용합니다.</td></tr>
@@ -1127,7 +1163,7 @@ details.reference {{ margin:10px 0; border:1px solid var(--line); border-radius:
       <div class="manifest-fields">
         <p><b>changed_paths</b>현재 OpenMetadata 버전에서 해당 BANK-OM 기능의 모든 커밋이 실제로 변경한 전체 파일입니다.</p>
         <p><b>required_changed_paths</b>그 파일이 없거나 공식 원본과 같아지면 기능 미적용으로 바로 차단할 핵심 파일입니다.</p>
-        <p><b>upgrade_watch.paths</b>이 기능이 직접 수정하지는 않았지만 연결되어 있어, 공식 버전에서 바뀌면 영향 여부를 다시 확인할 파일입니다.</p>
+        <p><b>upgrade_watch.paths</b>공식 버전이 바뀔 때 이 기능의 영향 여부를 다시 확인할 파일입니다. 준비도구는 직접 변경한 경로 중 공식 OpenMetadata 포크 브랜치에도 있는 경로만 자동 제안하고, 행내 전용 파일과 간접 의존 경로는 담당자가 추가 여부를 결정합니다.</p>
       </div>
     </div>
   </details>
@@ -1165,7 +1201,7 @@ details.reference {{ margin:10px 0; border:1px solid var(--line); border-radius:
     </div>
   </details>
 
-  <section class="foot"><strong>이 페이지의 결론:</strong> 1.13.0 기준 Registry 7개, Contract 7개·필수 test 9개, 현재 공용 경로 37개, 과거 snapshot 경로 소유정보 111개와 전체 변경 111개를 생성했습니다. 소스 검사 8종 PASS는 원격 raw custom branch가 아니라 공식 1.13.0에서 BANK-OM 변경을 결정론적으로 다시 구성한 로컬 후보 <code>3a2811cf…</code>의 기록입니다. 재현 명령과 전체 SHA는 등록 폴더의 <code>REPRODUCIBILITY.md</code>에 있습니다. 이 결과에는 담당자 지정, OpenMetadata 전체 build, Contract test 실제 실행, 1.13.1 업그레이드와 배포 승인이 포함되지 않습니다. 다음 페이지에서 별도로 수행한 1.13.1 코드 업그레이드 연습을 확인합니다.</section>
+  <section class="foot"><strong>이 페이지의 결론:</strong> 1.13.0 기준 Registry 7개, Contract 7개·필수 test 9개, 현재 공용 경로 37개, 과거 코드 경로–BANK-OM 연결표 111개와 전체 변경 111개를 생성했습니다. 소스 검사 8종 PASS는 원격 raw custom branch가 아니라 공식 1.13.0에서 BANK-OM 변경을 결정론적으로 다시 구성한 로컬 후보 <code>3a2811cf…</code>의 기록입니다. 재현 명령과 전체 SHA는 등록 폴더의 <code>REPRODUCIBILITY.md</code>에 있습니다. 이 결과에는 담당자 지정, OpenMetadata 전체 build, Contract test 실제 실행, 1.13.1 업그레이드와 배포 승인이 포함되지 않습니다. 다음 페이지에서 별도로 수행한 1.13.1 코드 업그레이드 연습을 확인합니다.</section>
   <div class="guide-pagination-bottom">{pagination}</div>
 </main>
 </body>

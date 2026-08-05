@@ -428,6 +428,148 @@ def test_source_owner_and_shared_maps_fail_closed(prepared):
     }
 
 
+def test_declared_shared_code_definitions_block_missing_owner_code(prepared):
+    repo, registration, _, _ = prepared
+    _git(repo, "checkout", "-q", "custom")
+    _commit(
+        repo,
+        "core/shared.yaml",
+        "feature_a: enabled\n",
+        "feature a shared definition\n\nCustomization-ID: BANK-OM-001",
+    )
+    _commit(
+        repo,
+        "core/shared.yaml",
+        "feature_a: enabled\nfeature_b: enabled\n",
+        "feature b\n\nCustomization-ID: BANK-OM-002",
+    )
+    registry_path = registration / "customization-registry.yaml"
+    registry = yaml.safe_load(registry_path.read_text(encoding="utf-8"))
+    registry["source"]["shared_code_definitions"] = (
+        "shared-code-definitions.yaml"
+    )
+    registry["entries"].append(
+        {
+            "customization_id": "BANK-OM-002",
+            "title": "Feature B",
+            "owner": "team-b",
+            "owner_status": "assigned",
+            "status": "active",
+            "criticality": "high",
+            "manifest": "manifests/BANK-OM-002.yaml",
+            "contracts": ["CONTRACT-B"],
+            "provenance": "source-snapshot",
+        }
+    )
+    _dump(registry_path, registry)
+
+    contracts_path = registration / "contracts.yaml"
+    contract_catalog = yaml.safe_load(contracts_path.read_text(encoding="utf-8"))
+    contract_catalog["contracts"].append(
+        {
+            "id": "CONTRACT-B",
+            "title": "B remains available",
+            "required_tests": ["tests/test_b.py::test_b"],
+            "customization_ids": ["BANK-OM-002"],
+        }
+    )
+    _dump(contracts_path, contract_catalog)
+    _dump(
+        registration / "manifests/BANK-OM-002.yaml",
+        {
+            "schema_version": 2,
+            "customization_id": "BANK-OM-002",
+            "status": "active",
+            "kind": "core-patch",
+            "title": "Feature B",
+            "implementation": {
+                "changed_paths": ["core/shared.yaml"],
+                "required_changed_paths": ["core/shared.yaml"],
+            },
+            "upgrade_watch": {"paths": ["core/shared.yaml"]},
+            "assurance": {"contracts": ["CONTRACT-B"], "direct_tests": []},
+            "series": {"allowed": False, "depends_on": []},
+        },
+    )
+    shared_owners = {
+        "core/shared.yaml": ["BANK-OM-001", "BANK-OM-002"]
+    }
+    _dump(
+        registration / "source-snapshot-path-owners.yaml",
+        {
+            "core/a.txt": ["BANK-OM-001"],
+            **shared_owners,
+        },
+    )
+    _dump(registration / "shared-path-owners.yaml", shared_owners)
+    _dump(
+        registration / "shared-code-definitions.yaml",
+        {
+            "schema_version": 1,
+            "definitions": [
+                {
+                    "path": "core/shared.yaml",
+                    "customization_id": "BANK-OM-001",
+                    "assertions": [
+                        {
+                            "id": "feature-a",
+                            "matcher": "yaml_value",
+                            "pointer": "/feature_a",
+                            "expected": "enabled",
+                        }
+                    ],
+                },
+                {
+                    "path": "core/shared.yaml",
+                    "customization_id": "BANK-OM-002",
+                    "assertions": [
+                        {
+                            "id": "feature-b",
+                            "matcher": "yaml_value",
+                            "pointer": "/feature_b",
+                            "expected": "missing-value",
+                        }
+                    ],
+                },
+            ],
+        },
+    )
+
+    proposal = _plan(prepared)
+    assert "SHARED_CODE_DEFINITION_MISSING" in {
+        item["code"] for item in proposal["blocked"]
+    }
+
+
+def test_declared_shared_code_definition_file_is_digest_bound(prepared):
+    _, registration, _, _ = prepared
+    registry_path = registration / "customization-registry.yaml"
+    registry = yaml.safe_load(registry_path.read_text(encoding="utf-8"))
+    registry["source"]["shared_code_definitions"] = (
+        "shared-code-definitions.yaml"
+    )
+    _dump(registry_path, registry)
+    definitions_path = registration / "shared-code-definitions.yaml"
+    _dump(definitions_path, {"schema_version": 1, "definitions": []})
+
+    before = P.registration_state_digest(registration)
+    _dump(
+        definitions_path,
+        {
+            "schema_version": 1,
+            "definitions": [
+                {
+                    "path": "core/a.txt",
+                    "customization_id": "BANK-OM-001",
+                    "assertions": [],
+                }
+            ],
+        },
+    )
+    after = P.registration_state_digest(registration)
+    assert before != after
+
+
 def test_unrelated_ref_is_analysis_error(prepared):
     repo, _, _, _ = prepared
     tree = _git(repo, "rev-parse", "patch^{tree}")

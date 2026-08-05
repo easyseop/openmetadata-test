@@ -31,6 +31,9 @@
         "changed_path_count": {"type": "integer", "minimum": 0},
         "ancestry_preserved": {"type": "boolean"},
         "diff_inventory": {"type": "string", "minLength": 1},
+        "shared_code_definitions": {
+          "const": "shared-code-definitions.yaml"
+        },
         "unregistered_findings": {
           "type": "array",
           "items": {
