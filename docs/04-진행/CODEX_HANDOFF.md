@@ -1,5 +1,48 @@
 # Codex 작업 인수인계
 
+## 0-current. 2026-08-06 버전 독립 최초 등록 생성기 구현
+
+### 구현 목적
+
+과거 `1.13.0` 전용 생성기를 복사하지 않고, 어떤 제품 버전에도 같은 명령을
+사용하도록 최초 등록 흐름을 일반화했다. 활성 등록 폴더를 바로 수정하지 않으며
+`bootstrap-plan → 사람 승인 → bootstrap-apply` 순서를 사용한다.
+
+### 구현 파일
+
+| 파일 | 역할 |
+|---|---|
+| `harness/acgh/initial_registration.py` | Git commit·변경 경로와 업무 입력을 합쳐 최초 등록 제안 생성, stale 확인, 원복 가능한 apply |
+| `harness/bootstrap_registration.py` | `plan`, `approval-template`, `apply` 명령 제공 |
+| `harness/acgh/schema/initial-registration-input.schema.json` | 사람이 작성할 제목·담당자·필수 경로·Contract 형식 검사 |
+| `harness/om_workflow.py` | 짧은 `bootstrap-plan`, `bootstrap-approval-template`, `bootstrap-apply` 명령 연결 |
+| `harness/tests/test_initial_registration.py` | 임의 버전 `42.7`로 버전 독립성, apply, stale, ID 누락 검사 |
+
+### 실제 1.13.1 검증 결과
+
+- 업무 입력: `harness/preparation-inputs/om-temp-1.13.1/initial-registration-input.yaml`
+- 공식 기준 commit: `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9`
+- 커스터마이징 branch: `codex/om-1.13.1-id-series-upstream`
+- 생성 결과: BANK-OM 7개, commit 7개, 변경 경로 111개, 공용 경로 37개
+- 제안 등록자료 검사: Manifest 7개, Registry·Contract 연결, 111개 경로,
+  37개 공용 경로, 필수 테스트 코드가 모두 `pass`
+- 제안 위치: `evidence/om-1.13.1-initial-bootstrap-20260806/proposal/`
+
+현재 업무 입력의 담당자는 `UNASSIGNED`이며 Contract는 이전 등록자료를 참고한
+초안이다. 담당자와 업무 정상 조건을 확인하기 전에는 승인서 작성이나
+`bootstrap-apply`를 실행하지 않는다.
+
+### 검증 명령
+
+```bash
+PYTHONPATH=harness ./.venv/bin/python -m pytest -q \
+  harness/tests/test_initial_registration.py \
+  harness/tests/test_om_workflow.py
+```
+
+결과는 `10 passed`였다. 별도 임시 폴더에 제안 파일을 합친 뒤 공용 등록자료
+검사기를 실행했고 5개 검사 항목이 모두 통과했다.
+
 ## 0-current. 2026-08-04 OM_TEMP 1.13.1 변경 경로 시연 초안
 
 ### 이번 결정과 산출물
@@ -17,15 +60,18 @@
 - 공용 코드 정의 초안:
   `docs/00-사용가이드/예행연습-1.13.1-1.13.2/OM_TEMP_1.13.1_shared-code-definitions_시연초안.yaml`
   공용 37개 경로의 중복 없는 114개 경로·ID 조합을 담았다.
+- 2026-08-05 사용자는 최종 권장안을 채택했다. BANK-OM-001~007을 서로
+  합치지 않고 유지하며, 공용 37개 경로를 분석표에 기록된 모든 관련 ID에
+  연결한다. 이 결정은 시연용 기능 분류 승인이고 운영 등록 승인은 아니다.
 
 ### 상태 경계와 다음 작업
 
 두 YAML은 `demo_provisional` 시연 자료다. 공용 코드 정의 초안의 114개
 `assertions`는 의도적으로 비어 있어 schema를 통과하지 않으며 실제 Registry에
-선언하거나 검사 입력으로 사용할 수 없다. BANK-OM-001~007 업무 분류도 아직
-운영 승인되지 않았다. 다음 작업은 실제 OM_TEMP 1.13.1 diff에서 각 경로·ID를
-증명하는 코드 조각 또는 JSON·YAML pointer와 값을 작성하고 담당자에게 7개 ID
-분류와 함께 승인받는 것이다. 승인 전에는 기존
+선언하거나 검사 입력으로 사용할 수 없다. BANK-OM-001~007 유지와 공용 경로의
+다중 ID 연결은 시연용으로 승인됐다. 다음 작업은 실제 OM_TEMP 1.13.1 diff에서
+각 경로·ID를 증명하는 코드 조각 또는 JSON·YAML pointer와 값을 작성하고
+담당자에게 코드 정의를 별도로 승인받는 것이다. 코드 정의 승인 전에는 기존
 `harness/registrations/om-temp-1.13.1` 재적용 연습 자료를 덮어쓰지 않는다.
 
 제공된 `generate_shared_code_definition_draft.py` 실행은 이 노트북의 시스템
@@ -35,48 +81,281 @@ Python에 `pathspec`이 없어 import 단계에서 중단됐다. 의존성을 �
 
 ## 0-latest. 2026-08-04 공용 파일 ID별 코드 정의 검사 구현
 
-### 작업 목적
+### 0-latest-1. 문제와 검사 범위
 
-`shared-path-owners.yaml`은 공용 파일과 BANK-OM ID의 연결만 확인한다. 같은
-파일에 BANK-OM-001·002가 기록돼 있어도 최종 코드에는 001 구현만 남는
-오탐 가능성이 있었다. 공용 파일 안에서 각 ID에 승인된 실제 코드 정의가
-남아 있는지 별도로 검사하도록 보강했다.
+`shared-path-owners.yaml`은 공용 파일과 BANK-OM ID의 연결을 기록한다. 예를 들어
+`Entity.java`를 BANK-OM-001과 BANK-OM-002가 함께 사용한다는 사실은 기록할 수
+있다. 하지만 최종 custom branch commit의 `Entity.java`에 두 ID의 실제 코드가
+모두 남아 있는지는 이 연결표만으로 판단할 수 없다. BANK-OM-001 코드만 남고
+BANK-OM-002 코드가 없어도 파일과 ID 연결 자체는 정상으로 보이는 오탐 가능성이
+있었다.
 
-### 구현 내용
+이 문제를 막기 위해 **공용 파일 ID별 코드 정의 검사**를 구현했다. 관리 파일의
+정식 파일명은 `shared-code-definitions.yaml`이다. 이름에 `symbol`을 사용하지
+않는 이유는 Java 변수명뿐 아니라 Java·TypeScript·TSX·SQL의 실제 코드 조각과
+JSON·YAML의 경로·값도 검사하기 때문이다.
 
-- `harness/acgh/shared_code.py`: 공용 경로의 BANK-OM ID별 코드 정의 검사
-- `harness/acgh/schema/shared-code-definitions.schema.json`: 관리파일 schema
-- `harness/generate_shared_code_definition_draft.py`: 모든 `공용 경로 + ID`
-  조합의 빈 초안 생성
-- `customization-registry.schema.json`: 새 등록 묶음에서
-  `source.shared_code_definitions: shared-code-definitions.yaml` 선언 허용
-- `registration_prep.py`: 위 선언이 있으면 정의파일을 proposal digest에
-  포함하고 최종 custom commit과 비교
-- 신규 기능 test 12개와 관련 집중 test 35개 통과
+이 검사가 판단하는 범위는 소스 정의의 존재와 값이다. API 호출, DB 저장, 검색,
+화면 동작처럼 실행 결과가 정상인지는 판단하지 않는다. 실행 동작은 Contract
+test가 별도로 확인한다.
 
-Java·TypeScript·TSX·SQL은 주석과 공백을 제외한 코드 토큰을 비교한다. 문자열
-안에 예시 코드가 있거나 주석에 이름만 남은 경우에는 통과하지 않는다. JSON과
-YAML은 pointer와 실제 값을 함께 비교한다. 형식 오류나 모든 공용 경로·ID
-조합을 다 정의하지 않은 경우 `ANALYSIS_ERROR`, 승인한 코드 정의가 최종 custom
-commit에서 사라졌거나 값이 달라진 경우 `BLOCK`이다.
+### 0-latest-2. 저장소·branch·문서 상태
 
-### 호환성과 실제 1.13.1 등록 상태
+| 대상 | 현재 상태 | 다음 조치 |
+|---|---|---|
+| 검사기 저장소 | `easyseop/openmetadata-test` | `codex/strict-manifest-gates`에서 계속 작업 |
+| 구현 push commit | `bccb21821604d041665da41928d2b200f96d704a` | 다른 기기에서 fetch 후 이 commit 확인 |
+| 1.13.1 변경 파일 분류 페이지 | 새 검사 개념과 다음 단계 반영 완료 | 사용자 승인 항목 확정 |
+| 실제 1.13.1 `shared-code-definitions.yaml` | 미작성 | Manifest 정의 단계에서 사용자와 작성 |
+| 실제 1.13.1 종단 검사 | 미실행 | 실제 등록자료 작성 후 실행 |
+| 실제 1.13.2 업그레이드 검사 | 미실행 | 1.13.1 등록 검증 이후 수행 |
+| 후속 Manifest·승인·검사 예행연습 페이지 | 미작성 | 아래 0-latest-10 순서로 작성 |
 
-기존 1.13.0·과거 1.13.1 등록을 소급 변경하지 않는다. Registry에서
-`shared_code_definitions`를 선언한 새 등록 묶음부터 필수 검사로 동작한다.
-현재 준비 중인 실제 1.13.1 기준 Manifest·Registry·Contract는 사용자와 함께
-작성하기로 했으므로 실제 `shared-code-definitions.yaml`도 아직 생성하지 않았다.
-다음 Manifest 정의 단계에서 37개 공용 파일의 실제 diff를 확인해 작성하고 같은
-proposal로 승인한다. 기존 재적용 연습용 `om-temp-1.13.1` 등록 폴더에 임의로
-덮어쓰지 않는다.
+현재 반영된 가이드 정본은 다음 두 파일이다.
 
-이 검사는 코드 정의의 존재·값을 확인할 뿐 실행 동작을 증명하지 않는다. API,
-DB, 검색, 화면 동작은 Contract test가 별도로 확인해야 한다.
+- `docs/00-사용가이드/예행연습-1.13.1-1.13.2/`
+  `OM_TEMP_1.13.1_113개_변경파일_기능분류_가이드.md`
+- 같은 폴더의 HTML 미리보기
+  `OM_TEMP_1.13.1_113개_변경파일_기능분류_가이드.html`
 
-전체 `harness/tests`는 사용자 작업 중인 미추적 `test_om_workflow.py`를 제외하고
-390개를 수집해 353개 통과, 외부 환경 의존 37개 skip, 실패 0개다.
+현재 페이지에는 검사 목적, 관리 파일, 실패 예시, 사용자 승인 대상과 다음 단계가
+반영됐다. 이후에 사용할 별도 Manifest 작성·`plan → 승인 → apply`·최종 검사
+페이지는 아직 존재하지 않는다. 따라서 “후속 페이지까지 반영 완료”라고 보고하지
+않는다.
+
+### 0-latest-3. 구현 파일과 역할
+
+| 파일 | 역할 |
+|---|---|
+| `harness/acgh/shared_code.py` | 최종 custom branch commit에서 승인된 ID별 코드 정의 검사 |
+| `harness/acgh/schema/shared-code-definitions.schema.json` | 정의 파일 형식과 matcher별 필수 필드 검증 |
+| `harness/generate_shared_code_definition_draft.py` | `shared-path-owners.yaml`에서 모든 `공용 경로 + ID` 조합의 빈 초안 생성 |
+| `harness/acgh/schema/customization-registry.schema.json` | Registry의 `source.shared_code_definitions` 선언 허용 |
+| `harness/acgh/registration_prep.py` | `plan`에서 정의 검사, proposal digest 결속, 결과 코드 변환 |
+| `harness/registrations/kb-openmetadata/run_source_candidate_gates.py` | 최종 소스 검사 실행 시 같은 정의 검사를 선택적으로 추가 |
+| `harness/tests/test_shared_code.py` | 코드·JSON·SQL·오류 조건 단위 test |
+| `harness/tests/test_shared_code_definition_draft.py` | 초안 생성 범위 test |
+| `harness/tests/test_registration_prep.py` | 준비도구 BLOCK과 digest 결속 통합 test |
+
+기존 1.13.0과 과거 연습용 1.13.1 등록자료는 소급 변경하지 않는다. Registry에서
+다음 항목을 선언한 새 등록 묶음부터 검사가 활성화된다.
+
+```yaml
+source:
+  shared_code_definitions: shared-code-definitions.yaml
+```
+
+### 0-latest-4. 등록자료 작성과 검사 순서
+
+1. `shared-path-owners.yaml`에서 공용 파일과 관련 BANK-OM ID를 확정한다.
+2. 초안 생성기를 실행한다.
+3. 생성기는 모든 `공용 경로 + BANK-OM ID` 조합을 만들고 `assertions`를 비워
+   둔다.
+4. 담당자는 실제 diff를 보고 각 ID를 증명할 전체 코드 조각 또는 JSON·YAML
+   경로와 값을 선택한다.
+5. Registry에 `shared_code_definitions`를 선언한다.
+6. 준비도구의 `plan`을 실행한다.
+7. 준비도구는 정의 형식, 모든 공용 경로·ID 조합의 완전성, 최종 custom branch
+   commit의 실제 코드를 검사한다.
+8. 담당자가 proposal과 실제 diff를 검토하고 digest를 승인한다.
+9. `apply`는 승인한 proposal digest와 현재 Git·등록자료가 그대로일 때만
+   실행된다.
+10. 최종 소스 검사 실행기가 고정한 candidate SHA에서 같은 검사를 다시 실행한다.
+
+초안 생성 명령은 다음과 같다. `<등록폴더>`는 실제 1.13.1 등록자료를 만들 다음
+단계에서 확정한다.
+
+```bash
+./.venv/bin/python harness/generate_shared_code_definition_draft.py \
+  --owners <등록폴더>/shared-path-owners.yaml \
+  --output <등록폴더>/shared-code-definitions.yaml
+```
+
+2026-08-04에 기존 37개 공용 경로가 있는 참고 등록자료로 실행한 결과는 다음과
+같다. 37개 파일에 연결된 ID를 각각 펼치면 114개의 `경로 + ID` 조합이 된다.
+
+```json
+{
+  "status": "DRAFT_WRITTEN",
+  "definition_pairs": 114,
+  "requires_human_completion": true
+}
+```
+
+`requires_human_completion: true`는 생성된 파일을 곧바로 검사에 사용할 수 없다는
+뜻이다. Git은 경로와 ID 조합을 만들 수 있지만 어떤 코드 조각이 해당 업무 기능을
+증명하는지는 결정할 수 없다.
+
+### 0-latest-5. 정의 파일 예시
+
+Java·TypeScript·TSX·SQL은 `code_fragment`로 실제 코드 정의 전체를 기록한다.
+
+```yaml
+schema_version: 1
+definitions:
+  - path: openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
+    customization_id: BANK-OM-001
+    assertions:
+      - id: instance-code-definition
+        matcher: code_fragment
+        fragment: |
+          public static final String INSTANCE_CODE = "instanceCode";
+```
+
+JSON·YAML은 구조화된 경로와 기대값을 함께 기록한다.
+
+```yaml
+  - path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+    customization_id: BANK-OM-002
+    assertions:
+      - id: query-report-label
+        matcher: json_value
+        pointer: /label/query-report
+        expected: 보고서 프로젝트
+```
+
+### 0-latest-6. 코드 조각 비교 방식과 실패 예시
+
+Java·TypeScript·TSX·SQL 검사기는 단순 문자열 검색을 사용하지 않는다. 고정한
+candidate SHA의 Git blob을 읽고 다음 순서로 비교한다.
+
+1. 주석을 제거한다.
+2. 공백과 줄바꿈을 제거한다.
+3. 따옴표로 감싼 문자열 값을 하나의 원자적인 token으로 처리한다.
+4. 승인된 전체 코드 조각의 token 순서와 등장 횟수를 비교한다.
+
+따라서 다음 주석은 실제 정의로 인정하지 않는다.
+
+```java
+// public static final String QUERY_REPORT = "queryReport";
+```
+
+다음 코드는 `QUERY_REPORT`라는 상수 이름이 맞더라도 승인한 값과 다르므로
+통과하지 않는다.
+
+```java
+public static final String QUERY_REPORT = "wrong";
+```
+
+다음은 사용자가 선택한 중요 실패 예시다.
+
+```java
+String example =
+    "public static final String QUERY_REPORT = \"queryReport\";";
+```
+
+위 예시는 `QUERY_REPORT` 정의처럼 보이는 글자를 Java 문자열 값 안에 보관했을
+뿐이다. tokenizer는 따옴표 안의 전체 내용을 하나의 `STRING:` token으로
+처리한다. 따라서 실제 코드 token 순서인 `public static final String ...`과
+일치하지 않으며 검사를 통과하지 않는다. 이 방어가 없으면 문서용 예시 문자열이나
+로그 메시지만 남아 있어도 기능 코드가 존재한다고 잘못 판단할 수 있다.
+
+JSON·YAML은 pointer가 존재하는지만 확인하지 않고 실제 값까지 비교한다. 예를
+들어 `/label/query-report`가 존재해도 값이 `보고서 프로젝트`가 아니면
+`BLOCK`이다.
+
+### 0-latest-7. 결과와 담당자 조치
+
+| 결과 | 정확한 의미 | 담당자 조치 |
+|---|---|---|
+| `PASS` | 모든 공용 경로·ID 조합이 정의됐고 최종 custom branch commit의 코드·값과 일치 | 다음 소스 검사 진행 |
+| `BLOCK` | 정의 파일은 해석됐지만 승인한 코드가 없거나 값·등장 횟수가 다름 | 코드와 승인 정의 중 무엇이 잘못됐는지 확인하고 수정 후 재실행 |
+| `ANALYSIS_ERROR` | schema 오류, 경로·ID 조합 누락·중복, 파일 읽기·구문 해석 오류로 신뢰 가능한 비교 불가 | 관리 파일 또는 입력 경로를 수정한 뒤 처음부터 재실행 |
+
+준비도구는 `ANALYSIS_ERROR`를 `SHARED_CODE_DEFINITION_INVALID`, `BLOCK`을
+`SHARED_CODE_DEFINITION_MISSING` finding으로 proposal에 기록한다. Registry가
+정의 파일을 선언하면 파일 내용도 등록 상태 digest에 포함한다. 승인 후 정의
+파일이 바뀌면 stale proposal로 판단해 `apply`를 거부한다.
+
+### 0-latest-8. 자동화와 사람 판단의 경계
+
+| 작업 | 자동화 | 사람 판단 |
+|---|---:|---:|
+| 공용 경로와 ID 조합 펼치기 | 가능 | 생성 결과 누락 여부 검토 |
+| 정의 파일 schema 검증 | 가능 | 없음 |
+| 주석·문자열·잘못된 값 배제 | 가능 | 실패 원인이 코드 변경인지 정의 오류인지 판단 |
+| JSON·YAML pointer와 값 비교 | 가능 | 승인할 업무 값을 결정 |
+| ID를 증명할 코드 조각 선택 | 불가 | 실제 diff와 업무 목적을 보고 결정 |
+| proposal 승인 | 불가 | 승인자·근거 기록 |
+| 실행 동작 정상 여부 | 이 검사로 불가 | Contract와 필수 test 정의·실행 |
+
+초안 생성기가 임의로 변수명 하나를 골라 넣거나 LLM이 실제 업무 증거를 확정하면
+안 된다. 실제 코드 조각은 Manifest·Registry·Contract를 정의하는 단계에서
+사용자와 함께 승인한다.
+
+### 0-latest-9. 테스트 근거와 아직 검증하지 않은 범위
+
+2026-08-04에 다음 집중 test를 다시 실행해 `35 passed`를 확인했다.
+
+```bash
+./.venv/bin/pytest -q \
+  harness/tests/test_shared_code.py \
+  harness/tests/test_shared_code_definition_draft.py \
+  harness/tests/test_registration_prep.py \
+  harness/tests/test_source_candidate_workflow.py
+```
+
+새 기능에 직접 추가한 test는 12개다.
+
+- 코드 정의 검사 8개
+  - 같은 Java 파일의 BANK-OM-001·002를 서로 다른 정의로 구분
+  - 주석에만 심볼이 있으면 실패
+  - 상수 이름은 같지만 initializer 값이 다르면 실패
+  - 코드가 문자열 값 안에만 있으면 실패
+  - JSON pointer와 값을 ID별로 비교
+  - 공용 경로·ID 조합이 하나라도 빠지면 오류
+  - 같은 경로·ID 정의가 중복되면 오류
+  - SQL 주석에만 정의가 있으면 실패
+- 초안 생성기 2개
+  - 모든 공용 경로·ID 조합 생성
+  - ID가 하나뿐인 비공용 경로 입력 거부
+- 준비도구 연동 2개
+  - Registry에서 정의 파일을 선언했는데 한 ID의 코드가 없으면 `BLOCK`
+  - 승인 대상 정의 파일이 바뀌면 digest 불일치로 적용 거부
+
+이전 전체 회귀 test는 사용자 작업 중인 미추적 `test_om_workflow.py`를 제외하고
+390개를 수집해 353개 통과, 외부 환경 의존 37개 skip, 실패 0개였다.
 `test_om_workflow.py`는 `from harness import om_workflow` import 오류로 전체 수집을
-막고 있어 이번 변경에서 수정하지 않았다.
+막고 있어 이번 기능 범위에서 수정하지 않았다.
+
+다음 항목은 아직 완료됐다고 보고하면 안 된다.
+
+1. 실제 1.13.1용 `shared-code-definitions.yaml`을 아직 작성하지 않았다.
+2. 실제 등록 대상 111개와 공용 파일 37개를 사용한 종단 검사를 아직 실행하지
+   않았다.
+3. Registry opt-in부터 최종 source gate까지 실제 1.13.1 등록 폴더를 사용하는
+   subprocess 예행연습은 아직 실행하지 않았다.
+4. 공식 1.13.2와 최종 1.13.2 custom branch candidate가 아직 준비되지 않았다.
+5. 실제 1.13.2 업그레이드에서 공용 코드 정의가 유지되는지 아직 검사하지 않았다.
+6. 후속 Manifest·승인·검사 결과 예행연습 페이지가 아직 작성되지 않았다.
+
+즉, 검사 로직과 준비도구 연동은 구현·자동 test 완료 상태지만 실제 1.13.1
+등록자료와 1.13.2 업그레이드 후보를 사용한 운영 예행연습은 시작 전이다.
+
+### 0-latest-10. 다음 작업 순서와 페이지 구성
+
+1. 1.13.1 등록 범위 최종 확정
+   - 제외 경로 2개를 official branch 내용으로 복원
+   - official·custom 차이가 등록 대상 111개인지 재확인
+2. 1.13.1 Manifest·Registry·Contract·공용 코드 정의 작성
+   - `shared-code-definitions.yaml` 초안 자동 생성
+   - 공용 경로별 실제 diff를 보며 ID별 assertion을 사용자와 작성
+3. 검사 전 준비와 승인
+   - `plan → proposal 검토 → 승인 → apply`
+4. 1.13.1 기준 등록 검증
+   - 등록자료 검사
+   - 공용 파일 ID별 코드 정의 검사
+   - Contract 연결 검사
+5. 공식 1.13.2 영향 사전 확인
+   - T42로 이전 official 1.13.1과 새 official 1.13.2 비교
+6. 1.13.2 custom branch candidate 구성
+   - vendor-merge, 충돌 해결, 최종 custom branch commit 생성
+7. 1.13.2 최종 검사와 승인
+   - 공용 파일 코드 정의 재검사, Contract test, build, 검증 tag와 release branch
+
+각 단계는 기존 문서에 한꺼번에 덧붙이지 않고 독립 예행연습 페이지로 만든다.
+각 페이지에는 이전 단계 결과, 이번 입력, 실행 명령, 자동화 범위, 사람 승인,
+정상 출력, 중단 조건과 다음 페이지 링크를 포함한다.
 
 ## 0-previous. 2026-07-30 검사 전 준비 자동화 구현
 
@@ -1313,3 +1592,121 @@ Git이 큰 JSON 구간을 충돌로 표시했을 때 BASE→OURS와 BASE→THEIR
 브랜치 페이지와 보고용 1차 요약에서 동일한 Cycle SVG 하나를 재사용하는
 용도로만 남겨 두었다. 보고용 1차에는 그림 바로 위에 patch·custom 색상,
 병합·충돌 지점, 검사·tag와 다음 버전 반복의 의미를 한 문단으로 설명한다.
+# 2026-08-05 — 다른 컴퓨터에서 1.13.1 최초 등록 작업 재개
+
+## 목적
+
+실제 `kb_openmetadata` 기반 OpenMetadata 1.13.1 커스터마이징 코드를 최초 등록한 뒤 1.13.2 업그레이드 예행연습으로 이어 갑니다. 과거 1.13.0→1.13.1 재현 자료를 현재 1.13.1 등록자료로 오인하지 않도록 활성 등록 폴더와 과거 자료를 분리합니다.
+
+## 작업을 재개할 때 가장 먼저 할 일
+
+1. 검사기 저장소 최신 branch를 받은 뒤 저장소 루트로 이동합니다.
+2. `source harness/rehearsal_env.sh`를 실행합니다.
+3. 출력된 세 경로가 현재 컴퓨터의 실제 폴더인지 확인합니다.
+4. 경로가 다르면 아래처럼 현재 터미널에만 값을 지정한 뒤 다시 불러옵니다.
+
+```bash
+export OM_CODE_REPO="$HOME/om-work/om-temp-real-1.13.1"
+```
+
+```bash
+export KB_SOURCE_REPO="$HOME/om-work/kb_openmetadata"
+```
+
+```bash
+source harness/rehearsal_env.sh
+```
+
+`OM_TEST_REPO`는 현재 검사기 저장소의 Git 루트를 자동으로 찾습니다. 문서나 명령에 `/Users/seop/Documents/Codex/...`를 새로 넣지 않습니다.
+
+2026-08-06부터 `KB_SOURCE_REPO`도 자동 탐색합니다. `$HOME/om-work/kb_openmetadata`가 있으면 먼저 사용하고, 없으면 검사기 저장소와 같은 상위 폴더의 `review-kb-openmetadata`를 사용합니다. 사용자가 `KB_SOURCE_REPO`를 미리 지정한 경우에는 자동 탐색보다 사용자 값을 우선합니다.
+
+## 이번 작업에서 추가·수정한 파일
+
+| 파일 | 역할 | 현재 상태 |
+|---|---|---|
+| `harness/rehearsal_env.sh` | 컴퓨터마다 다른 검사기·코드·원본 저장소 경로를 변수로 설정 | 구현 완료 |
+| `harness/initialize_registration_workspace.py` | 현재 111개 경로를 검증하고 과거 활성 등록 폴더를 보관한 뒤 깨끗한 1.13.1 등록 폴더를 준비 | 구현·단위검사 완료, 실제 `--execute` 미실행 |
+| `harness/tests/test_initialize_registration_workspace.py` | 경로 분류와 초기화 판단 검사 | 통과 |
+| `OM_TEMP_1.13.1_코드정리_및_등록준비_가이드.md` | 5번 페이지를 과거 초안 비교 절차가 아닌 최초 등록 준비 절차로 변경 | Markdown 수정, HTML 재생성 필요 |
+| `OM_TEMP_1.13.1_등록승인_apply_및_기준검사_가이드.md` | 7번 페이지가 새 1.13.1 초안만 사용하도록 설명 수정 | Markdown 수정, HTML 재생성 필요 |
+| 예행연습 1~11번 Markdown | 개인 절대 경로 대신 `OM_TEST_REPO`·`OM_CODE_REPO`·`KB_SOURCE_REPO` 사용 | 일괄 검토·HTML 재생성 필요 |
+
+## 지금 실행하면 안 되는 작업
+
+현재 로컬 코드 저장소에는 `codex/om-1.13.1-registration-baseline` branch가 아직 없습니다. 현재 `custom/om-1.13.1`은 공식 코드와 비교할 때 제외하기로 한 아래 두 파일도 포함합니다.
+
+- `.claude/settings.json`
+- `docker/development/docker-compose.yml`
+
+따라서 지금 `initialize_registration_workspace.py --execute`를 실행하면 안 됩니다. 먼저 4번 페이지에서 승인된 111개 경로만 담은 등록 기준 branch를 만들어야 합니다.
+
+초기화 도구의 dry-run을 현재 `custom/om-1.13.1`에 실행하면 위 두 경로 때문에 `ANALYSIS_ERROR`가 나오는 것이 정상입니다. 이 실패는 도구 오류가 아니라 잘못된 코드 범위를 등록하지 않도록 막는 보호 동작입니다.
+
+## 집에서 이어서 할 정확한 순서
+
+1. 4번 페이지를 완성하고 `codex/om-1.13.1-registration-baseline`을 만듭니다.
+2. official 대비 변경 경로가 정확히 111개인지 확인합니다.
+3. 제외 경로 두 개의 diff가 빈 출력인지 확인합니다. 다르면 5번으로 진행하지 않고 4번 branch 작성 방식을 고칩니다.
+4. 초기화 도구를 `--execute` 없이 실행해 `READY`인지 확인합니다.
+5. `READY`일 때만 사용자가 보관 경로를 확인한 뒤 `--execute`를 실행합니다.
+6. 생성된 깨끗한 활성 등록 폴더에서 114개 공용 경로·ID 조합의 실제 코드 정의를 작성하고 승인합니다.
+7. Manifest 7개·Registry·Contract의 최초 초안을 작성합니다.
+8. 7번 페이지에서 `plan → 승인 → apply → 기준 검사`를 수행합니다.
+9. 그 뒤에만 1.13.2 공식 코드 준비와 사전 영향 검사로 이동합니다.
+
+## 초기화 도구 검증 명령
+
+```bash
+PYTHONPATH=harness ./.venv/bin/pytest -q harness/tests/test_initialize_registration_workspace.py harness/tests/test_shared_code.py
+```
+
+초기화 도구·공용 코드 검사만 묶은 2026-08-05 실행 결과는 `9 passed`였습니다. 기존 예행연습 흐름 검사까지 포함한 최종 실행 결과는 `14 passed`였습니다.
+
+```bash
+./.venv/bin/python -m py_compile harness/initialize_registration_workspace.py
+```
+
+문법 검사도 통과했습니다.
+
+## 아직 구현되지 않은 중요한 부분
+
+현재 `prepare_registration.py plan`은 Manifest·Registry·Contract가 모두 없는 완전한 빈 폴더에서 7개 BANK-OM ID의 최초 등록자료 전체를 한 번에 만들지 못합니다. 따라서 현재 가이드는 사람이 최초 초안을 작성한 뒤 `plan`으로 실제 코드와의 차이를 검토하는 흐름입니다.
+
+향후 권장 개발은 **최초 등록 bootstrap plan**입니다. 이 기능을 만들 때도 `plan → 사람 승인 → apply`를 유지해야 하며, 사용자의 승인 없이 Registry·Contract·Manifest를 활성 등록 폴더에 직접 쓰면 안 됩니다. 개발 전후로 현재 준비 도구의 digest 확인, 코드 commit 확인, 작업 폴더 변경 확인, 실패 시 원복 기능을 보존해야 합니다.
+
+## 문서 수정 시 반드시 지킬 기준
+
+- `저장소`라고만 쓰지 말고 `코드 저장소` 또는 `검사기 저장소`라고 씁니다.
+- `branch`라고만 쓰지 말고 `official branch`, `custom branch`, `등록 기준 branch`, `업그레이드 후보 branch`, `release branch` 중 역할을 씁니다.
+- `candidate`, `proposal`, `lock`, `digest` 같은 프로젝트 용어는 처음 등장할 때 쉬운 한국어 역할과 파일명을 함께 씁니다.
+- 명령마다 수행 내용, 필요한 입력, 정상 출력, 실패 사례, 다음에 쓰이는 산출물을 구분합니다.
+- 결과 JSON은 실행 명령 묶음이 아니라 판정과 근거를 저장한 파일임을 혼동하지 않게 합니다.
+- 과거 1.13.0→1.13.1 자료를 현재 1.13.1 승인 자료라고 표현하지 않습니다.
+- 구현되지 않은 자동화를 현재 기능처럼 쓰지 않습니다.
+- HTML을 만들기 전 Markdown만 보고 완료 처리하지 않습니다. HTML에서 경로, 색 대비, 코드 박스, 이전·다음 링크를 직접 확인합니다.
+
+## 사용할 검토 스킬
+
+사용자에게 HTML·가이드·인수인계서를 공유하기 전 `clarity-preflight-review`를 사용합니다. 다음을 문장 단위로 확인합니다.
+
+1. 처음 보는 운영자가 주어와 대상을 하나로 해석할 수 있는가.
+2. 기술 용어가 설명보다 먼저 나오지 않는가.
+3. 현재 구현, 수동 작업, 향후 제안이 섞이지 않았는가.
+4. 모든 명령에 입력·출력·중단 조건이 있는가.
+5. PASS뿐 아니라 대표 FAIL과 원인·조치 예시가 있는가.
+6. 같은 개념이 다른 페이지에서 다른 말로 설명되지 않는가.
+7. 렌더링한 HTML의 글자가 배경과 충분히 구분되고 화살표·표·코드가 겹치지 않는가.
+
+## 완료 판정 금지 사항
+
+다음이 끝나기 전에는 1.13.1 최초 등록 가이드를 완성본이라고 하지 않습니다.
+
+- 1~11번 HTML 재생성
+- 개인 절대 경로 잔존 여부 0건 확인
+- 5번 페이지 최초 Manifest·Registry·Contract 예시 보강 또는 bootstrap 기능 구현
+- 전체 이전·다음 링크 검사
+- 렌더링 화면의 대비·가로 넘침 점검
+- 변경된 도구 단위검사와 관련 기존 검사 통과
+
+2026-08-05에 1~11번 HTML 재생성과 개인 절대 경로 잔존 여부 0건, 관련 검사 `14 passed`까지 확인했습니다. 다만 현재 브라우저 보안 정책이 `file://` 문서 자동 검토를 차단했으므로 실제 화면의 색 대비·가로 넘침·코드 박스 배치는 다른 컴퓨터에서 직접 열어 최종 확인해야 합니다.

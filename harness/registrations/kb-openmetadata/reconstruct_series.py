@@ -18,6 +18,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import yaml
@@ -338,24 +339,75 @@ def apply_shared_text(
     current_path.write_text("".join(output), encoding="utf-8")
 
 
-def main() -> int:
-    args = parse_args()
-    sys.path.insert(0, str(args.harness))
-    from acgh import vendor_rebuild as vr
-
-    registry, manifests, inventory = vr.load_registration_bundle(
-        args.registration
-    )
-    plan = vr.build_reconstruction_plan(registry, manifests, inventory)
-    owners = yaml.safe_load(
-        (args.registration / "shared-path-owners.yaml").read_text(
-            encoding="utf-8"
-        )
-    )
+def planned_paths(plan, owners, args) -> list[str]:
     customization_id = args.id
-    if customization_id not in plan.active_ids:
-        raise RuntimeError(f"unknown active customization: {customization_id}")
+    selected = {
+        relative
+        for relative, owner in plan.unique_assignments
+        if owner == customization_id
+        and not args.only_locales
+        and (not args.only_path or relative in args.only_path)
+    }
+    selected.update(
+        relative
+        for relative, path_owners in owners.items()
+        if customization_id in path_owners
+        and (not args.only_locales or "/locale/languages/" in relative)
+        and (not args.only_path or relative in args.only_path)
+    )
+    return sorted(selected)
 
+
+def working_tree_paths(product: Path) -> set[str]:
+    result = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(product),
+            "status",
+            "--porcelain=v1",
+            "--untracked-files=all",
+            "-z",
+        ],
+        check=True,
+        capture_output=True,
+    )
+    records = [record for record in result.stdout.decode().split("\0") if record]
+    paths: set[str] = set()
+    for record in records:
+        status = record[:2]
+        if "R" in status or "C" in status:
+            raise RuntimeError(
+                "rename/copy changes are not supported while reconstructing a BANK-OM ID"
+            )
+        paths.add(record[3:])
+    return paths
+
+
+def restore_head_path(repo: Path, target_root: Path, relative: str) -> None:
+    result = subprocess.run(
+        ["git", "-C", str(repo), "show", f"HEAD:{relative}"],
+        check=False,
+        capture_output=True,
+    )
+    target = target_root / relative
+    if result.returncode == 0:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(result.stdout)
+
+
+def same_path_content(left_root: Path, right_root: Path, relative: str) -> bool:
+    left = left_root / relative
+    right = right_root / relative
+    if left.exists() != right.exists():
+        return False
+    if not left.exists():
+        return True
+    return left.read_bytes() == right.read_bytes()
+
+
+def materialize(args, plan, owners, product: Path) -> list[str]:
+    customization_id = args.id
     changed: list[str] = []
     for relative, owner in plan.unique_assignments:
         if (
@@ -363,7 +415,7 @@ def main() -> int:
             and not args.only_locales
             and (not args.only_path or relative in args.only_path)
         ):
-            copy_snapshot_path(args.snapshot, args.product, relative)
+            copy_snapshot_path(args.snapshot, product, relative)
             changed.append(relative)
 
     for relative, path_owners in owners.items():
@@ -373,7 +425,7 @@ def main() -> int:
             continue
         if args.only_path and relative not in args.only_path:
             continue
-        current_path = args.product / relative
+        current_path = product / relative
         source_path = args.snapshot / relative
         is_last = customization_id == path_owners[-1]
         if args.restore_ref:
@@ -389,10 +441,7 @@ def main() -> int:
                 capture_output=True,
             ).stdout
             current_path.write_bytes(restored)
-        if (
-            args.restore_locales_ref
-            and "/locale/languages/" in relative
-        ):
+        if args.restore_locales_ref and "/locale/languages/" in relative:
             restored = subprocess.run(
                 [
                     "git",
@@ -414,10 +463,82 @@ def main() -> int:
                 is_last,
             )
         elif is_last:
-            copy_snapshot_path(args.snapshot, args.product, relative)
+            copy_snapshot_path(args.snapshot, product, relative)
         else:
             apply_shared_text(current_path, source_path, customization_id)
         changed.append(relative)
+    return changed
+
+
+def already_materialized(args, plan, owners) -> tuple[bool, list[str]]:
+    if (
+        args.only_locales
+        or args.only_path
+        or args.restore_ref
+        or args.restore_locales_ref
+    ):
+        return False, []
+
+    expected_paths = planned_paths(plan, owners, args)
+    actual_paths = working_tree_paths(args.product)
+    if not actual_paths:
+        return False, expected_paths
+
+    if actual_paths != set(expected_paths):
+        missing = sorted(set(expected_paths) - actual_paths)
+        unexpected = sorted(actual_paths - set(expected_paths))
+        raise RuntimeError(
+            f"{args.id} cannot start because the working tree is not clean and "
+            f"does not exactly match its {len(expected_paths)} expected paths; "
+            f"missing={missing[:3]} unexpected={unexpected[:3]}"
+        )
+
+    with tempfile.TemporaryDirectory(prefix=f"{args.id.lower()}-expected-") as tmp:
+        expected_root = Path(tmp)
+        for relative in expected_paths:
+            restore_head_path(args.product, expected_root, relative)
+        materialize(args, plan, owners, expected_root)
+        mismatches = [
+            relative
+            for relative in expected_paths
+            if not same_path_content(args.product, expected_root, relative)
+        ]
+        if mismatches:
+            raise RuntimeError(
+                f"{args.id} has the expected path set but incomplete or different "
+                f"content; mismatches={mismatches[:3]}"
+            )
+    return True, expected_paths
+
+
+def main() -> int:
+    args = parse_args()
+    sys.path.insert(0, str(args.harness))
+    from acgh import vendor_rebuild as vr
+
+    registry, manifests, inventory = vr.load_registration_bundle(
+        args.registration
+    )
+    plan = vr.build_reconstruction_plan(registry, manifests, inventory)
+    owners = yaml.safe_load(
+        (args.registration / "shared-path-owners.yaml").read_text(
+            encoding="utf-8"
+        )
+    )
+    customization_id = args.id
+    if customization_id not in plan.active_ids:
+        raise RuntimeError(f"unknown active customization: {customization_id}")
+
+    complete, expected_paths = already_materialized(args, plan, owners)
+    if complete:
+        print(
+            f"{customization_id}: ALREADY_MATERIALIZED "
+            f"({len(expected_paths)} paths)"
+        )
+        print("No files changed. Continue with step 5-2; do not rerun step 5-1.")
+        return 0
+
+    changed = materialize(args, plan, owners, args.product)
 
     print(f"{customization_id}: materialized {len(changed)} paths")
     for relative in changed:

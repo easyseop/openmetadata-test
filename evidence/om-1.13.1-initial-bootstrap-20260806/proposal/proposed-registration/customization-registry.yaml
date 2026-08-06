@@ -1,0 +1,86 @@
+schema_version: 1
+source:
+  repository: easyseop/OM_TEMP
+  snapshot_sha: d952a83896940116d3d6022323ad76bfe60991e8
+  upstream_repository: open-metadata/OpenMetadata
+  upstream_tag: 1.13.1-release
+  upstream_sha: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
+  changed_path_count: 111
+  ancestry_preserved: true
+  diff_inventory: source-diff-paths.txt
+  unregistered_findings: []
+  limitations:
+  - 담당자는 최초 등록 승인 전에 실제 운영 담당자로 교체해야 합니다.
+  - 업무 정상 조건은 1.13.0 등록자료를 참고한 초안이므로 담당자 검토가 필요합니다.
+  shared_code_definitions: shared-code-definitions.yaml
+entries:
+- customization_id: BANK-OM-001
+  title: 기준코드(InstanceCode)
+  owner: UNASSIGNED
+  owner_status: pending
+  status: active
+  criticality: high
+  manifest: manifests/BANK-OM-001.yaml
+  contracts:
+  - CONTRACT-INSTANCE-CODE
+  provenance: source-snapshot
+- customization_id: BANK-OM-002
+  title: 쿼리 리포트(QueryReport)
+  owner: UNASSIGNED
+  owner_status: pending
+  status: active
+  criticality: high
+  manifest: manifests/BANK-OM-002.yaml
+  contracts:
+  - CONTRACT-QUERY-REPORT
+  provenance: source-snapshot
+- customization_id: BANK-OM-003
+  title: 데이터 검증 결과(Data Assertions)
+  owner: UNASSIGNED
+  owner_status: pending
+  status: active
+  criticality: high
+  manifest: manifests/BANK-OM-003.yaml
+  contracts:
+  - CONTRACT-DATA-ASSERTIONS
+  provenance: source-snapshot
+- customization_id: BANK-OM-004
+  title: 은행 컬럼 확장 표시
+  owner: UNASSIGNED
+  owner_status: pending
+  status: active
+  criticality: high
+  manifest: manifests/BANK-OM-004.yaml
+  contracts:
+  - CONTRACT-BANK-COLUMN-VIEW
+  provenance: source-snapshot
+- customization_id: BANK-OM-005
+  title: 한글 입력 조합 보정
+  owner: UNASSIGNED
+  owner_status: pending
+  status: active
+  criticality: medium
+  manifest: manifests/BANK-OM-005.yaml
+  contracts:
+  - CONTRACT-KOREAN-IME
+  provenance: source-snapshot
+- customization_id: BANK-OM-006
+  title: Sybase 연결 유형
+  owner: UNASSIGNED
+  owner_status: pending
+  status: active
+  criticality: high
+  manifest: manifests/BANK-OM-006.yaml
+  contracts:
+  - CONTRACT-SYBASE-CONNECTOR
+  provenance: source-snapshot
+- customization_id: BANK-OM-007
+  title: Tibero 연결 유형
+  owner: UNASSIGNED
+  owner_status: pending
+  status: active
+  criticality: high
+  manifest: manifests/BANK-OM-007.yaml
+  contracts:
+  - CONTRACT-TIBERO-CONNECTOR
+  provenance: source-snapshot

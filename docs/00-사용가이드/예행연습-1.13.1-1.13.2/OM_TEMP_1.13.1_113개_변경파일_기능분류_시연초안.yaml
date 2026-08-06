@@ -11,8 +11,16 @@ source:
 decision_scope:
   shared_path_multi_id_linking: demo_approved
   operational_registration: not_approved
-  bank_om_001_to_007_assignment: review_required
+  bank_om_001_to_007_assignment: demo_approved
   excluded_paths_restore_to_official: previously_decided
+approval_record:
+  decided_at: '2026-08-05'
+  decided_by: user
+  scope: rehearsal_classification
+  decisions:
+  - BANK-OM-001부터 BANK-OM-007까지 7개 커스터마이징 ID를 서로 합치지 않고 유지한다.
+  - 공용 변경 경로 37개를 현재 분석표에 기록된 모든 관련 BANK-OM ID에 연결한다.
+  limitation: 실제 코드 정의, Manifest, Registry, Contract와 운영 등록은 승인하지 않았다.
 summary:
   changed_paths: 113
   added: 43

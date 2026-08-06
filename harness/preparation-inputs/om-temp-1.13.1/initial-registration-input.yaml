@@ -1,0 +1,150 @@
+schema_version: 1
+source:
+  repository: easyseop/OM_TEMP
+  upstream_repository: open-metadata/OpenMetadata
+  upstream_tag: 1.13.1-release
+  limitations:
+    - 담당자는 최초 등록 승인 전에 실제 운영 담당자로 교체해야 합니다.
+    - 업무 정상 조건은 1.13.0 등록자료를 참고한 초안이므로 담당자 검토가 필요합니다.
+  unregistered_findings: []
+  use_shared_code_definitions: true
+
+customizations:
+  - customization_id: BANK-OM-001
+    title: 기준코드(InstanceCode)
+    owner: UNASSIGNED
+    owner_status: pending
+    criticality: high
+    kind: core-patch
+    provenance: source-snapshot
+    required_changed_paths:
+      - openmetadata-service/src/main/java/org/openmetadata/service/resources/instancecode/InstanceCodeResource.java
+      - openmetadata-spec/src/main/resources/json/schema/entity/data/instanceCode.json
+    contracts: [CONTRACT-INSTANCE-CODE]
+    series_allowed: false
+
+  - customization_id: BANK-OM-002
+    title: 쿼리 리포트(QueryReport)
+    owner: UNASSIGNED
+    owner_status: pending
+    criticality: high
+    kind: core-patch
+    provenance: source-snapshot
+    required_changed_paths:
+      - openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/QueryReportResource.java
+      - openmetadata-spec/src/main/resources/json/schema/entity/data/queryReport.json
+    contracts: [CONTRACT-QUERY-REPORT]
+    series_allowed: false
+
+  - customization_id: BANK-OM-003
+    title: 데이터 검증 결과(Data Assertions)
+    owner: UNASSIGNED
+    owner_status: pending
+    criticality: high
+    kind: core-patch
+    provenance: source-snapshot
+    required_changed_paths:
+      - openmetadata-ui/src/main/resources/ui/src/pages/DataAssertionsPage/DataAssertionsPage.tsx
+      - openmetadata-ui/src/main/resources/ui/src/rest/dataAssertionsAPI.ts
+    contracts: [CONTRACT-DATA-ASSERTIONS]
+    series_allowed: false
+
+  - customization_id: BANK-OM-004
+    title: 은행 컬럼 확장 표시
+    owner: UNASSIGNED
+    owner_status: pending
+    criticality: high
+    kind: core-patch
+    provenance: source-snapshot
+    required_changed_paths:
+      - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaTable/SchemaTable.component.tsx
+    contracts: [CONTRACT-BANK-COLUMN-VIEW]
+    series_allowed: false
+
+  - customization_id: BANK-OM-005
+    title: 한글 입력 조합 보정
+    owner: UNASSIGNED
+    owner_status: pending
+    criticality: medium
+    kind: core-patch
+    provenance: source-snapshot
+    required_changed_paths:
+      - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
+    contracts: [CONTRACT-KOREAN-IME]
+    series_allowed: false
+
+  - customization_id: BANK-OM-006
+    title: Sybase 연결 유형
+    owner: UNASSIGNED
+    owner_status: pending
+    criticality: high
+    kind: core-patch
+    provenance: source-snapshot
+    required_changed_paths:
+      - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/sybaseConnection.json
+    contracts: [CONTRACT-SYBASE-CONNECTOR]
+    series_allowed: false
+
+  - customization_id: BANK-OM-007
+    title: Tibero 연결 유형
+    owner: UNASSIGNED
+    owner_status: pending
+    criticality: high
+    kind: core-patch
+    provenance: source-snapshot
+    required_changed_paths:
+      - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/tiberoConnection.json
+    contracts: [CONTRACT-TIBERO-CONNECTOR]
+    series_allowed: false
+
+contracts:
+  - id: CONTRACT-INSTANCE-CODE
+    title: InstanceCode CRUD, search, and index round-trip
+    invariant: InstanceCode의 codeGroup/codeValue가 CRUD와 재색인 뒤에도 동일하게 조회된다.
+    required_tests:
+      - tests/bank/contracts/test_instance_code.py::test_crud_search_roundtrip
+    customization_ids: [BANK-OM-001]
+
+  - id: CONTRACT-QUERY-REPORT
+    title: QueryReport and query usage linkage
+    invariant: QueryReport와 연결된 Query 목록이 생성·수정·삭제 및 재색인 뒤에도 보존된다.
+    required_tests:
+      - tests/bank/contracts/test_query_report.py::test_query_usage_roundtrip
+    customization_ids: [BANK-OM-002]
+
+  - id: CONTRACT-DATA-ASSERTIONS
+    title: Data assertion status and ownership view
+    invariant: 실패한 test case가 상태·소유자·테이블·컬럼과 함께 일관되게 노출된다.
+    required_tests:
+      - tests/bank/contracts/test_data_assertions.py::test_failed_assertion_projection
+      - tests/bank/contracts/test_data_assertions.py::test_failed_assertion_rendered_row
+    customization_ids: [BANK-OM-003]
+
+  - id: CONTRACT-BANK-COLUMN-VIEW
+    title: Bank column metadata presentation
+    invariant: 컬럼 순번·키·제약조건 등 행내 확장 정보가 스키마와 검색 화면에서 동일하게 표시된다.
+    required_tests:
+      - tests/bank/contracts/test_bank_columns.py::test_extended_column_projection
+      - tests/bank/contracts/test_bank_columns.py::test_extended_column_rendered_row
+    customization_ids: [BANK-OM-004]
+
+  - id: CONTRACT-KOREAN-IME
+    title: Korean IME composition is lossless
+    invariant: CodeMirror 입력 중 조합 중인 한글 자모가 중복·역전·소실되지 않는다.
+    required_tests:
+      - tests/bank/contracts/test_korean_ime.py::test_hangul_composition_roundtrip
+    customization_ids: [BANK-OM-005]
+
+  - id: CONTRACT-SYBASE-CONNECTOR
+    title: Sybase connection metadata and service selection
+    invariant: Sybase 연결 스키마가 생성 UI·API·serviceConnection union에서 동일하게 유지된다.
+    required_tests:
+      - tests/bank/contracts/test_sybase.py::test_connection_schema_roundtrip
+    customization_ids: [BANK-OM-006]
+
+  - id: CONTRACT-TIBERO-CONNECTOR
+    title: Tibero connection metadata and service selection
+    invariant: Tibero 연결 스키마가 생성 UI·API·serviceConnection union에서 동일하게 유지된다.
+    required_tests:
+      - tests/bank/contracts/test_tibero.py::test_connection_schema_roundtrip
+    customization_ids: [BANK-OM-007]

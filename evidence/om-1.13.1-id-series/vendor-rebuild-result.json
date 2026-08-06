@@ -1,0 +1,751 @@
+{
+  "diagnosis": {
+    "categories": [],
+    "primary_category": null,
+    "summary": "차단 사유가 없습니다."
+  },
+  "gate": {
+    "name": "vendor-reconstructed-candidate",
+    "reasons": [
+      "candidate=d952a83896940116d3d6022323ad76bfe60991e8",
+      "approved_upstream=afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9",
+      "registered_paths=111",
+      "excluded_paths=2",
+      "reconstruction_plan_digest=sha256:05e653a8d91f49f7a4b73c0d14c27c0bd82a2d02714c7e19cee4b6914a07de98"
+    ],
+    "verdict": "pass"
+  },
+  "plan": {
+    "active_ids": [
+      "BANK-OM-001",
+      "BANK-OM-002",
+      "BANK-OM-003",
+      "BANK-OM-004",
+      "BANK-OM-005",
+      "BANK-OM-006",
+      "BANK-OM-007"
+    ],
+    "excluded_paths": [
+      ".claude/settings.json",
+      "docker/development/docker-compose.yml"
+    ],
+    "inventory_paths": [
+      ".claude/settings.json",
+      "bootstrap/sql/migrations/native/1.13.1/mysql/schemaChanges.sql",
+      "bootstrap/sql/migrations/native/1.13.1/postgres/schemaChanges.sql",
+      "docker/development/docker-compose.yml",
+      "openmetadata-service/src/main/java/org/openmetadata/service/Entity.java",
+      "openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java",
+      "openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/InstanceCodeRepository.java",
+      "openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/QueryReportRepository.java",
+      "openmetadata-service/src/main/java/org/openmetadata/service/resources/instancecode/InstanceCodeMapper.java",
+      "openmetadata-service/src/main/java/org/openmetadata/service/resources/instancecode/InstanceCodeResource.java",
+      "openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/QueryReportMapper.java",
+      "openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/QueryReportResource.java",
+      "openmetadata-service/src/main/java/org/openmetadata/service/search/SearchIndexFactory.java",
+      "openmetadata-service/src/main/java/org/openmetadata/service/search/indexes/InstanceCodeIndex.java",
+      "openmetadata-service/src/main/java/org/openmetadata/service/search/indexes/QueryReportIndex.java",
+      "openmetadata-spec/src/main/resources/elasticsearch/en/instance_code_index_mapping.json",
+      "openmetadata-spec/src/main/resources/elasticsearch/en/query_index_mapping.json",
+      "openmetadata-spec/src/main/resources/elasticsearch/en/query_report_index_mapping.json",
+      "openmetadata-spec/src/main/resources/elasticsearch/indexMapping.json",
+      "openmetadata-spec/src/main/resources/elasticsearch/jp/instance_code_index_mapping.json",
+      "openmetadata-spec/src/main/resources/elasticsearch/jp/query_index_mapping.json",
+      "openmetadata-spec/src/main/resources/elasticsearch/jp/query_report_index_mapping.json",
+      "openmetadata-spec/src/main/resources/elasticsearch/ru/instance_code_index_mapping.json",
+      "openmetadata-spec/src/main/resources/elasticsearch/ru/query_index_mapping.json",
+      "openmetadata-spec/src/main/resources/elasticsearch/ru/query_report_index_mapping.json",
+      "openmetadata-spec/src/main/resources/elasticsearch/zh/instance_code_index_mapping.json",
+      "openmetadata-spec/src/main/resources/elasticsearch/zh/query_index_mapping.json",
+      "openmetadata-spec/src/main/resources/elasticsearch/zh/query_report_index_mapping.json",
+      "openmetadata-spec/src/main/resources/json/schema/api/data/createInstanceCode.json",
+      "openmetadata-spec/src/main/resources/json/schema/api/data/createQueryReport.json",
+      "openmetadata-spec/src/main/resources/json/schema/entity/data/instanceCode.json",
+      "openmetadata-spec/src/main/resources/json/schema/entity/data/queryReport.json",
+      "openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/sybaseConnection.json",
+      "openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/tiberoConnection.json",
+      "openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json",
+      "openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-sybase.svg",
+      "openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-tibero.svg",
+      "openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx",
+      "openmetadata-ui/src/main/resources/ui/src/components/DataAssetSummaryPanelV1/DataAssetSummaryPanelV1.tsx",
+      "openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx",
+      "openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaTable/SchemaTable.component.tsx",
+      "openmetadata-ui/src/main/resources/ui/src/components/Explore/ExploreTree/ExploreTree.tsx",
+      "openmetadata-ui/src/main/resources/ui/src/components/InstanceCode/InstanceCodeListPage.tsx",
+      "openmetadata-ui/src/main/resources/ui/src/components/MyData/MyDataFailedAssertions/MyDataFailedAssertions.component.tsx",
+      "openmetadata-ui/src/main/resources/ui/src/components/QueryReport/QueryReportListPage.tsx",
+      "openmetadata-ui/src/main/resources/ui/src/components/QueryReport/QueryReportQueryEditor/QueryReportQueryEditor.component.tsx",
+      "openmetadata-ui/src/main/resources/ui/src/components/SearchedData/SearchedData.tsx",
+      "openmetadata-ui/src/main/resources/ui/src/constants/TableKeys.constants.ts",
+      "openmetadata-ui/src/main/resources/ui/src/constants/constants.ts",
+      "openmetadata-ui/src/main/resources/ui/src/context/PermissionProvider/PermissionProvider.interface.ts",
+      "openmetadata-ui/src/main/resources/ui/src/enums/Explore.enum.ts",
+      "openmetadata-ui/src/main/resources/ui/src/enums/entity.enum.ts",
+      "openmetadata-ui/src/main/resources/ui/src/enums/search.enum.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/api/automations/createWorkflow.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/api/data/createInstanceCode.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/api/data/createQueryReport.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/api/services/createDatabaseService.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/api/services/ingestionPipelines/createIngestionPipeline.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/entity/automations/testServiceConnection.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/entity/automations/workflow.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/entity/data/database.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/entity/data/databaseSchema.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/entity/data/instanceCode.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/entity/data/queryReport.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/entity/data/storedProcedure.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/entity/data/table.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/sybaseConnection.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/tiberoConnection.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/entity/services/databaseService.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/entity/services/ingestionPipelines/ingestionPipeline.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/testSuitePipeline.ts",
+      "openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/workflow.ts",
+      "openmetadata-ui/src/main/resources/ui/src/interface/search.interface.ts",
+      "openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json",
+      "openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json",
+      "openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json",
+      "openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json",
+      "openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json",
+      "openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json",
+      "openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json",
+      "openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json",
+      "openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json",
+      "openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json",
+      "openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json",
+      "openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json",
+      "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json",
+      "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json",
+      "openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json",
+      "openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json",
+      "openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json",
+      "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json",
+      "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json",
+      "openmetadata-ui/src/main/resources/ui/src/pages/DataAssertionsPage/DataAssertionsPage.tsx",
+      "openmetadata-ui/src/main/resources/ui/src/pages/InstanceCodeDetailsPage/InstanceCodeDetailsPage.tsx",
+      "openmetadata-ui/src/main/resources/ui/src/pages/InstanceCodeGroupDetailsPage/InstanceCodeGroupDetailsPage.tsx",
+      "openmetadata-ui/src/main/resources/ui/src/pages/MyDataPage/MyDataPage.component.tsx",
+      "openmetadata-ui/src/main/resources/ui/src/pages/QueryReportDetailsPage/QueryReportDetailsPage.tsx",
+      "openmetadata-ui/src/main/resources/ui/src/pages/QueryReportYearDetailsPage/QueryReportYearDetailsPage.tsx",
+      "openmetadata-ui/src/main/resources/ui/src/rest/dataAssertionsAPI.ts",
+      "openmetadata-ui/src/main/resources/ui/src/rest/instanceCodeAPI.ts",
+      "openmetadata-ui/src/main/resources/ui/src/rest/queryAPI.ts",
+      "openmetadata-ui/src/main/resources/ui/src/rest/queryReportAPI.ts",
+      "openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx",
+      "openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx",
+      "openmetadata-ui/src/main/resources/ui/src/utils/EntityUtilClassBase.ts",
+      "openmetadata-ui/src/main/resources/ui/src/utils/EntityUtils.interface.ts",
+      "openmetadata-ui/src/main/resources/ui/src/utils/EntityUtils.tsx",
+      "openmetadata-ui/src/main/resources/ui/src/utils/QueryReportUtils.ts",
+      "openmetadata-ui/src/main/resources/ui/src/utils/RouterUtils.ts",
+      "openmetadata-ui/src/main/resources/ui/src/utils/SearchClassBase.ts",
+      "openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts",
+      "openmetadata-ui/src/main/resources/ui/src/utils/ServiceUtils.tsx"
+    ],
+    "schema_version": 1,
+    "shared_candidates": [
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002"
+        ],
+        "path": "bootstrap/sql/migrations/native/1.13.1/mysql/schemaChanges.sql"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002"
+        ],
+        "path": "bootstrap/sql/migrations/native/1.13.1/postgres/schemaChanges.sql"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002"
+        ],
+        "path": "openmetadata-service/src/main/java/org/openmetadata/service/Entity.java"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002"
+        ],
+        "path": "openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002"
+        ],
+        "path": "openmetadata-service/src/main/java/org/openmetadata/service/search/SearchIndexFactory.java"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002"
+        ],
+        "path": "openmetadata-spec/src/main/resources/elasticsearch/indexMapping.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-006",
+          "BANK-OM-007"
+        ],
+        "path": "openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/constants/constants.ts"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/context/PermissionProvider/PermissionProvider.interface.ts"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/enums/Explore.enum.ts"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/enums/entity.enum.ts"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/enums/search.enum.ts"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-006",
+          "BANK-OM-007"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/api/services/createDatabaseService.ts"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-006",
+          "BANK-OM-007"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/entity/services/databaseService.ts"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003",
+          "BANK-OM-004"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003",
+          "BANK-OM-004"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003",
+          "BANK-OM-004"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003",
+          "BANK-OM-004"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003",
+          "BANK-OM-004"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003",
+          "BANK-OM-004"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003",
+          "BANK-OM-004"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003",
+          "BANK-OM-004"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003",
+          "BANK-OM-004"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003",
+          "BANK-OM-004"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003",
+          "BANK-OM-004"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003",
+          "BANK-OM-004"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003",
+          "BANK-OM-004"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003",
+          "BANK-OM-004"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003",
+          "BANK-OM-004"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003",
+          "BANK-OM-004"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003",
+          "BANK-OM-004"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003",
+          "BANK-OM-004"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002",
+          "BANK-OM-003",
+          "BANK-OM-004"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-006",
+          "BANK-OM-007"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-001",
+          "BANK-OM-002"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/utils/RouterUtils.ts"
+      },
+      {
+        "candidate_ids": [
+          "BANK-OM-006",
+          "BANK-OM-007"
+        ],
+        "path": "openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts"
+      }
+    ],
+    "snapshot_sha": "2c2347043235aa2a4ecba4729774c770fcee5d67",
+    "unique_assignments": [
+      {
+        "customization_id": "BANK-OM-001",
+        "path": "openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/InstanceCodeRepository.java"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/QueryReportRepository.java"
+      },
+      {
+        "customization_id": "BANK-OM-001",
+        "path": "openmetadata-service/src/main/java/org/openmetadata/service/resources/instancecode/InstanceCodeMapper.java"
+      },
+      {
+        "customization_id": "BANK-OM-001",
+        "path": "openmetadata-service/src/main/java/org/openmetadata/service/resources/instancecode/InstanceCodeResource.java"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/QueryReportMapper.java"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/QueryReportResource.java"
+      },
+      {
+        "customization_id": "BANK-OM-001",
+        "path": "openmetadata-service/src/main/java/org/openmetadata/service/search/indexes/InstanceCodeIndex.java"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-service/src/main/java/org/openmetadata/service/search/indexes/QueryReportIndex.java"
+      },
+      {
+        "customization_id": "BANK-OM-001",
+        "path": "openmetadata-spec/src/main/resources/elasticsearch/en/instance_code_index_mapping.json"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-spec/src/main/resources/elasticsearch/en/query_index_mapping.json"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-spec/src/main/resources/elasticsearch/en/query_report_index_mapping.json"
+      },
+      {
+        "customization_id": "BANK-OM-001",
+        "path": "openmetadata-spec/src/main/resources/elasticsearch/jp/instance_code_index_mapping.json"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-spec/src/main/resources/elasticsearch/jp/query_index_mapping.json"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-spec/src/main/resources/elasticsearch/jp/query_report_index_mapping.json"
+      },
+      {
+        "customization_id": "BANK-OM-001",
+        "path": "openmetadata-spec/src/main/resources/elasticsearch/ru/instance_code_index_mapping.json"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-spec/src/main/resources/elasticsearch/ru/query_index_mapping.json"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-spec/src/main/resources/elasticsearch/ru/query_report_index_mapping.json"
+      },
+      {
+        "customization_id": "BANK-OM-001",
+        "path": "openmetadata-spec/src/main/resources/elasticsearch/zh/instance_code_index_mapping.json"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-spec/src/main/resources/elasticsearch/zh/query_index_mapping.json"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-spec/src/main/resources/elasticsearch/zh/query_report_index_mapping.json"
+      },
+      {
+        "customization_id": "BANK-OM-001",
+        "path": "openmetadata-spec/src/main/resources/json/schema/api/data/createInstanceCode.json"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-spec/src/main/resources/json/schema/api/data/createQueryReport.json"
+      },
+      {
+        "customization_id": "BANK-OM-001",
+        "path": "openmetadata-spec/src/main/resources/json/schema/entity/data/instanceCode.json"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-spec/src/main/resources/json/schema/entity/data/queryReport.json"
+      },
+      {
+        "customization_id": "BANK-OM-006",
+        "path": "openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/sybaseConnection.json"
+      },
+      {
+        "customization_id": "BANK-OM-007",
+        "path": "openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/tiberoConnection.json"
+      },
+      {
+        "customization_id": "BANK-OM-006",
+        "path": "openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-sybase.svg"
+      },
+      {
+        "customization_id": "BANK-OM-007",
+        "path": "openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-tibero.svg"
+      },
+      {
+        "customization_id": "BANK-OM-004",
+        "path": "openmetadata-ui/src/main/resources/ui/src/components/DataAssetSummaryPanelV1/DataAssetSummaryPanelV1.tsx"
+      },
+      {
+        "customization_id": "BANK-OM-005",
+        "path": "openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx"
+      },
+      {
+        "customization_id": "BANK-OM-004",
+        "path": "openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaTable/SchemaTable.component.tsx"
+      },
+      {
+        "customization_id": "BANK-OM-004",
+        "path": "openmetadata-ui/src/main/resources/ui/src/components/Explore/ExploreTree/ExploreTree.tsx"
+      },
+      {
+        "customization_id": "BANK-OM-001",
+        "path": "openmetadata-ui/src/main/resources/ui/src/components/InstanceCode/InstanceCodeListPage.tsx"
+      },
+      {
+        "customization_id": "BANK-OM-003",
+        "path": "openmetadata-ui/src/main/resources/ui/src/components/MyData/MyDataFailedAssertions/MyDataFailedAssertions.component.tsx"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-ui/src/main/resources/ui/src/components/QueryReport/QueryReportListPage.tsx"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-ui/src/main/resources/ui/src/components/QueryReport/QueryReportQueryEditor/QueryReportQueryEditor.component.tsx"
+      },
+      {
+        "customization_id": "BANK-OM-004",
+        "path": "openmetadata-ui/src/main/resources/ui/src/components/SearchedData/SearchedData.tsx"
+      },
+      {
+        "customization_id": "BANK-OM-004",
+        "path": "openmetadata-ui/src/main/resources/ui/src/constants/TableKeys.constants.ts"
+      },
+      {
+        "customization_id": "BANK-OM-006",
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/api/automations/createWorkflow.ts"
+      },
+      {
+        "customization_id": "BANK-OM-001",
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/api/data/createInstanceCode.ts"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/api/data/createQueryReport.ts"
+      },
+      {
+        "customization_id": "BANK-OM-006",
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/api/services/ingestionPipelines/createIngestionPipeline.ts"
+      },
+      {
+        "customization_id": "BANK-OM-006",
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/entity/automations/testServiceConnection.ts"
+      },
+      {
+        "customization_id": "BANK-OM-006",
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/entity/automations/workflow.ts"
+      },
+      {
+        "customization_id": "BANK-OM-004",
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/entity/data/database.ts"
+      },
+      {
+        "customization_id": "BANK-OM-004",
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/entity/data/databaseSchema.ts"
+      },
+      {
+        "customization_id": "BANK-OM-001",
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/entity/data/instanceCode.ts"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/entity/data/queryReport.ts"
+      },
+      {
+        "customization_id": "BANK-OM-004",
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/entity/data/storedProcedure.ts"
+      },
+      {
+        "customization_id": "BANK-OM-004",
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/entity/data/table.ts"
+      },
+      {
+        "customization_id": "BANK-OM-006",
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/sybaseConnection.ts"
+      },
+      {
+        "customization_id": "BANK-OM-007",
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/tiberoConnection.ts"
+      },
+      {
+        "customization_id": "BANK-OM-006",
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts"
+      },
+      {
+        "customization_id": "BANK-OM-006",
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/entity/services/ingestionPipelines/ingestionPipeline.ts"
+      },
+      {
+        "customization_id": "BANK-OM-006",
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/testSuitePipeline.ts"
+      },
+      {
+        "customization_id": "BANK-OM-006",
+        "path": "openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/workflow.ts"
+      },
+      {
+        "customization_id": "BANK-OM-004",
+        "path": "openmetadata-ui/src/main/resources/ui/src/interface/search.interface.ts"
+      },
+      {
+        "customization_id": "BANK-OM-003",
+        "path": "openmetadata-ui/src/main/resources/ui/src/pages/DataAssertionsPage/DataAssertionsPage.tsx"
+      },
+      {
+        "customization_id": "BANK-OM-001",
+        "path": "openmetadata-ui/src/main/resources/ui/src/pages/InstanceCodeDetailsPage/InstanceCodeDetailsPage.tsx"
+      },
+      {
+        "customization_id": "BANK-OM-001",
+        "path": "openmetadata-ui/src/main/resources/ui/src/pages/InstanceCodeGroupDetailsPage/InstanceCodeGroupDetailsPage.tsx"
+      },
+      {
+        "customization_id": "BANK-OM-003",
+        "path": "openmetadata-ui/src/main/resources/ui/src/pages/MyDataPage/MyDataPage.component.tsx"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-ui/src/main/resources/ui/src/pages/QueryReportDetailsPage/QueryReportDetailsPage.tsx"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-ui/src/main/resources/ui/src/pages/QueryReportYearDetailsPage/QueryReportYearDetailsPage.tsx"
+      },
+      {
+        "customization_id": "BANK-OM-003",
+        "path": "openmetadata-ui/src/main/resources/ui/src/rest/dataAssertionsAPI.ts"
+      },
+      {
+        "customization_id": "BANK-OM-001",
+        "path": "openmetadata-ui/src/main/resources/ui/src/rest/instanceCodeAPI.ts"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-ui/src/main/resources/ui/src/rest/queryAPI.ts"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-ui/src/main/resources/ui/src/rest/queryReportAPI.ts"
+      },
+      {
+        "customization_id": "BANK-OM-006",
+        "path": "openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx"
+      },
+      {
+        "customization_id": "BANK-OM-004",
+        "path": "openmetadata-ui/src/main/resources/ui/src/utils/EntityUtilClassBase.ts"
+      },
+      {
+        "customization_id": "BANK-OM-004",
+        "path": "openmetadata-ui/src/main/resources/ui/src/utils/EntityUtils.interface.ts"
+      },
+      {
+        "customization_id": "BANK-OM-004",
+        "path": "openmetadata-ui/src/main/resources/ui/src/utils/EntityUtils.tsx"
+      },
+      {
+        "customization_id": "BANK-OM-002",
+        "path": "openmetadata-ui/src/main/resources/ui/src/utils/QueryReportUtils.ts"
+      },
+      {
+        "customization_id": "BANK-OM-004",
+        "path": "openmetadata-ui/src/main/resources/ui/src/utils/SearchClassBase.ts"
+      },
+      {
+        "customization_id": "BANK-OM-006",
+        "path": "openmetadata-ui/src/main/resources/ui/src/utils/ServiceUtils.tsx"
+      }
+    ],
+    "upstream_sha": "afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9"
+  },
+  "plan_digest": "sha256:05e653a8d91f49f7a4b73c0d14c27c0bd82a2d02714c7e19cee4b6914a07de98"
+}

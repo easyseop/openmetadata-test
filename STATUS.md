@@ -3,8 +3,10 @@
 > Updated: 2026-08-04 KST — OM_TEMP 1.13.1의 113개 실제 변경 경로 전체를
 > 시연용 YAML로 분류했다. 37개 공용 경로는 여러 BANK-OM ID에 연결하며
 > 중복되지 않는 114개 경로·ID 조합의 `shared-code-definitions` 빈 초안을
-> 만들었다. 빈 assertions와 미승인 ID 분류 때문에 운영 Registry나 검사 입력은
-> 아직 아니다. 상세 내용은 `docs/04-진행/CODEX_HANDOFF.md` `0-current` 참조.
+> 만들었다. 빈 assertions 때문에 운영 Registry나 검사 입력은
+> 아직 아니다. 2026-08-05에 7개 ID 유지와 공용 경로 다중 연결을 시연용으로
+> 승인했지만 실제 코드 정의와 운영 등록은 승인하지 않았다. 상세 내용은
+> `docs/04-진행/CODEX_HANDOFF.md` `0-current` 참조.
 
 > Updated: 2026-07-30 KST
 > Branch: `codex/strict-manifest-gates`

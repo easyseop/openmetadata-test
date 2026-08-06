@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Create a human-fillable shared code-definition draft.
+"""Create the empty path/ID skeleton for shared code definitions.
 
-The owner pairs are deterministic, but the code fragment or structured value
-that proves each BANK-OM feature is a business/code-review decision.  This
-command therefore creates only the complete path/ID skeleton and never
-pretends that an inferred token is an approved definition.
+This command only creates the complete path/ID skeleton.  A separate proposal
+command may infer candidate assertions from exact BANK-OM commit diffs, but an
+inferred assertion is never treated as a human-approved definition.
 """
 from __future__ import annotations
 
@@ -58,6 +57,53 @@ def build_draft(owners: dict) -> dict:
     }
 
 
+def inspect_existing_draft(existing: object, expected: dict) -> dict:
+    """Confirm that an existing draft still covers the current owner pairs."""
+    if not isinstance(existing, dict):
+        raise DraftError("existing output must be a YAML mapping")
+    definitions = existing.get("definitions")
+    if not isinstance(definitions, list):
+        raise DraftError("existing output has no definitions list")
+
+    expected_pairs = {
+        (item["path"], item["customization_id"])
+        for item in expected["definitions"]
+    }
+    existing_pairs: set[tuple[str, str]] = set()
+    completed_pairs = 0
+    for index, item in enumerate(definitions, start=1):
+        if not isinstance(item, dict):
+            raise DraftError(f"existing definition #{index} must be a mapping")
+        path = item.get("path")
+        customization_id = item.get("customization_id")
+        assertions = item.get("assertions")
+        if not isinstance(path, str) or not isinstance(customization_id, str):
+            raise DraftError(
+                f"existing definition #{index} needs path and customization_id"
+            )
+        if not isinstance(assertions, list):
+            raise DraftError(f"existing definition #{index} assertions must be a list")
+        pair = (path, customization_id)
+        if pair in existing_pairs:
+            raise DraftError(f"existing output has duplicate pair: {path} / {customization_id}")
+        existing_pairs.add(pair)
+        if assertions:
+            completed_pairs += 1
+
+    missing = sorted(expected_pairs - existing_pairs)
+    unexpected = sorted(existing_pairs - expected_pairs)
+    if missing or unexpected:
+        raise DraftError(
+            "existing output does not match the current shared owner list: "
+            f"missing={len(missing)}, unexpected={len(unexpected)}"
+        )
+    return {
+        "definition_pairs": len(existing_pairs),
+        "completed_pairs": completed_pairs,
+        "remaining_pairs": len(existing_pairs) - completed_pairs,
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
@@ -69,10 +115,27 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args(argv)
     try:
-        if args.output.exists():
-            raise DraftError(f"output already exists: {args.output}")
         owners = yaml.safe_load(args.owners.read_text(encoding="utf-8"))
         draft = build_draft(owners)
+        if args.output.exists():
+            existing = yaml.safe_load(args.output.read_text(encoding="utf-8"))
+            counts = inspect_existing_draft(existing, draft)
+            print(
+                json.dumps(
+                    {
+                        "status": "DRAFT_ALREADY_EXISTS",
+                        "output": str(args.output.absolute()),
+                        **counts,
+                        "next_action": (
+                            "기존 파일을 그대로 사용하고, 별도의 자동 assertion "
+                            "제안 명령을 실행하십시오. 자동 추출할 수 없는 항목만 "
+                            "수동으로 작성합니다."
+                        ),
+                    },
+                    ensure_ascii=False,
+                )
+            )
+            return 0
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(
             yaml.safe_dump(
@@ -97,7 +160,7 @@ def main(argv: list[str] | None = None) -> int:
                 "status": "DRAFT_WRITTEN",
                 "output": str(args.output.absolute()),
                 "definition_pairs": len(draft["definitions"]),
-                "requires_human_completion": True,
+                "requires_assertion_proposal": True,
             },
             ensure_ascii=False,
         )

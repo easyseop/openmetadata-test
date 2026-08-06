@@ -1,0 +1,66 @@
+schema_version: 2
+customization_id: BANK-OM-003
+status: active
+kind: core-patch
+title: 데이터 검증 결과(Data Assertions)
+implementation:
+  changed_paths:
+  - openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+  - openmetadata-ui/src/main/resources/ui/src/components/MyData/MyDataFailedAssertions/MyDataFailedAssertions.component.tsx
+  - openmetadata-ui/src/main/resources/ui/src/constants/constants.ts
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json
+  - openmetadata-ui/src/main/resources/ui/src/pages/DataAssertionsPage/DataAssertionsPage.tsx
+  - openmetadata-ui/src/main/resources/ui/src/pages/MyDataPage/MyDataPage.component.tsx
+  - openmetadata-ui/src/main/resources/ui/src/rest/dataAssertionsAPI.ts
+  required_changed_paths:
+  - openmetadata-ui/src/main/resources/ui/src/pages/DataAssertionsPage/DataAssertionsPage.tsx
+  - openmetadata-ui/src/main/resources/ui/src/rest/dataAssertionsAPI.ts
+upgrade_watch:
+  paths:
+  - openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+  - openmetadata-ui/src/main/resources/ui/src/constants/constants.ts
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json
+  - openmetadata-ui/src/main/resources/ui/src/pages/MyDataPage/MyDataPage.component.tsx
+assurance:
+  contracts:
+  - CONTRACT-DATA-ASSERTIONS
+  direct_tests: []
+series:
+  allowed: false
+  depends_on: []

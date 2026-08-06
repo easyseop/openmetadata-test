@@ -1,18 +1,34 @@
 # OM_TEMP 1.13.1 로컬 branch 연결 및 검증 가이드
 
+**전체 순서:** 2/11 · [전체 목차](./OM_TEMP_1.13.1_1.13.2_예행연습_전체목차.html)
+
 > 문서 성격: 사전 준비 이후에 사용하는 별도 실행 문서
 > 목적: 원격 OM_TEMP에 준비된 official·custom branch를 로컬 작업 폴더에 연결하고 실제 코드 상태를 검증
 > 시작 조건: `OM_TEMP_1.13.1_기준환경_사전준비_가이드`의 완료 기준 충족
 > 종료점: `custom/om-1.13.1` 코드가 로컬 작업 폴더에 구성되고 6개 검증 절차 통과
 > 제외 범위: 새 snapshot commit 생성, 원격 push, Manifest·Registry·Contract 생성, 검사기 실행
 
-**문서 이동:** [← 이전 단계 — 기준환경 사전 준비](./OM_TEMP_1.13.1_기준환경_사전준비_가이드.md)
+**문서 이동:** [← 이전 단계 — 기준환경 사전 준비](./OM_TEMP_1.13.1_기준환경_사전준비_가이드.html)
+
+## 공통 경로 설정
+
+이 페이지의 명령을 실행할 터미널에서 검사기 저장소로 이동한 뒤 공통 경로를 불러옵니다. 다른 컴퓨터에서는 clone 위치만 바꾸면 됩니다.
+
+```bash
+cd <검사기-저장소-clone-경로>
+```
+
+```bash
+source harness/rehearsal_env.sh
+```
+
+`OM_TEST_REPO`는 검사기 저장소, `OM_CODE_REPO`는 OpenMetadata 코드 작업 폴더, `KB_SOURCE_REPO`는 실제 커스터마이징 원본 폴더를 가리킵니다. 새 터미널을 열면 다시 실행합니다.
 
 ## 단계 연결 요약
 
 | 구분 | 내용 |
 |---|---|
-| 이전 단계 요약 | Git 사용 가능 여부, OM_TEMP 접근 권한, 원본 commit, `~/om-work/om-temp-real-1.13.1` 작업 폴더와 Git 작성자 정보를 확인했습니다. |
+| 이전 단계 요약 | Git 사용 가능 여부, OM_TEMP 접근 권한, 원본 commit, `$OM_CODE_REPO` 작업 폴더와 Git 작성자 정보를 확인했습니다. |
 | 이번 단계 수행 범위 | 원격 official·custom branch를 같은 이름의 로컬 branch로 연결하고 실제 커스터마이징 코드를 작업 폴더에 구성합니다. |
 | 이번 단계 완료 결과 | 로컬 branch commit, 작업 폴더 상태, 실제 원본 동일성, 113개 변경 파일과 official 기준 포함 관계가 검증됩니다. |
 
@@ -43,7 +59,7 @@
 
 | 확인 항목 | 요구 상태 | 불일치 시 조치 |
 |---|---|---|
-| 작업 폴더 | `~/om-work/om-temp-real-1.13.1` 존재 | 사전 준비 가이드부터 다시 확인 |
+| 작업 폴더 | `$OM_CODE_REPO` 존재 | 사전 준비 가이드부터 다시 확인 |
 | 원격 저장소 | `origin`이 `easyseop/OM_TEMP`를 가리킴 | branch 연결 중단 |
 | official 원격 commit | `e6199070c35f717f7ced512bb7b435b9d46b33a3` | 결과 기록 후 중단 |
 | custom 원격 commit | `59dae915342eaa3bdca1f9571bfa2ba4533c9a6f` | 결과 기록 후 중단 |
@@ -62,7 +78,7 @@
 **실행 명령**
 
 ```bash
-git -C ~/om-work/om-temp-real-1.13.1 fetch origin
+git -C "$OM_CODE_REPO" fetch origin
 ```
 
 **예상 결과**
@@ -82,7 +98,7 @@ git -C ~/om-work/om-temp-real-1.13.1 fetch origin
 **실행 명령**
 
 ```bash
-git -C ~/om-work/om-temp-real-1.13.1 rev-parse refs/remotes/origin/official/om-1.13.1
+git -C "$OM_CODE_REPO" rev-parse refs/remotes/origin/official/om-1.13.1
 ```
 
 **예상 결과**
@@ -104,7 +120,7 @@ e6199070c35f717f7ced512bb7b435b9d46b33a3
 **실행 명령**
 
 ```bash
-git -C ~/om-work/om-temp-real-1.13.1 rev-parse refs/remotes/origin/custom/om-1.13.1
+git -C "$OM_CODE_REPO" rev-parse refs/remotes/origin/custom/om-1.13.1
 ```
 
 **예상 결과**
@@ -123,11 +139,11 @@ git -C ~/om-work/om-temp-real-1.13.1 rev-parse refs/remotes/origin/custom/om-1.1
 **실행 명령**
 
 ```bash
-git -C ~/om-work/om-temp-real-1.13.1 branch --list official/om-1.13.1
+git -C "$OM_CODE_REPO" branch --list official/om-1.13.1
 ```
 
 ```bash
-git -C ~/om-work/om-temp-real-1.13.1 branch --list custom/om-1.13.1
+git -C "$OM_CODE_REPO" branch --list custom/om-1.13.1
 ```
 
 **예상 결과**
@@ -147,7 +163,7 @@ git -C ~/om-work/om-temp-real-1.13.1 branch --list custom/om-1.13.1
 **실행 명령**
 
 ```bash
-git -C ~/om-work/om-temp-real-1.13.1 branch --track official/om-1.13.1 origin/official/om-1.13.1
+git -C "$OM_CODE_REPO" branch --track official/om-1.13.1 origin/official/om-1.13.1
 ```
 
 **예상 결과**
@@ -170,7 +186,7 @@ branch 'official/om-1.13.1' set up to track 'origin/official/om-1.13.1'.
 **실행 명령**
 
 ```bash
-git -C ~/om-work/om-temp-real-1.13.1 switch -c custom/om-1.13.1 --track origin/custom/om-1.13.1
+git -C "$OM_CODE_REPO" switch -c custom/om-1.13.1 --track origin/custom/om-1.13.1
 ```
 
 **예상 결과**
@@ -190,7 +206,7 @@ branch 'custom/om-1.13.1' set up to track 'origin/custom/om-1.13.1'.
 ### 4-1. 현재 branch 확인
 
 ```bash
-git -C ~/om-work/om-temp-real-1.13.1 branch --show-current
+git -C "$OM_CODE_REPO" branch --show-current
 ```
 
 **예상 결과**
@@ -202,13 +218,13 @@ custom/om-1.13.1
 ### 4-2. official·custom commit 확인
 
 ```bash
-git -C ~/om-work/om-temp-real-1.13.1 rev-parse official/om-1.13.1
+git -C "$OM_CODE_REPO" rev-parse official/om-1.13.1
 ```
 
 **예상 결과:** `e6199070c35f717f7ced512bb7b435b9d46b33a3`
 
 ```bash
-git -C ~/om-work/om-temp-real-1.13.1 rev-parse custom/om-1.13.1
+git -C "$OM_CODE_REPO" rev-parse custom/om-1.13.1
 ```
 
 **예상 결과:** `59dae915342eaa3bdca1f9571bfa2ba4533c9a6f`
@@ -216,7 +232,7 @@ git -C ~/om-work/om-temp-real-1.13.1 rev-parse custom/om-1.13.1
 ### 4-3. 작업 폴더 변경 여부 확인
 
 ```bash
-git -C ~/om-work/om-temp-real-1.13.1 status --short
+git -C "$OM_CODE_REPO" status --short
 ```
 
 **예상 결과**
@@ -230,7 +246,7 @@ git -C ~/om-work/om-temp-real-1.13.1 status --short
 로컬 custom branch의 파일 상태가 `kb-source/main`의 실제 원본과 같은지 비교합니다.
 
 ```bash
-git -C ~/om-work/om-temp-real-1.13.1 diff --quiet custom/om-1.13.1 kb-source/main
+git -C "$OM_CODE_REPO" diff --quiet custom/om-1.13.1 kb-source/main
 ```
 
 ```bash
@@ -247,7 +263,7 @@ echo $?
 공식 1.13.1과 custom 1.13.1 사이에서 달라진 파일 수를 확인합니다.
 
 ```bash
-git -C ~/om-work/om-temp-real-1.13.1 diff --name-only official/om-1.13.1 custom/om-1.13.1 | wc -l
+git -C "$OM_CODE_REPO" diff --name-only official/om-1.13.1 custom/om-1.13.1 | wc -l
 ```
 
 **예상 결과:** `113`
@@ -260,7 +276,7 @@ git -C ~/om-work/om-temp-real-1.13.1 diff --name-only official/om-1.13.1 custom/
 custom branch의 Git 이력 안에 official branch의 기준 commit이 포함되어 있는지 확인합니다.
 
 ```bash
-git -C ~/om-work/om-temp-real-1.13.1 merge-base --is-ancestor official/om-1.13.1 custom/om-1.13.1
+git -C "$OM_CODE_REPO" merge-base --is-ancestor official/om-1.13.1 custom/om-1.13.1
 ```
 
 ```bash
@@ -285,7 +301,7 @@ echo $?
 
 완료 기준을 모두 충족하면 코드 기준환경 준비가 끝납니다. 다음 단계에서는 113개 변경 파일을 BANK-OM 커스터마이징 ID별로 연결하고 사용자 확인을 거쳐 Manifest·Registry·Contract 초안을 작성합니다.
 
-**문서 이동:** [다음 단계 — 113개 변경 파일과 BANK-OM ID 연결](./OM_TEMP_1.13.1_113개_변경파일_기능분류_가이드.md)
+**문서 이동:** [다음 단계 — 113개 변경 파일과 BANK-OM ID 연결](./OM_TEMP_1.13.1_113개_변경파일_기능분류_가이드.html)
 
 이 문서에서는 다음 작업을 수행하지 않습니다.
 
@@ -294,4 +310,4 @@ echo $?
 - Manifest·Registry·Contract 생성
 - openmetadata-test 검사 실행
 
-**문서 이동:** [← 이전 단계 — 기준환경 사전 준비](./OM_TEMP_1.13.1_기준환경_사전준비_가이드.md)
+**문서 이동:** [← 이전 단계 — 기준환경 사전 준비](./OM_TEMP_1.13.1_기준환경_사전준비_가이드.html)

@@ -373,6 +373,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--candidate", required=True)
     parser.add_argument("--owners", required=True)
     parser.add_argument("--definitions", required=True)
+    parser.add_argument(
+        "--output",
+        type=Path,
+        help="선택: 터미널에 표시한 JSON 결과를 같은 내용으로 저장할 파일",
+    )
     args = parser.parse_args(argv)
     try:
         owners = yaml.safe_load(Path(args.owners).read_text(encoding="utf-8"))
@@ -384,20 +389,22 @@ def main(argv: list[str] | None = None) -> int:
         result = verdict.GateResult(
             "shared-code-definitions", verdict.ANALYSIS_ERROR, (str(exc),)
         )
-    print(
-        json.dumps(
-            {
-                "gate": {
-                    "name": result.name,
-                    "verdict": result.verdict,
-                    "reasons": list(result.reasons),
-                }
-            },
-            ensure_ascii=False,
-            indent=2,
-            sort_keys=True,
-        )
+    rendered = json.dumps(
+        {
+            "gate": {
+                "name": result.name,
+                "verdict": result.verdict,
+                "reasons": list(result.reasons),
+            }
+        },
+        ensure_ascii=False,
+        indent=2,
+        sort_keys=True,
     )
+    print(rendered)
+    if args.output is not None:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(rendered + "\n", encoding="utf-8")
     return verdict.to_exit_code(result.verdict)
 
 

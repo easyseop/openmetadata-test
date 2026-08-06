@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bank.local/acgh/initial-registration-input.schema.json",
+  "title": "Version-independent initial BANK-OM registration input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source", "customizations", "contracts"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "upstream_repository", "upstream_tag"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "upstream_repository": {"type": "string", "minLength": 1},
+        "upstream_tag": {"type": "string", "minLength": 1},
+        "limitations": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "unregistered_findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "classification", "severity", "reason", "disposition"],
+            "properties": {
+              "path": {"type": "string", "minLength": 1},
+              "classification": {"enum": ["config", "deployment", "extension", "core-patch", "governance"]},
+              "severity": {"enum": ["low", "medium", "high", "critical"]},
+              "reason": {"type": "string", "minLength": 1},
+              "disposition": {"enum": ["review", "remove", "register", "block"]}
+            }
+          }
+        },
+        "use_shared_code_definitions": {"type": "boolean"}
+      }
+    },
+    "customizations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "customization_id", "title", "owner", "owner_status", "criticality",
+          "kind", "provenance", "required_changed_paths", "contracts"
+        ],
+        "properties": {
+          "customization_id": {"type": "string", "pattern": "^BANK-OM-[0-9]{3,}$"},
+          "title": {"type": "string", "minLength": 1},
+          "owner": {"type": "string", "minLength": 1},
+          "owner_status": {"enum": ["assigned", "pending"]},
+          "criticality": {"enum": ["low", "medium", "high", "critical"]},
+          "kind": {"enum": ["core-patch", "extension", "governance"]},
+          "provenance": {"enum": ["source-snapshot", "candidate-follow-up"]},
+          "required_changed_paths": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1},
+            "uniqueItems": true
+          },
+          "contracts": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "pattern": "^CONTRACT-[A-Z0-9-]+$"},
+            "uniqueItems": true
+          },
+          "direct_tests": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1},
+            "uniqueItems": true
+          },
+          "watch_dependencies": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1},
+            "uniqueItems": true
+          },
+          "depends_on": {
+            "type": "array",
+            "items": {"type": "string", "pattern": "^BANK-OM-[0-9]{3,}$"},
+            "uniqueItems": true
+          },
+          "series_allowed": {"type": "boolean"}
+        }
+      }
+    },
+    "contracts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "invariant", "required_tests", "customization_ids"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^CONTRACT-[A-Z0-9-]+$"},
+          "title": {"type": "string", "minLength": 1},
+          "invariant": {"type": "string", "minLength": 1},
+          "required_tests": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1},
+            "uniqueItems": true
+          },
+          "customization_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "pattern": "^BANK-OM-[0-9]{3,}$"},
+            "uniqueItems": true
+          }
+        }
+      }
+    }
+  }
+}

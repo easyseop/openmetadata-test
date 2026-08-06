@@ -1,171 +1,124 @@
-<!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>OM_TEMP 1.13.1 기준환경 사전 준비 가이드</title>
-  <style>
-    :root{--blue:#2563eb;--navy:#172554;--ink:#172033;--muted:#5b6679;--line:#dbe3ef;--bg:#f4f7fb;--green:#15803d;--orange:#c2410c}
-    *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;line-height:1.7}
-    .layout{display:grid;grid-template-columns:250px minmax(0,900px);gap:26px;max-width:1230px;margin:auto;padding:26px}
-    nav{position:sticky;top:18px;align-self:start;background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 8px 28px rgba(23,37,84,.06)}
-    nav strong{display:block;color:var(--blue);margin-bottom:10px} nav a{display:block;color:#465167;text-decoration:none;padding:6px 0;font-size:14px}
-    .hero{padding:42px;border-radius:24px;color:#fff;background:linear-gradient(135deg,#172554,#2563eb);box-shadow:0 20px 55px rgba(37,99,235,.18)}
-    .hero small{display:inline-block;border:1px solid rgba(255,255,255,.38);border-radius:999px;padding:5px 11px} h1{font-size:38px;line-height:1.25;letter-spacing:-.04em;margin:16px 0 12px}.hero p{color:#dbeafe;font-size:17px}
-    section{background:#fff;border:1px solid var(--line);border-radius:20px;padding:32px;margin-top:20px;box-shadow:0 10px 34px rgba(23,37,84,.05)}
-    h2{font-size:25px;margin:0 0 16px} h3{font-size:19px;margin:28px 0 10px} p{margin:8px 0 13px}
-    .flow{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;margin:22px 0}.step{min-width:130px;padding:16px;border:2px solid #93b4ff;background:#eff6ff;border-radius:15px;text-align:center}.arrow{color:var(--blue);font-size:23px}
-    table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}th,td{border:1px solid var(--line);padding:11px 12px;text-align:left;vertical-align:top}th{background:#f1f5f9}
-    .command{margin:14px 0 24px;border:1px solid var(--line);border-radius:16px;overflow:hidden}.command-head{padding:13px 16px;background:#eff6ff;font-weight:700}.command-body{padding:16px}.label{display:inline-block;color:#1d4ed8;background:#eef4ff;border:1px solid #cedcff;border-radius:6px;padding:1px 7px;font-weight:700}
-    pre{background:#101827;color:#e8eef8;border-radius:12px;padding:15px 17px;overflow:auto;font-size:13px}pre code{white-space:pre-wrap;overflow-wrap:anywhere}code{font-family:"SFMono-Regular",Consolas,monospace}:not(pre)>code{display:inline-block;max-width:100%;margin:0 2px;padding:1px 6px;border:1px solid #d4def3;border-radius:6px;background:#f2f6ff;color:#24498f;font-size:.92em;line-height:1.45;overflow-wrap:anywhere;vertical-align:baseline}
-    .ok,.stop{padding:15px 17px;border-radius:12px;margin:14px 0}.ok{border-left:5px solid var(--green);background:#f0fdf4}.stop{border-left:5px solid var(--orange);background:#fff7ed;color:var(--ink)}.hero .stop strong{color:#9a3412}
-    .checklist{list-style:none;padding:0}.checklist li{padding:9px 0;border-bottom:1px solid #edf1f6}.checklist li::before{content:"□";color:var(--blue);font-weight:700;margin-right:9px}.pager{display:flex;justify-content:flex-end;gap:12px;margin-top:22px}.pager a{display:inline-flex;align-items:center;padding:11px 16px;border:1px solid #b9cdfa;border-radius:10px;background:#eef4ff;color:#1d4ed8;text-decoration:none;font-weight:700}.pager a:hover{background:#dfeaff}.stage-context{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:20px}.stage-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px}.stage-card strong{display:block;color:#1d4ed8;margin-bottom:7px}.stage-card p{margin:0;color:#465167;font-size:14px}
-    @media(max-width:850px){.layout{display:block;padding:14px}nav{position:static;margin-bottom:15px}.hero{padding:28px}h1{font-size:30px}.flow,.stage-context{display:grid}.arrow{transform:rotate(90deg);text-align:center}}
-  </style>
-</head>
-<body>
-<div class="layout">
-  <nav>
-    <strong>사전 준비 목차</strong>
-    <a href="#overview">1. 작업 개요</a>
-    <a href="#requirements">2. 사전 준비 항목</a>
-    <a href="#commands">3. 단계별 명령</a>
-    <a href="#done">4. 완료 기준</a>
-    <a href="#next">5. 다음 단계</a>
-  </nav>
-  <main>
-    <header class="hero">
-      <small>별도 신규 문서 · 기존 코덱스 수정본 유지</small>
-      <h1>OM_TEMP 1.13.1<br>기준환경 사전 준비 가이드</h1>
-      <p>공식 1.13.1과 실제 커스터마이징 코드를 복원하기 전에 입력·권한·작업 폴더를 확인합니다.</p>
-      <div class="stop"><strong>종료 상태</strong> — 원격 branch를 로컬에 연결할 수 있는 작업 폴더 준비 완료. 등록자료·검사는 아직 만들거나 실행하지 않습니다.</div>
-    </header>
-    <div class="stage-context">
-      <div class="stage-card"><strong>이전 단계 요약</strong><p>없음. 실제 1.13.1 기준환경 구성 절차의 시작 단계입니다.</p></div>
-      <div class="stage-card"><strong>이번 단계 수행 범위</strong><p>Git, 저장소 접근 권한, 공식·커스터마이징 원본 commit, 작업 폴더와 Git 작성자 정보를 확인합니다.</p></div>
-      <div class="stage-card"><strong>이번 단계 완료 결과</strong><p>원격 official·custom branch를 로컬에 연결할 수 있는 작업 폴더가 준비됩니다.</p></div>
-    </div>
-
-    <section id="overview">
-      <h2>1. 작업 개요</h2>
-      <div class="flow">
-        <div class="step">Git 확인</div><div class="arrow">→</div>
-        <div class="step">OM_TEMP 접근</div><div class="arrow">→</div>
-        <div class="step">실제 원본 확인</div><div class="arrow">→</div>
-        <div class="step">공식 기준 확인</div><div class="arrow">→</div>
-        <div class="step">별도 폴더 준비</div>
-      </div>
-      <p>사전 준비가 끝나면 다음 문서에서 원격에 준비된 <code>official/om-1.13.1</code>과 <code>custom/om-1.13.1</code>을 로컬 branch로 연결하고 코드 상태를 검증합니다. 검사기 저장소는 이 단계에서 수정하지 않습니다.</p>
-    </section>
-
-    <section id="requirements">
-      <h2>2. 사전 준비 항목</h2>
-      <table><thead><tr><th>준비 항목</th><th>사용 목적</th></tr></thead><tbody>
-        <tr><td>Git</td><td>원격 코드와 branch·commit·tree를 확인합니다.</td></tr>
-        <tr><td>OM_TEMP 접근 권한</td><td>코드를 받고 다음 단계에서 branch를 push합니다.</td></tr>
-        <tr><td>review-kb-openmetadata 폴더</td><td>실제 1.13.1 커스터마이징 원본으로 사용합니다.</td></tr>
-        <tr><td><code>~/om-work</code> 폴더</td><td>반복 작업에 사용하는 로컬 작업 공간입니다. 정확한 이름은 밑줄이 아닌 하이픈(<code>om-work</code>)입니다.</td></tr>
-        <tr><td>인터넷 연결</td><td>GitHub의 OM_TEMP에 연결합니다.</td></tr>
-      </tbody></table>
-      <h3>현재 <code>~/om-work</code>에 이미 있는 폴더</h3>
-      <table><thead><tr><th>경로</th><th>현재 역할</th><th>이번 사전 준비에서의 처리</th></tr></thead><tbody>
-        <tr><td><code>~/om-work/OM_TEMP</code></td><td>기존 OM_TEMP 클론이며 현재 <code>patch/om-1.13.0</code>을 사용 중입니다.</td><td>기존 작업을 보존하기 위해 branch를 바꾸거나 파일을 수정하지 않습니다.</td></tr>
-        <tr><td><code>~/om-work/openmetadata-test</code></td><td>검사기 저장소 클론입니다.</td><td>등록자료를 만들기 전이므로 이 문서에서는 수정하지 않습니다.</td></tr>
-        <tr><td><code>~/om-work/om-temp-real-1.13.1</code></td><td>이번 1.13.1 복원 예행연습용 폴더입니다.</td><td>없으면 새로 만들고, 있으면 다시 clone하지 않습니다.</td></tr>
-      </tbody></table>
-      <p>실제 커스터마이징 원본인 <code>review-kb-openmetadata</code>는 현재 <code>~/om-work</code> 아래에 없습니다. 이 원본만 기존 Codex 작업 폴더의 경로를 사용합니다.</p>
-    </section>
-
-    <section id="commands">
-      <h2>3. 단계별 명령</h2>
-
-      <div class="command"><div class="command-head">3-1. Git 설치 확인</div><div class="command-body">
-        <p><span class="label">수행 내용</span> — 이 컴퓨터에서 Git을 사용할 수 있는지 확인합니다.</p><pre><code>git --version</code></pre>
-        <p><span class="label">예상 결과</span> — <code>git version 2.x.x</code>. <code>command not found</code>이면 Git 설치 전까지 중단합니다.</p>
-      </div></div>
-
-      <div class="command"><div class="command-head">3-2. OM_TEMP 읽기 권한 확인</div><div class="command-body">
-        <p><span class="label">수행 내용</span> — 인터넷 연결과 코드 저장소 읽기 권한을 확인합니다. 파일은 수정하지 않습니다.</p><pre><code>git ls-remote --heads https://github.com/easyseop/OM_TEMP.git</code></pre>
-        <p><span class="label">예상 결과</span> — SHA와 branch 이름이 여러 줄 출력됩니다.</p>
-      </div></div>
-
-      <div class="command"><div class="command-head">3-3. 실제 커스터마이징 원본 확인</div><div class="command-body">
-        <p><span class="label">수행 내용</span> — custom branch 복원에 사용할 실제 원본 commit을 확인합니다.</p><pre><code>git -C /Users/seop/Documents/Codex/2026-07-24/sites-plugin-sites-openai-bundled/work/review-kb-openmetadata rev-parse refs/remotes/origin/main</code></pre>
-        <p><span class="label">예상 결과</span> — <code>2c2347043235aa2a4ecba4729774c770fcee5d67</code></p>
-      </div></div>
-
-      <div class="command"><div class="command-head">3-4. 공식 1.13.1 기준 확인</div><div class="command-body">
-        <p><span class="label">수행 내용</span> — official branch에 기록할 공식 릴리스 commit을 확인합니다.</p><pre><code>git -C /Users/seop/Documents/Codex/2026-07-24/sites-plugin-sites-openai-bundled/work/review-kb-openmetadata rev-parse refs/tags/1.13.1-release</code></pre>
-        <p><span class="label">예상 결과</span> — <code>afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9</code></p>
-      </div></div>
-
-      <div class="command"><div class="command-head">3-5. 작업 폴더로 이동</div><div class="command-body">
-        <p><span class="label">수행 내용</span> — 반복 작업에 사용하는 <code>~/om-work</code>로 이동합니다. <code>~</code>는 현재 사용자의 홈 폴더인 <code>/Users/seop</code>을 뜻합니다.</p><pre><code>cd ~/om-work</code></pre>
-      </div></div>
-
-      <div class="command"><div class="command-head">3-6. OM_TEMP를 별도 폴더에 clone</div><div class="command-body">
-        <p><span class="label">수행 내용</span> — 기존 작업과 분리된 <code>om-temp-real-1.13.1</code> 폴더를 만듭니다.</p><pre><code>git clone --filter=blob:none --no-checkout https://github.com/easyseop/OM_TEMP.git om-temp-real-1.13.1</code></pre>
-        <p><code>--filter=blob:none</code>은 필요한 파일만 나중에 받고, <code>--no-checkout</code>은 아직 코드 파일을 펼치지 않는 옵션입니다. 결과는 <code>~/om-work/om-temp-real-1.13.1</code>에 생성되며 기존 <code>~/om-work/OM_TEMP</code>는 수정되지 않습니다. 같은 폴더가 이미 있으면 재실행하지 않습니다.</p>
-      </div></div>
-
-      <div class="command"><div class="command-head">3-7. 실제 원본 폴더 연결</div><div class="command-body">
-        <p><span class="label">수행 내용</span> — 실제 원본을 <code>kb-source</code>라는 이름으로 조회할 수 있게 연결합니다. 원본 파일은 수정하지 않습니다.</p><pre><code>git -C ~/om-work/om-temp-real-1.13.1 remote add kb-source /Users/seop/Documents/Codex/2026-07-24/sites-plugin-sites-openai-bundled/work/review-kb-openmetadata</code></pre>
-        <p><span class="label">필요성</span> — 새로 clone한 폴더는 GitHub의 <code>easyseop/OM_TEMP</code>만 알고 있습니다. 실제 커스터마이징 코드는 별도 로컬 폴더에 있으므로 새 작업 폴더에 그 위치를 먼저 알려줘야 합니다.</p>
-        <p>이 명령은 코드를 복사하지 않습니다. <code>kb-source</code>라는 이름과 실제 원본 폴더의 경로만 Git 설정에 기록합니다.</p>
-        <p><code>remote kb-source already exists</code>이면 아래 명령으로 기존 주소를 확인합니다.</p><pre><code>git -C ~/om-work/om-temp-real-1.13.1 remote -v</code></pre>
-        <p><span class="label">적용 조건</span> — 실제 원본에서 <code>custom/om-1.13.1</code>을 처음 복원하는 과정을 재현할 때 실행합니다. 이미 만들어진 원격 branch를 내려받기만 할 때는 실행하지 않습니다.</p>
-      </div></div>
-
-      <div class="command"><div class="command-head">3-8. 필요한 기준 가져오기</div><div class="command-body">
-        <p><span class="label">수행 내용</span> — 실제 원본 commit과 공식 1.13.1 tag를 새 작업 폴더로 가져옵니다. branch는 아직 만들지 않습니다.</p><pre><code>git -C ~/om-work/om-temp-real-1.13.1 fetch kb-source refs/remotes/origin/main:refs/remotes/kb-source/main refs/tags/1.13.1-release:refs/tags/1.13.1-release</code></pre>
-        <p><span class="label">필요성</span> — 3-7은 원본 위치만 등록합니다. 3-8의 <code>fetch</code>가 실제 Git 이력을 읽어 와야 원본과 원격 custom branch의 동일성을 확인할 수 있습니다.</p>
-        <ul><li>실제 커스터마이징 commit → <code>custom/om-1.13.1</code> 생성에 사용</li><li>공식 <code>1.13.1-release</code> tag → <code>official/om-1.13.1</code> 생성에 사용</li></ul>
-        <p><span class="label">예상 결과</span> — <code>kb-source/main</code>과 <code>1.13.1-release</code>가 추가됐다는 메시지가 표시됩니다.</p>
-        <p><span class="label">중단 조건</span> — <code>couldn't find remote ref</code> 또는 <code>not a git repository</code>가 나오면 branch를 만들지 말고 3-3·3-4의 원본 경로와 기준값을 다시 확인합니다.</p>
-        <div class="ok"><strong>기존 원격 branch 활용 시</strong> — 현재 <code>easyseop/OM_TEMP</code> 원격에는 <code>official/om-1.13.1</code>과 <code>custom/om-1.13.1</code>이 이미 있습니다. 최초 복원을 재현하지 않는다면 3-7·3-8 대신 <code>git fetch origin</code>으로 두 원격 branch를 받습니다.</div>
-      </div></div>
-
-      <div class="command"><div class="command-head">3-9. Git 작성자 확인</div><div class="command-body">
-        <p><span class="label">수행 내용</span> — 향후 승인된 코드 변경 commit에 기록될 이름과 이메일을 확인합니다.</p><pre><code>git -C ~/om-work/om-temp-real-1.13.1 config user.name</code></pre>
-        <pre><code>git -C ~/om-work/om-temp-real-1.13.1 config user.email</code></pre>
-        <p>빈 출력이면 아래 방법으로 본인 정보를 등록합니다. 다른 사람의 정보를 임의로 사용하지 않습니다.</p>
-        <p><span class="label">작성자 정보 미설정 시 조치</span> — 다음 설정은 <code>~/om-work/om-temp-real-1.13.1</code>에만 적용되며 다른 Git 저장소는 바뀌지 않습니다.</p>
-        <p>첫 번째 명령의 <code>JISEOP LEE</code>를 commit에 표시할 본인 이름으로 확인하거나 바꾼 뒤 실행합니다.</p>
-        <pre><code>git -C ~/om-work/om-temp-real-1.13.1 config --local user.name "JISEOP LEE"</code></pre>
-        <p>두 번째 명령의 <code>YOUR_GITHUB_EMAIL</code>을 본인 GitHub 계정의 이메일 또는 GitHub에서 제공한 비공개 이메일 주소로 바꾼 뒤 실행합니다. <code>YOUR_GITHUB_EMAIL</code> 문구를 그대로 등록하면 안 됩니다.</p>
-        <pre><code>git -C ~/om-work/om-temp-real-1.13.1 config --local user.email "YOUR_GITHUB_EMAIL"</code></pre>
-        <p>이 정보는 향후 이 작업 폴더에서 만드는 Git commit의 작성자로 기록됩니다. GitHub 로그인이나 push 권한을 설정하는 명령은 아닙니다.</p>
-        <p><span class="label">등록 결과 확인</span> — 등록 후 다음 두 명령을 각각 실행합니다.</p>
-        <pre><code>git -C ~/om-work/om-temp-real-1.13.1 config --local --get user.name</code></pre>
-        <pre><code>git -C ~/om-work/om-temp-real-1.13.1 config --local --get user.email</code></pre>
-        <p><span class="label">예상 결과</span> — 첫 번째 결과에 본인 이름, 두 번째 결과에 본인 이메일이 표시됩니다.</p>
-        <p><span class="label">중단 조건</span> — 여전히 빈 출력이거나 다른 사람의 정보가 나오면 commit을 만들지 않습니다.</p>
-      </div></div>
-
-      <div class="command"><div class="command-head">3-10. 현재 상태 확인</div><div class="command-body">
-        <p><span class="label">수행 내용</span> — 새 작업 폴더가 준비됐는지 확인합니다.</p><pre><code>git -C ~/om-work/om-temp-real-1.13.1 status --short</code></pre>
-        <p><span class="label">예상 결과</span> — 현재 기준에서는 <code>D</code>가 13,853줄 표시됩니다. 이는 <code>--no-checkout</code>으로 전체 파일을 아직 펼치지 않아 나타나는 상태이며, 사용자가 파일을 삭제한 결과가 아닙니다. 일반 <code>git add</code>나 <code>git commit</code>으로 이 목록을 반영하지 않습니다.</p>
-      </div></div>
-    </section>
-
-    <section id="done">
-      <h2>4. 사전 준비 완료 기준</h2>
-      <ul class="checklist">
-        <li>Git 버전이 정상 출력됩니다.</li><li>OM_TEMP branch 목록을 읽을 수 있습니다.</li>
-        <li>실제 원본 commit이 <code>2c234704…</code>입니다.</li><li>공식 1.13.1 commit이 <code>afcb2d2…</code>입니다.</li>
-        <li><code>~/om-work/om-temp-real-1.13.1</code> 작업 폴더가 있습니다.</li><li>기존 <code>~/om-work/OM_TEMP</code>의 branch와 파일은 변경되지 않았습니다.</li><li><code>kb-source</code>가 실제 원본 폴더를 가리킵니다.</li>
-        <li>Git 작성자 이름과 이메일이 비어 있지 않습니다.</li>
-      </ul>
-      <div class="stop"><strong>중단 조건</strong> — 하나라도 맞지 않으면 branch 연결 단계로 이동하지 않습니다.</div>
-    </section>
-
-    <section id="next">
-      <h2>5. 다음 단계</h2>
-      <p>사전 준비가 끝나면 별도 문서 <code>OM_TEMP_1.13.1_로컬브랜치_연결_및_검증_가이드</code>에서 원격 official·custom branch 연결과 코드 검증을 진행합니다.</p>
-      <div class="ok"><strong>등록자료는 아직 만들지 않습니다.</strong> Manifest·Registry·Contract는 코드 복원과 검증이 끝난 뒤 사용자와 함께 작성합니다.</div>
-      <div class="pager"><a href="OM_TEMP_1.13.1_로컬브랜치_연결_및_검증_가이드.html">다음: 로컬 branch 연결 및 검증 →</a></div>
-    </section>
-  </main>
-</div>
-</body>
-</html>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OM_TEMP 1.13.1 기준환경 사전 준비 가이드</title><link rel="stylesheet" href="OM_TEMP_예행연습_공통.css"></head><body><div class="wrap"><main><header class="hero"><h1>OM_TEMP 1.13.1 기준환경 사전 준비 가이드</h1></header>
+<p><strong>전체 순서:</strong> 1/11 · <a href="./OM_TEMP_1.13.1_1.13.2_예행연습_전체목차.html">전체 목차</a></p>
+<div class="callout note">별도 신규 문서 · 기존 코덱스 수정본은 변경하지 않음<br>목적: 공식 1.13.1과 실제 커스터마이징 코드를 복원하기 전에 입력·권한·작업 폴더를 확인<br>종료점: 원격 branch를 로컬에 연결할 수 있는 작업 폴더 준비 완료<br>제외 범위: official·custom branch 생성, Manifest·Registry·Contract 생성, 검사 실행</div>
+<h2>공통 경로 설정</h2>
+<p>이 가이드를 다른 컴퓨터에서도 그대로 사용할 수 있도록 사용자 이름이 들어간 절대경로를 사용하지 않습니다. 검사기 저장소를 clone한 폴더에서 다음을 실행합니다.</p>
+<div class="command"><pre><code class="language-bash">cd &lt;검사기-저장소-clone-경로&gt;</code></pre></div>
+<div class="command"><pre><code class="language-bash">source harness/rehearsal_env.sh</code></pre></div>
+<p><code>OM_CODE_REPO</code>는 기본적으로 <code>$HOME/om-work/om-temp-real-1.13.1</code>, <code>KB_SOURCE_REPO</code>는 <code>$HOME/om-work/kb_openmetadata</code>를 가리킵니다. 다른 위치를 사용하면 <code>source</code>를 실행하기 전에 해당 환경변수를 지정합니다.</p>
+<h2>단계 연결 요약</h2>
+<div class="table-wrap"><table><thead><tr><th>구분</th><th>내용</th></tr></thead><tbody>
+<tr><td>이전 단계 요약</td><td>없음. 이 문서는 실제 1.13.1 기준환경 구성 절차의 시작 단계입니다.</td></tr>
+<tr><td>이번 단계 수행 범위</td><td>Git 사용 가능 여부, OM_TEMP 접근 권한, 공식·커스터마이징 원본 commit, 별도 작업 폴더와 Git 작성자 정보를 확인합니다.</td></tr>
+<tr><td>이번 단계 완료 결과</td><td>원격 official·custom branch를 로컬에 연결할 수 있는 작업 폴더가 준비됩니다.</td></tr>
+</tbody></table></div>
+<h2>1. 작업 개요</h2>
+<p>이번 사전 준비에서는 다음 순서로 확인합니다.</p>
+<div class="command"><pre><code class="language-text">Git 사용 가능 확인
+    ↓
+OM_TEMP 접근 확인
+    ↓
+실제 kb_openmetadata 원본 확인
+    ↓
+공식 1.13.1 기준 확인
+    ↓
+별도 작업 폴더 준비
+    ↓
+원격 branch 연결 직전에서 종료</code></pre></div>
+<p>이 단계가 끝나면 다음 문서에서 원격에 준비된 <code>official/om-1.13.1</code>과 <code>custom/om-1.13.1</code>을 로컬 branch로 연결하고 코드 상태를 검증합니다.</p>
+<h2>2. 사전 준비 항목</h2>
+<div class="table-wrap"><table><thead><tr><th>준비 항목</th><th>사용 목적</th></tr></thead><tbody>
+<tr><td>Git</td><td>원격 코드를 받고 branch·commit·tree를 확인합니다.</td></tr>
+<tr><td><code>easyseop/OM_TEMP</code> 접근 권한</td><td>코드를 받고, 다음 단계에서 완성한 branch를 push합니다.</td></tr>
+<tr><td>로컬 <code>review-kb-openmetadata</code> 폴더</td><td>실제 1.13.1 커스터마이징 원본으로 사용합니다.</td></tr>
+<tr><td><code>~/om-work</code> 폴더</td><td>반복 작업에 사용하는 로컬 작업 공간입니다. 정확한 이름은 밑줄(<code>om_work</code>)이 아니라 하이픈(<code>om-work</code>)입니다.</td></tr>
+<tr><td>인터넷 연결</td><td>GitHub의 OM_TEMP에 연결합니다.</td></tr>
+</tbody></table></div>
+<h3>현재 <code>~/om-work</code>에 이미 있는 폴더</h3>
+<div class="table-wrap"><table><thead><tr><th>경로</th><th>현재 역할</th><th>이번 사전 준비에서의 처리</th></tr></thead><tbody>
+<tr><td><code>~/om-work/OM_TEMP</code></td><td>기존 OM_TEMP 클론이며 현재 <code>patch/om-1.13.0</code>을 사용 중입니다.</td><td>기존 작업을 보존하기 위해 branch를 바꾸거나 파일을 수정하지 않습니다.</td></tr>
+<tr><td><code>~/om-work/openmetadata-test</code></td><td>검사기 저장소 클론입니다.</td><td>등록자료를 만들기 전이므로 이 문서에서는 수정하지 않습니다.</td></tr>
+<tr><td><code>$OM_CODE_REPO</code></td><td>이번 1.13.1 복원 예행연습용 폴더입니다.</td><td>없으면 새로 만들고, 있으면 다시 clone하지 않습니다.</td></tr>
+</tbody></table></div>
+<p>실제 커스터마이징 원본인 <code>review-kb-openmetadata</code>는 현재 <code>~/om-work</code> 아래에 없습니다. 이 원본만 기존 Codex 작업 폴더의 경로를 사용합니다.</p>
+<h2>3. 단계별 명령</h2>
+<h3>3-1. Git 설치 확인</h3>
+<p><strong>수행 내용</strong> 이 컴퓨터에서 Git 명령을 사용할 수 있는지 확인합니다.</p>
+<p><strong>실행 위치</strong> 아무 폴더에서 실행해도 됩니다.</p>
+<div class="command"><pre><code class="language-bash">git --version</code></pre></div>
+<p><strong>예상 결과</strong></p>
+<div class="command"><pre><code class="language-text">git version 2.x.x</code></pre></div>
+<p><code>command not found</code>가 나오면 Git을 설치하기 전까지 진행하지 않습니다.</p>
+<h3>3-2. OM_TEMP 읽기 권한 확인</h3>
+<p><strong>수행 내용</strong> 인터넷 연결과 <code>easyseop/OM_TEMP</code>를 읽을 수 있는지 확인합니다. 파일을 내려받거나 수정하지는 않습니다.</p>
+<div class="command"><pre><code class="language-bash">git ls-remote --heads https://github.com/easyseop/OM_TEMP.git</code></pre></div>
+<p><strong>예상 결과</strong> 여러 줄의 SHA와 branch 이름이 출력됩니다.</p>
+<p>로그인 오류 또는 <code>Repository not found</code>가 나오면 GitHub 로그인을 확인한 뒤 다시 실행합니다. 같은 오류가 반복되면 다음 단계로 이동하지 않습니다.</p>
+<h3>3-3. 실제 커스터마이징 원본 확인</h3>
+<p><strong>수행 내용</strong> <code>custom/om-1.13.1</code> 복원에 사용할 실제 <code>kb_openmetadata</code> commit을 확인합니다.</p>
+<div class="command"><pre><code class="language-bash">git -C &quot;$KB_SOURCE_REPO&quot; rev-parse refs/remotes/origin/main</code></pre></div>
+<p><strong>예상 결과</strong></p>
+<div class="command"><pre><code class="language-text">2c2347043235aa2a4ecba4729774c770fcee5d67</code></pre></div>
+<p>이 값이 다르면 실제 커스터마이징 원본이 달라진 것입니다. 결과를 기록하고 branch를 만들지 않습니다.</p>
+<h3>3-4. 공식 1.13.1 기준 확인</h3>
+<p><strong>수행 내용</strong> <code>official/om-1.13.1</code>에 기록할 공식 OpenMetadata 1.13.1 commit을 확인합니다.</p>
+<div class="command"><pre><code class="language-bash">git -C &quot;$KB_SOURCE_REPO&quot; rev-parse refs/tags/1.13.1-release</code></pre></div>
+<p><strong>예상 결과</strong></p>
+<div class="command"><pre><code class="language-text">afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9</code></pre></div>
+<p>이 값이 다르면 공식 기준이 달라진 것입니다. 결과를 기록하고 branch를 만들지 않습니다.</p>
+<h3>3-5. 작업 폴더 상위 경로 생성</h3>
+<p><strong>수행 내용</strong> 다음 clone 명령이 <code>OM_CODE_REPO</code>를 만들 수 있도록 상위 폴더를 준비합니다.</p>
+<div class="command"><pre><code class="language-bash">mkdir -p &quot;$(dirname &quot;$OM_CODE_REPO&quot;)&quot;</code></pre></div>
+<p>이 명령은 상위 폴더가 없을 때만 생성하고 기존 코드를 변경하지 않습니다.</p>
+<h3>3-6. OM_TEMP를 별도 폴더에 clone</h3>
+<p><strong>수행 내용</strong> 이번 복원 작업만 수행할 <code>om-temp-real-1.13.1</code> 폴더를 만듭니다.</p>
+<div class="command"><pre><code class="language-bash">git clone --filter=blob:none --no-checkout https://github.com/easyseop/OM_TEMP.git &quot;$OM_CODE_REPO&quot;</code></pre></div>
+<p><code>--filter=blob:none</code>은 처음부터 모든 대용량 파일을 받지 않고 필요할 때 받습니다. <code>--no-checkout</code>은 아직 코드 파일을 펼치지 않는다는 뜻입니다.</p>
+<p><strong>예상 결과</strong> <code>$OM_CODE_REPO</code> 폴더가 생성됩니다. 기존 <code>$HOME/om-work/OM_TEMP</code>는 수정되지 않습니다.</p>
+<p>이미 같은 폴더가 있다면 이 clone 명령을 다시 실행하지 않습니다.</p>
+<h3>3-7. 실제 원본 폴더 연결</h3>
+<p><strong>수행 내용</strong> 새 작업 폴더에서 로컬 <code>review-kb-openmetadata</code>를 <code>kb-source</code>라는 이름으로 조회할 수 있게 연결합니다. 원본 폴더의 파일은 수정하지 않습니다.</p>
+<p><strong>필요성</strong> 새로 clone한 <code>om-temp-real-1.13.1</code>은 GitHub의 <code>easyseop/OM_TEMP</code>만 알고 있습니다. 실제 커스터마이징 코드는 별도 로컬 폴더인 <code>review-kb-openmetadata</code>에 있으므로, 새 작업 폴더에 그 위치를 먼저 알려줘야 합니다.</p>
+<p>이 명령은 코드를 복사하지 않습니다. <code>kb-source</code>라는 이름과 실제 원본 폴더의 경로만 새 작업 폴더의 Git 설정에 기록합니다.</p>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; remote add kb-source &quot;$KB_SOURCE_REPO&quot;</code></pre></div>
+<p><strong>예상 결과</strong> 출력이 없습니다.</p>
+<p><code>remote kb-source already exists</code>가 나오면 이미 연결되어 있다는 뜻입니다. 다음 명령으로 실제 연결 주소를 확인합니다.</p>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; remote -v</code></pre></div>
+<p><code>kb-source</code>가 <code>review-kb-openmetadata</code> 경로를 가리키면 다시 추가하지 않습니다.</p>
+<p><strong>적용 조건</strong> 실제 커스터마이징 원본에서 <code>custom/om-1.13.1</code>을 처음 복원하는 과정을 재현할 때 실행합니다. 이미 원격에 만들어진 <code>custom/om-1.13.1</code>을 내려받기만 하는 경우에는 실행하지 않습니다.</p>
+<h3>3-8. 복원에 필요한 기준 가져오기</h3>
+<p><strong>수행 내용</strong> 실제 커스터마이징 commit과 공식 1.13.1 tag를 새 작업 폴더에서 사용할 수 있게 가져옵니다. 아직 branch는 만들지 않습니다.</p>
+<p><strong>필요성</strong> 3-7은 원본 위치만 등록했기 때문에 새 작업 폴더에는 아직 실제 커스터마이징 commit이 없습니다. 3-8의 <code>fetch</code>가 원본 Git 이력을 실제로 읽어 와야 원본과 원격 custom branch의 동일성을 확인할 수 있습니다.</p>
+<ul><li>실제 커스터마이징 commit은 다음 단계의 <code>custom/om-1.13.1</code> 생성에 사용합니다.</li><li>공식 <code>1.13.1-release</code> tag는 다음 단계의 <code>official/om-1.13.1</code> 생성에 사용합니다.</li></ul>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; fetch kb-source refs/remotes/origin/main:refs/remotes/kb-source/main refs/tags/1.13.1-release:refs/tags/1.13.1-release</code></pre></div>
+<p><strong>예상 결과</strong> <code>kb-source/main</code>과 <code>1.13.1-release</code>가 새로 추가됐다는 메시지가 표시됩니다.</p>
+<p><code>couldn't find remote ref</code> 또는 <code>not a git repository</code>가 나오면 필요한 commit이나 tag를 가져오지 못한 것입니다. branch를 만들지 말고 3-3·3-4의 원본 경로와 기준값부터 다시 확인합니다.</p>
+<p><strong>기존 원격 branch 활용 시</strong> 현재 <code>easyseop/OM_TEMP</code> 원격에는 <code>official/om-1.13.1</code>과 <code>custom/om-1.13.1</code>이 이미 있습니다. 최초 복원을 재현하지 않고 이 branch를 사용하기만 한다면 3-7·3-8 대신 <code>git fetch origin</code>으로 원격 branch를 받습니다.</p>
+<h3>3-9. Git 작성자 확인</h3>
+<p><strong>수행 내용</strong> 향후 승인된 코드 변경 commit에 기록될 작성자 이름과 이메일을 확인합니다.</p>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; config user.name</code></pre></div>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; config user.email</code></pre></div>
+<p>두 명령 중 하나라도 빈 출력이면 작성자 정보를 설정한 뒤 진행합니다. 다른 사람의 이름이나 이메일을 임의로 입력하지 않습니다.</p>
+<p><strong>작성자 정보 미설정 시 조치</strong> 아래 설정은 <code>$OM_CODE_REPO</code>에만 적용됩니다. 다른 Git 저장소의 작성자 정보는 바뀌지 않습니다.</p>
+<p>먼저 첫 번째 명령의 <code>JISEOP LEE</code>를 commit에 표시할 본인 이름으로 확인하거나 바꾼 뒤 실행합니다.</p>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; config --local user.name &quot;JISEOP LEE&quot;</code></pre></div>
+<p>두 번째 명령의 <code>YOUR_GITHUB_EMAIL</code>을 본인 GitHub 계정의 이메일 또는 GitHub에서 제공한 비공개 이메일 주소로 바꾼 뒤 실행합니다. <code>YOUR_GITHUB_EMAIL</code> 문구를 그대로 등록하면 안 됩니다.</p>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; config --local user.email &quot;YOUR_GITHUB_EMAIL&quot;</code></pre></div>
+<p>이 이름과 이메일은 향후 이 작업 폴더에서 만드는 Git commit의 작성자 정보로 기록됩니다. GitHub 로그인이나 push 권한을 설정하는 명령은 아닙니다.</p>
+<p><strong>등록 결과 확인</strong> 등록 명령을 실행한 뒤 아래 두 명령을 다시 실행합니다.</p>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; config --local --get user.name</code></pre></div>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; config --local --get user.email</code></pre></div>
+<p>첫 번째 결과에 본인 이름, 두 번째 결과에 본인 이메일이 나오면 3-9가 완료된 것입니다. 여전히 빈 출력이거나 다른 사람의 정보가 나오면 commit을 만들지 않습니다.</p>
+<h3>3-10. 현재 상태 확인</h3>
+<p><strong>수행 내용</strong> 새 작업 폴더가 준비됐는지 확인합니다.</p>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; status --short</code></pre></div>
+<p>현재 기준에서는 <code>D</code>가 13,853줄 표시됩니다. 이는 <code>--no-checkout</code>으로 전체 파일을 아직 펼치지 않아 나타나는 상태이며, 사용자가 파일을 삭제한 결과가 아닙니다. 일반 <code>git add</code>나 <code>git commit</code>으로 이 목록을 반영하지 않습니다. 다음 문서에서 원격 custom branch로 전환하면 코드 파일이 작업 폴더에 펼쳐지고 이 목록이 사라집니다.</p>
+<h2>4. 사전 준비 완료 기준</h2>
+<p>다음 항목이 모두 맞으면 사전 준비가 끝난 것입니다.</p>
+<ul><li>[ ] <code>git --version</code>이 정상 출력됩니다.</li><li>[ ] OM_TEMP branch 목록을 읽을 수 있습니다.</li><li>[ ] 실제 원본 commit이 <code>2c234704…</code>입니다.</li><li>[ ] 공식 1.13.1 commit이 <code>afcb2d2…</code>입니다.</li><li>[ ] <code>$OM_CODE_REPO</code> 작업 폴더가 있습니다.</li><li>[ ] 기존 <code>~/om-work/OM_TEMP</code>의 branch와 파일은 변경되지 않았습니다.</li><li>[ ] <code>kb-source</code>가 실제 원본 폴더를 가리킵니다.</li><li>[ ] Git 작성자 이름과 이메일이 비어 있지 않습니다.</li></ul>
+<p>하나라도 맞지 않으면 branch 연결 단계로 이동하지 않습니다.</p>
+<h2>5. 다음 단계</h2>
+<p>사전 준비가 끝나면 <code>OM_TEMP_1.13.1_로컬브랜치_연결_및_검증_가이드.md</code>를 열어 다음 작업을 수행합니다.</p>
+<ol><li>원격 official·custom branch 기준 commit 확인</li><li>원격 branch를 같은 이름의 로컬 branch로 연결</li><li>custom 코드 파일을 작업 폴더에 구성</li><li>실제 원본 동일성·113개 변경·branch 관계 검증</li></ol>
+<p>Manifest·Registry·Contract는 그 이후 사용자와 함께 작성합니다.</p>
+<p class="pager"><strong>문서 이동:</strong> <a href="./OM_TEMP_1.13.1_로컬브랜치_연결_및_검증_가이드.html">다음 단계 — 로컬 branch 연결 및 검증</a></p></main></div></body></html>

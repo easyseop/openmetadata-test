@@ -379,6 +379,73 @@ def test_unrelated_snapshot_itself_cannot_masquerade_as_candidate(tmp_path):
     assert any("unrelated snapshot commit" in reason for reason in result.reasons)
 
 
+def test_diagnosis_separates_lineage_commit_path_and_content_blocks():
+    result = V.GateResult(
+        "vendor-reconstructed-candidate",
+        V.BLOCK,
+        (
+            "candidate does not descend from the approved upstream target",
+            "abc123: expected exactly one Customization-ID, got []",
+            "candidate is missing registered net paths: ['missing.txt']",
+            "candidate content differs from source snapshot: changed.txt",
+        ),
+    )
+
+    diagnosis = VR.diagnose_gate(result)
+
+    assert diagnosis["primary_category"] == {
+        "code": "git_lineage",
+        "label": "공식 commit과 Git 이력 연결 문제",
+    }
+    assert [item["code"] for item in diagnosis["categories"]] == [
+        "git_lineage",
+        "commit_identity",
+        "path_registration",
+        "content_mismatch",
+    ]
+    assert diagnosis["categories"][0]["classification"] == "blocking_cause"
+    assert diagnosis["categories"][1]["classification"] == (
+        "secondary_observation"
+    )
+    assert diagnosis["categories"][1]["label"] == (
+        "Git 이력 연결 때문에 함께 표시된 commit ID 확인 정보"
+    )
+    assert diagnosis["summary"].endswith("외 2개 차단 범주")
+
+
+def test_commit_identity_is_blocking_without_lineage_failure():
+    result = V.GateResult(
+        "vendor-reconstructed-candidate",
+        V.BLOCK,
+        ("abc123: expected exactly one Customization-ID, got []",),
+    )
+
+    diagnosis = VR.diagnose_gate(result)
+
+    assert diagnosis["primary_category"] == {
+        "code": "commit_identity",
+        "label": "commit과 BANK-OM ID 기록 문제",
+    }
+    assert diagnosis["categories"][0]["classification"] == "blocking_cause"
+    assert diagnosis["summary"] == "commit과 BANK-OM ID 기록 문제"
+
+
+def test_pass_diagnosis_has_no_block_category():
+    result = V.GateResult(
+        "vendor-reconstructed-candidate",
+        V.PASS,
+        ("registered_paths=111",),
+    )
+
+    diagnosis = VR.diagnose_gate(result)
+
+    assert diagnosis == {
+        "summary": "차단 사유가 없습니다.",
+        "primary_category": None,
+        "categories": [],
+    }
+
+
 def test_plan_rejects_uncovered_source_path(tmp_path):
     _, target, snapshot = _source(tmp_path)
     reg = _registry(target, snapshot)

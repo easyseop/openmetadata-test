@@ -1,0 +1,44 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OM_TEMP 1.13.1 → 1.13.2 예행연습 전체 목차</title><link rel="stylesheet" href="OM_TEMP_예행연습_공통.css"></head><body><div class="wrap"><main><header class="hero"><h1>OM_TEMP 1.13.1 → 1.13.2 예행연습 전체 목차</h1></header>
+<div class="callout note">문서 성격: 예행연습 가이드를 실행 순서대로 여는 시작 페이지입니다. 1단계부터 순서대로 진행하며, 각 페이지의 완료 기준을 충족한 뒤 다음 페이지로 이동합니다.<br>순서 원칙: 기준 코드 준비 → BANK-OM ID와 코드 연결 → 등록자료 승인 → 공식 버전 영향 확인 → 코드 병합 → 최종 검사 → 릴리즈 후보 고정.</div>
+<h2>1. 전체 진행 흐름</h2>
+<div class="command"><pre><code class="language-text">1. 로컬 준비
+   ↓
+2. official·custom branch 확인
+   ↓
+3. 변경 파일을 BANK-OM ID에 연결
+   ↓
+4. BANK-OM ID별 commit 후보 구성
+   ↓
+5. 코드 정리와 등록자료 초안 준비
+   ↓
+6. 사용할 검사기와 판정 방식 학습
+   ↓
+7. 1.13.1 등록 승인·apply·기준 검사
+   ↓
+8. 공식 1.13.2 준비·병합 전 영향 검사
+   ↓
+9. vendor merge·충돌 해결
+   ↓
+10. 1.13.2 최종 검사·승인
+   ↓
+11. 검증 tag·release branch 생성</code></pre></div>
+<div class="callout reference">*<strong>참고 — official branch</strong>는 해당 버전의 공식 OpenMetadata 코드만 담는 branch입니다. <strong>custom branch</strong>는 공식 코드에 BANK-OM 변경이 적용된 작업 branch입니다. <strong>release branch</strong>는 검사와 승인을 통과한 정확한 custom commit을 운영 후보로 고정한 branch입니다.</div>
+<h2>2. 목차 순서</h2>
+<div class="table-wrap"><table><thead><tr><th>순서</th><th>페이지</th><th>이 페이지에서 확정하는 것</th><th>다음 페이지로 넘기는 결과</th></tr></thead><tbody>
+<tr><td>1</td><td><a href="./OM_TEMP_1.13.1_기준환경_사전준비_가이드.html">기준환경 사전 준비</a></td><td>Git·접근 권한·작업 폴더·원본 위치</td><td>branch를 연결할 수 있는 로컬 환경</td></tr>
+<tr><td>2</td><td><a href="./OM_TEMP_1.13.1_로컬브랜치_연결_및_검증_가이드.html">로컬 branch 연결 및 검증</a></td><td><code>official/om-1.13.1</code>과 <code>custom/om-1.13.1</code>의 실제 상태</td><td>검증된 1.13.1 기준 코드와 113개 변경 파일 목록</td></tr>
+<tr><td>3</td><td><a href="./OM_TEMP_1.13.1_113개_변경파일_기능분류_가이드.html">변경 파일과 BANK-OM ID 연결</a></td><td>111개 등록 경로·2개 제외 경로·공용 파일의 관련 ID</td><td>사용자 승인된 파일–ID 관계</td></tr>
+<tr><td>4</td><td><a href="./OM_TEMP_1.13.1_BANK-OM_ID별_커밋_후보브랜치_구성_가이드.html">BANK-OM ID별 commit 후보 구성</a></td><td>111개 변경을 7개 BANK-OM ID별 commit으로 분리</td><td>ID가 기록된 commit 후보 branch</td></tr>
+<tr><td>5</td><td><a href="./OM_TEMP_1.13.1_코드정리_및_등록준비_가이드.html">코드 정리 및 최초 등록 준비</a></td><td>111개 코드 확인·과거 초안 보관·현재 등록자료 초안 작성</td><td>1.13.1 최초 등록에 사용할 코드와 등록자료 초안</td></tr>
+<tr><td>6</td><td><a href="./OM_TEMP_1.13.1_1.13.2_검사기_간단_학습_가이드.html">검사기 간단 학습</a></td><td>검사 시점·입력·원리·판정 의미</td><td>각 결과를 해석할 기준</td></tr>
+<tr><td>7</td><td><a href="./OM_TEMP_1.13.1_등록승인_apply_및_기준검사_가이드.html">등록 승인·apply 및 1.13.1 기준 검사</a></td><td>Manifest·Registry·Contract 등 등록자료와 기준 검사 결과</td><td>승인된 1.13.1 등록 기준과 검사 증거</td></tr>
+<tr><td>8</td><td><a href="./OM_TEMP_1.13.2_공식코드_준비_및_사전영향검사_가이드.html">공식 1.13.2 준비 및 병합 전 영향 검사</a></td><td>새 공식 코드가 BANK-OM 감시 경로에 미치는 영향</td><td>승인된 공식 1.13.2 기준과 영향 검토표</td></tr>
+<tr><td>9</td><td><a href="./OM_TEMP_1.13.2_vendor_merge_및_충돌해결_가이드.html">vendor merge 및 충돌 해결</a></td><td>직전 custom 코드와 새 공식 코드의 병합·충돌 해결</td><td>하나로 합쳐진 1.13.2 candidate commit</td></tr>
+<tr><td>10</td><td><a href="./OM_TEMP_1.13.2_최종검사_및_승인_가이드.html">1.13.2 최종 검사 및 승인</a></td><td>등록·소스·공용 코드·build·test 결과와 승인 근거</td><td>승격 가능 여부와 동일 candidate SHA의 증거</td></tr>
+<tr><td>11</td><td><a href="./OM_TEMP_1.13.2_검증tag_및_release브랜치_가이드.html">검증 tag 및 release branch</a></td><td>검증한 commit을 tag·release branch·release lock으로 고정</td><td>다음 업그레이드의 직전 custom 기준</td></tr>
+</tbody></table></div>
+<h2>3. 순서를 건너뛰지 않는 이유</h2>
+<ul><li>3단계의 파일–ID 관계가 없으면 4~7단계에서 어느 BANK-OM ID를 검사해야 하는지 확정할 수 없습니다.</li><li>7단계의 1.13.1 기준 검사 없이 8단계로 이동하면 업그레이드 전 상태와 업그레이드 후 상태를 비교할 기준이 없습니다.</li><li>8단계의 영향 검사를 병합 뒤에 실행하면 새 공식 코드가 건드린 경로를 사전에 검토한다는 목적이 사라집니다.</li><li>9단계에서 candidate SHA가 확정되기 전에 10단계 검사를 실행하면 검사한 코드와 릴리즈할 코드가 달라질 수 있습니다.</li><li>10단계의 필수 결과와 승인이 없으면 11단계의 tag·release branch를 만들지 않습니다.</li></ul>
+<h2>4. 현재 중단 조건</h2>
+<ul><li>공식 OpenMetadata <code>1.13.2</code> tag·commit이 확인되지 않으면 8단계에서 중단합니다.</li><li>등록 변경안이 사용자 승인을 받지 못하면 7단계의 <code>apply</code>를 실행하지 않습니다.</li><li>검사 결과에 <code>BLOCK</code> 또는 <code>ANALYSIS_ERROR</code>가 있으면 11단계로 이동하지 않습니다.</li><li>T91을 실행할 승인된 운영 경로와 유효한 release lock이 없으면 tag·release branch 생성 전에 중단합니다.</li></ul>
+<p><strong>첫 페이지:</strong> <a href="./OM_TEMP_1.13.1_기준환경_사전준비_가이드.html">1단계 — 기준환경 사전 준비 시작 →</a></p></main></div></body></html>

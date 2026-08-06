@@ -1,0 +1,3519 @@
+schema_version: 1
+definitions:
+- path: bootstrap/sql/migrations/native/1.13.1/mysql/schemaChanges.sql
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-schemachanges-1
+    matcher: code_fragment
+    fragment: "-- InstanceCode entity table: common/reference code master data (codeGroup/codeValue)\nCREATE TABLE IF NOT EXISTS instance_code_entity (\n    id VARCHAR(36) GENERATED ALWAYS AS (json_unquote(json_extract(json, '$.id'))) STORED NOT NULL,\n    name VARCHAR(256) GENERATED ALWAYS AS (json_unquote(json_extract(json, '$.name'))) VIRTUAL NOT NULL,\n    fqnHash VARCHAR(768) NOT NULL COLLATE ascii_bin,\n    json JSON NOT NULL,\n    updatedAt BIGINT UNSIGNED GENERATED ALWAYS AS (json_unquote(json_extract(json, '$.updatedAt'))) VIRTUAL NOT NULL,\n    updatedBy VARCHAR(256) GENERATED ALWAYS AS (json_unquote(json_extract(json, '$.updatedBy'))) VIRTUAL NOT NULL,\n    deleted TINYINT(1) GENERATED ALWAYS AS (json_extract(json, '$.deleted')) VIRTUAL,\n    PRIMARY KEY (id),\n    UNIQUE KEY instance_code_entity_fqn_hash (fqnHash)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;\nCREATE INDEX instance_code_entity_name_index ON instance_code_entity (name);\n"
+- path: bootstrap/sql/migrations/native/1.13.1/mysql/schemaChanges.sql
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-schemachanges-1
+    matcher: code_fragment
+    fragment: "-- QueryReport entity table: report metadata linked to Query entities via queryUsedIn\nCREATE TABLE IF NOT EXISTS query_report_entity (\n    id VARCHAR(36) GENERATED ALWAYS AS (json_unquote(json_extract(json, '$.id'))) STORED NOT NULL,\n    name VARCHAR(256) GENERATED ALWAYS AS (json_unquote(json_extract(json, '$.name'))) VIRTUAL NOT NULL,\n    fqnHash VARCHAR(768) NOT NULL COLLATE ascii_bin,\n    json JSON NOT NULL,\n    updatedAt BIGINT UNSIGNED GENERATED ALWAYS AS (json_unquote(json_extract(json, '$.updatedAt'))) VIRTUAL NOT NULL,\n    updatedBy VARCHAR(256) GENERATED ALWAYS AS (json_unquote(json_extract(json, '$.updatedBy'))) VIRTUAL NOT NULL,\n    deleted TINYINT(1) GENERATED ALWAYS AS (json_extract(json, '$.deleted')) VIRTUAL,\n    PRIMARY KEY (id),\n    UNIQUE KEY query_report_entity_fqn_hash (fqnHash)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;\nCREATE INDEX query_report_entity_name_index ON query_report_entity (name);\n"
+- path: bootstrap/sql/migrations/native/1.13.1/postgres/schemaChanges.sql
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-schemachanges-1
+    matcher: code_fragment
+    fragment: "-- InstanceCode entity table: common/reference code master data (codeGroup/codeValue)\nCREATE TABLE IF NOT EXISTS instance_code_entity (\n    id VARCHAR(36) GENERATED ALWAYS AS (json ->> 'id') STORED NOT NULL,\n    name VARCHAR(256) GENERATED ALWAYS AS (json ->> 'name') STORED NOT NULL,\n    fqnHash VARCHAR(768) NOT NULL,\n    json JSONB NOT NULL,\n    updatedAt BIGINT GENERATED ALWAYS AS ((json ->> 'updatedAt')::bigint) STORED NOT NULL,\n    updatedBy VARCHAR(256) GENERATED ALWAYS AS (json ->> 'updatedBy') STORED NOT NULL,\n    deleted BOOLEAN GENERATED ALWAYS AS ((json ->> 'deleted')::boolean) STORED,\n    PRIMARY KEY (id),\n    UNIQUE (fqnHash)\n);\nCREATE INDEX IF NOT EXISTS instance_code_entity_name_index ON instance_code_entity (name);\n"
+- path: bootstrap/sql/migrations/native/1.13.1/postgres/schemaChanges.sql
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-schemachanges-1
+    matcher: code_fragment
+    fragment: "-- QueryReport entity table: report metadata linked to Query entities via queryUsedIn\nCREATE TABLE IF NOT EXISTS query_report_entity (\n    id VARCHAR(36) GENERATED ALWAYS AS (json ->> 'id') STORED NOT NULL,\n    name VARCHAR(256) GENERATED ALWAYS AS (json ->> 'name') STORED NOT NULL,\n    fqnHash VARCHAR(768) NOT NULL,\n    json JSONB NOT NULL,\n    updatedAt BIGINT GENERATED ALWAYS AS ((json ->> 'updatedAt')::bigint) STORED NOT NULL,\n    updatedBy VARCHAR(256) GENERATED ALWAYS AS (json ->> 'updatedBy') STORED NOT NULL,\n    deleted BOOLEAN GENERATED ALWAYS AS ((json ->> 'deleted')::boolean) STORED,\n    PRIMARY KEY (id),\n    UNIQUE (fqnHash)\n);\nCREATE INDEX IF NOT EXISTS query_report_entity_name_index ON query_report_entity (name);\n"
+- path: openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-entity-1
+    matcher: code_fragment
+    fragment: 'public static final String INSTANCE_CODE = "instanceCode";
+
+      '
+- path: openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-entity-1
+    matcher: code_fragment
+    fragment: 'public static final String QUERY_REPORT = "queryReport";
+
+      '
+- path: openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-collectiondao-1
+    matcher: code_fragment
+    fragment: 'import org.openmetadata.schema.entity.data.InstanceCode;
+
+      '
+  - id: bank-om-001-collectiondao-2
+    matcher: code_fragment
+    fragment: "@CreateSqlObject\n  InstanceCodeDAO instanceCodeDAO();\n"
+  - id: bank-om-001-collectiondao-3
+    matcher: code_fragment
+    fragment: "interface InstanceCodeDAO extends EntityDAO<InstanceCode> {\n    @Override\n    default String getTableName() {\n      return \"instance_code_entity\";\n    }\n    @Override\n    default Class<InstanceCode> getEntityClass() {\n      return InstanceCode.class;\n    }\n"
+- path: openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-collectiondao-1
+    matcher: code_fragment
+    fragment: 'import org.openmetadata.schema.entity.data.QueryReport;
+
+      '
+  - id: bank-om-002-collectiondao-2
+    matcher: code_fragment
+    fragment: "@CreateSqlObject\n  QueryReportDAO queryReportDAO();\n"
+  - id: bank-om-002-collectiondao-3
+    matcher: code_fragment
+    fragment: "@Override\n    default String getNameHashColumn() {\n      return \"fqnHash\";\n    }\n  }\n\n  interface QueryReportDAO extends EntityDAO<QueryReport> {\n    @Override\n    default String getTableName() {\n      return \"query_report_entity\";\n    }\n\n    @Override\n    default Class<QueryReport> getEntityClass() {\n      return QueryReport.class;\n    }\n\n    @Override\n    default String getNameHashColumn() {\n      return \"fqnHash\";\n    }\n"
+- path: openmetadata-service/src/main/java/org/openmetadata/service/search/SearchIndexFactory.java
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-searchindexfactory-1
+    matcher: code_fragment
+    fragment: 'import org.openmetadata.schema.entity.data.InstanceCode;
+
+      '
+  - id: bank-om-001-searchindexfactory-2
+    matcher: code_fragment
+    fragment: 'import org.openmetadata.service.search.indexes.InstanceCodeIndex;
+
+      '
+  - id: bank-om-001-searchindexfactory-3
+    matcher: code_fragment
+    fragment: 'case Entity.INSTANCE_CODE -> new InstanceCodeIndex((InstanceCode) entity);
+
+      '
+- path: openmetadata-service/src/main/java/org/openmetadata/service/search/SearchIndexFactory.java
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-searchindexfactory-1
+    matcher: code_fragment
+    fragment: 'import org.openmetadata.schema.entity.data.QueryReport;
+
+      '
+  - id: bank-om-002-searchindexfactory-2
+    matcher: code_fragment
+    fragment: 'import org.openmetadata.service.search.indexes.QueryReportIndex;
+
+      '
+  - id: bank-om-002-searchindexfactory-3
+    matcher: code_fragment
+    fragment: 'case Entity.QUERY_REPORT -> new QueryReportIndex((QueryReport) entity);
+
+      '
+- path: openmetadata-spec/src/main/resources/elasticsearch/indexMapping.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-indexmapping-1
+    matcher: json_value
+    pointer: /instanceCode/alias
+    expected: instanceCode
+  - id: bank-om-001-indexmapping-2
+    matcher: json_value
+    pointer: /instanceCode/indexMappingFile
+    expected: /elasticsearch/%s/instance_code_index_mapping.json
+  - id: bank-om-001-indexmapping-3
+    matcher: json_value
+    pointer: /instanceCode/indexName
+    expected: instance_code_search_index
+  - id: bank-om-001-indexmapping-4
+    matcher: json_value
+    pointer: /instanceCode/parentAliases/0
+    expected: all
+  - id: bank-om-001-indexmapping-5
+    matcher: json_value
+    pointer: /instanceCode/parentAliases/1
+    expected: dataAsset
+  - id: bank-om-001-indexmapping-6
+    matcher: json_value
+    pointer: /instanceCode/parentAliases/2
+    expected: dataAssetEmbeddings
+- path: openmetadata-spec/src/main/resources/elasticsearch/indexMapping.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-indexmapping-1
+    matcher: json_value
+    pointer: /queryReport/alias
+    expected: queryReport
+  - id: bank-om-002-indexmapping-2
+    matcher: json_value
+    pointer: /queryReport/indexMappingFile
+    expected: /elasticsearch/%s/query_report_index_mapping.json
+  - id: bank-om-002-indexmapping-3
+    matcher: json_value
+    pointer: /queryReport/indexName
+    expected: query_report_search_index
+  - id: bank-om-002-indexmapping-4
+    matcher: json_value
+    pointer: /queryReport/parentAliases/0
+    expected: all
+  - id: bank-om-002-indexmapping-5
+    matcher: json_value
+    pointer: /queryReport/parentAliases/1
+    expected: dataAsset
+  - id: bank-om-002-indexmapping-6
+    matcher: json_value
+    pointer: /queryReport/parentAliases/2
+    expected: dataAssetEmbeddings
+- path: openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json
+  customization_id: BANK-OM-006
+  assertions:
+  - id: bank-om-006-databaseservice-1
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/33/$ref
+    expected: ./connections/database/sybaseConnection.json
+  - id: bank-om-006-databaseservice-2
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/34/$ref
+    expected: ./connections/database/sapHanaConnection.json
+  - id: bank-om-006-databaseservice-3
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/35/$ref
+    expected: ./connections/database/mongoDBConnection.json
+  - id: bank-om-006-databaseservice-4
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/36/$ref
+    expected: ./connections/database/cassandraConnection.json
+  - id: bank-om-006-databaseservice-5
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/37/$ref
+    expected: ./connections/database/couchbaseConnection.json
+  - id: bank-om-006-databaseservice-6
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/38/$ref
+    expected: ./connections/database/greenplumConnection.json
+  - id: bank-om-006-databaseservice-7
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/39/$ref
+    expected: ./connections/database/dorisConnection.json
+  - id: bank-om-006-databaseservice-8
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/40/$ref
+    expected: ./connections/database/starrocksConnection.json
+  - id: bank-om-006-databaseservice-9
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/41/$ref
+    expected: ./connections/database/unityCatalogConnection.json
+  - id: bank-om-006-databaseservice-10
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/42/$ref
+    expected: ./connections/database/sasConnection.json
+  - id: bank-om-006-databaseservice-11
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/43/$ref
+    expected: ./connections/database/teradataConnection.json
+  - id: bank-om-006-databaseservice-12
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/44/$ref
+    expected: ./connections/database/sapErpConnection.json
+  - id: bank-om-006-databaseservice-13
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/45/$ref
+    expected: ./connections/database/synapseConnection.json
+  - id: bank-om-006-databaseservice-14
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/46/$ref
+    expected: ./connections/database/exasolConnection.json
+  - id: bank-om-006-databaseservice-15
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/47/$ref
+    expected: ./connections/database/cockroachConnection.json
+  - id: bank-om-006-databaseservice-16
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/48/$ref
+    expected: ./connections/database/ssasConnection.json
+  - id: bank-om-006-databaseservice-17
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/49/$ref
+    expected: ./connections/database/epicConnection.json
+  - id: bank-om-006-databaseservice-18
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/50/$ref
+    expected: ./connections/database/serviceNowConnection.json
+  - id: bank-om-006-databaseservice-19
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/51/$ref
+    expected: ./connections/database/dremioConnection.json
+  - id: bank-om-006-databaseservice-20
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/52/$ref
+    expected: ./connections/database/microsoftFabricConnection.json
+  - id: bank-om-006-databaseservice-21
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/53/$ref
+    expected: ./connections/database/burstIQConnection.json
+  - id: bank-om-006-databaseservice-22
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/54/$ref
+    expected: ./connections/database/informixConnection.json
+  - id: bank-om-006-databaseservice-23
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/55/$ref
+    expected: ./connections/database/iometeConnection.json
+  - id: bank-om-006-databaseservice-24
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/56/$ref
+    expected: ./connections/database/questdbConnection.json
+  - id: bank-om-006-databaseservice-25
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/33
+    expected: Sybase
+  - id: bank-om-006-databaseservice-26
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/34
+    expected: Dbt
+  - id: bank-om-006-databaseservice-27
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/35
+    expected: SapHana
+  - id: bank-om-006-databaseservice-28
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/36
+    expected: SapSuccessFactors
+  - id: bank-om-006-databaseservice-29
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/37
+    expected: MongoDB
+  - id: bank-om-006-databaseservice-30
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/38
+    expected: Cassandra
+  - id: bank-om-006-databaseservice-31
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/39
+    expected: Couchbase
+  - id: bank-om-006-databaseservice-32
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/40
+    expected: Greenplum
+  - id: bank-om-006-databaseservice-33
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/41
+    expected: Doris
+  - id: bank-om-006-databaseservice-34
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/42
+    expected: StarRocks
+  - id: bank-om-006-databaseservice-35
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/43
+    expected: UnityCatalog
+  - id: bank-om-006-databaseservice-36
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/44
+    expected: SAS
+  - id: bank-om-006-databaseservice-37
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/45
+    expected: Teradata
+  - id: bank-om-006-databaseservice-38
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/46
+    expected: SapErp
+  - id: bank-om-006-databaseservice-39
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/47
+    expected: Synapse
+  - id: bank-om-006-databaseservice-40
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/48
+    expected: Exasol
+  - id: bank-om-006-databaseservice-41
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/49
+    expected: Cockroach
+  - id: bank-om-006-databaseservice-42
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/50
+    expected: SSAS
+  - id: bank-om-006-databaseservice-43
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/51
+    expected: Epic
+  - id: bank-om-006-databaseservice-44
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/52
+    expected: ServiceNow
+  - id: bank-om-006-databaseservice-45
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/53
+    expected: Dremio
+  - id: bank-om-006-databaseservice-46
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/54
+    expected: MicrosoftFabric
+  - id: bank-om-006-databaseservice-47
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/55
+    expected: BurstIQ
+  - id: bank-om-006-databaseservice-48
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/56
+    expected: Informix
+  - id: bank-om-006-databaseservice-49
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/57
+    expected: Iomete
+  - id: bank-om-006-databaseservice-50
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/58
+    expected: QuestDB
+  - id: bank-om-006-databaseservice-51
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/33/name
+    expected: Sybase
+  - id: bank-om-006-databaseservice-52
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/34/name
+    expected: Dbt
+  - id: bank-om-006-databaseservice-53
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/35/name
+    expected: SapHana
+  - id: bank-om-006-databaseservice-54
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/36/name
+    expected: SapSuccessFactors
+  - id: bank-om-006-databaseservice-55
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/37/name
+    expected: MongoDB
+  - id: bank-om-006-databaseservice-56
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/38/name
+    expected: Cassandra
+  - id: bank-om-006-databaseservice-57
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/39/name
+    expected: Couchbase
+  - id: bank-om-006-databaseservice-58
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/40/name
+    expected: Greenplum
+  - id: bank-om-006-databaseservice-59
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/41/name
+    expected: Doris
+  - id: bank-om-006-databaseservice-60
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/42/name
+    expected: StarRocks
+  - id: bank-om-006-databaseservice-61
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/43/name
+    expected: UnityCatalog
+  - id: bank-om-006-databaseservice-62
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/44/name
+    expected: SAS
+  - id: bank-om-006-databaseservice-63
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/45/name
+    expected: Teradata
+  - id: bank-om-006-databaseservice-64
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/46/name
+    expected: SapErp
+  - id: bank-om-006-databaseservice-65
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/47/name
+    expected: Synapse
+  - id: bank-om-006-databaseservice-66
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/48/name
+    expected: Exasol
+  - id: bank-om-006-databaseservice-67
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/49/name
+    expected: Cockroach
+  - id: bank-om-006-databaseservice-68
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/50/name
+    expected: SSAS
+  - id: bank-om-006-databaseservice-69
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/51/name
+    expected: Epic
+  - id: bank-om-006-databaseservice-70
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/52/name
+    expected: ServiceNow
+  - id: bank-om-006-databaseservice-71
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/53/name
+    expected: Dremio
+  - id: bank-om-006-databaseservice-72
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/54/name
+    expected: MicrosoftFabric
+  - id: bank-om-006-databaseservice-73
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/55/name
+    expected: BurstIQ
+  - id: bank-om-006-databaseservice-74
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/56/name
+    expected: Informix
+  - id: bank-om-006-databaseservice-75
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/57/name
+    expected: Iomete
+  - id: bank-om-006-databaseservice-76
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/58/name
+    expected: QuestDB
+- path: openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json
+  customization_id: BANK-OM-007
+  assertions:
+  - id: bank-om-007-databaseservice-1
+    matcher: json_value
+    pointer: /definitions/databaseConnection/properties/config/oneOf/57/$ref
+    expected: ./connections/database/tiberoConnection.json
+  - id: bank-om-007-databaseservice-2
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/enum/59
+    expected: Tibero
+  - id: bank-om-007-databaseservice-3
+    matcher: json_value
+    pointer: /definitions/databaseServiceType/javaEnums/59/name
+    expected: Tibero
+- path: openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-authenticatedapprouter-1
+    matcher: code_fragment
+    fragment: "const InstanceCodeListPage = withSuspenseFallback(\n  React.lazy(() => import('../../components/InstanceCode/InstanceCodeListPage'))\n);\nconst InstanceCodeGroupDetailsPage = withSuspenseFallback(\n  React.lazy(\n    () =>\n      import(\n        '../../pages/InstanceCodeGroupDetailsPage/InstanceCodeGroupDetailsPage'\n      )\n  )\n);\n"
+  - id: bank-om-001-authenticatedapprouter-2
+    matcher: code_fragment
+    fragment: "element={<InstanceCodeGroupDetailsPage />}\n        path={ROUTES.INSTANCE_CODE_GROUP}\n"
+- path: openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-authenticatedapprouter-1
+    matcher: code_fragment
+    fragment: "const QueryReportListPage = withSuspenseFallback(\n  React.lazy(() => import('../../components/QueryReport/QueryReportListPage'))\n);\nconst QueryReportYearDetailsPage = withSuspenseFallback(\n  React.lazy(\n    () =>\n      import(\n        '../../pages/QueryReportYearDetailsPage/QueryReportYearDetailsPage'\n      )\n  )\n);\n"
+  - id: bank-om-002-authenticatedapprouter-2
+    matcher: code_fragment
+    fragment: "element={<QueryReportYearDetailsPage />}\n        path={ROUTES.QUERY_REPORT_YEAR}\n"
+- path: openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-authenticatedapprouter-1
+    matcher: code_fragment
+    fragment: "const DataAssertionsPage = withSuspenseFallback(\n  React.lazy(() => import('../../pages/DataAssertionsPage/DataAssertionsPage'))\n);\n"
+  - id: bank-om-003-authenticatedapprouter-2
+    matcher: code_fragment
+    fragment: "/>\n      <Route element={<DataAssertionsPage />} path={ROUTES.DATA_ASSERTIONS} />\n"
+- path: openmetadata-ui/src/main/resources/ui/src/constants/constants.ts
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-constants-1
+    matcher: code_fragment
+    fragment: "// InstanceCode Entity\n  INSTANCE_CODES: '/instanceCodes',\n  INSTANCE_CODE_GROUP: `/instanceCodes/group/${PLACEHOLDER_ROUTE_FQN}`,\n"
+- path: openmetadata-ui/src/main/resources/ui/src/constants/constants.ts
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-constants-1
+    matcher: code_fragment
+    fragment: "// QueryReport Entity\n  QUERY_REPORTS: '/queryReports',\n  QUERY_REPORT_YEAR: `/queryReports/year/${PLACEHOLDER_ROUTE_FQN}`,\n"
+- path: openmetadata-ui/src/main/resources/ui/src/constants/constants.ts
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-constants-1
+    matcher: code_fragment
+    fragment: "// Data Assertions (Data Quality overview) admin page\n  DATA_ASSERTIONS: '/data_assertions',\n"
+- path: openmetadata-ui/src/main/resources/ui/src/context/PermissionProvider/PermissionProvider.interface.ts
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-permissionprovider-interface-1
+    matcher: code_fragment
+    fragment: 'INSTANCE_CODE = ''instanceCode'',
+
+      '
+- path: openmetadata-ui/src/main/resources/ui/src/context/PermissionProvider/PermissionProvider.interface.ts
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-permissionprovider-interface-1
+    matcher: code_fragment
+    fragment: 'QUERY_REPORT = ''queryReport'',
+
+      '
+- path: openmetadata-ui/src/main/resources/ui/src/enums/Explore.enum.ts
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-explore-enum-1
+    matcher: code_fragment
+    fragment: 'INSTANCE_CODE = ''instanceCode'',
+
+      '
+- path: openmetadata-ui/src/main/resources/ui/src/enums/Explore.enum.ts
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-explore-enum-1
+    matcher: code_fragment
+    fragment: 'QUERY_REPORT = ''queryReport'',
+
+      '
+- path: openmetadata-ui/src/main/resources/ui/src/enums/entity.enum.ts
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-entity-enum-1
+    matcher: code_fragment
+    fragment: 'INSTANCE_CODE = ''instanceCode'',
+
+      '
+- path: openmetadata-ui/src/main/resources/ui/src/enums/entity.enum.ts
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-entity-enum-1
+    matcher: code_fragment
+    fragment: 'QUERY_REPORT = ''queryReport'',
+
+      '
+- path: openmetadata-ui/src/main/resources/ui/src/enums/search.enum.ts
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-search-enum-1
+    matcher: code_fragment
+    fragment: 'INSTANCE_CODE = ''instanceCode'',
+
+      '
+- path: openmetadata-ui/src/main/resources/ui/src/enums/search.enum.ts
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-search-enum-1
+    matcher: code_fragment
+    fragment: 'QUERY_REPORT = ''queryReport'',
+
+      '
+- path: openmetadata-ui/src/main/resources/ui/src/generated/api/services/createDatabaseService.ts
+  customization_id: BANK-OM-006
+  assertions:
+  - id: bank-om-006-createdatabaseservice-1
+    matcher: code_fragment
+    fragment: 'SybasePyodbc = "sybase+pyodbc",
+
+      '
+  - id: bank-om-006-createdatabaseservice-2
+    matcher: code_fragment
+    fragment: 'Sybase = "Sybase",
+
+      '
+    occurrences: 2
+- path: openmetadata-ui/src/main/resources/ui/src/generated/api/services/createDatabaseService.ts
+  customization_id: BANK-OM-007
+  assertions:
+  - id: bank-om-007-createdatabaseservice-1
+    matcher: code_fragment
+    fragment: 'TiberoPyodbc = "tibero+pyodbc",
+
+      '
+  - id: bank-om-007-createdatabaseservice-2
+    matcher: code_fragment
+    fragment: 'Tibero = "Tibero",
+
+      '
+    occurrences: 2
+- path: openmetadata-ui/src/main/resources/ui/src/generated/entity/services/databaseService.ts
+  customization_id: BANK-OM-006
+  assertions:
+  - id: bank-om-006-databaseservice-1
+    matcher: code_fragment
+    fragment: 'SybasePyodbc = "sybase+pyodbc",
+
+      '
+  - id: bank-om-006-databaseservice-2
+    matcher: code_fragment
+    fragment: 'Sybase = "Sybase",
+
+      '
+    occurrences: 2
+- path: openmetadata-ui/src/main/resources/ui/src/generated/entity/services/databaseService.ts
+  customization_id: BANK-OM-007
+  assertions:
+  - id: bank-om-007-databaseservice-1
+    matcher: code_fragment
+    fragment: 'TiberoPyodbc = "tibero+pyodbc",
+
+      '
+  - id: bank-om-007-databaseservice-2
+    matcher: code_fragment
+    fragment: 'Tibero = "Tibero",
+
+      '
+    occurrences: 2
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-ar-sa-1
+    matcher: json_value
+    pointer: /label/code-group
+    expected: Code Group
+  - id: bank-om-001-ar-sa-2
+    matcher: json_value
+    pointer: /label/code-name
+    expected: Code Name
+  - id: bank-om-001-ar-sa-3
+    matcher: json_value
+    pointer: /label/code-value
+    expected: Code Value
+  - id: bank-om-001-ar-sa-4
+    matcher: json_value
+    pointer: /label/instance-code
+    expected: Instance Code
+  - id: bank-om-001-ar-sa-5
+    matcher: json_value
+    pointer: /label/instance-code-lowercase-plural
+    expected: instance codes
+  - id: bank-om-001-ar-sa-6
+    matcher: json_value
+    pointer: /label/instance-code-plural
+    expected: Instance Codes
+  - id: bank-om-001-ar-sa-7
+    matcher: json_value
+    pointer: /label/sort-order
+    expected: Sort Order
+  - id: bank-om-001-ar-sa-8
+    matcher: json_value
+    pointer: /message/instance-code-description
+    expected: Manage common/reference codes used as shared master data across the platform.
+  - id: bank-om-001-ar-sa-9
+    matcher: json_value
+    pointer: /message/instance-code-group-description
+    expected: The {{codeGroupName}} code group contains {{count}} registered code(s).
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-ar-sa-1
+    matcher: json_value
+    pointer: /label/business-rule
+    expected: Business Rule
+  - id: bank-om-002-ar-sa-2
+    matcher: json_value
+    pointer: /label/encryption-transform-info
+    expected: Encryption Transform Info
+  - id: bank-om-002-ar-sa-3
+    matcher: json_value
+    pointer: /label/info-type
+    expected: Info Type
+  - id: bank-om-002-ar-sa-4
+    matcher: json_value
+    pointer: /label/is-encrypted
+    expected: Is Encrypted
+  - id: bank-om-002-ar-sa-5
+    matcher: json_value
+    pointer: /label/message
+    expected: Message
+  - id: bank-om-002-ar-sa-6
+    matcher: json_value
+    pointer: /label/other
+    expected: Other
+  - id: bank-om-002-ar-sa-7
+    matcher: json_value
+    pointer: /label/query-report
+    expected: Query Report
+  - id: bank-om-002-ar-sa-8
+    matcher: json_value
+    pointer: /label/query-report-lowercase-plural
+    expected: query reports
+  - id: bank-om-002-ar-sa-9
+    matcher: json_value
+    pointer: /label/query-report-plural
+    expected: Query Reports
+  - id: bank-om-002-ar-sa-10
+    matcher: json_value
+    pointer: /label/variable-name
+    expected: Variable Name
+  - id: bank-om-002-ar-sa-11
+    matcher: json_value
+    pointer: /message/query-report-description
+    expected: Manage report metadata and view the SQL queries associated with each report.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-ar-sa-1
+    matcher: json_value
+    pointer: /label/data-assertion-plural
+    expected: Data Assertions
+  - id: bank-om-003-ar-sa-2
+    matcher: json_value
+    pointer: /label/my-failed-assertion-plural
+    expected: My Failed Assertions
+  - id: bank-om-003-ar-sa-3
+    matcher: json_value
+    pointer: /label/pass-rate
+    expected: Pass Rate
+  - id: bank-om-003-ar-sa-4
+    matcher: json_value
+    pointer: /label/re-validate-data
+    expected: Re-validate Data
+  - id: bank-om-003-ar-sa-5
+    matcher: json_value
+    pointer: /message/data-assertions-revalidate-placeholder
+    expected: Re-validation will be available soon.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json
+  customization_id: BANK-OM-004
+  assertions:
+  - id: bank-om-004-ar-sa-1
+    matcher: json_value
+    pointer: /label/attribute-name
+    expected: Attribute Name
+  - id: bank-om-004-ar-sa-2
+    matcher: json_value
+    pointer: /label/business-instance-code
+    expected: Business Instance Code
+  - id: bank-om-004-ar-sa-3
+    matcher: json_value
+    pointer: /label/business-instance-content
+    expected: Business Instance Content
+  - id: bank-om-004-ar-sa-4
+    matcher: json_value
+    pointer: /label/copy-all
+    expected: Copy All
+  - id: bank-om-004-ar-sa-5
+    matcher: json_value
+    pointer: /label/copy-table
+    expected: Copy Table
+  - id: bank-om-004-ar-sa-6
+    matcher: json_value
+    pointer: /label/instance-name
+    expected: Instance Name
+  - id: bank-om-004-ar-sa-7
+    matcher: json_value
+    pointer: /label/last-modified-date
+    expected: Last Modified Date
+  - id: bank-om-004-ar-sa-8
+    matcher: json_value
+    pointer: /label/registered-date
+    expected: Registered Date
+  - id: bank-om-004-ar-sa-9
+    matcher: json_value
+    pointer: /label/unknown
+    expected: Unknown
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-de-de-1
+    matcher: json_value
+    pointer: /label/code-group
+    expected: Code Group
+  - id: bank-om-001-de-de-2
+    matcher: json_value
+    pointer: /label/code-name
+    expected: Code Name
+  - id: bank-om-001-de-de-3
+    matcher: json_value
+    pointer: /label/code-value
+    expected: Code Value
+  - id: bank-om-001-de-de-4
+    matcher: json_value
+    pointer: /label/instance-code
+    expected: Instance Code
+  - id: bank-om-001-de-de-5
+    matcher: json_value
+    pointer: /label/instance-code-lowercase-plural
+    expected: instance codes
+  - id: bank-om-001-de-de-6
+    matcher: json_value
+    pointer: /label/instance-code-plural
+    expected: Instance Codes
+  - id: bank-om-001-de-de-7
+    matcher: json_value
+    pointer: /label/sort-order
+    expected: Sort Order
+  - id: bank-om-001-de-de-8
+    matcher: json_value
+    pointer: /message/instance-code-description
+    expected: Manage common/reference codes used as shared master data across the platform.
+  - id: bank-om-001-de-de-9
+    matcher: json_value
+    pointer: /message/instance-code-group-description
+    expected: The {{codeGroupName}} code group contains {{count}} registered code(s).
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-de-de-1
+    matcher: json_value
+    pointer: /label/business-rule
+    expected: Business Rule
+  - id: bank-om-002-de-de-2
+    matcher: json_value
+    pointer: /label/encryption-transform-info
+    expected: Encryption Transform Info
+  - id: bank-om-002-de-de-3
+    matcher: json_value
+    pointer: /label/info-type
+    expected: Info Type
+  - id: bank-om-002-de-de-4
+    matcher: json_value
+    pointer: /label/is-encrypted
+    expected: Is Encrypted
+  - id: bank-om-002-de-de-5
+    matcher: json_value
+    pointer: /label/message
+    expected: Message
+  - id: bank-om-002-de-de-6
+    matcher: json_value
+    pointer: /label/other
+    expected: Other
+  - id: bank-om-002-de-de-7
+    matcher: json_value
+    pointer: /label/query-report
+    expected: Query Report
+  - id: bank-om-002-de-de-8
+    matcher: json_value
+    pointer: /label/query-report-lowercase-plural
+    expected: query reports
+  - id: bank-om-002-de-de-9
+    matcher: json_value
+    pointer: /label/query-report-plural
+    expected: Query Reports
+  - id: bank-om-002-de-de-10
+    matcher: json_value
+    pointer: /label/variable-name
+    expected: Variable Name
+  - id: bank-om-002-de-de-11
+    matcher: json_value
+    pointer: /message/query-report-description
+    expected: Manage report metadata and view the SQL queries associated with each report.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-de-de-1
+    matcher: json_value
+    pointer: /label/data-assertion-plural
+    expected: Data Assertions
+  - id: bank-om-003-de-de-2
+    matcher: json_value
+    pointer: /label/my-failed-assertion-plural
+    expected: My Failed Assertions
+  - id: bank-om-003-de-de-3
+    matcher: json_value
+    pointer: /label/pass-rate
+    expected: Pass Rate
+  - id: bank-om-003-de-de-4
+    matcher: json_value
+    pointer: /label/re-validate-data
+    expected: Re-validate Data
+  - id: bank-om-003-de-de-5
+    matcher: json_value
+    pointer: /message/data-assertions-revalidate-placeholder
+    expected: Re-validation will be available soon.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json
+  customization_id: BANK-OM-004
+  assertions:
+  - id: bank-om-004-de-de-1
+    matcher: json_value
+    pointer: /label/attribute-name
+    expected: Attribute Name
+  - id: bank-om-004-de-de-2
+    matcher: json_value
+    pointer: /label/business-instance-code
+    expected: Business Instance Code
+  - id: bank-om-004-de-de-3
+    matcher: json_value
+    pointer: /label/business-instance-content
+    expected: Business Instance Content
+  - id: bank-om-004-de-de-4
+    matcher: json_value
+    pointer: /label/copy-all
+    expected: Copy All
+  - id: bank-om-004-de-de-5
+    matcher: json_value
+    pointer: /label/copy-table
+    expected: Copy Table
+  - id: bank-om-004-de-de-6
+    matcher: json_value
+    pointer: /label/instance-name
+    expected: Instance Name
+  - id: bank-om-004-de-de-7
+    matcher: json_value
+    pointer: /label/last-modified-date
+    expected: Last Modified Date
+  - id: bank-om-004-de-de-8
+    matcher: json_value
+    pointer: /label/registered-date
+    expected: Registered Date
+  - id: bank-om-004-de-de-9
+    matcher: json_value
+    pointer: /label/unknown
+    expected: Unknown
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-en-us-1
+    matcher: json_value
+    pointer: /label/code-group
+    expected: Code Group
+  - id: bank-om-001-en-us-2
+    matcher: json_value
+    pointer: /label/code-name
+    expected: Code Name
+  - id: bank-om-001-en-us-3
+    matcher: json_value
+    pointer: /label/code-value
+    expected: Code Value
+  - id: bank-om-001-en-us-4
+    matcher: json_value
+    pointer: /label/instance-code
+    expected: Instance Code
+  - id: bank-om-001-en-us-5
+    matcher: json_value
+    pointer: /label/instance-code-lowercase-plural
+    expected: instance codes
+  - id: bank-om-001-en-us-6
+    matcher: json_value
+    pointer: /label/instance-code-plural
+    expected: Instance Codes
+  - id: bank-om-001-en-us-7
+    matcher: json_value
+    pointer: /label/sort-order
+    expected: Sort Order
+  - id: bank-om-001-en-us-8
+    matcher: json_value
+    pointer: /message/instance-code-description
+    expected: Manage common/reference codes used as shared master data across the platform.
+  - id: bank-om-001-en-us-9
+    matcher: json_value
+    pointer: /message/instance-code-group-description
+    expected: The {{codeGroupName}} code group contains {{count}} registered code(s).
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-en-us-1
+    matcher: json_value
+    pointer: /label/business-rule
+    expected: Business Rule
+  - id: bank-om-002-en-us-2
+    matcher: json_value
+    pointer: /label/encryption-transform-info
+    expected: Encryption Transform Info
+  - id: bank-om-002-en-us-3
+    matcher: json_value
+    pointer: /label/info-type
+    expected: Info Type
+  - id: bank-om-002-en-us-4
+    matcher: json_value
+    pointer: /label/is-encrypted
+    expected: Is Encrypted
+  - id: bank-om-002-en-us-5
+    matcher: json_value
+    pointer: /label/message
+    expected: Message
+  - id: bank-om-002-en-us-6
+    matcher: json_value
+    pointer: /label/other
+    expected: Other
+  - id: bank-om-002-en-us-7
+    matcher: json_value
+    pointer: /label/query-report
+    expected: Query Report
+  - id: bank-om-002-en-us-8
+    matcher: json_value
+    pointer: /label/query-report-lowercase-plural
+    expected: query reports
+  - id: bank-om-002-en-us-9
+    matcher: json_value
+    pointer: /label/query-report-plural
+    expected: Query Reports
+  - id: bank-om-002-en-us-10
+    matcher: json_value
+    pointer: /label/variable-name
+    expected: Variable Name
+  - id: bank-om-002-en-us-11
+    matcher: json_value
+    pointer: /message/query-report-description
+    expected: Manage report metadata and view the SQL queries associated with each report.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-en-us-1
+    matcher: json_value
+    pointer: /label/data-assertion-plural
+    expected: Data Assertions
+  - id: bank-om-003-en-us-2
+    matcher: json_value
+    pointer: /label/my-failed-assertion-plural
+    expected: My Failed Assertions
+  - id: bank-om-003-en-us-3
+    matcher: json_value
+    pointer: /label/pass-rate
+    expected: Pass Rate
+  - id: bank-om-003-en-us-4
+    matcher: json_value
+    pointer: /label/re-validate-data
+    expected: Re-validate Data
+  - id: bank-om-003-en-us-5
+    matcher: json_value
+    pointer: /message/data-assertions-revalidate-placeholder
+    expected: Re-validation will be available soon.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json
+  customization_id: BANK-OM-004
+  assertions:
+  - id: bank-om-004-en-us-1
+    matcher: json_value
+    pointer: /label/attribute-name
+    expected: Attribute Name
+  - id: bank-om-004-en-us-2
+    matcher: json_value
+    pointer: /label/business-instance-code
+    expected: Business Instance Code
+  - id: bank-om-004-en-us-3
+    matcher: json_value
+    pointer: /label/business-instance-content
+    expected: Business Instance Content
+  - id: bank-om-004-en-us-4
+    matcher: json_value
+    pointer: /label/copy-all
+    expected: Copy All
+  - id: bank-om-004-en-us-5
+    matcher: json_value
+    pointer: /label/copy-table
+    expected: Copy Table
+  - id: bank-om-004-en-us-6
+    matcher: json_value
+    pointer: /label/instance-name
+    expected: Instance Name
+  - id: bank-om-004-en-us-7
+    matcher: json_value
+    pointer: /label/last-modified-date
+    expected: Last Modified Date
+  - id: bank-om-004-en-us-8
+    matcher: json_value
+    pointer: /label/registered-date
+    expected: Registered Date
+  - id: bank-om-004-en-us-9
+    matcher: json_value
+    pointer: /label/unknown
+    expected: Unknown
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-es-es-1
+    matcher: json_value
+    pointer: /label/code-group
+    expected: Code Group
+  - id: bank-om-001-es-es-2
+    matcher: json_value
+    pointer: /label/code-name
+    expected: Code Name
+  - id: bank-om-001-es-es-3
+    matcher: json_value
+    pointer: /label/code-value
+    expected: Code Value
+  - id: bank-om-001-es-es-4
+    matcher: json_value
+    pointer: /label/instance-code
+    expected: Instance Code
+  - id: bank-om-001-es-es-5
+    matcher: json_value
+    pointer: /label/instance-code-lowercase-plural
+    expected: instance codes
+  - id: bank-om-001-es-es-6
+    matcher: json_value
+    pointer: /label/instance-code-plural
+    expected: Instance Codes
+  - id: bank-om-001-es-es-7
+    matcher: json_value
+    pointer: /label/sort-order
+    expected: Sort Order
+  - id: bank-om-001-es-es-8
+    matcher: json_value
+    pointer: /message/instance-code-description
+    expected: Manage common/reference codes used as shared master data across the platform.
+  - id: bank-om-001-es-es-9
+    matcher: json_value
+    pointer: /message/instance-code-group-description
+    expected: The {{codeGroupName}} code group contains {{count}} registered code(s).
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-es-es-1
+    matcher: json_value
+    pointer: /label/business-rule
+    expected: Business Rule
+  - id: bank-om-002-es-es-2
+    matcher: json_value
+    pointer: /label/encryption-transform-info
+    expected: Encryption Transform Info
+  - id: bank-om-002-es-es-3
+    matcher: json_value
+    pointer: /label/info-type
+    expected: Info Type
+  - id: bank-om-002-es-es-4
+    matcher: json_value
+    pointer: /label/is-encrypted
+    expected: Is Encrypted
+  - id: bank-om-002-es-es-5
+    matcher: json_value
+    pointer: /label/message
+    expected: Message
+  - id: bank-om-002-es-es-6
+    matcher: json_value
+    pointer: /label/other
+    expected: Other
+  - id: bank-om-002-es-es-7
+    matcher: json_value
+    pointer: /label/query-report
+    expected: Query Report
+  - id: bank-om-002-es-es-8
+    matcher: json_value
+    pointer: /label/query-report-lowercase-plural
+    expected: query reports
+  - id: bank-om-002-es-es-9
+    matcher: json_value
+    pointer: /label/query-report-plural
+    expected: Query Reports
+  - id: bank-om-002-es-es-10
+    matcher: json_value
+    pointer: /label/variable-name
+    expected: Variable Name
+  - id: bank-om-002-es-es-11
+    matcher: json_value
+    pointer: /message/query-report-description
+    expected: Manage report metadata and view the SQL queries associated with each report.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-es-es-1
+    matcher: json_value
+    pointer: /label/data-assertion-plural
+    expected: Data Assertions
+  - id: bank-om-003-es-es-2
+    matcher: json_value
+    pointer: /label/my-failed-assertion-plural
+    expected: My Failed Assertions
+  - id: bank-om-003-es-es-3
+    matcher: json_value
+    pointer: /label/pass-rate
+    expected: Pass Rate
+  - id: bank-om-003-es-es-4
+    matcher: json_value
+    pointer: /label/re-validate-data
+    expected: Re-validate Data
+  - id: bank-om-003-es-es-5
+    matcher: json_value
+    pointer: /message/data-assertions-revalidate-placeholder
+    expected: Re-validation will be available soon.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json
+  customization_id: BANK-OM-004
+  assertions:
+  - id: bank-om-004-es-es-1
+    matcher: json_value
+    pointer: /label/attribute-name
+    expected: Attribute Name
+  - id: bank-om-004-es-es-2
+    matcher: json_value
+    pointer: /label/business-instance-code
+    expected: Business Instance Code
+  - id: bank-om-004-es-es-3
+    matcher: json_value
+    pointer: /label/business-instance-content
+    expected: Business Instance Content
+  - id: bank-om-004-es-es-4
+    matcher: json_value
+    pointer: /label/copy-all
+    expected: Copy All
+  - id: bank-om-004-es-es-5
+    matcher: json_value
+    pointer: /label/copy-table
+    expected: Copy Table
+  - id: bank-om-004-es-es-6
+    matcher: json_value
+    pointer: /label/instance-name
+    expected: Instance Name
+  - id: bank-om-004-es-es-7
+    matcher: json_value
+    pointer: /label/last-modified-date
+    expected: Last Modified Date
+  - id: bank-om-004-es-es-8
+    matcher: json_value
+    pointer: /label/registered-date
+    expected: Registered Date
+  - id: bank-om-004-es-es-9
+    matcher: json_value
+    pointer: /label/unknown
+    expected: Unknown
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-fr-fr-1
+    matcher: json_value
+    pointer: /label/code-group
+    expected: Code Group
+  - id: bank-om-001-fr-fr-2
+    matcher: json_value
+    pointer: /label/code-name
+    expected: Code Name
+  - id: bank-om-001-fr-fr-3
+    matcher: json_value
+    pointer: /label/code-value
+    expected: Code Value
+  - id: bank-om-001-fr-fr-4
+    matcher: json_value
+    pointer: /label/instance-code
+    expected: Instance Code
+  - id: bank-om-001-fr-fr-5
+    matcher: json_value
+    pointer: /label/instance-code-lowercase-plural
+    expected: instance codes
+  - id: bank-om-001-fr-fr-6
+    matcher: json_value
+    pointer: /label/instance-code-plural
+    expected: Instance Codes
+  - id: bank-om-001-fr-fr-7
+    matcher: json_value
+    pointer: /label/sort-order
+    expected: Sort Order
+  - id: bank-om-001-fr-fr-8
+    matcher: json_value
+    pointer: /message/instance-code-description
+    expected: Manage common/reference codes used as shared master data across the platform.
+  - id: bank-om-001-fr-fr-9
+    matcher: json_value
+    pointer: /message/instance-code-group-description
+    expected: The {{codeGroupName}} code group contains {{count}} registered code(s).
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-fr-fr-1
+    matcher: json_value
+    pointer: /label/business-rule
+    expected: Business Rule
+  - id: bank-om-002-fr-fr-2
+    matcher: json_value
+    pointer: /label/encryption-transform-info
+    expected: Encryption Transform Info
+  - id: bank-om-002-fr-fr-3
+    matcher: json_value
+    pointer: /label/info-type
+    expected: Info Type
+  - id: bank-om-002-fr-fr-4
+    matcher: json_value
+    pointer: /label/is-encrypted
+    expected: Is Encrypted
+  - id: bank-om-002-fr-fr-5
+    matcher: json_value
+    pointer: /label/message
+    expected: Message
+  - id: bank-om-002-fr-fr-6
+    matcher: json_value
+    pointer: /label/other
+    expected: Other
+  - id: bank-om-002-fr-fr-7
+    matcher: json_value
+    pointer: /label/query-report
+    expected: Query Report
+  - id: bank-om-002-fr-fr-8
+    matcher: json_value
+    pointer: /label/query-report-lowercase-plural
+    expected: query reports
+  - id: bank-om-002-fr-fr-9
+    matcher: json_value
+    pointer: /label/query-report-plural
+    expected: Query Reports
+  - id: bank-om-002-fr-fr-10
+    matcher: json_value
+    pointer: /label/variable-name
+    expected: Variable Name
+  - id: bank-om-002-fr-fr-11
+    matcher: json_value
+    pointer: /message/query-report-description
+    expected: Manage report metadata and view the SQL queries associated with each report.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-fr-fr-1
+    matcher: json_value
+    pointer: /label/data-assertion-plural
+    expected: Data Assertions
+  - id: bank-om-003-fr-fr-2
+    matcher: json_value
+    pointer: /label/my-failed-assertion-plural
+    expected: My Failed Assertions
+  - id: bank-om-003-fr-fr-3
+    matcher: json_value
+    pointer: /label/pass-rate
+    expected: Pass Rate
+  - id: bank-om-003-fr-fr-4
+    matcher: json_value
+    pointer: /label/re-validate-data
+    expected: Re-validate Data
+  - id: bank-om-003-fr-fr-5
+    matcher: json_value
+    pointer: /message/data-assertions-revalidate-placeholder
+    expected: Re-validation will be available soon.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json
+  customization_id: BANK-OM-004
+  assertions:
+  - id: bank-om-004-fr-fr-1
+    matcher: json_value
+    pointer: /label/attribute-name
+    expected: Attribute Name
+  - id: bank-om-004-fr-fr-2
+    matcher: json_value
+    pointer: /label/business-instance-code
+    expected: Business Instance Code
+  - id: bank-om-004-fr-fr-3
+    matcher: json_value
+    pointer: /label/business-instance-content
+    expected: Business Instance Content
+  - id: bank-om-004-fr-fr-4
+    matcher: json_value
+    pointer: /label/copy-all
+    expected: Copy All
+  - id: bank-om-004-fr-fr-5
+    matcher: json_value
+    pointer: /label/copy-table
+    expected: Copy Table
+  - id: bank-om-004-fr-fr-6
+    matcher: json_value
+    pointer: /label/instance-name
+    expected: Instance Name
+  - id: bank-om-004-fr-fr-7
+    matcher: json_value
+    pointer: /label/last-modified-date
+    expected: Last Modified Date
+  - id: bank-om-004-fr-fr-8
+    matcher: json_value
+    pointer: /label/registered-date
+    expected: Registered Date
+  - id: bank-om-004-fr-fr-9
+    matcher: json_value
+    pointer: /label/unknown
+    expected: Unknown
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-gl-es-1
+    matcher: json_value
+    pointer: /label/code-group
+    expected: Code Group
+  - id: bank-om-001-gl-es-2
+    matcher: json_value
+    pointer: /label/code-name
+    expected: Code Name
+  - id: bank-om-001-gl-es-3
+    matcher: json_value
+    pointer: /label/code-value
+    expected: Code Value
+  - id: bank-om-001-gl-es-4
+    matcher: json_value
+    pointer: /label/instance-code
+    expected: Instance Code
+  - id: bank-om-001-gl-es-5
+    matcher: json_value
+    pointer: /label/instance-code-lowercase-plural
+    expected: instance codes
+  - id: bank-om-001-gl-es-6
+    matcher: json_value
+    pointer: /label/instance-code-plural
+    expected: Instance Codes
+  - id: bank-om-001-gl-es-7
+    matcher: json_value
+    pointer: /label/sort-order
+    expected: Sort Order
+  - id: bank-om-001-gl-es-8
+    matcher: json_value
+    pointer: /message/instance-code-description
+    expected: Manage common/reference codes used as shared master data across the platform.
+  - id: bank-om-001-gl-es-9
+    matcher: json_value
+    pointer: /message/instance-code-group-description
+    expected: The {{codeGroupName}} code group contains {{count}} registered code(s).
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-gl-es-1
+    matcher: json_value
+    pointer: /label/business-rule
+    expected: Business Rule
+  - id: bank-om-002-gl-es-2
+    matcher: json_value
+    pointer: /label/encryption-transform-info
+    expected: Encryption Transform Info
+  - id: bank-om-002-gl-es-3
+    matcher: json_value
+    pointer: /label/info-type
+    expected: Info Type
+  - id: bank-om-002-gl-es-4
+    matcher: json_value
+    pointer: /label/is-encrypted
+    expected: Is Encrypted
+  - id: bank-om-002-gl-es-5
+    matcher: json_value
+    pointer: /label/message
+    expected: Message
+  - id: bank-om-002-gl-es-6
+    matcher: json_value
+    pointer: /label/other
+    expected: Other
+  - id: bank-om-002-gl-es-7
+    matcher: json_value
+    pointer: /label/query-report
+    expected: Query Report
+  - id: bank-om-002-gl-es-8
+    matcher: json_value
+    pointer: /label/query-report-lowercase-plural
+    expected: query reports
+  - id: bank-om-002-gl-es-9
+    matcher: json_value
+    pointer: /label/query-report-plural
+    expected: Query Reports
+  - id: bank-om-002-gl-es-10
+    matcher: json_value
+    pointer: /label/variable-name
+    expected: Variable Name
+  - id: bank-om-002-gl-es-11
+    matcher: json_value
+    pointer: /message/query-report-description
+    expected: Manage report metadata and view the SQL queries associated with each report.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-gl-es-1
+    matcher: json_value
+    pointer: /label/data-assertion-plural
+    expected: Data Assertions
+  - id: bank-om-003-gl-es-2
+    matcher: json_value
+    pointer: /label/my-failed-assertion-plural
+    expected: My Failed Assertions
+  - id: bank-om-003-gl-es-3
+    matcher: json_value
+    pointer: /label/pass-rate
+    expected: Pass Rate
+  - id: bank-om-003-gl-es-4
+    matcher: json_value
+    pointer: /label/re-validate-data
+    expected: Re-validate Data
+  - id: bank-om-003-gl-es-5
+    matcher: json_value
+    pointer: /message/data-assertions-revalidate-placeholder
+    expected: Re-validation will be available soon.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json
+  customization_id: BANK-OM-004
+  assertions:
+  - id: bank-om-004-gl-es-1
+    matcher: json_value
+    pointer: /label/attribute-name
+    expected: Attribute Name
+  - id: bank-om-004-gl-es-2
+    matcher: json_value
+    pointer: /label/business-instance-code
+    expected: Business Instance Code
+  - id: bank-om-004-gl-es-3
+    matcher: json_value
+    pointer: /label/business-instance-content
+    expected: Business Instance Content
+  - id: bank-om-004-gl-es-4
+    matcher: json_value
+    pointer: /label/copy-all
+    expected: Copy All
+  - id: bank-om-004-gl-es-5
+    matcher: json_value
+    pointer: /label/copy-table
+    expected: Copy Table
+  - id: bank-om-004-gl-es-6
+    matcher: json_value
+    pointer: /label/instance-name
+    expected: Instance Name
+  - id: bank-om-004-gl-es-7
+    matcher: json_value
+    pointer: /label/last-modified-date
+    expected: Last Modified Date
+  - id: bank-om-004-gl-es-8
+    matcher: json_value
+    pointer: /label/registered-date
+    expected: Registered Date
+  - id: bank-om-004-gl-es-9
+    matcher: json_value
+    pointer: /label/unknown
+    expected: Unknown
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-he-he-1
+    matcher: json_value
+    pointer: /label/code-group
+    expected: Code Group
+  - id: bank-om-001-he-he-2
+    matcher: json_value
+    pointer: /label/code-name
+    expected: Code Name
+  - id: bank-om-001-he-he-3
+    matcher: json_value
+    pointer: /label/code-value
+    expected: Code Value
+  - id: bank-om-001-he-he-4
+    matcher: json_value
+    pointer: /label/instance-code
+    expected: Instance Code
+  - id: bank-om-001-he-he-5
+    matcher: json_value
+    pointer: /label/instance-code-lowercase-plural
+    expected: instance codes
+  - id: bank-om-001-he-he-6
+    matcher: json_value
+    pointer: /label/instance-code-plural
+    expected: Instance Codes
+  - id: bank-om-001-he-he-7
+    matcher: json_value
+    pointer: /label/sort-order
+    expected: Sort Order
+  - id: bank-om-001-he-he-8
+    matcher: json_value
+    pointer: /message/instance-code-description
+    expected: Manage common/reference codes used as shared master data across the platform.
+  - id: bank-om-001-he-he-9
+    matcher: json_value
+    pointer: /message/instance-code-group-description
+    expected: The {{codeGroupName}} code group contains {{count}} registered code(s).
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-he-he-1
+    matcher: json_value
+    pointer: /label/business-rule
+    expected: Business Rule
+  - id: bank-om-002-he-he-2
+    matcher: json_value
+    pointer: /label/encryption-transform-info
+    expected: Encryption Transform Info
+  - id: bank-om-002-he-he-3
+    matcher: json_value
+    pointer: /label/info-type
+    expected: Info Type
+  - id: bank-om-002-he-he-4
+    matcher: json_value
+    pointer: /label/is-encrypted
+    expected: Is Encrypted
+  - id: bank-om-002-he-he-5
+    matcher: json_value
+    pointer: /label/message
+    expected: Message
+  - id: bank-om-002-he-he-6
+    matcher: json_value
+    pointer: /label/other
+    expected: Other
+  - id: bank-om-002-he-he-7
+    matcher: json_value
+    pointer: /label/query-report
+    expected: Query Report
+  - id: bank-om-002-he-he-8
+    matcher: json_value
+    pointer: /label/query-report-lowercase-plural
+    expected: query reports
+  - id: bank-om-002-he-he-9
+    matcher: json_value
+    pointer: /label/query-report-plural
+    expected: Query Reports
+  - id: bank-om-002-he-he-10
+    matcher: json_value
+    pointer: /label/variable-name
+    expected: Variable Name
+  - id: bank-om-002-he-he-11
+    matcher: json_value
+    pointer: /message/query-report-description
+    expected: Manage report metadata and view the SQL queries associated with each report.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-he-he-1
+    matcher: json_value
+    pointer: /label/data-assertion-plural
+    expected: Data Assertions
+  - id: bank-om-003-he-he-2
+    matcher: json_value
+    pointer: /label/my-failed-assertion-plural
+    expected: My Failed Assertions
+  - id: bank-om-003-he-he-3
+    matcher: json_value
+    pointer: /label/pass-rate
+    expected: Pass Rate
+  - id: bank-om-003-he-he-4
+    matcher: json_value
+    pointer: /label/re-validate-data
+    expected: Re-validate Data
+  - id: bank-om-003-he-he-5
+    matcher: json_value
+    pointer: /message/data-assertions-revalidate-placeholder
+    expected: Re-validation will be available soon.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json
+  customization_id: BANK-OM-004
+  assertions:
+  - id: bank-om-004-he-he-1
+    matcher: json_value
+    pointer: /label/attribute-name
+    expected: Attribute Name
+  - id: bank-om-004-he-he-2
+    matcher: json_value
+    pointer: /label/business-instance-code
+    expected: Business Instance Code
+  - id: bank-om-004-he-he-3
+    matcher: json_value
+    pointer: /label/business-instance-content
+    expected: Business Instance Content
+  - id: bank-om-004-he-he-4
+    matcher: json_value
+    pointer: /label/copy-all
+    expected: Copy All
+  - id: bank-om-004-he-he-5
+    matcher: json_value
+    pointer: /label/copy-table
+    expected: Copy Table
+  - id: bank-om-004-he-he-6
+    matcher: json_value
+    pointer: /label/instance-name
+    expected: Instance Name
+  - id: bank-om-004-he-he-7
+    matcher: json_value
+    pointer: /label/last-modified-date
+    expected: Last Modified Date
+  - id: bank-om-004-he-he-8
+    matcher: json_value
+    pointer: /label/registered-date
+    expected: Registered Date
+  - id: bank-om-004-he-he-9
+    matcher: json_value
+    pointer: /label/unknown
+    expected: Unknown
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-ja-jp-1
+    matcher: json_value
+    pointer: /label/code-group
+    expected: Code Group
+  - id: bank-om-001-ja-jp-2
+    matcher: json_value
+    pointer: /label/code-name
+    expected: Code Name
+  - id: bank-om-001-ja-jp-3
+    matcher: json_value
+    pointer: /label/code-value
+    expected: Code Value
+  - id: bank-om-001-ja-jp-4
+    matcher: json_value
+    pointer: /label/instance-code
+    expected: Instance Code
+  - id: bank-om-001-ja-jp-5
+    matcher: json_value
+    pointer: /label/instance-code-lowercase-plural
+    expected: instance codes
+  - id: bank-om-001-ja-jp-6
+    matcher: json_value
+    pointer: /label/instance-code-plural
+    expected: Instance Codes
+  - id: bank-om-001-ja-jp-7
+    matcher: json_value
+    pointer: /label/sort-order
+    expected: Sort Order
+  - id: bank-om-001-ja-jp-8
+    matcher: json_value
+    pointer: /message/instance-code-description
+    expected: Manage common/reference codes used as shared master data across the platform.
+  - id: bank-om-001-ja-jp-9
+    matcher: json_value
+    pointer: /message/instance-code-group-description
+    expected: The {{codeGroupName}} code group contains {{count}} registered code(s).
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-ja-jp-1
+    matcher: json_value
+    pointer: /label/business-rule
+    expected: Business Rule
+  - id: bank-om-002-ja-jp-2
+    matcher: json_value
+    pointer: /label/encryption-transform-info
+    expected: Encryption Transform Info
+  - id: bank-om-002-ja-jp-3
+    matcher: json_value
+    pointer: /label/info-type
+    expected: Info Type
+  - id: bank-om-002-ja-jp-4
+    matcher: json_value
+    pointer: /label/is-encrypted
+    expected: Is Encrypted
+  - id: bank-om-002-ja-jp-5
+    matcher: json_value
+    pointer: /label/message
+    expected: Message
+  - id: bank-om-002-ja-jp-6
+    matcher: json_value
+    pointer: /label/other
+    expected: Other
+  - id: bank-om-002-ja-jp-7
+    matcher: json_value
+    pointer: /label/query-report
+    expected: Query Report
+  - id: bank-om-002-ja-jp-8
+    matcher: json_value
+    pointer: /label/query-report-lowercase-plural
+    expected: query reports
+  - id: bank-om-002-ja-jp-9
+    matcher: json_value
+    pointer: /label/query-report-plural
+    expected: Query Reports
+  - id: bank-om-002-ja-jp-10
+    matcher: json_value
+    pointer: /label/variable-name
+    expected: Variable Name
+  - id: bank-om-002-ja-jp-11
+    matcher: json_value
+    pointer: /message/query-report-description
+    expected: Manage report metadata and view the SQL queries associated with each report.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-ja-jp-1
+    matcher: json_value
+    pointer: /label/data-assertion-plural
+    expected: Data Assertions
+  - id: bank-om-003-ja-jp-2
+    matcher: json_value
+    pointer: /label/my-failed-assertion-plural
+    expected: My Failed Assertions
+  - id: bank-om-003-ja-jp-3
+    matcher: json_value
+    pointer: /label/pass-rate
+    expected: Pass Rate
+  - id: bank-om-003-ja-jp-4
+    matcher: json_value
+    pointer: /label/re-validate-data
+    expected: Re-validate Data
+  - id: bank-om-003-ja-jp-5
+    matcher: json_value
+    pointer: /message/data-assertions-revalidate-placeholder
+    expected: Re-validation will be available soon.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json
+  customization_id: BANK-OM-004
+  assertions:
+  - id: bank-om-004-ja-jp-1
+    matcher: json_value
+    pointer: /label/attribute-name
+    expected: Attribute Name
+  - id: bank-om-004-ja-jp-2
+    matcher: json_value
+    pointer: /label/business-instance-code
+    expected: Business Instance Code
+  - id: bank-om-004-ja-jp-3
+    matcher: json_value
+    pointer: /label/business-instance-content
+    expected: Business Instance Content
+  - id: bank-om-004-ja-jp-4
+    matcher: json_value
+    pointer: /label/copy-all
+    expected: Copy All
+  - id: bank-om-004-ja-jp-5
+    matcher: json_value
+    pointer: /label/copy-table
+    expected: Copy Table
+  - id: bank-om-004-ja-jp-6
+    matcher: json_value
+    pointer: /label/instance-name
+    expected: Instance Name
+  - id: bank-om-004-ja-jp-7
+    matcher: json_value
+    pointer: /label/last-modified-date
+    expected: Last Modified Date
+  - id: bank-om-004-ja-jp-8
+    matcher: json_value
+    pointer: /label/registered-date
+    expected: Registered Date
+  - id: bank-om-004-ja-jp-9
+    matcher: json_value
+    pointer: /label/unknown
+    expected: Unknown
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-ko-kr-1
+    matcher: json_value
+    pointer: /label/code-group
+    expected: Code Group
+  - id: bank-om-001-ko-kr-2
+    matcher: json_value
+    pointer: /label/code-name
+    expected: Code Name
+  - id: bank-om-001-ko-kr-3
+    matcher: json_value
+    pointer: /label/code-value
+    expected: Code Value
+  - id: bank-om-001-ko-kr-4
+    matcher: json_value
+    pointer: /label/instance-code
+    expected: 인스턴스 코드
+  - id: bank-om-001-ko-kr-5
+    matcher: json_value
+    pointer: /label/instance-code-lowercase-plural
+    expected: 인스턴스 코드
+  - id: bank-om-001-ko-kr-6
+    matcher: json_value
+    pointer: /label/instance-code-plural
+    expected: 인스턴스 코드
+  - id: bank-om-001-ko-kr-7
+    matcher: json_value
+    pointer: /label/sort-order
+    expected: Sort Order
+  - id: bank-om-001-ko-kr-8
+    matcher: json_value
+    pointer: /message/instance-code-description
+    expected: Manage common/reference codes used as shared master data across the platform.
+  - id: bank-om-001-ko-kr-9
+    matcher: json_value
+    pointer: /message/instance-code-group-description
+    expected: The {{codeGroupName}} code group contains {{count}} registered code(s).
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-ko-kr-1
+    matcher: json_value
+    pointer: /label/business-rule
+    expected: Business Rule
+  - id: bank-om-002-ko-kr-2
+    matcher: json_value
+    pointer: /label/encryption-transform-info
+    expected: Encryption Transform Info
+  - id: bank-om-002-ko-kr-3
+    matcher: json_value
+    pointer: /label/info-type
+    expected: Info Type
+  - id: bank-om-002-ko-kr-4
+    matcher: json_value
+    pointer: /label/is-encrypted
+    expected: Is Encrypted
+  - id: bank-om-002-ko-kr-5
+    matcher: json_value
+    pointer: /label/message
+    expected: Message
+  - id: bank-om-002-ko-kr-6
+    matcher: json_value
+    pointer: /label/other
+    expected: Other
+  - id: bank-om-002-ko-kr-7
+    matcher: json_value
+    pointer: /label/query-report
+    expected: 보고서 프로젝트
+  - id: bank-om-002-ko-kr-8
+    matcher: json_value
+    pointer: /label/query-report-lowercase-plural
+    expected: 보고서 프로젝트
+  - id: bank-om-002-ko-kr-9
+    matcher: json_value
+    pointer: /label/query-report-plural
+    expected: 보고서 프로젝트
+  - id: bank-om-002-ko-kr-10
+    matcher: json_value
+    pointer: /label/variable-name
+    expected: Variable Name
+  - id: bank-om-002-ko-kr-11
+    matcher: json_value
+    pointer: /message/query-report-description
+    expected: Manage report metadata and view the SQL queries associated with each report.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-ko-kr-1
+    matcher: json_value
+    pointer: /label/data-assertion-plural
+    expected: Data Assertions
+  - id: bank-om-003-ko-kr-2
+    matcher: json_value
+    pointer: /label/my-failed-assertion-plural
+    expected: 검증 실패 항목
+  - id: bank-om-003-ko-kr-3
+    matcher: json_value
+    pointer: /label/pass-rate
+    expected: Pass Rate
+  - id: bank-om-003-ko-kr-4
+    matcher: json_value
+    pointer: /label/re-validate-data
+    expected: Re-validate Data
+  - id: bank-om-003-ko-kr-5
+    matcher: json_value
+    pointer: /message/data-assertions-revalidate-placeholder
+    expected: Re-validation will be available soon.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+  customization_id: BANK-OM-004
+  assertions:
+  - id: bank-om-004-ko-kr-1
+    matcher: json_value
+    pointer: /label/attribute-name
+    expected: Attribute Name
+  - id: bank-om-004-ko-kr-2
+    matcher: json_value
+    pointer: /label/business-instance-code
+    expected: Business Instance Code
+  - id: bank-om-004-ko-kr-3
+    matcher: json_value
+    pointer: /label/business-instance-content
+    expected: Business Instance Content
+  - id: bank-om-004-ko-kr-4
+    matcher: json_value
+    pointer: /label/copy-all
+    expected: Copy All
+  - id: bank-om-004-ko-kr-5
+    matcher: json_value
+    pointer: /label/copy-table
+    expected: Copy Table
+  - id: bank-om-004-ko-kr-6
+    matcher: json_value
+    pointer: /label/instance-name
+    expected: Instance Name
+  - id: bank-om-004-ko-kr-7
+    matcher: json_value
+    pointer: /label/last-modified-date
+    expected: Last Modified Date
+  - id: bank-om-004-ko-kr-8
+    matcher: json_value
+    pointer: /label/registered-date
+    expected: Registered Date
+  - id: bank-om-004-ko-kr-9
+    matcher: json_value
+    pointer: /label/unknown
+    expected: Unknown
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-mr-in-1
+    matcher: json_value
+    pointer: /label/code-group
+    expected: Code Group
+  - id: bank-om-001-mr-in-2
+    matcher: json_value
+    pointer: /label/code-name
+    expected: Code Name
+  - id: bank-om-001-mr-in-3
+    matcher: json_value
+    pointer: /label/code-value
+    expected: Code Value
+  - id: bank-om-001-mr-in-4
+    matcher: json_value
+    pointer: /label/instance-code
+    expected: Instance Code
+  - id: bank-om-001-mr-in-5
+    matcher: json_value
+    pointer: /label/instance-code-lowercase-plural
+    expected: instance codes
+  - id: bank-om-001-mr-in-6
+    matcher: json_value
+    pointer: /label/instance-code-plural
+    expected: Instance Codes
+  - id: bank-om-001-mr-in-7
+    matcher: json_value
+    pointer: /label/sort-order
+    expected: Sort Order
+  - id: bank-om-001-mr-in-8
+    matcher: json_value
+    pointer: /message/instance-code-description
+    expected: Manage common/reference codes used as shared master data across the platform.
+  - id: bank-om-001-mr-in-9
+    matcher: json_value
+    pointer: /message/instance-code-group-description
+    expected: The {{codeGroupName}} code group contains {{count}} registered code(s).
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-mr-in-1
+    matcher: json_value
+    pointer: /label/business-rule
+    expected: Business Rule
+  - id: bank-om-002-mr-in-2
+    matcher: json_value
+    pointer: /label/encryption-transform-info
+    expected: Encryption Transform Info
+  - id: bank-om-002-mr-in-3
+    matcher: json_value
+    pointer: /label/info-type
+    expected: Info Type
+  - id: bank-om-002-mr-in-4
+    matcher: json_value
+    pointer: /label/is-encrypted
+    expected: Is Encrypted
+  - id: bank-om-002-mr-in-5
+    matcher: json_value
+    pointer: /label/message
+    expected: Message
+  - id: bank-om-002-mr-in-6
+    matcher: json_value
+    pointer: /label/other
+    expected: Other
+  - id: bank-om-002-mr-in-7
+    matcher: json_value
+    pointer: /label/query-report
+    expected: Query Report
+  - id: bank-om-002-mr-in-8
+    matcher: json_value
+    pointer: /label/query-report-lowercase-plural
+    expected: query reports
+  - id: bank-om-002-mr-in-9
+    matcher: json_value
+    pointer: /label/query-report-plural
+    expected: Query Reports
+  - id: bank-om-002-mr-in-10
+    matcher: json_value
+    pointer: /label/variable-name
+    expected: Variable Name
+  - id: bank-om-002-mr-in-11
+    matcher: json_value
+    pointer: /message/query-report-description
+    expected: Manage report metadata and view the SQL queries associated with each report.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-mr-in-1
+    matcher: json_value
+    pointer: /label/data-assertion-plural
+    expected: Data Assertions
+  - id: bank-om-003-mr-in-2
+    matcher: json_value
+    pointer: /label/my-failed-assertion-plural
+    expected: My Failed Assertions
+  - id: bank-om-003-mr-in-3
+    matcher: json_value
+    pointer: /label/pass-rate
+    expected: Pass Rate
+  - id: bank-om-003-mr-in-4
+    matcher: json_value
+    pointer: /label/re-validate-data
+    expected: Re-validate Data
+  - id: bank-om-003-mr-in-5
+    matcher: json_value
+    pointer: /message/data-assertions-revalidate-placeholder
+    expected: Re-validation will be available soon.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json
+  customization_id: BANK-OM-004
+  assertions:
+  - id: bank-om-004-mr-in-1
+    matcher: json_value
+    pointer: /label/attribute-name
+    expected: Attribute Name
+  - id: bank-om-004-mr-in-2
+    matcher: json_value
+    pointer: /label/business-instance-code
+    expected: Business Instance Code
+  - id: bank-om-004-mr-in-3
+    matcher: json_value
+    pointer: /label/business-instance-content
+    expected: Business Instance Content
+  - id: bank-om-004-mr-in-4
+    matcher: json_value
+    pointer: /label/copy-all
+    expected: Copy All
+  - id: bank-om-004-mr-in-5
+    matcher: json_value
+    pointer: /label/copy-table
+    expected: Copy Table
+  - id: bank-om-004-mr-in-6
+    matcher: json_value
+    pointer: /label/instance-name
+    expected: Instance Name
+  - id: bank-om-004-mr-in-7
+    matcher: json_value
+    pointer: /label/last-modified-date
+    expected: Last Modified Date
+  - id: bank-om-004-mr-in-8
+    matcher: json_value
+    pointer: /label/registered-date
+    expected: Registered Date
+  - id: bank-om-004-mr-in-9
+    matcher: json_value
+    pointer: /label/unknown
+    expected: Unknown
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-nl-nl-1
+    matcher: json_value
+    pointer: /label/code-group
+    expected: Code Group
+  - id: bank-om-001-nl-nl-2
+    matcher: json_value
+    pointer: /label/code-name
+    expected: Code Name
+  - id: bank-om-001-nl-nl-3
+    matcher: json_value
+    pointer: /label/code-value
+    expected: Code Value
+  - id: bank-om-001-nl-nl-4
+    matcher: json_value
+    pointer: /label/instance-code
+    expected: Instance Code
+  - id: bank-om-001-nl-nl-5
+    matcher: json_value
+    pointer: /label/instance-code-lowercase-plural
+    expected: instance codes
+  - id: bank-om-001-nl-nl-6
+    matcher: json_value
+    pointer: /label/instance-code-plural
+    expected: Instance Codes
+  - id: bank-om-001-nl-nl-7
+    matcher: json_value
+    pointer: /label/sort-order
+    expected: Sort Order
+  - id: bank-om-001-nl-nl-8
+    matcher: json_value
+    pointer: /message/instance-code-description
+    expected: Manage common/reference codes used as shared master data across the platform.
+  - id: bank-om-001-nl-nl-9
+    matcher: json_value
+    pointer: /message/instance-code-group-description
+    expected: The {{codeGroupName}} code group contains {{count}} registered code(s).
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-nl-nl-1
+    matcher: json_value
+    pointer: /label/business-rule
+    expected: Business Rule
+  - id: bank-om-002-nl-nl-2
+    matcher: json_value
+    pointer: /label/encryption-transform-info
+    expected: Encryption Transform Info
+  - id: bank-om-002-nl-nl-3
+    matcher: json_value
+    pointer: /label/info-type
+    expected: Info Type
+  - id: bank-om-002-nl-nl-4
+    matcher: json_value
+    pointer: /label/is-encrypted
+    expected: Is Encrypted
+  - id: bank-om-002-nl-nl-5
+    matcher: json_value
+    pointer: /label/message
+    expected: Message
+  - id: bank-om-002-nl-nl-6
+    matcher: json_value
+    pointer: /label/other
+    expected: Other
+  - id: bank-om-002-nl-nl-7
+    matcher: json_value
+    pointer: /label/query-report
+    expected: Query Report
+  - id: bank-om-002-nl-nl-8
+    matcher: json_value
+    pointer: /label/query-report-lowercase-plural
+    expected: query reports
+  - id: bank-om-002-nl-nl-9
+    matcher: json_value
+    pointer: /label/query-report-plural
+    expected: Query Reports
+  - id: bank-om-002-nl-nl-10
+    matcher: json_value
+    pointer: /label/variable-name
+    expected: Variable Name
+  - id: bank-om-002-nl-nl-11
+    matcher: json_value
+    pointer: /message/query-report-description
+    expected: Manage report metadata and view the SQL queries associated with each report.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-nl-nl-1
+    matcher: json_value
+    pointer: /label/data-assertion-plural
+    expected: Data Assertions
+  - id: bank-om-003-nl-nl-2
+    matcher: json_value
+    pointer: /label/my-failed-assertion-plural
+    expected: My Failed Assertions
+  - id: bank-om-003-nl-nl-3
+    matcher: json_value
+    pointer: /label/pass-rate
+    expected: Pass Rate
+  - id: bank-om-003-nl-nl-4
+    matcher: json_value
+    pointer: /label/re-validate-data
+    expected: Re-validate Data
+  - id: bank-om-003-nl-nl-5
+    matcher: json_value
+    pointer: /message/data-assertions-revalidate-placeholder
+    expected: Re-validation will be available soon.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json
+  customization_id: BANK-OM-004
+  assertions:
+  - id: bank-om-004-nl-nl-1
+    matcher: json_value
+    pointer: /label/attribute-name
+    expected: Attribute Name
+  - id: bank-om-004-nl-nl-2
+    matcher: json_value
+    pointer: /label/business-instance-code
+    expected: Business Instance Code
+  - id: bank-om-004-nl-nl-3
+    matcher: json_value
+    pointer: /label/business-instance-content
+    expected: Business Instance Content
+  - id: bank-om-004-nl-nl-4
+    matcher: json_value
+    pointer: /label/copy-all
+    expected: Copy All
+  - id: bank-om-004-nl-nl-5
+    matcher: json_value
+    pointer: /label/copy-table
+    expected: Copy Table
+  - id: bank-om-004-nl-nl-6
+    matcher: json_value
+    pointer: /label/instance-name
+    expected: Instance Name
+  - id: bank-om-004-nl-nl-7
+    matcher: json_value
+    pointer: /label/last-modified-date
+    expected: Last Modified Date
+  - id: bank-om-004-nl-nl-8
+    matcher: json_value
+    pointer: /label/registered-date
+    expected: Registered Date
+  - id: bank-om-004-nl-nl-9
+    matcher: json_value
+    pointer: /label/unknown
+    expected: Unknown
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-pr-pr-1
+    matcher: json_value
+    pointer: /label/code-group
+    expected: Code Group
+  - id: bank-om-001-pr-pr-2
+    matcher: json_value
+    pointer: /label/code-name
+    expected: Code Name
+  - id: bank-om-001-pr-pr-3
+    matcher: json_value
+    pointer: /label/code-value
+    expected: Code Value
+  - id: bank-om-001-pr-pr-4
+    matcher: json_value
+    pointer: /label/instance-code
+    expected: Instance Code
+  - id: bank-om-001-pr-pr-5
+    matcher: json_value
+    pointer: /label/instance-code-lowercase-plural
+    expected: instance codes
+  - id: bank-om-001-pr-pr-6
+    matcher: json_value
+    pointer: /label/instance-code-plural
+    expected: Instance Codes
+  - id: bank-om-001-pr-pr-7
+    matcher: json_value
+    pointer: /label/sort-order
+    expected: Sort Order
+  - id: bank-om-001-pr-pr-8
+    matcher: json_value
+    pointer: /message/instance-code-description
+    expected: Manage common/reference codes used as shared master data across the platform.
+  - id: bank-om-001-pr-pr-9
+    matcher: json_value
+    pointer: /message/instance-code-group-description
+    expected: The {{codeGroupName}} code group contains {{count}} registered code(s).
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-pr-pr-1
+    matcher: json_value
+    pointer: /label/business-rule
+    expected: Business Rule
+  - id: bank-om-002-pr-pr-2
+    matcher: json_value
+    pointer: /label/encryption-transform-info
+    expected: Encryption Transform Info
+  - id: bank-om-002-pr-pr-3
+    matcher: json_value
+    pointer: /label/info-type
+    expected: Info Type
+  - id: bank-om-002-pr-pr-4
+    matcher: json_value
+    pointer: /label/is-encrypted
+    expected: Is Encrypted
+  - id: bank-om-002-pr-pr-5
+    matcher: json_value
+    pointer: /label/message
+    expected: Message
+  - id: bank-om-002-pr-pr-6
+    matcher: json_value
+    pointer: /label/other
+    expected: Other
+  - id: bank-om-002-pr-pr-7
+    matcher: json_value
+    pointer: /label/query-report
+    expected: Query Report
+  - id: bank-om-002-pr-pr-8
+    matcher: json_value
+    pointer: /label/query-report-lowercase-plural
+    expected: query reports
+  - id: bank-om-002-pr-pr-9
+    matcher: json_value
+    pointer: /label/query-report-plural
+    expected: Query Reports
+  - id: bank-om-002-pr-pr-10
+    matcher: json_value
+    pointer: /label/variable-name
+    expected: Variable Name
+  - id: bank-om-002-pr-pr-11
+    matcher: json_value
+    pointer: /message/query-report-description
+    expected: Manage report metadata and view the SQL queries associated with each report.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-pr-pr-1
+    matcher: json_value
+    pointer: /label/data-assertion-plural
+    expected: Data Assertions
+  - id: bank-om-003-pr-pr-2
+    matcher: json_value
+    pointer: /label/my-failed-assertion-plural
+    expected: My Failed Assertions
+  - id: bank-om-003-pr-pr-3
+    matcher: json_value
+    pointer: /label/pass-rate
+    expected: Pass Rate
+  - id: bank-om-003-pr-pr-4
+    matcher: json_value
+    pointer: /label/re-validate-data
+    expected: Re-validate Data
+  - id: bank-om-003-pr-pr-5
+    matcher: json_value
+    pointer: /message/data-assertions-revalidate-placeholder
+    expected: Re-validation will be available soon.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json
+  customization_id: BANK-OM-004
+  assertions:
+  - id: bank-om-004-pr-pr-1
+    matcher: json_value
+    pointer: /label/attribute-name
+    expected: Attribute Name
+  - id: bank-om-004-pr-pr-2
+    matcher: json_value
+    pointer: /label/business-instance-code
+    expected: Business Instance Code
+  - id: bank-om-004-pr-pr-3
+    matcher: json_value
+    pointer: /label/business-instance-content
+    expected: Business Instance Content
+  - id: bank-om-004-pr-pr-4
+    matcher: json_value
+    pointer: /label/copy-all
+    expected: Copy All
+  - id: bank-om-004-pr-pr-5
+    matcher: json_value
+    pointer: /label/copy-table
+    expected: Copy Table
+  - id: bank-om-004-pr-pr-6
+    matcher: json_value
+    pointer: /label/instance-name
+    expected: Instance Name
+  - id: bank-om-004-pr-pr-7
+    matcher: json_value
+    pointer: /label/last-modified-date
+    expected: Last Modified Date
+  - id: bank-om-004-pr-pr-8
+    matcher: json_value
+    pointer: /label/registered-date
+    expected: Registered Date
+  - id: bank-om-004-pr-pr-9
+    matcher: json_value
+    pointer: /label/unknown
+    expected: Unknown
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-pt-br-1
+    matcher: json_value
+    pointer: /label/code-group
+    expected: Code Group
+  - id: bank-om-001-pt-br-2
+    matcher: json_value
+    pointer: /label/code-name
+    expected: Code Name
+  - id: bank-om-001-pt-br-3
+    matcher: json_value
+    pointer: /label/code-value
+    expected: Code Value
+  - id: bank-om-001-pt-br-4
+    matcher: json_value
+    pointer: /label/instance-code
+    expected: Instance Code
+  - id: bank-om-001-pt-br-5
+    matcher: json_value
+    pointer: /label/instance-code-lowercase-plural
+    expected: instance codes
+  - id: bank-om-001-pt-br-6
+    matcher: json_value
+    pointer: /label/instance-code-plural
+    expected: Instance Codes
+  - id: bank-om-001-pt-br-7
+    matcher: json_value
+    pointer: /label/sort-order
+    expected: Sort Order
+  - id: bank-om-001-pt-br-8
+    matcher: json_value
+    pointer: /message/instance-code-description
+    expected: Manage common/reference codes used as shared master data across the platform.
+  - id: bank-om-001-pt-br-9
+    matcher: json_value
+    pointer: /message/instance-code-group-description
+    expected: The {{codeGroupName}} code group contains {{count}} registered code(s).
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-pt-br-1
+    matcher: json_value
+    pointer: /label/business-rule
+    expected: Business Rule
+  - id: bank-om-002-pt-br-2
+    matcher: json_value
+    pointer: /label/encryption-transform-info
+    expected: Encryption Transform Info
+  - id: bank-om-002-pt-br-3
+    matcher: json_value
+    pointer: /label/info-type
+    expected: Info Type
+  - id: bank-om-002-pt-br-4
+    matcher: json_value
+    pointer: /label/is-encrypted
+    expected: Is Encrypted
+  - id: bank-om-002-pt-br-5
+    matcher: json_value
+    pointer: /label/message
+    expected: Message
+  - id: bank-om-002-pt-br-6
+    matcher: json_value
+    pointer: /label/other
+    expected: Other
+  - id: bank-om-002-pt-br-7
+    matcher: json_value
+    pointer: /label/query-report
+    expected: Query Report
+  - id: bank-om-002-pt-br-8
+    matcher: json_value
+    pointer: /label/query-report-lowercase-plural
+    expected: query reports
+  - id: bank-om-002-pt-br-9
+    matcher: json_value
+    pointer: /label/query-report-plural
+    expected: Query Reports
+  - id: bank-om-002-pt-br-10
+    matcher: json_value
+    pointer: /label/variable-name
+    expected: Variable Name
+  - id: bank-om-002-pt-br-11
+    matcher: json_value
+    pointer: /message/query-report-description
+    expected: Manage report metadata and view the SQL queries associated with each report.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-pt-br-1
+    matcher: json_value
+    pointer: /label/data-assertion-plural
+    expected: Data Assertions
+  - id: bank-om-003-pt-br-2
+    matcher: json_value
+    pointer: /label/my-failed-assertion-plural
+    expected: My Failed Assertions
+  - id: bank-om-003-pt-br-3
+    matcher: json_value
+    pointer: /label/pass-rate
+    expected: Pass Rate
+  - id: bank-om-003-pt-br-4
+    matcher: json_value
+    pointer: /label/re-validate-data
+    expected: Re-validate Data
+  - id: bank-om-003-pt-br-5
+    matcher: json_value
+    pointer: /message/data-assertions-revalidate-placeholder
+    expected: Re-validation will be available soon.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json
+  customization_id: BANK-OM-004
+  assertions:
+  - id: bank-om-004-pt-br-1
+    matcher: json_value
+    pointer: /label/attribute-name
+    expected: Attribute Name
+  - id: bank-om-004-pt-br-2
+    matcher: json_value
+    pointer: /label/business-instance-code
+    expected: Business Instance Code
+  - id: bank-om-004-pt-br-3
+    matcher: json_value
+    pointer: /label/business-instance-content
+    expected: Business Instance Content
+  - id: bank-om-004-pt-br-4
+    matcher: json_value
+    pointer: /label/copy-all
+    expected: Copy All
+  - id: bank-om-004-pt-br-5
+    matcher: json_value
+    pointer: /label/copy-table
+    expected: Copy Table
+  - id: bank-om-004-pt-br-6
+    matcher: json_value
+    pointer: /label/instance-name
+    expected: Instance Name
+  - id: bank-om-004-pt-br-7
+    matcher: json_value
+    pointer: /label/last-modified-date
+    expected: Last Modified Date
+  - id: bank-om-004-pt-br-8
+    matcher: json_value
+    pointer: /label/registered-date
+    expected: Registered Date
+  - id: bank-om-004-pt-br-9
+    matcher: json_value
+    pointer: /label/unknown
+    expected: Unknown
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-pt-pt-1
+    matcher: json_value
+    pointer: /label/code-group
+    expected: Code Group
+  - id: bank-om-001-pt-pt-2
+    matcher: json_value
+    pointer: /label/code-name
+    expected: Code Name
+  - id: bank-om-001-pt-pt-3
+    matcher: json_value
+    pointer: /label/code-value
+    expected: Code Value
+  - id: bank-om-001-pt-pt-4
+    matcher: json_value
+    pointer: /label/instance-code
+    expected: Instance Code
+  - id: bank-om-001-pt-pt-5
+    matcher: json_value
+    pointer: /label/instance-code-lowercase-plural
+    expected: instance codes
+  - id: bank-om-001-pt-pt-6
+    matcher: json_value
+    pointer: /label/instance-code-plural
+    expected: Instance Codes
+  - id: bank-om-001-pt-pt-7
+    matcher: json_value
+    pointer: /label/sort-order
+    expected: Sort Order
+  - id: bank-om-001-pt-pt-8
+    matcher: json_value
+    pointer: /message/instance-code-description
+    expected: Manage common/reference codes used as shared master data across the platform.
+  - id: bank-om-001-pt-pt-9
+    matcher: json_value
+    pointer: /message/instance-code-group-description
+    expected: The {{codeGroupName}} code group contains {{count}} registered code(s).
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-pt-pt-1
+    matcher: json_value
+    pointer: /label/business-rule
+    expected: Business Rule
+  - id: bank-om-002-pt-pt-2
+    matcher: json_value
+    pointer: /label/encryption-transform-info
+    expected: Encryption Transform Info
+  - id: bank-om-002-pt-pt-3
+    matcher: json_value
+    pointer: /label/info-type
+    expected: Info Type
+  - id: bank-om-002-pt-pt-4
+    matcher: json_value
+    pointer: /label/is-encrypted
+    expected: Is Encrypted
+  - id: bank-om-002-pt-pt-5
+    matcher: json_value
+    pointer: /label/message
+    expected: Message
+  - id: bank-om-002-pt-pt-6
+    matcher: json_value
+    pointer: /label/other
+    expected: Other
+  - id: bank-om-002-pt-pt-7
+    matcher: json_value
+    pointer: /label/query-report
+    expected: Query Report
+  - id: bank-om-002-pt-pt-8
+    matcher: json_value
+    pointer: /label/query-report-lowercase-plural
+    expected: query reports
+  - id: bank-om-002-pt-pt-9
+    matcher: json_value
+    pointer: /label/query-report-plural
+    expected: Query Reports
+  - id: bank-om-002-pt-pt-10
+    matcher: json_value
+    pointer: /label/variable-name
+    expected: Variable Name
+  - id: bank-om-002-pt-pt-11
+    matcher: json_value
+    pointer: /message/query-report-description
+    expected: Manage report metadata and view the SQL queries associated with each report.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-pt-pt-1
+    matcher: json_value
+    pointer: /label/data-assertion-plural
+    expected: Data Assertions
+  - id: bank-om-003-pt-pt-2
+    matcher: json_value
+    pointer: /label/my-failed-assertion-plural
+    expected: My Failed Assertions
+  - id: bank-om-003-pt-pt-3
+    matcher: json_value
+    pointer: /label/pass-rate
+    expected: Pass Rate
+  - id: bank-om-003-pt-pt-4
+    matcher: json_value
+    pointer: /label/re-validate-data
+    expected: Re-validate Data
+  - id: bank-om-003-pt-pt-5
+    matcher: json_value
+    pointer: /message/data-assertions-revalidate-placeholder
+    expected: Re-validation will be available soon.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json
+  customization_id: BANK-OM-004
+  assertions:
+  - id: bank-om-004-pt-pt-1
+    matcher: json_value
+    pointer: /label/attribute-name
+    expected: Attribute Name
+  - id: bank-om-004-pt-pt-2
+    matcher: json_value
+    pointer: /label/business-instance-code
+    expected: Business Instance Code
+  - id: bank-om-004-pt-pt-3
+    matcher: json_value
+    pointer: /label/business-instance-content
+    expected: Business Instance Content
+  - id: bank-om-004-pt-pt-4
+    matcher: json_value
+    pointer: /label/copy-all
+    expected: Copy All
+  - id: bank-om-004-pt-pt-5
+    matcher: json_value
+    pointer: /label/copy-table
+    expected: Copy Table
+  - id: bank-om-004-pt-pt-6
+    matcher: json_value
+    pointer: /label/instance-name
+    expected: Instance Name
+  - id: bank-om-004-pt-pt-7
+    matcher: json_value
+    pointer: /label/last-modified-date
+    expected: Last Modified Date
+  - id: bank-om-004-pt-pt-8
+    matcher: json_value
+    pointer: /label/registered-date
+    expected: Registered Date
+  - id: bank-om-004-pt-pt-9
+    matcher: json_value
+    pointer: /label/unknown
+    expected: Unknown
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-ru-ru-1
+    matcher: json_value
+    pointer: /label/code-group
+    expected: Code Group
+  - id: bank-om-001-ru-ru-2
+    matcher: json_value
+    pointer: /label/code-name
+    expected: Code Name
+  - id: bank-om-001-ru-ru-3
+    matcher: json_value
+    pointer: /label/code-value
+    expected: Code Value
+  - id: bank-om-001-ru-ru-4
+    matcher: json_value
+    pointer: /label/instance-code
+    expected: Instance Code
+  - id: bank-om-001-ru-ru-5
+    matcher: json_value
+    pointer: /label/instance-code-lowercase-plural
+    expected: instance codes
+  - id: bank-om-001-ru-ru-6
+    matcher: json_value
+    pointer: /label/instance-code-plural
+    expected: Instance Codes
+  - id: bank-om-001-ru-ru-7
+    matcher: json_value
+    pointer: /label/sort-order
+    expected: Sort Order
+  - id: bank-om-001-ru-ru-8
+    matcher: json_value
+    pointer: /message/instance-code-description
+    expected: Manage common/reference codes used as shared master data across the platform.
+  - id: bank-om-001-ru-ru-9
+    matcher: json_value
+    pointer: /message/instance-code-group-description
+    expected: The {{codeGroupName}} code group contains {{count}} registered code(s).
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-ru-ru-1
+    matcher: json_value
+    pointer: /label/business-rule
+    expected: Business Rule
+  - id: bank-om-002-ru-ru-2
+    matcher: json_value
+    pointer: /label/encryption-transform-info
+    expected: Encryption Transform Info
+  - id: bank-om-002-ru-ru-3
+    matcher: json_value
+    pointer: /label/info-type
+    expected: Info Type
+  - id: bank-om-002-ru-ru-4
+    matcher: json_value
+    pointer: /label/is-encrypted
+    expected: Is Encrypted
+  - id: bank-om-002-ru-ru-5
+    matcher: json_value
+    pointer: /label/message
+    expected: Message
+  - id: bank-om-002-ru-ru-6
+    matcher: json_value
+    pointer: /label/other
+    expected: Other
+  - id: bank-om-002-ru-ru-7
+    matcher: json_value
+    pointer: /label/query-report
+    expected: Query Report
+  - id: bank-om-002-ru-ru-8
+    matcher: json_value
+    pointer: /label/query-report-lowercase-plural
+    expected: query reports
+  - id: bank-om-002-ru-ru-9
+    matcher: json_value
+    pointer: /label/query-report-plural
+    expected: Query Reports
+  - id: bank-om-002-ru-ru-10
+    matcher: json_value
+    pointer: /label/variable-name
+    expected: Variable Name
+  - id: bank-om-002-ru-ru-11
+    matcher: json_value
+    pointer: /message/query-report-description
+    expected: Manage report metadata and view the SQL queries associated with each report.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-ru-ru-1
+    matcher: json_value
+    pointer: /label/data-assertion-plural
+    expected: Data Assertions
+  - id: bank-om-003-ru-ru-2
+    matcher: json_value
+    pointer: /label/my-failed-assertion-plural
+    expected: My Failed Assertions
+  - id: bank-om-003-ru-ru-3
+    matcher: json_value
+    pointer: /label/pass-rate
+    expected: Pass Rate
+  - id: bank-om-003-ru-ru-4
+    matcher: json_value
+    pointer: /label/re-validate-data
+    expected: Re-validate Data
+  - id: bank-om-003-ru-ru-5
+    matcher: json_value
+    pointer: /message/data-assertions-revalidate-placeholder
+    expected: Re-validation will be available soon.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json
+  customization_id: BANK-OM-004
+  assertions:
+  - id: bank-om-004-ru-ru-1
+    matcher: json_value
+    pointer: /label/attribute-name
+    expected: Attribute Name
+  - id: bank-om-004-ru-ru-2
+    matcher: json_value
+    pointer: /label/business-instance-code
+    expected: Business Instance Code
+  - id: bank-om-004-ru-ru-3
+    matcher: json_value
+    pointer: /label/business-instance-content
+    expected: Business Instance Content
+  - id: bank-om-004-ru-ru-4
+    matcher: json_value
+    pointer: /label/copy-all
+    expected: Copy All
+  - id: bank-om-004-ru-ru-5
+    matcher: json_value
+    pointer: /label/copy-table
+    expected: Copy Table
+  - id: bank-om-004-ru-ru-6
+    matcher: json_value
+    pointer: /label/instance-name
+    expected: Instance Name
+  - id: bank-om-004-ru-ru-7
+    matcher: json_value
+    pointer: /label/last-modified-date
+    expected: Last Modified Date
+  - id: bank-om-004-ru-ru-8
+    matcher: json_value
+    pointer: /label/registered-date
+    expected: Registered Date
+  - id: bank-om-004-ru-ru-9
+    matcher: json_value
+    pointer: /label/unknown
+    expected: Unknown
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-th-th-1
+    matcher: json_value
+    pointer: /label/code-group
+    expected: Code Group
+  - id: bank-om-001-th-th-2
+    matcher: json_value
+    pointer: /label/code-name
+    expected: Code Name
+  - id: bank-om-001-th-th-3
+    matcher: json_value
+    pointer: /label/code-value
+    expected: Code Value
+  - id: bank-om-001-th-th-4
+    matcher: json_value
+    pointer: /label/instance-code
+    expected: Instance Code
+  - id: bank-om-001-th-th-5
+    matcher: json_value
+    pointer: /label/instance-code-lowercase-plural
+    expected: instance codes
+  - id: bank-om-001-th-th-6
+    matcher: json_value
+    pointer: /label/instance-code-plural
+    expected: Instance Codes
+  - id: bank-om-001-th-th-7
+    matcher: json_value
+    pointer: /label/sort-order
+    expected: Sort Order
+  - id: bank-om-001-th-th-8
+    matcher: json_value
+    pointer: /message/instance-code-description
+    expected: Manage common/reference codes used as shared master data across the platform.
+  - id: bank-om-001-th-th-9
+    matcher: json_value
+    pointer: /message/instance-code-group-description
+    expected: The {{codeGroupName}} code group contains {{count}} registered code(s).
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-th-th-1
+    matcher: json_value
+    pointer: /label/business-rule
+    expected: Business Rule
+  - id: bank-om-002-th-th-2
+    matcher: json_value
+    pointer: /label/encryption-transform-info
+    expected: Encryption Transform Info
+  - id: bank-om-002-th-th-3
+    matcher: json_value
+    pointer: /label/info-type
+    expected: Info Type
+  - id: bank-om-002-th-th-4
+    matcher: json_value
+    pointer: /label/is-encrypted
+    expected: Is Encrypted
+  - id: bank-om-002-th-th-5
+    matcher: json_value
+    pointer: /label/message
+    expected: Message
+  - id: bank-om-002-th-th-6
+    matcher: json_value
+    pointer: /label/other
+    expected: Other
+  - id: bank-om-002-th-th-7
+    matcher: json_value
+    pointer: /label/query-report
+    expected: Query Report
+  - id: bank-om-002-th-th-8
+    matcher: json_value
+    pointer: /label/query-report-lowercase-plural
+    expected: query reports
+  - id: bank-om-002-th-th-9
+    matcher: json_value
+    pointer: /label/query-report-plural
+    expected: Query Reports
+  - id: bank-om-002-th-th-10
+    matcher: json_value
+    pointer: /label/variable-name
+    expected: Variable Name
+  - id: bank-om-002-th-th-11
+    matcher: json_value
+    pointer: /message/query-report-description
+    expected: Manage report metadata and view the SQL queries associated with each report.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-th-th-1
+    matcher: json_value
+    pointer: /label/data-assertion-plural
+    expected: Data Assertions
+  - id: bank-om-003-th-th-2
+    matcher: json_value
+    pointer: /label/my-failed-assertion-plural
+    expected: My Failed Assertions
+  - id: bank-om-003-th-th-3
+    matcher: json_value
+    pointer: /label/pass-rate
+    expected: Pass Rate
+  - id: bank-om-003-th-th-4
+    matcher: json_value
+    pointer: /label/re-validate-data
+    expected: Re-validate Data
+  - id: bank-om-003-th-th-5
+    matcher: json_value
+    pointer: /message/data-assertions-revalidate-placeholder
+    expected: Re-validation will be available soon.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json
+  customization_id: BANK-OM-004
+  assertions:
+  - id: bank-om-004-th-th-1
+    matcher: json_value
+    pointer: /label/attribute-name
+    expected: Attribute Name
+  - id: bank-om-004-th-th-2
+    matcher: json_value
+    pointer: /label/business-instance-code
+    expected: Business Instance Code
+  - id: bank-om-004-th-th-3
+    matcher: json_value
+    pointer: /label/business-instance-content
+    expected: Business Instance Content
+  - id: bank-om-004-th-th-4
+    matcher: json_value
+    pointer: /label/copy-all
+    expected: Copy All
+  - id: bank-om-004-th-th-5
+    matcher: json_value
+    pointer: /label/copy-table
+    expected: Copy Table
+  - id: bank-om-004-th-th-6
+    matcher: json_value
+    pointer: /label/instance-name
+    expected: Instance Name
+  - id: bank-om-004-th-th-7
+    matcher: json_value
+    pointer: /label/last-modified-date
+    expected: Last Modified Date
+  - id: bank-om-004-th-th-8
+    matcher: json_value
+    pointer: /label/registered-date
+    expected: Registered Date
+  - id: bank-om-004-th-th-9
+    matcher: json_value
+    pointer: /label/unknown
+    expected: Unknown
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-tr-tr-1
+    matcher: json_value
+    pointer: /label/code-group
+    expected: Code Group
+  - id: bank-om-001-tr-tr-2
+    matcher: json_value
+    pointer: /label/code-name
+    expected: Code Name
+  - id: bank-om-001-tr-tr-3
+    matcher: json_value
+    pointer: /label/code-value
+    expected: Code Value
+  - id: bank-om-001-tr-tr-4
+    matcher: json_value
+    pointer: /label/instance-code
+    expected: Instance Code
+  - id: bank-om-001-tr-tr-5
+    matcher: json_value
+    pointer: /label/instance-code-lowercase-plural
+    expected: instance codes
+  - id: bank-om-001-tr-tr-6
+    matcher: json_value
+    pointer: /label/instance-code-plural
+    expected: Instance Codes
+  - id: bank-om-001-tr-tr-7
+    matcher: json_value
+    pointer: /label/sort-order
+    expected: Sort Order
+  - id: bank-om-001-tr-tr-8
+    matcher: json_value
+    pointer: /message/instance-code-description
+    expected: Manage common/reference codes used as shared master data across the platform.
+  - id: bank-om-001-tr-tr-9
+    matcher: json_value
+    pointer: /message/instance-code-group-description
+    expected: The {{codeGroupName}} code group contains {{count}} registered code(s).
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-tr-tr-1
+    matcher: json_value
+    pointer: /label/business-rule
+    expected: Business Rule
+  - id: bank-om-002-tr-tr-2
+    matcher: json_value
+    pointer: /label/encryption-transform-info
+    expected: Encryption Transform Info
+  - id: bank-om-002-tr-tr-3
+    matcher: json_value
+    pointer: /label/info-type
+    expected: Info Type
+  - id: bank-om-002-tr-tr-4
+    matcher: json_value
+    pointer: /label/is-encrypted
+    expected: Is Encrypted
+  - id: bank-om-002-tr-tr-5
+    matcher: json_value
+    pointer: /label/message
+    expected: Message
+  - id: bank-om-002-tr-tr-6
+    matcher: json_value
+    pointer: /label/other
+    expected: Other
+  - id: bank-om-002-tr-tr-7
+    matcher: json_value
+    pointer: /label/query-report
+    expected: Query Report
+  - id: bank-om-002-tr-tr-8
+    matcher: json_value
+    pointer: /label/query-report-lowercase-plural
+    expected: query reports
+  - id: bank-om-002-tr-tr-9
+    matcher: json_value
+    pointer: /label/query-report-plural
+    expected: Query Reports
+  - id: bank-om-002-tr-tr-10
+    matcher: json_value
+    pointer: /label/variable-name
+    expected: Variable Name
+  - id: bank-om-002-tr-tr-11
+    matcher: json_value
+    pointer: /message/query-report-description
+    expected: Manage report metadata and view the SQL queries associated with each report.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-tr-tr-1
+    matcher: json_value
+    pointer: /label/data-assertion-plural
+    expected: Data Assertions
+  - id: bank-om-003-tr-tr-2
+    matcher: json_value
+    pointer: /label/my-failed-assertion-plural
+    expected: My Failed Assertions
+  - id: bank-om-003-tr-tr-3
+    matcher: json_value
+    pointer: /label/pass-rate
+    expected: Pass Rate
+  - id: bank-om-003-tr-tr-4
+    matcher: json_value
+    pointer: /label/re-validate-data
+    expected: Re-validate Data
+  - id: bank-om-003-tr-tr-5
+    matcher: json_value
+    pointer: /message/data-assertions-revalidate-placeholder
+    expected: Re-validation will be available soon.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json
+  customization_id: BANK-OM-004
+  assertions:
+  - id: bank-om-004-tr-tr-1
+    matcher: json_value
+    pointer: /label/attribute-name
+    expected: Attribute Name
+  - id: bank-om-004-tr-tr-2
+    matcher: json_value
+    pointer: /label/business-instance-code
+    expected: Business Instance Code
+  - id: bank-om-004-tr-tr-3
+    matcher: json_value
+    pointer: /label/business-instance-content
+    expected: Business Instance Content
+  - id: bank-om-004-tr-tr-4
+    matcher: json_value
+    pointer: /label/copy-all
+    expected: Copy All
+  - id: bank-om-004-tr-tr-5
+    matcher: json_value
+    pointer: /label/copy-table
+    expected: Copy Table
+  - id: bank-om-004-tr-tr-6
+    matcher: json_value
+    pointer: /label/instance-name
+    expected: Instance Name
+  - id: bank-om-004-tr-tr-7
+    matcher: json_value
+    pointer: /label/last-modified-date
+    expected: Last Modified Date
+  - id: bank-om-004-tr-tr-8
+    matcher: json_value
+    pointer: /label/registered-date
+    expected: Registered Date
+  - id: bank-om-004-tr-tr-9
+    matcher: json_value
+    pointer: /label/unknown
+    expected: Unknown
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-zh-cn-1
+    matcher: json_value
+    pointer: /label/code-group
+    expected: Code Group
+  - id: bank-om-001-zh-cn-2
+    matcher: json_value
+    pointer: /label/code-name
+    expected: Code Name
+  - id: bank-om-001-zh-cn-3
+    matcher: json_value
+    pointer: /label/code-value
+    expected: Code Value
+  - id: bank-om-001-zh-cn-4
+    matcher: json_value
+    pointer: /label/instance-code
+    expected: Instance Code
+  - id: bank-om-001-zh-cn-5
+    matcher: json_value
+    pointer: /label/instance-code-lowercase-plural
+    expected: instance codes
+  - id: bank-om-001-zh-cn-6
+    matcher: json_value
+    pointer: /label/instance-code-plural
+    expected: Instance Codes
+  - id: bank-om-001-zh-cn-7
+    matcher: json_value
+    pointer: /label/sort-order
+    expected: Sort Order
+  - id: bank-om-001-zh-cn-8
+    matcher: json_value
+    pointer: /message/instance-code-description
+    expected: Manage common/reference codes used as shared master data across the platform.
+  - id: bank-om-001-zh-cn-9
+    matcher: json_value
+    pointer: /message/instance-code-group-description
+    expected: The {{codeGroupName}} code group contains {{count}} registered code(s).
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-zh-cn-1
+    matcher: json_value
+    pointer: /label/business-rule
+    expected: Business Rule
+  - id: bank-om-002-zh-cn-2
+    matcher: json_value
+    pointer: /label/encryption-transform-info
+    expected: Encryption Transform Info
+  - id: bank-om-002-zh-cn-3
+    matcher: json_value
+    pointer: /label/info-type
+    expected: Info Type
+  - id: bank-om-002-zh-cn-4
+    matcher: json_value
+    pointer: /label/is-encrypted
+    expected: Is Encrypted
+  - id: bank-om-002-zh-cn-5
+    matcher: json_value
+    pointer: /label/message
+    expected: Message
+  - id: bank-om-002-zh-cn-6
+    matcher: json_value
+    pointer: /label/other
+    expected: Other
+  - id: bank-om-002-zh-cn-7
+    matcher: json_value
+    pointer: /label/query-report
+    expected: Query Report
+  - id: bank-om-002-zh-cn-8
+    matcher: json_value
+    pointer: /label/query-report-lowercase-plural
+    expected: query reports
+  - id: bank-om-002-zh-cn-9
+    matcher: json_value
+    pointer: /label/query-report-plural
+    expected: Query Reports
+  - id: bank-om-002-zh-cn-10
+    matcher: json_value
+    pointer: /label/variable-name
+    expected: Variable Name
+  - id: bank-om-002-zh-cn-11
+    matcher: json_value
+    pointer: /message/query-report-description
+    expected: Manage report metadata and view the SQL queries associated with each report.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-zh-cn-1
+    matcher: json_value
+    pointer: /label/data-assertion-plural
+    expected: Data Assertions
+  - id: bank-om-003-zh-cn-2
+    matcher: json_value
+    pointer: /label/my-failed-assertion-plural
+    expected: My Failed Assertions
+  - id: bank-om-003-zh-cn-3
+    matcher: json_value
+    pointer: /label/pass-rate
+    expected: Pass Rate
+  - id: bank-om-003-zh-cn-4
+    matcher: json_value
+    pointer: /label/re-validate-data
+    expected: Re-validate Data
+  - id: bank-om-003-zh-cn-5
+    matcher: json_value
+    pointer: /message/data-assertions-revalidate-placeholder
+    expected: Re-validation will be available soon.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json
+  customization_id: BANK-OM-004
+  assertions:
+  - id: bank-om-004-zh-cn-1
+    matcher: json_value
+    pointer: /label/attribute-name
+    expected: Attribute Name
+  - id: bank-om-004-zh-cn-2
+    matcher: json_value
+    pointer: /label/business-instance-code
+    expected: Business Instance Code
+  - id: bank-om-004-zh-cn-3
+    matcher: json_value
+    pointer: /label/business-instance-content
+    expected: Business Instance Content
+  - id: bank-om-004-zh-cn-4
+    matcher: json_value
+    pointer: /label/copy-all
+    expected: Copy All
+  - id: bank-om-004-zh-cn-5
+    matcher: json_value
+    pointer: /label/copy-table
+    expected: Copy Table
+  - id: bank-om-004-zh-cn-6
+    matcher: json_value
+    pointer: /label/instance-name
+    expected: Instance Name
+  - id: bank-om-004-zh-cn-7
+    matcher: json_value
+    pointer: /label/last-modified-date
+    expected: Last Modified Date
+  - id: bank-om-004-zh-cn-8
+    matcher: json_value
+    pointer: /label/registered-date
+    expected: Registered Date
+  - id: bank-om-004-zh-cn-9
+    matcher: json_value
+    pointer: /label/unknown
+    expected: Unknown
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-zh-tw-1
+    matcher: json_value
+    pointer: /label/code-group
+    expected: Code Group
+  - id: bank-om-001-zh-tw-2
+    matcher: json_value
+    pointer: /label/code-name
+    expected: Code Name
+  - id: bank-om-001-zh-tw-3
+    matcher: json_value
+    pointer: /label/code-value
+    expected: Code Value
+  - id: bank-om-001-zh-tw-4
+    matcher: json_value
+    pointer: /label/instance-code
+    expected: Instance Code
+  - id: bank-om-001-zh-tw-5
+    matcher: json_value
+    pointer: /label/instance-code-lowercase-plural
+    expected: instance codes
+  - id: bank-om-001-zh-tw-6
+    matcher: json_value
+    pointer: /label/instance-code-plural
+    expected: Instance Codes
+  - id: bank-om-001-zh-tw-7
+    matcher: json_value
+    pointer: /label/sort-order
+    expected: Sort Order
+  - id: bank-om-001-zh-tw-8
+    matcher: json_value
+    pointer: /message/instance-code-description
+    expected: Manage common/reference codes used as shared master data across the platform.
+  - id: bank-om-001-zh-tw-9
+    matcher: json_value
+    pointer: /message/instance-code-group-description
+    expected: The {{codeGroupName}} code group contains {{count}} registered code(s).
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-zh-tw-1
+    matcher: json_value
+    pointer: /label/business-rule
+    expected: Business Rule
+  - id: bank-om-002-zh-tw-2
+    matcher: json_value
+    pointer: /label/encryption-transform-info
+    expected: Encryption Transform Info
+  - id: bank-om-002-zh-tw-3
+    matcher: json_value
+    pointer: /label/info-type
+    expected: Info Type
+  - id: bank-om-002-zh-tw-4
+    matcher: json_value
+    pointer: /label/is-encrypted
+    expected: Is Encrypted
+  - id: bank-om-002-zh-tw-5
+    matcher: json_value
+    pointer: /label/message
+    expected: Message
+  - id: bank-om-002-zh-tw-6
+    matcher: json_value
+    pointer: /label/other
+    expected: Other
+  - id: bank-om-002-zh-tw-7
+    matcher: json_value
+    pointer: /label/query-report
+    expected: Query Report
+  - id: bank-om-002-zh-tw-8
+    matcher: json_value
+    pointer: /label/query-report-lowercase-plural
+    expected: query reports
+  - id: bank-om-002-zh-tw-9
+    matcher: json_value
+    pointer: /label/query-report-plural
+    expected: Query Reports
+  - id: bank-om-002-zh-tw-10
+    matcher: json_value
+    pointer: /label/variable-name
+    expected: Variable Name
+  - id: bank-om-002-zh-tw-11
+    matcher: json_value
+    pointer: /message/query-report-description
+    expected: Manage report metadata and view the SQL queries associated with each report.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json
+  customization_id: BANK-OM-003
+  assertions:
+  - id: bank-om-003-zh-tw-1
+    matcher: json_value
+    pointer: /label/data-assertion-plural
+    expected: Data Assertions
+  - id: bank-om-003-zh-tw-2
+    matcher: json_value
+    pointer: /label/my-failed-assertion-plural
+    expected: My Failed Assertions
+  - id: bank-om-003-zh-tw-3
+    matcher: json_value
+    pointer: /label/pass-rate
+    expected: Pass Rate
+  - id: bank-om-003-zh-tw-4
+    matcher: json_value
+    pointer: /label/re-validate-data
+    expected: Re-validate Data
+  - id: bank-om-003-zh-tw-5
+    matcher: json_value
+    pointer: /message/data-assertions-revalidate-placeholder
+    expected: Re-validation will be available soon.
+- path: openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json
+  customization_id: BANK-OM-004
+  assertions:
+  - id: bank-om-004-zh-tw-1
+    matcher: json_value
+    pointer: /label/attribute-name
+    expected: Attribute Name
+  - id: bank-om-004-zh-tw-2
+    matcher: json_value
+    pointer: /label/business-instance-code
+    expected: Business Instance Code
+  - id: bank-om-004-zh-tw-3
+    matcher: json_value
+    pointer: /label/business-instance-content
+    expected: Business Instance Content
+  - id: bank-om-004-zh-tw-4
+    matcher: json_value
+    pointer: /label/copy-all
+    expected: Copy All
+  - id: bank-om-004-zh-tw-5
+    matcher: json_value
+    pointer: /label/copy-table
+    expected: Copy Table
+  - id: bank-om-004-zh-tw-6
+    matcher: json_value
+    pointer: /label/instance-name
+    expected: Instance Name
+  - id: bank-om-004-zh-tw-7
+    matcher: json_value
+    pointer: /label/last-modified-date
+    expected: Last Modified Date
+  - id: bank-om-004-zh-tw-8
+    matcher: json_value
+    pointer: /label/registered-date
+    expected: Registered Date
+  - id: bank-om-004-zh-tw-9
+    matcher: json_value
+    pointer: /label/unknown
+    expected: Unknown
+- path: openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx
+  customization_id: BANK-OM-006
+  assertions:
+  - id: bank-om-006-databaseserviceutils-1
+    matcher: code_fragment
+    fragment: 'import sybaseConnection from ''../jsons/connectionSchemas/connections/database/sybaseConnection.json'';
+
+      '
+  - id: bank-om-006-databaseserviceutils-2
+    matcher: code_fragment
+    fragment: "case DatabaseServiceType.Sybase: {\n      schema = sybaseConnection;\n"
+- path: openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx
+  customization_id: BANK-OM-007
+  assertions:
+  - id: bank-om-007-databaseserviceutils-1
+    matcher: code_fragment
+    fragment: 'import tiberoConnection from ''../jsons/connectionSchemas/connections/database/tiberoConnection.json'';
+
+      '
+  - id: bank-om-007-databaseserviceutils-2
+    matcher: code_fragment
+    fragment: "break;\n    }\n    case DatabaseServiceType.Tibero: {\n      schema = tiberoConnection;\n\n      break;\n    }\n"
+- path: openmetadata-ui/src/main/resources/ui/src/utils/RouterUtils.ts
+  customization_id: BANK-OM-001
+  assertions:
+  - id: bank-om-001-routerutils-1
+    matcher: code_fragment
+    fragment: "export const getInstanceCodeGroupPath = (codeGroup: string) => {\n  return ROUTES.INSTANCE_CODE_GROUP.replace(\n    PLACEHOLDER_ROUTE_FQN,\n    getEncodedFqn(codeGroup)\n  );\n};\n"
+- path: openmetadata-ui/src/main/resources/ui/src/utils/RouterUtils.ts
+  customization_id: BANK-OM-002
+  assertions:
+  - id: bank-om-002-routerutils-1
+    matcher: code_fragment
+    fragment: "export const getQueryReportYearPath = (year: string) => {\n  return ROUTES.QUERY_REPORT_YEAR.replace(PLACEHOLDER_ROUTE_FQN, year);\n};\n"
+- path: openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts
+  customization_id: BANK-OM-006
+  assertions:
+  - id: bank-om-006-serviceiconutils-1
+    matcher: code_fragment
+    fragment: 'import sybaseIcon from ''../assets/svg/service-icon-sybase.svg'';
+
+      '
+  - id: bank-om-006-serviceiconutils-2
+    matcher: code_fragment
+    fragment: 'sybase: sybaseIcon,
+
+      '
+- path: openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts
+  customization_id: BANK-OM-007
+  assertions:
+  - id: bank-om-007-serviceiconutils-1
+    matcher: code_fragment
+    fragment: 'import tiberoIcon from ''../assets/svg/service-icon-tibero.svg'';
+
+      '
+  - id: bank-om-007-serviceiconutils-2
+    matcher: code_fragment
+    fragment: 'tibero: tiberoIcon,
+
+      '

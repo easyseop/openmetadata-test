@@ -170,15 +170,16 @@ T42는 이전 공식 버전과 새 공식 버전 사이의 Git 변경 경로를
    연결한다.
 4. 공용 변경 파일이 있으면 `shared-path-owners.yaml`로 ID 연결을 확정하고,
    초안 생성 후 `shared-code-definitions.yaml`에 ID별 실제 코드 정의를 작성한다.
-5. 준비도구의 `plan`을 실행한다. 도구는 실제 commit 변경 파일과 기존
-   등록자료를 비교해 Manifest·Registry 변경안과 사람이 답할 질문을 만든다.
+5. 최초 등록에서는 `bootstrap-plan`을 실행한다. 도구는 Git에서 ID별 commit과
+   변경 경로를 찾고, 사람이 작성한 제목·담당자·필수 경로·Contract와 합쳐
+   Manifest·Registry·Contract 제안을 만든다. 기존 등록의 후속 변경에는 일반
+   `plan`을 사용한다.
 6. 담당자는 `changed_paths`, `required_changed_paths`,
    `upgrade_watch.paths`, 의존 경로, 담당 조직과 Contract 연결을 검토한다.
 7. 담당자는 proposal의 digest와 질문별 판단 근거를 승인서에 기록한다.
-8. `apply`는 승인한 변경안과 현재 Git·등록자료가 그대로일 때만 변경 대상
-   Manifest와 `commit-inventory.yaml`, `current-diff-paths.txt`를 반영한다.
-   Registry 변경이 필요한 경우에는 proposal에 표시된 변경도 함께 반영한다.
-   Contract는 자동으로 수정하지 않는다.
+8. `bootstrap-apply`는 승인한 최초 등록 제안과 현재 Git·등록 폴더가 그대로일
+   때만 Manifest·Registry·Contract와 경로 연결표를 한 번에 반영한다. 반영 중
+   실패하면 기존 파일을 복구한다.
 9. Registry에는 담당 조직·상태와 `provenance`를 기록한다. 최초 source
    snapshot에 있던 기능은 `source-snapshot`, snapshot 이후 새 기능은
    `candidate-follow-up`을 명시한다.

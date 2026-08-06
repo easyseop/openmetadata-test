@@ -663,11 +663,158 @@ def load_registration_bundle(registration_dir: str | Path):
     return reg, manifests, inventory
 
 
+_DIAGNOSIS_CATEGORIES = (
+    (
+        "git_lineage",
+        "공식 commit과 Git 이력 연결 문제",
+        (
+            "does not descend from the approved upstream target",
+            "illegally contains the unrelated snapshot commit",
+        ),
+        "검사기가 승인한 공식 commit에서 새 branch를 시작했는지 확인합니다.",
+    ),
+    (
+        "commit_identity",
+        "commit과 BANK-OM ID 기록 문제",
+        (
+            "merge commit is not a logical ID unit",
+            "expected exactly one Customization-ID",
+            "unregistered Customization-ID",
+            "empty reconstruction commit",
+            "candidate has no commit for active IDs",
+            "candidate uses IDs outside the active plan",
+        ),
+        "각 commit에 Customization-ID가 정확히 하나 있고 등록된 ID인지 확인합니다.",
+    ),
+    (
+        "path_registration",
+        "111개 경로와 ID 연결·제외 경로 문제",
+        (
+            "lacks hunk-level owner resolution",
+            "excluded path changed",
+            "path is outside reconstruction plan",
+            " is outside ",
+            "is not a resolved owner",
+            "candidate has unexpected net paths",
+            "candidate is missing registered net paths",
+            "path owner commits mismatch",
+            "shared path manifest owners",
+        ),
+        "실제 변경 경로를 등록 경로·제외 경로·공용 경로 소유 ID와 대조합니다.",
+    ),
+    (
+        "content_mismatch",
+        "최종 파일 내용 불일치",
+        (
+            "candidate content differs from source snapshot",
+            "excluded path differs from approved upstream",
+        ),
+        "표시된 파일의 최종 내용을 승인한 커스터마이징 원본 또는 공식 파일과 비교합니다.",
+    ),
+    (
+        "analysis_input",
+        "검사 입력·Git object·등록파일 읽기 문제",
+        (
+            "cannot ",
+            "required source commit object missing",
+            "registered inventory is stale",
+        ),
+        "입력 경로, Git commit object와 등록파일을 복구한 뒤 다시 실행합니다.",
+    ),
+)
+
+
+def diagnose_gate(result: verdict.GateResult) -> dict:
+    """Group raw gate reasons into operator-facing problem categories."""
+    grouped: dict[str, dict] = {}
+    unmatched: list[str] = []
+    for reason in result.reasons:
+        matched = False
+        for code, label, patterns, action in _DIAGNOSIS_CATEGORIES:
+            if any(pattern in reason for pattern in patterns):
+                item = grouped.setdefault(
+                    code,
+                    {
+                        "code": code,
+                        "label": label,
+                        "classification": "blocking_cause",
+                        "reasons": [],
+                        "next_action": action,
+                    },
+                )
+                item["reasons"].append(reason)
+                matched = True
+                break
+        if not matched and result.verdict != verdict.PASS:
+            unmatched.append(reason)
+
+    categories = [
+        grouped[code]
+        for code, *_rest in _DIAGNOSIS_CATEGORIES
+        if code in grouped
+    ]
+    if unmatched:
+        categories.append(
+            {
+                "code": "other",
+                "label": "그 밖의 검사 문제",
+                "classification": "blocking_cause",
+                "reasons": unmatched,
+                "next_action": "원문 사유를 확인하고 담당자에게 분석을 요청합니다.",
+            }
+        )
+
+    # When upstream ancestry is broken, commit enumeration may include import
+    # commits that are outside the intended customization series.  Their
+    # missing trailers are not yet an independent defect: fix lineage first,
+    # then re-run and only treat a remaining commit_identity category as a
+    # blocking cause.
+    if "git_lineage" in grouped and "commit_identity" in grouped:
+        identity = grouped["commit_identity"]
+        identity.update(
+            {
+                "label": "Git 이력 연결 때문에 함께 표시된 commit ID 확인 정보",
+                "classification": "secondary_observation",
+                "next_action": (
+                    "대표 원인인 Git 이력 연결을 먼저 해결하고 다시 검사합니다. "
+                    "재검사 후에도 남을 때만 commit의 Customization-ID를 수정합니다."
+                ),
+            }
+        )
+
+    primary = categories[0] if categories else None
+    blocking_categories = [
+        item
+        for item in categories
+        if item["classification"] == "blocking_cause"
+    ]
+    if result.verdict == verdict.PASS:
+        summary = "차단 사유가 없습니다."
+    elif primary is None:
+        summary = "구조화된 차단 사유가 없습니다. 원문 reasons를 확인합니다."
+    elif len(blocking_categories) == 1:
+        summary = primary["label"]
+    else:
+        summary = (
+            f"{primary['label']} 외 {len(blocking_categories) - 1}개 차단 범주"
+        )
+    return {
+        "summary": summary,
+        "primary_category": (
+            None
+            if primary is None
+            else {"code": primary["code"], "label": primary["label"]}
+        ),
+        "categories": categories,
+    }
+
+
 def _result_json(result: verdict.GateResult, plan: ReconstructionPlan) -> str:
     return json.dumps(
         {
             "plan": plan.canonical(),
             "plan_digest": plan.digest(),
+            "diagnosis": diagnose_gate(result),
             "gate": {
                 "name": result.name,
                 "verdict": result.verdict,

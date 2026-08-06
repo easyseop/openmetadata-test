@@ -1,27 +1,80 @@
-<!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>OM_TEMP 1.13.1 변경 파일과 BANK-OM ID 연결 가이드</title>
-  <style>
-    :root{--blue:#2563eb;--navy:#172554;--ink:#172033;--muted:#5b6679;--line:#dbe3ef;--bg:#f4f7fb;--green:#15803d;--orange:#c2410c;--red:#b91c1c}
-    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;line-height:1.7}.layout{display:grid;grid-template-columns:250px minmax(0,930px);gap:26px;max-width:1260px;margin:auto;padding:26px}nav{position:sticky;top:18px;align-self:start;background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 8px 28px rgba(23,37,84,.06)}nav strong{display:block;color:var(--blue);margin-bottom:10px}nav a{display:block;color:#465167;text-decoration:none;padding:6px 0;font-size:14px}.hero{padding:42px;border-radius:24px;color:#fff;background:linear-gradient(135deg,#172554,#2563eb);box-shadow:0 20px 55px rgba(37,99,235,.18)}.hero small{display:inline-block;border:1px solid rgba(255,255,255,.38);border-radius:999px;padding:5px 11px}.hero h1{font-size:38px;line-height:1.25;letter-spacing:-.04em;margin:16px 0 12px}.hero p{color:#dbeafe;font-size:17px}section{background:#fff;border:1px solid var(--line);border-radius:20px;padding:32px;margin-top:20px;box-shadow:0 10px 34px rgba(23,37,84,.05)}h2{font-size:25px;margin:0 0 16px}h3{font-size:19px;margin:28px 0 10px}p{margin:8px 0 13px}table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}th,td{border:1px solid var(--line);padding:11px 12px;text-align:left;vertical-align:top}th{background:#f1f5f9}.stage-context{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:18px 0}.stage-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px}.stage-card strong{display:block;color:#1d4ed8;margin-bottom:7px}.stage-card p{margin:0;color:#465167;font-size:14px}.pager{display:flex;justify-content:space-between;gap:12px;margin:18px 0}.pager a{display:inline-flex;align-items:center;padding:11px 16px;border:1px solid #b9cdfa;border-radius:10px;background:#eef4ff;color:#1d4ed8;text-decoration:none;font-weight:700}.pager a:hover{background:#dfeaff}.label{display:inline-block;color:#1d4ed8;background:#eef4ff;border:1px solid #cedcff;border-radius:6px;padding:1px 7px;font-weight:700}.note,.stop,.ok,.reference{padding:15px 17px;border-radius:12px;margin:14px 0}.note{border-left:5px solid var(--blue);background:#eff6ff}.reference{border-left:5px solid #7c3aed;background:#f5f3ff;color:#3b2864}.stop{border-left:5px solid var(--orange);background:#fff7ed;color:var(--ink)}.ok{border-left:5px solid var(--green);background:#f0fdf4}.hero .stop strong{color:#9a3412}pre{background:#101827;color:#e8eef8;border-radius:12px;padding:15px 17px;overflow:auto;font-size:13px}pre code{white-space:pre-wrap;overflow-wrap:anywhere}code{font-family:"SFMono-Regular",Consolas,monospace}:not(pre)>code{display:inline-block;max-width:100%;margin:0 2px;padding:1px 6px;border:1px solid #d4def3;border-radius:6px;background:#f2f6ff;color:#24498f;font-size:.92em;line-height:1.45;overflow-wrap:anywhere;vertical-align:baseline}.checklist{list-style:none;padding:0}.checklist li{padding:9px 0;border-bottom:1px solid #edf1f6}.checklist li::before{content:"□";color:var(--blue);font-weight:700;margin-right:9px}.decision td:last-child{background:#fffdf3;min-width:150px}
-    @media(max-width:850px){.layout{display:block;padding:14px}nav{position:static;margin-bottom:15px}.hero{padding:28px}.hero h1{font-size:30px}.stage-context{display:grid;grid-template-columns:1fr}section{padding:22px}table{display:block;overflow-x:auto}}
-  </style>
-</head>
-<body><div class="layout"><nav><strong>변경 파일·BANK-OM ID 연결 목차</strong><a href="#basis">1. 분류 기준</a><a href="#analysis">2. 자동 분석 결과</a><a href="#unregistered">3. 미등록 경로</a><a href="#command">4. 목록 확인 명령</a><a href="#approval">5. 사용자 승인표</a><a href="#done">6. 완료 기준</a><a href="#next">7. 다음 단계</a></nav><main>
-  <header class="hero"><small>branch 검증 이후 · 등록자료 생성 이전</small><h1>OM_TEMP 1.13.1<br>변경 파일과 BANK-OM ID 연결</h1><p>official·custom 사이의 113개 변경 파일을 BANK-OM 커스터마이징 ID별로 연결하고 사용자 승인 대상을 정리합니다.</p><div class="stop"><strong>종료 상태</strong> — 7개 BANK-OM 커스터마이징 ID와 공용 변경 파일 37개의 연결 방식 승인. 미등록 2개 경로는 제외하기로 결정했으며, Manifest·Registry·Contract는 아직 생성하지 않습니다.</div></header>
-  <div class="pager"><a href="OM_TEMP_1.13.1_로컬브랜치_연결_및_검증_가이드.html">← 이전: 로컬 branch 연결 및 검증</a></div>
-  <div class="stage-context"><div class="stage-card"><strong>이전 단계 요약</strong><p>official·custom 로컬 branch와 commit, 원본 동일성, 113개 변경 파일 및 branch 관계를 검증했습니다.</p></div><div class="stage-card"><strong>이번 단계 수행 범위</strong><p>113개 변경 파일을 기존 BANK-OM 커스터마이징 ID별 참고자료와 대조하고 공용·미등록 파일을 분리합니다.</p></div><div class="stage-card"><strong>이번 단계 완료 결과</strong><p>Manifest 초안에 사용할 BANK-OM 커스터마이징 ID 목록과 각 변경 파일의 연결 방식이 확정됩니다.</p></div></div>
-
-  <section><h2>이 가이드에서 사용자가 할 일</h2><table><thead><tr><th>구분</th><th>해당 장</th><th>사용자 행동</th></tr></thead><tbody><tr><td>결과 이해</td><td>1~3장</td><td>분류 기준과 자동 분석 결과를 읽습니다. 미등록 파일 2개는 제외하기로 결정됐습니다.</td></tr><tr><td>입력 재확인</td><td>4장</td><td>명령을 실행하여 변경 파일이 여전히 113개인지 확인합니다. 직전 단계에서 확인한 뒤 코드가 바뀌지 않았다면 다시 실행하지 않아도 됩니다.</td></tr><tr><td>남은 결정</td><td>5장</td><td><code>BANK-OM-001</code>~<code>007</code> 유지와 공용 변경 파일 37개의 다중 연결 방식을 승인하거나 수정합니다.</td></tr><tr><td>완료 판정</td><td>6장</td><td>남은 두 승인 항목이 모두 결정됐는지 확인합니다.</td></tr></tbody></table><div class="note"><strong>실질적인 사용자 작업</strong> — 현재 코드와 자동 분석 결과가 바뀌지 않았다면 5장의 남은 두 항목을 결정하는 것이 이 단계의 핵심 작업입니다.</div></section>
-
-  <section id="basis"><h2>1. 분류 기준</h2><table><thead><tr><th>비교 기준</th><th>branch</th><th>Git commit SHA</th></tr></thead><tbody><tr><td>공식 기준 코드</td><td><code>official/om-1.13.1</code></td><td><code>e6199070…</code></td></tr><tr><td>실제 커스터마이징 코드</td><td><code>custom/om-1.13.1</code></td><td><code>59dae915…</code></td></tr></tbody></table><p>Git은 변경 파일 113개를 자동으로 찾습니다. 그러나 각 변경 파일을 어떤 BANK-OM 커스터마이징 ID에 연결할지는 자동 결정하지 않으며 사용자가 승인합니다.</p><h3>이 문서에서 구분하는 네 가지 대상</h3><table><thead><tr><th>용어</th><th>의미</th><th>예시</th></tr></thead><tbody><tr><td>BANK-OM 커스터마이징 ID</td><td>하나의 커스터마이징 업무 단위를 계속 추적하는 관리번호</td><td><code>BANK-OM-001</code></td></tr><tr><td>업무 기능명</td><td>해당 BANK-OM 커스터마이징 ID가 제공하는 동작의 이름</td><td><code>InstanceCode</code></td></tr><tr><td>Git commit SHA</td><td>특정 시점의 코드 변경 묶음을 Git이 식별하는 값</td><td><code>59dae915…</code></td></tr><tr><td>변경 파일</td><td>official branch와 custom branch를 비교했을 때 내용이 다른 파일</td><td><code>Entity.java</code></td></tr></tbody></table><div class="note">이 문서의 분류 대상은 Git commit SHA가 아니라 113개 변경 파일입니다. 각 변경 파일을 <code>BANK-OM-001</code>~<code>007</code> 중 어느 커스터마이징 ID에 연결할지 확인합니다.</div><div class="reference"><strong>현재 등록 범위</strong> — 과거 재구성 과정에서 만든 <code>BANK-OM-008</code>~<code>011</code>은 이번 1.13.1 등록 대상에서 제외합니다. 이 문서의 분석·승인·완료 조건은 <code>BANK-OM-001</code>~<code>007</code>만 대상으로 합니다.</div></section>
-
-  <section id="analysis"><h2>2. 자동 분석 결과</h2><div class="note">기존 <code>kb-openmetadata</code> 등록자료는 분류 참고자료로만 사용했습니다. 이번 1.13.1 등록자료는 아직 생성하지 않았습니다.</div><table><thead><tr><th>변경 파일 분류</th><th>고유 파일 수</th><th>의미</th></tr></thead><tbody><tr><td>하나의 BANK-OM 커스터마이징 ID에만 연결</td><td>74</td><td>7개 ID 중 하나에만 연결됩니다.</td></tr><tr><td>둘 이상의 BANK-OM 커스터마이징 ID에 연결된 공용 파일</td><td>37</td><td>한 파일에 여러 커스터마이징의 코드가 함께 있습니다.</td></tr><tr><td><code>BANK-OM-001</code>~<code>007</code> 중 어느 ID에도 미연결</td><td>2</td><td>이번 등록에서 제외하기로 결정한 파일입니다.</td></tr><tr><th>전체 변경 파일</th><th>113</th><th><code>74 + 37 + 2</code></th></tr></tbody></table><p>74개와 37개는 서로 겹치지 않는 고유 변경 파일 수입니다. 37개 공용 파일은 관련된 각 BANK-OM 커스터마이징 ID에서 다시 표시됩니다. 미등록 2개를 제외하면 BANK-OM 등록 대상은 111개입니다.</p>
-  <h3>주요 BANK-OM 커스터마이징 ID 후보</h3><table><thead><tr><th>BANK-OM 커스터마이징 ID</th><th>업무 기능명</th><th>전체 연결 파일</th><th>해당 ID 전용</th><th>다른 ID와 공용</th><th>대표 근거</th></tr></thead><tbody><tr><td><code>BANK-OM-001</code></td><td>InstanceCode</td><td>48</td><td>16</td><td>32</td><td>schema·Resource·Repository·UI</td></tr><tr><td><code>BANK-OM-002</code></td><td>QueryReport</td><td>55</td><td>23</td><td>32</td><td>schema·Resource·Repository·UI</td></tr><tr><td><code>BANK-OM-003</code></td><td>Data Assertions</td><td>25</td><td>4</td><td>21</td><td>페이지·API·MyData UI</td></tr><tr><td><code>BANK-OM-004</code></td><td>은행 컬럼 확장 표시</td><td>33</td><td>14</td><td>19</td><td>SchemaTable·검색·Entity 유틸리티</td></tr><tr><td><code>BANK-OM-005</code></td><td>한글 IME 보정</td><td>1</td><td>1</td><td>0</td><td>SchemaEditor 입력 처리</td></tr><tr><td><code>BANK-OM-006</code></td><td>Sybase</td><td>18</td><td>13</td><td>5</td><td>schema·아이콘·서비스 UI</td></tr><tr><td><code>BANK-OM-007</code></td><td>Tibero</td><td>8</td><td>3</td><td>5</td><td>schema·아이콘·서비스 UI</td></tr></tbody></table><p>공용 변경 파일은 관련된 각 BANK-OM 커스터마이징 ID에 반복 집계되므로 <code>전체 연결 파일</code> 열을 합산하지 않습니다.</p><div class="ok"><strong>Tibero 경로 권장안</strong> — <code>BANK-OM-007</code>은 8개 경로 그대로 유지합니다. 추가 후보였던 <code>serviceConnection.ts</code>와 <code>DatabaseServiceUtils.test.tsx</code>의 실제 diff에는 Sybase 코드만 있고 Tibero 코드는 없으므로 Tibero에 연결하지 않습니다.</div>
-  <h3>공용 변경 파일 예시</h3><table><thead><tr><th>변경 파일 경로</th><th>함께 연결되는 BANK-OM 커스터마이징 ID</th><th>공용인 이유</th></tr></thead><tbody><tr><td><code>.../mysql/schemaChanges.sql</code></td><td>001·002</td><td>두 entity의 DB 변경이 같은 migration에 기록됨</td></tr><tr><td><code>.../service/Entity.java</code></td><td>001·002</td><td>두 신규 entity를 공통 등록함</td></tr><tr><td><code>.../AuthenticatedAppRouter.tsx</code></td><td>001·002·003</td><td>세 업무 기능의 화면 경로를 같은 router에 등록함</td></tr><tr><td><code>.../locale/languages/ko-kr.json</code></td><td>001·002·003·004</td><td>네 업무 기능의 번역 항목이 같은 파일에 기록됨</td></tr><tr><td><code>.../databaseService.json</code></td><td>006·007</td><td>두 DB 서비스를 같은 목록에 등록함</td></tr></tbody></table><div class="note"><strong>공용 변경 파일 승인이 필요한 이유</strong> — 공용 파일은 한 개의 물리적 파일 안에 둘 이상의 BANK-OM 커스터마이징 코드가 함께 있습니다. 파일을 여러 번 복사하는 것이 아니라, 공용 경로 관리자료에 실제 관련 ID를 모두 기록합니다. 이 연결이 빠지면 업그레이드 재구성 과정에서 다른 ID의 코드가 누락될 수 있습니다. 검사기는 공용 경로 관리자료가 실제 다중 연결 관계와 다르면 <code>SHARED_OWNER_MAP_MISMATCH</code>로 중단합니다.</div><div class="ok"><strong>권장안</strong> — 37개 공용 변경 파일을 현재 분석표에 기록된 모든 관련 ID에 연결합니다. 하나의 대표 ID에만 임의 배정하지 않습니다.</div>
-  <h3>공용 경로 연결만으로 부족한 부분과 보완 검사</h3><p><code>shared-path-owners.yaml</code>은 한 파일을 어떤 BANK-OM 커스터마이징 ID가 함께 사용하는지 확인합니다. 그러나 파일을 001과 002에 연결해도 최종 파일에 001 코드만 남을 수 있습니다.</p><div class="note"><strong>새 관리파일</strong> — <code>shared-code-definitions.yaml</code>의 정식 명칭은 <strong>공용 파일 ID별 코드 정의</strong>입니다. Java 변수명만 기록하지 않고 Java·TypeScript·TSX·SQL의 실제 코드 조각과 JSON·YAML의 실제 경로·값을 ID별로 기록합니다.</div><pre><code>schema_version: 1
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OM_TEMP 1.13.1 변경 파일과 BANK-OM ID 연결 가이드</title><link rel="stylesheet" href="OM_TEMP_예행연습_공통.css"></head><body><div class="wrap"><main><header class="hero"><h1>OM_TEMP 1.13.1 변경 파일과 BANK-OM ID 연결 가이드</h1></header>
+<p><strong>전체 순서:</strong> 3/11 · <a href="./OM_TEMP_1.13.1_1.13.2_예행연습_전체목차.html">전체 목차</a></p>
+<div class="callout note">문서 성격: 로컬 branch 연결 및 검증 이후에 사용하는 별도 검토 문서<br>목적: official·custom 사이의 113개 변경 파일을 BANK-OM 커스터마이징 ID별로 연결하고 등록 전 사용자 결정을 기록<br>시작 조건: <code>OM_TEMP_1.13.1_로컬브랜치_연결_및_검증_가이드</code>의 완료 기준 충족<br>종료점: 7개 BANK-OM 커스터마이징 ID의 업무 분류와 공용 변경 파일 37개의 다중 ID 연결 방식을 시연용으로 승인했습니다. 미등록 2개 경로의 제외 결정도 완료했습니다.<br>제외 범위: Manifest·Registry·Contract 파일 생성 또는 수정, 검사기 실행</div>
+<p class="pager"><strong>문서 이동:</strong> <a href="./OM_TEMP_1.13.1_로컬브랜치_연결_및_검증_가이드.html">← 이전 단계 — 로컬 branch 연결 및 검증</a></p>
+<h2>공통 경로 설정</h2>
+<p>이 페이지의 명령을 실행할 터미널에서 검사기 저장소로 이동한 뒤 공통 경로를 불러옵니다. 다른 컴퓨터에서는 clone 위치만 바꾸면 됩니다.</p>
+<div class="command"><pre><code class="language-bash">cd &lt;검사기-저장소-clone-경로&gt;</code></pre></div>
+<div class="command"><pre><code class="language-bash">source harness/rehearsal_env.sh</code></pre></div>
+<p><code>OM_TEST_REPO</code>는 검사기 저장소, <code>OM_CODE_REPO</code>는 OpenMetadata 코드 작업 폴더, <code>KB_SOURCE_REPO</code>는 실제 커스터마이징 원본 폴더를 가리킵니다. 새 터미널을 열면 다시 실행합니다.</p>
+<h2>단계 연결 요약</h2>
+<div class="table-wrap"><table><thead><tr><th>구분</th><th>내용</th></tr></thead><tbody>
+<tr><td>이전 단계 요약</td><td>원격 official·custom branch를 로컬에 연결하고 commit, 작업 폴더 상태, 원본 동일성, 113개 변경 파일과 branch 관계를 검증했습니다.</td></tr>
+<tr><td>이번 단계 수행 범위</td><td>113개 변경 파일을 기존 BANK-OM 커스터마이징 ID별 참고자료와 대조하고, 여러 ID에 연결된 파일과 아직 ID가 없는 파일을 분리합니다.</td></tr>
+<tr><td>이번 단계 완료 결과</td><td>Manifest 초안에 사용할 BANK-OM 커스터마이징 ID 목록과 각 변경 파일의 연결 방식이 확정됩니다.</td></tr>
+</tbody></table></div>
+<h2>이 가이드에서 사용자가 할 일</h2>
+<div class="table-wrap"><table><thead><tr><th>구분</th><th>해당 장</th><th>사용자 행동</th></tr></thead><tbody>
+<tr><td>결과 이해</td><td>1~3장</td><td>분류 기준과 자동 분석 결과를 읽습니다. 미등록 파일 2개는 제외하기로 결정됐습니다.</td></tr>
+<tr><td>입력 재확인</td><td>4장</td><td>변경 파일이 여전히 113개인지 확인합니다. 직전 단계 이후 코드가 바뀌지 않았다면 생략할 수 있습니다.</td></tr>
+<tr><td>결정 결과</td><td>5장</td><td><code>BANK-OM-001</code>~<code>007</code> 유지와 공용 변경 파일 37개의 다중 연결 방식을 시연용으로 승인했습니다.</td></tr>
+<tr><td>완료 판정</td><td>6장</td><td>이 문서에서 요청한 두 분류 결정이 완료됐는지 확인합니다. 실제 코드 정의 승인은 다음 단계에서 별도로 진행합니다.</td></tr>
+</tbody></table></div>
+<p>이 문서에서 요구한 분류 결정은 2026-08-05에 완료했습니다. 이제 실제 diff를 근거로 공용 파일의 ID별 코드 정의를 작성하는 다음 단계로 이동합니다.</p>
+<h2>1. 분류 기준</h2>
+<p>이 문서의 <code>변경 파일</code>은 다음 두 branch 사이에서 파일 내용이 다른 경로를 뜻합니다.</p>
+<div class="table-wrap"><table><thead><tr><th>비교 기준</th><th>branch</th><th>Git commit SHA</th></tr></thead><tbody>
+<tr><td>공식 기준 코드</td><td><code>official/om-1.13.1</code></td><td><code>e6199070…</code></td></tr>
+<tr><td>실제 커스터마이징 코드</td><td><code>custom/om-1.13.1</code></td><td><code>59dae915…</code></td></tr>
+</tbody></table></div>
+<p>Git은 변경 파일 113개를 자동으로 찾을 수 있습니다. 그러나 Git은 각 변경 파일을 어떤 BANK-OM 커스터마이징 ID에 연결할지 결정하지 못합니다. 업무 기능명, BANK-OM 커스터마이징 ID, 여러 ID가 함께 사용하는 파일의 연결 방식과 아직 ID가 없는 파일의 처리방안은 사용자가 승인해야 합니다.</p>
+<h3>이 문서에서 구분하는 네 가지 대상</h3>
+<div class="table-wrap"><table><thead><tr><th>용어</th><th>이 문서에서의 의미</th><th>실제 예시</th></tr></thead><tbody>
+<tr><td>BANK-OM 커스터마이징 ID</td><td>하나의 커스터마이징 업무 단위를 계속 추적하는 관리번호입니다. Git이 자동 생성하지 않습니다.</td><td><code>BANK-OM-001</code></td></tr>
+<tr><td>업무 기능명</td><td>해당 BANK-OM 커스터마이징 ID가 제공하는 동작의 이름입니다.</td><td><code>InstanceCode</code></td></tr>
+<tr><td>Git commit SHA</td><td>특정 시점의 코드 변경 묶음을 Git이 식별하는 값입니다. BANK-OM 커스터마이징 ID와 다른 값입니다.</td><td><code>59dae915…</code></td></tr>
+<tr><td>변경 파일</td><td>official branch와 custom branch를 비교했을 때 내용이 다른 파일입니다.</td><td><code>Entity.java</code></td></tr>
+</tbody></table></div>
+<p>이 문서의 분류 대상은 <strong>Git commit SHA가 아니라 113개 변경 파일</strong>입니다. 각 변경 파일을 <code>BANK-OM-001</code>~<code>007</code> 중 어느 커스터마이징 ID에 연결할지 확인합니다. 하나의 BANK-OM 커스터마이징 ID에는 여러 변경 파일과 여러 Git commit SHA가 누적될 수 있습니다.</p>
+<p>과거 재구성 과정에서 만든 <code>BANK-OM-008</code>~<code>011</code>은 이번 1.13.1 등록 대상에서 제외합니다. 이 문서의 분석·승인·완료 조건은 <code>BANK-OM-001</code>~<code>007</code>만 대상으로 합니다.</p>
+<h2>2. 자동 분석 결과</h2>
+<p>기존 <code>kb-openmetadata</code> 등록자료를 참고자료로 대조한 결과는 다음과 같습니다. 이 표는 신규 1.13.1 등록자료가 아니며, 사용자가 승인하기 전에는 정본으로 사용하지 않습니다.</p>
+<div class="table-wrap"><table><thead><tr><th>구분</th><th>고유 경로 수</th><th>의미</th></tr></thead><tbody>
+<tr><td>하나의 BANK-OM 커스터마이징 ID에만 연결된 변경 파일</td><td>74</td><td>7개 ID 중 하나에만 연결됩니다. 예: 한글 IME 보정 코드만 담은 파일입니다.</td></tr>
+<tr><td>둘 이상의 BANK-OM 커스터마이징 ID에 연결된 공용 변경 파일</td><td>37</td><td>한 파일에 여러 커스터마이징의 코드가 함께 있습니다. 예: 여러 화면 경로를 등록하는 router 파일입니다.</td></tr>
+<tr><td><code>BANK-OM-001</code>~<code>007</code> 중 어느 ID에도 연결되지 않은 변경 파일</td><td>2</td><td>이번 등록에서 제외하기로 결정한 파일입니다.</td></tr>
+<tr><td>전체 변경 경로</td><td>113</td><td><code>74 + 37 + 2</code>입니다.</td></tr>
+</tbody></table></div>
+<p>74개와 37개는 서로 겹치지 않는 <strong>고유 변경 파일 수</strong>입니다. 37개 공용 변경 파일을 관련된 각 BANK-OM 커스터마이징 ID에서 다시 표시하므로, 아래 ID별 <code>연결 경로</code> 수를 모두 더하면 113보다 커집니다. 미등록 2개를 제외하면 BANK-OM 등록 대상은 111개입니다.</p>
+<p>113개 경로 각각의 Git 변경 상태, 분류, 연결 ID는 <a href="./OM_TEMP_1.13.1_113개_변경파일_기능분류_시연초안.yaml"><code>OM_TEMP_1.13.1_113개_변경파일_기능분류_시연초안.yaml</code></a>에서 확인할 수 있습니다. 이 파일은 실제 <code>official/om-1.13.1</code>과 <code>custom/om-1.13.1</code>을 다시 비교해 만든 시연용 검토표이며 Manifest나 Registry가 아닙니다.</p>
+<h3>주요 BANK-OM 커스터마이징 ID 후보</h3>
+<div class="table-wrap"><table><thead><tr><th>BANK-OM 커스터마이징 ID 후보</th><th>업무 기능명</th><th>전체 연결 파일</th><th>해당 ID 전용 파일</th><th>다른 ID와 공용인 파일</th><th>대표 근거</th></tr></thead><tbody>
+<tr><td><code>BANK-OM-001</code></td><td>InstanceCode</td><td>48</td><td>16</td><td>32</td><td>InstanceCode schema·Resource·Repository·UI 페이지</td></tr>
+<tr><td><code>BANK-OM-002</code></td><td>QueryReport</td><td>55</td><td>23</td><td>32</td><td>QueryReport schema·Resource·Repository·UI 페이지</td></tr>
+<tr><td><code>BANK-OM-003</code></td><td>Data Assertions</td><td>25</td><td>4</td><td>21</td><td>DataAssertionsPage·API·MyData 실패 항목 UI</td></tr>
+<tr><td><code>BANK-OM-004</code></td><td>은행 컬럼 확장 표시</td><td>33</td><td>14</td><td>19</td><td>SchemaTable·ExploreTree·검색 결과·Entity 유틸리티</td></tr>
+<tr><td><code>BANK-OM-005</code></td><td>한글 IME 보정</td><td>1</td><td>1</td><td>0</td><td>SchemaEditor 입력 처리</td></tr>
+<tr><td><code>BANK-OM-006</code></td><td>Sybase</td><td>18</td><td>13</td><td>5</td><td>Sybase schema·아이콘·서비스 연결 UI</td></tr>
+<tr><td><code>BANK-OM-007</code></td><td>Tibero</td><td>8</td><td>3</td><td>5</td><td>Tibero schema·아이콘·서비스 연결 UI</td></tr>
+</tbody></table></div>
+<p><code>전체 연결 파일</code> 개수에는 공용 변경 파일이 관련된 각 BANK-OM 커스터마이징 ID에 반복 집계됩니다. 따라서 ID별 전체 연결 파일 수를 합산하면 113보다 커지며, 이는 누락이나 중복 파일 생성이 아닙니다.</p>
+<p><code>BANK-OM-007</code>은 8개 경로 그대로 유지하는 것을 권장합니다. 추가 후보였던 <code>serviceConnection.ts</code>와 <code>DatabaseServiceUtils.test.tsx</code>의 실제 diff에는 Sybase 코드만 있고 Tibero 코드는 없으므로 Tibero에 연결하지 않습니다.</p>
+<h3>공용 변경 파일 예시</h3>
+<div class="table-wrap"><table><thead><tr><th>변경 파일 경로</th><th>함께 연결되는 BANK-OM 커스터마이징 ID</th><th>공용인 이유</th></tr></thead><tbody>
+<tr><td><code>bootstrap/sql/migrations/native/1.13.1/mysql/schemaChanges.sql</code></td><td><code>BANK-OM-001</code>, <code>BANK-OM-002</code></td><td>InstanceCode와 QueryReport의 DB 변경이 같은 migration 파일에 기록됨</td></tr>
+<tr><td><code>openmetadata-service/src/main/java/org/openmetadata/service/Entity.java</code></td><td><code>BANK-OM-001</code>, <code>BANK-OM-002</code></td><td>두 신규 entity를 공통 등록함</td></tr>
+<tr><td><code>openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx</code></td><td><code>BANK-OM-001</code>, <code>BANK-OM-002</code>, <code>BANK-OM-003</code></td><td>세 업무 기능의 화면 경로를 같은 router에 등록함</td></tr>
+<tr><td><code>openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json</code></td><td><code>BANK-OM-001</code>~<code>BANK-OM-004</code></td><td>네 업무 기능의 번역 항목이 같은 언어 파일에 기록됨</td></tr>
+<tr><td><code>openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json</code></td><td><code>BANK-OM-006</code>, <code>BANK-OM-007</code></td><td>Sybase와 Tibero를 같은 database service 목록에 등록함</td></tr>
+</tbody></table></div>
+<p>공용 변경 파일은 하나의 BANK-OM 커스터마이징 ID에 임의로 독점 배정하지 않습니다. 다음 Manifest 단계에서 관련된 모든 BANK-OM 커스터마이징 ID에 연결하고 <code>shared-path-owners.yaml</code>에도 같은 관계를 기록합니다.</p>
+<p>승인이 필요한 이유는 파일을 여러 번 복사하기 위해서가 아닙니다. 한 파일 안에 둘 이상의 BANK-OM 커스터마이징 코드가 함께 있으므로 실제 관련 ID를 모두 확정해야 합니다. 연결이 빠지면 업그레이드 재구성 과정에서 다른 ID의 코드가 누락될 수 있습니다. 검사기는 공용 경로 연결표가 실제 다중 연결 관계와 다르면 <code>SHARED_OWNER_MAP_MISMATCH</code>로 중단합니다.</p>
+<p><strong>권장안:</strong> 37개 공용 변경 파일을 현재 분석표에 기록된 모든 실제 관련 ID에 연결합니다.</p>
+<p><strong>2026-08-04 시연 결정:</strong> 위 권장안을 시연 자료에 적용합니다. 여기서 다중 연결은 같은 파일 경로를 관련된 여러 BANK-OM ID와 연결한다는 뜻입니다. 같은 <code>(파일 경로, BANK-OM ID)</code> 조합을 두 번 적는 중복 레코드는 만들지 않습니다. 이 시연 결정은 실제 운영 등록 승인이나 코드 정의 승인을 대신하지 않습니다.</p>
+<h3>공용 경로 연결만으로 부족한 부분과 보완 검사</h3>
+<p><code>shared-path-owners.yaml</code>은 “이 파일을 어떤 BANK-OM 커스터마이징 ID가 함께 사용하는가”를 확인합니다. 그러나 파일 하나를 <code>BANK-OM-001</code>과 <code>BANK-OM-002</code>에 연결했다고 해서 두 ID의 코드가 최종 파일에 모두 남았다는 뜻은 아닙니다. 예를 들어 <code>Entity.java</code>에 InstanceCode 코드만 남고 QueryReport 코드가 빠져도 경로 연결 자체는 두 ID로 유지될 수 있습니다.</p>
+<p>이 문제를 막기 위해 검사기에 <code>shared-code-definitions.yaml</code> 검사를 추가했습니다. 이 파일의 정식 명칭은 <strong>공용 파일 ID별 코드 정의</strong>입니다. Java의 변수명만 기록하는 파일이 아니라 Java·TypeScript·TSX·SQL의 실제 코드 조각과 JSON·YAML의 실제 경로·값을 BANK-OM 커스터마이징 ID별로 기록합니다.</p>
+<div class="command"><pre><code class="language-yaml">schema_version: 1
 definitions:
   - path: openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
     customization_id: BANK-OM-001
@@ -29,22 +82,64 @@ definitions:
       - id: instance-code-constant
         matcher: code_fragment
         fragment: |
-          public static final String INSTANCE_CODE = "instanceCode";
+          public static final String INSTANCE_CODE = &quot;instanceCode&quot;;
   - path: openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
     customization_id: BANK-OM-002
     assertions:
       - id: query-report-constant
         matcher: code_fragment
         fragment: |
-          public static final String QUERY_REPORT = "queryReport";</code></pre><table><thead><tr><th>구분</th><th>자동 처리</th><th>사용자 확인</th></tr></thead><tbody><tr><td>초안 생성</td><td>공용 경로와 BANK-OM ID 조합을 모두 생성</td><td>없음</td></tr><tr><td>실제 정의 작성</td><td>자동 추측하지 않음</td><td>실제 diff에서 전체 코드 조각 또는 JSON·YAML 경로와 값을 선택</td></tr><tr><td>검사</td><td>주석·공백을 제외한 코드 토큰 또는 구조화 값을 최종 custom commit과 비교</td><td>불일치가 의도된 변경인지 확인</td></tr><tr><td>결과</td><td>형식·ID 연결 누락은 <code>ANALYSIS_ERROR</code>, 승인한 정의 누락·값 불일치는 <code>BLOCK</code></td><td>수정 후 같은 검사 재실행</td></tr></tbody></table><p>주석에 <code>QUERY_REPORT</code> 이름만 적혀 있거나 실제 상수 값이 <code>"wrong"</code>이면 통과하지 않습니다. 실제 생성·검색 동작은 Contract test가 별도로 확인합니다.</p><div class="reference"><strong>현재 상태</strong> — 검사 코드와 단위 테스트는 구현됐습니다. 실제 1.13.1 등록용 파일은 아직 만들지 않았으며, 다음 Manifest 정의 단계에서 실제 diff를 함께 확인한 뒤 작성·승인합니다.</div></section>
-
-  <section id="unregistered"><h2>3. 미등록 경로 처리 결정</h2><div class="ok"><strong>결정 완료</strong> — 아래 2개 경로는 어느 BANK-OM 커스터마이징 ID에도 연결하지 않고 이번 등록에서 제외합니다.</div><div class="note">두 파일은 현재 source snapshot의 113개 변경 파일에는 포함되지만 BANK-OM 등록 대상에는 포함되지 않습니다. 따라서 등록 대상은 111개입니다. 이후 재구성할 custom candidate에서는 두 파일을 official branch와 같은 내용으로 유지해야 하며, 검사기는 제외 경로가 official branch와 다르면 중단합니다.</div><h3>3-1. <code>.claude/settings.json</code></h3><table><tbody><tr><th>변경 성격</th><td>Claude Code 개발 도구 권한과 자동 승인 설정</td></tr><tr><th>결정</th><td>BANK-OM 등록 대상에서 제외</td></tr><tr><th>이유</th><td>OpenMetadata 제품 기능 코드가 아니며 제품 커스터마이징 운영에 필요하지 않음</td></tr><tr><th>다음 코드 처리</th><td>최종 custom candidate에서는 official branch의 파일 내용으로 복원</td></tr></tbody></table><h3>3-2. <code>docker/development/docker-compose.yml</code></h3><table><tbody><tr><th>변경 성격</th><td>로컬 개발용 ingestion image를 <code>openmetadata/ingestion:1.9.6</code>으로 바꾸는 설정</td></tr><tr><th>결정</th><td>BANK-OM 등록 예외 경로로 제외</td></tr><tr><th>이유</th><td><code>BANK-OM-001</code>~<code>007</code>의 업무 기능과 직접 연결되지 않고 OpenMetadata 1.13.1과 다른 ingestion 버전을 사용할 위험이 있음</td></tr><tr><th>다음 코드 처리</th><td>최종 custom candidate에서는 official branch의 파일 내용으로 복원</td></tr></tbody></table><div class="reference"><strong>예외 처리의 정확한 의미</strong> — 파일을 현재 내용 그대로 두고 검사만 생략한다는 뜻이 아닙니다. Manifest에는 등록하지 않으며, 최종 custom candidate에서는 official branch와 같은 내용이어야 합니다. 과거 source snapshot에 해당 변경이 있었다는 사실은 source inventory와 Git 이력에 남습니다.</div></section>
-
-  <section id="command"><h2>4. 변경 파일 목록 확인 명령</h2><p><span class="label">수행 내용</span> — official·custom 사이의 전체 변경 경로와 변경 유형을 출력합니다.</p><pre><code>git -C ~/om-work/om-temp-real-1.13.1 diff --name-status official/om-1.13.1 custom/om-1.13.1</code></pre><p><span class="label">예상 결과</span> — 113개 경로가 표시됩니다. 현재 기준은 기존 파일 수정 <code>M</code> 70개와 새 파일 추가 <code>A</code> 43개입니다.</p><p><span class="label">중단 조건</span> — 113개가 아니거나 <code>D</code>가 표시되면 변경 파일과 BANK-OM 커스터마이징 ID 연결 작업을 중단하고 branch 검증 단계로 돌아갑니다.</p></section>
-
-  <section id="approval"><h2>5. 사용자 승인표</h2><table class="decision"><thead><tr><th>승인 항목</th><th>권장안 또는 결정</th><th>상태</th></tr></thead><tbody><tr><td>7개 BANK-OM 커스터마이징 ID</td><td><code>BANK-OM-001</code>~<code>007</code> 유지. 각 ID가 서로 다른 업무 동작과 변경 경로를 가지고 있으므로 합치지 않습니다.</td><td>승인 필요</td></tr><tr><td>공용 변경 파일 37개</td><td>각 파일에 실제 코드가 들어 있는 모든 BANK-OM 커스터마이징 ID를 연결하고 <code>shared-path-owners.yaml</code>에 같은 관계를 기록합니다.</td><td>승인 필요</td></tr><tr><td><code>.claude/settings.json</code></td><td>BANK-OM 등록에서 제외하고 최종 custom candidate에서 official 내용으로 복원</td><td>결정 완료</td></tr><tr><td><code>docker/development/docker-compose.yml</code></td><td>BANK-OM 등록 예외 경로로 제외하고 최종 custom candidate에서 official 내용으로 복원</td><td>결정 완료</td></tr></tbody></table><h3>왜 남은 두 항목을 승인해야 하는가</h3><table><thead><tr><th>항목</th><th>승인이 필요한 이유</th><th>잘못 결정했을 때의 우려</th></tr></thead><tbody><tr><td>7개 ID 유지</td><td>Git은 파일 차이를 찾을 수 있지만 어떤 변경들이 하나의 업무 기능인지 결정하지 못합니다.</td><td>서로 다른 기능을 합치면 한 기능만 제거·업그레이드·검증하기 어려워지고 Contract 연결도 불명확해집니다.</td></tr><tr><td>37개 공용 경로의 다중 연결</td><td>한 파일 안에 여러 ID의 symbol·JSON key·route·SQL block이 함께 있어 실제 관련 ID를 모두 확정해야 합니다.</td><td>한 ID에만 독점 배정하면 다른 ID의 코드가 업그레이드 재구성에서 누락될 수 있습니다. 연결표가 실제 관계와 다르면 검사기가 중단합니다.</td></tr></tbody></table><div class="ok"><strong>최종 권장안</strong> — <code>BANK-OM-001</code>~<code>007</code>을 유지하고, 공용 변경 파일 37개는 현재 분석된 모든 실제 관련 ID에 연결합니다.</div></section>
-
-  <section id="done"><h2>6. 완료 기준</h2><ul class="checklist"><li><code>BANK-OM-001</code>~<code>007</code> 유지 여부 승인</li><li>공용 변경 파일 37개의 다중 ID 연결 방식 승인</li></ul><div class="ok"><strong>이미 결정된 항목</strong> — <code>.claude/settings.json</code>과 <code>docker/development/docker-compose.yml</code>은 BANK-OM 등록에서 제외합니다.</div><div class="stop"><strong>중단 조건</strong> — 남은 두 항목 중 하나라도 결정되지 않으면 Manifest·Registry·Contract 초안을 생성하지 않습니다.</div></section>
-
-  <section id="next"><h2>7. 다음 단계</h2><ol><li>남은 두 승인 항목을 확정합니다.</li><li><code>.claude/settings.json</code>과 <code>docker/development/docker-compose.yml</code>을 official branch 내용으로 복원하는 code commit을 준비합니다.</li><li>복원 후 official·custom 차이가 등록 대상 111개인지 다시 확인합니다.</li><li>승인된 7개 ID와 공용 경로 연결표를 입력으로 Manifest·Registry·Contract 초안을 생성합니다.</li><li>같은 단계에서 <code>shared-code-definitions.yaml</code>의 경로·ID 초안을 자동 생성하고 실제 diff를 보며 ID별 코드 정의를 함께 채웁니다.</li><li>Registry가 코드 정의파일을 사용하도록 선언한 뒤 준비도구의 <code>plan</code>을 실행합니다. 이 파일도 승인 digest에 포함되므로 승인 후 바뀌면 <code>apply</code>가 중단됩니다.</li></ol><div class="note">이 문서에서는 아직 code commit이나 등록자료를 만들지 않습니다. 다음 단계에서 명령과 결과를 별도 가이드로 안내합니다.</div><div class="pager"><a href="OM_TEMP_1.13.1_로컬브랜치_연결_및_검증_가이드.html">← 이전: 로컬 branch 연결 및 검증</a></div></section>
-</main></div></body></html>
+          public static final String QUERY_REPORT = &quot;queryReport&quot;;</code></pre></div>
+<div class="table-wrap"><table><thead><tr><th>구분</th><th>자동 처리</th><th>사용자 확인</th></tr></thead><tbody>
+<tr><td>초안 생성</td><td><code>shared-path-owners.yaml</code>을 읽어 모든 <code>공용 경로 + BANK-OM ID</code> 조합을 만듭니다.</td><td>없음</td></tr>
+<tr><td>실제 정의 작성</td><td>자동 추측하지 않습니다.</td><td>실제 diff를 보고 각 ID를 증명하는 전체 코드 조각 또는 JSON·YAML 경로와 값을 선택합니다.</td></tr>
+<tr><td>검사</td><td>주석과 공백을 제외한 코드 토큰 또는 JSON·YAML 값을 최종 custom commit과 비교합니다.</td><td>불일치가 의도된 변경인지 확인합니다.</td></tr>
+<tr><td>결과</td><td>정의 형식·ID 연결 누락은 <code>ANALYSIS_ERROR</code>, 승인한 코드 정의 누락·값 불일치는 <code>BLOCK</code>입니다.</td><td>수정 후 같은 검사를 다시 실행합니다.</td></tr>
+</tbody></table></div>
+<p>주석에 <code>QUERY_REPORT</code>라는 이름만 적혀 있거나, 실제 상수 값이 <code>"wrong"</code>으로 바뀐 경우에는 통과하지 않습니다. 이 검사는 코드 정의가 남아 있는지 확인하며, QueryReport가 실제로 생성·검색되는지는 Contract test가 별도로 확인합니다.</p>
+<p>현재 이 검사 코드와 단위 테스트는 구현됐습니다. 37개 공용 경로에서 중복되지 않는 114개 <code>(파일 경로, BANK-OM ID)</code> 조합을 만든 <a href="./OM_TEMP_1.13.1_shared-code-definitions_시연초안.yaml"><code>OM_TEMP_1.13.1_shared-code-definitions_시연초안.yaml</code></a>도 생성했습니다. 다만 초안의 <code>assertions</code>는 모두 비어 있으므로 스키마 검사를 통과하지 않으며 실제 검사 입력으로 사용할 수 없습니다. 다음 Manifest 정의 단계에서 실제 OM_TEMP 1.13.1 diff를 확인해 각 ID를 증명하는 코드 조각·JSON·YAML 값을 채우고, Manifest·Registry·Contract와 같은 proposal에서 승인해야 합니다.</p>
+<h2>3. 미등록 경로 처리 결정</h2>
+<p>아래 2개 경로는 어느 BANK-OM 커스터마이징 ID에도 연결하지 않고 이번 등록에서 제외하기로 결정했습니다.</p>
+<p>두 파일은 현재 source snapshot의 113개 변경 파일에는 포함되지만 BANK-OM 등록 대상에는 포함되지 않습니다. 따라서 등록 대상은 111개입니다. 이후 재구성할 custom candidate에서는 두 파일을 official branch와 같은 내용으로 유지해야 합니다. 검사기는 제외 경로가 official branch와 다르면 중단합니다.</p>
+<h3>3-1. <code>.claude/settings.json</code></h3>
+<div class="table-wrap"><table><thead><tr><th>항목</th><th>내용</th></tr></thead><tbody>
+<tr><td>변경 성격</td><td>Claude Code 개발 도구 권한과 자동 승인 설정</td></tr>
+<tr><td>결정</td><td>BANK-OM 등록 대상에서 제외</td></tr>
+<tr><td>이유</td><td>OpenMetadata 제품 기능 코드가 아니며 제품 커스터마이징 운영에 필요하지 않음</td></tr>
+<tr><td>다음 코드 처리</td><td>최종 custom candidate에서는 official branch의 파일 내용으로 복원</td></tr>
+</tbody></table></div>
+<h3>3-2. <code>docker/development/docker-compose.yml</code></h3>
+<div class="table-wrap"><table><thead><tr><th>항목</th><th>내용</th></tr></thead><tbody>
+<tr><td>변경 성격</td><td>로컬 개발용 ingestion image를 <code>openmetadata/ingestion:1.9.6</code>으로 바꾸는 설정</td></tr>
+<tr><td>결정</td><td>BANK-OM 등록 예외 경로로 제외</td></tr>
+<tr><td>이유</td><td><code>BANK-OM-001</code>~<code>007</code>의 업무 기능과 직접 연결되지 않고 OpenMetadata 1.13.1과 다른 ingestion 버전을 사용할 위험이 있음</td></tr>
+<tr><td>다음 코드 처리</td><td>최종 custom candidate에서는 official branch의 파일 내용으로 복원</td></tr>
+</tbody></table></div>
+<p><strong>예외 처리의 정확한 의미:</strong> 파일을 현재 내용 그대로 두고 검사만 생략한다는 뜻이 아닙니다. Manifest에는 등록하지 않으며, 최종 custom candidate에서는 official branch와 같은 내용이어야 합니다. 과거 source snapshot에 해당 변경이 있었다는 사실은 source inventory와 Git 이력에 남습니다.</p>
+<h2>4. 변경 파일 목록 확인 명령</h2>
+<p><strong>수행 내용</strong> official·custom 사이의 전체 변경 경로를 터미널에 출력합니다.</p>
+<p><strong>입력</strong> 검증이 끝난 로컬 <code>official/om-1.13.1</code>과 <code>custom/om-1.13.1</code></p>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; diff --name-status official/om-1.13.1 custom/om-1.13.1</code></pre></div>
+<p><strong>예상 결과</strong> 113개 경로가 표시됩니다. 현재 기준은 기존 파일 수정 <code>M</code> 70개와 새 파일 추가 <code>A</code> 43개입니다.</p>
+<p><strong>중단 조건</strong> 경로가 113개가 아니거나 <code>D</code>가 표시되면 이 문서의 분류 기준과 실제 custom branch가 다릅니다. 변경 파일과 BANK-OM 커스터마이징 ID 연결 작업을 중단하고 branch 검증 단계로 돌아갑니다.</p>
+<h2>5. 사용자 승인표</h2>
+<div class="table-wrap"><table><thead><tr><th>승인 항목</th><th>권장안 또는 결정</th><th>상태</th></tr></thead><tbody>
+<tr><td>7개 BANK-OM 커스터마이징 ID</td><td><code>BANK-OM-001</code>~<code>007</code> 유지. 각 ID가 서로 다른 업무 동작과 변경 경로를 가지므로 합치지 않음</td><td>시연용 승인 완료</td></tr>
+<tr><td>공용 변경 파일 37개</td><td>실제 코드가 들어 있는 모든 관련 ID를 연결하고 <code>shared-path-owners.yaml</code>에 같은 관계를 기록</td><td>시연용 승인 완료·운영 승인 아님</td></tr>
+<tr><td>공용 파일 ID별 코드 정의</td><td>중복되지 않는 114개 경로·ID 조합의 빈 초안을 생성함. 실제 코드 조각·값은 다음 Manifest 정의 단계에서 검토</td><td>시연 초안 생성 완료·정의 승인 필요</td></tr>
+<tr><td><code>.claude/settings.json</code></td><td>BANK-OM 등록에서 제외하고 최종 custom candidate에서 official 내용으로 복원</td><td>결정 완료</td></tr>
+<tr><td><code>docker/development/docker-compose.yml</code></td><td>BANK-OM 등록 예외 경로로 제외하고 최종 custom candidate에서 official 내용으로 복원</td><td>결정 완료</td></tr>
+</tbody></table></div>
+<h3>왜 업무 분류와 실제 코드 정의를 승인해야 하는가</h3>
+<div class="table-wrap"><table><thead><tr><th>항목</th><th>승인이 필요한 이유</th><th>잘못 결정했을 때의 우려</th></tr></thead><tbody>
+<tr><td>7개 ID 유지</td><td>Git은 파일 차이를 찾을 수 있지만 어떤 변경들이 하나의 업무 기능인지 결정하지 못함</td><td>서로 다른 기능을 합치면 한 기능만 제거·업그레이드·검증하기 어려워지고 Contract 연결도 불명확해짐</td></tr>
+<tr><td>공용 변경 파일 37개의 실제 코드 정의</td><td>한 파일 안에 여러 ID의 symbol·JSON key·route·SQL block이 함께 있어 ID별 생존 기준을 사람이 확정해야 함</td><td>경로만 여러 ID에 연결하고 실제 정의를 비워 두면 특정 ID의 코드가 빠진 상태를 탐지할 수 없음</td></tr>
+</tbody></table></div>
+<p><strong>2026-08-05 승인 결과:</strong> 최종 권장안을 채택했습니다. <code>BANK-OM-001</code>~<code>007</code>을 유지하고, 공용 변경 파일 37개는 현재 분석된 모든 관련 ID에 연결합니다. 이 승인은 시연용 기능 분류에만 적용되며, 실제 코드 정의와 운영 등록을 승인한 것은 아닙니다.</p>
+<h2>6. 완료 기준</h2>
+<ul><li>[x] <code>BANK-OM-001</code>~<code>007</code> 유지 여부를 시연용으로 승인했습니다.</li><li>[x] 공용 변경 파일 37개의 다중 ID 연결 방식을 시연용으로 승인했습니다.</li><li>[ ] 공용 변경 파일 37개의 ID별 실제 코드 정의가 작성·승인되었습니다.</li></ul>
+<p><code>.claude/settings.json</code>과 <code>docker/development/docker-compose.yml</code>은 BANK-OM 등록에서 제외하기로 이미 결정했습니다. 이 문서의 두 분류 승인 항목은 완료됐습니다. 실제 코드 정의가 작성·승인되기 전에는 시연 초안을 실제 Registry에 선언하거나 검사 입력으로 사용하지 않습니다.</p>
+<h2>7. 다음 단계</h2>
+<ol><li>공식 1.13.1에서 ID별 commit 후보 branch를 만들고, 사용자가 각 변경안을 승인한 뒤 <code>BANK-OM-001</code>~<code>007</code>을 commit마다 하나씩 기록합니다.</li><li>후보 branch에서 등록 제외 파일 2개가 official 내용과 같은지 확인하고, official 대비 변경 경로가 111개인지 다시 확인합니다.</li><li><code>shared-code-definitions</code> 시연 초안의 114개 경로·ID 조합을 실제 diff와 대조하고, ID별 코드 조각·JSON·YAML 값을 사용자와 함께 채웁니다.</li><li>실제 코드 정의를 사용자가 승인한 뒤, 승인된 7개 ID와 공용 경로 연결표를 입력으로 Manifest·Registry·Contract 초안을 함께 작성합니다.</li><li>Registry가 코드 정의 파일을 사용하도록 선언한 뒤 준비도구의 <code>plan</code>을 실행합니다. 중단 결과도 현재 준비 상태를 설명하는 진단 결과로 보관합니다.</li></ol>
+<p>이 문서에서는 아직 code commit이나 등록자료를 만들지 않습니다. 다음 단계에서 명령과 결과를 별도 가이드로 안내합니다.</p>
+<p class="pager"><strong>문서 이동:</strong> <a href="./OM_TEMP_1.13.1_로컬브랜치_연결_및_검증_가이드.html">← 이전 단계 — 로컬 branch 연결 및 검증</a> · <a href="./OM_TEMP_1.13.1_BANK-OM_ID별_커밋_후보브랜치_구성_가이드.html">다음 단계 — BANK-OM ID별 commit 후보 branch 구성 →</a></p></main></div></body></html>
