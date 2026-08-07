@@ -1,0 +1,55 @@
+services:
+  execute-migrate-all:
+    image: ${OM_SERVER_IMAGE:-ghcr.io/easyseop/openmetadata-bank:1.13.1-bank-8ac18ad0}
+
+  openmetadata-server:
+    image: ${OM_SERVER_IMAGE:-ghcr.io/easyseop/openmetadata-bank:1.13.1-bank-8ac18ad0}
+
+  mock-metadata-loader:
+    image: python:3.12-alpine
+    profiles: [fixtures]
+    depends_on:
+      openmetadata-server:
+        condition: service_healthy
+    environment:
+      OPENMETADATA_BASE_URL: http://openmetadata-server:8585/api/v1
+      OPENMETADATA_EMAIL: ${OPENMETADATA_EMAIL:-admin@open-metadata.org}
+      OPENMETADATA_PASSWORD: ${OPENMETADATA_PASSWORD:-admin}
+    volumes:
+      - type: bind
+        source: ${OM_TEST_REPO}/harness/create_mock_database_metadata.py
+        target: /app/create_mock_database_metadata.py
+        read_only: true
+      - type: bind
+        source: ${OM_REHEARSAL_OUTPUT_DIR}
+        target: /output
+    command:
+      - python
+      - /app/create_mock_database_metadata.py
+      - --output
+      - /output/mock-database-metadata-result.json
+    networks:
+      - app_net
+
+  runtime-contract-runner:
+    image: ${OM_CONTRACT_RUNNER_IMAGE:-ghcr.io/easyseop/openmetadata-contract-runner:1.13.1-runtime}
+    platform: linux/amd64
+    profiles: [contracts]
+    depends_on:
+      openmetadata-server:
+        condition: service_healthy
+    environment:
+      OPENMETADATA_BASE_URL: http://openmetadata-server:8585
+      OM_LOCAL_ADMIN_EMAIL: ${OPENMETADATA_EMAIL:-admin@open-metadata.org}
+      OM_LOCAL_ADMIN_PASSWORD: ${OPENMETADATA_PASSWORD:-admin}
+      PRODUCT_COMMIT: ${PRODUCT_COMMIT:-8ac18ad053d9274774e274ba17b35911ac0b9dcb}
+      HARNESS_REF: ${HARNESS_REF:-codex/om-1.13.1-rehearsal-baseline-20260806}
+      DEPLOYED_ARTIFACT_DIGEST: ${DEPLOYED_ARTIFACT_DIGEST}
+      RUNTIME_RUN_ID: ${RUNTIME_RUN_ID:-om-1.13.1-portable-runtime}
+    volumes:
+      - type: bind
+        source: ${OM_REHEARSAL_OUTPUT_DIR}
+        target: /evidence
+    networks:
+      - app_net
+

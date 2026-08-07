@@ -7,3 +7,5 @@ __pycache__/
 harness/*.egg-info/
 .DS_Store
 *.swp
+# Local Docker-only rehearsal cache, database volumes, and evidence.
+/var/rehearsal/

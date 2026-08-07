@@ -1,0 +1,109 @@
+name: Publish OM rehearsal images
+
+on:
+  workflow_dispatch:
+    inputs:
+      product_commit:
+        description: Exact OpenMetadata candidate commit
+        required: true
+        default: 8ac18ad053d9274774e274ba17b35911ac0b9dcb
+      server_tag:
+        description: GHCR server image tag
+        required: true
+        default: 1.13.1-bank-8ac18ad0
+      runner_tag:
+        description: GHCR Contract runner image tag
+        required: true
+        default: 1.13.1-runtime
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: publish-om-rehearsal-images-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact OpenMetadata candidate
+        uses: actions/checkout@v4
+        with:
+          repository: easyseop/OpenMetadata
+          ref: ${{ inputs.product_commit }}
+
+      - name: Set up JDK 21 and Maven cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Install build prerequisites
+        run: |
+          sudo make install_antlr_cli
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Build OpenMetadata distribution
+        run: mvn -DskipTests clean package
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Sign in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish multi-architecture server image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/development/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/easyseop/openmetadata-bank:${{ inputs.server_tag }}
+          labels: |
+            org.opencontainers.image.revision=${{ inputs.product_commit }}
+            org.opencontainers.image.source=https://github.com/easyseop/OpenMetadata
+          cache-from: type=gha,scope=openmetadata-bank-server
+          cache-to: type=gha,mode=max,scope=openmetadata-bank-server
+
+  contract-runner:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out 검사기 저장소
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Sign in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Contract runner image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/rehearsal/Dockerfile.contract-runner
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/easyseop/openmetadata-contract-runner:${{ inputs.runner_tag }}
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=https://github.com/easyseop/openmetadata-test
+          cache-from: type=gha,scope=openmetadata-contract-runner
+          cache-to: type=gha,mode=max,scope=openmetadata-contract-runner
+
