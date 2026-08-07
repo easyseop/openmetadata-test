@@ -89,7 +89,12 @@ def render(md:str)->tuple[str,str]:
     return title,"\n".join(out)
 
 def main():
-    for arg in sys.argv[1:]:
+    args=sys.argv[1:]
+    stylesheet="OM_TEMP_예행연습_공통.css"
+    if len(args)>=2 and args[0]=="--stylesheet":
+        stylesheet=args[1]
+        args=args[2:]
+    for arg in args:
         src=Path(arg); title,body=render(src.read_text(encoding="utf-8"))
         lightbox='''<dialog class="image-lightbox" id="image-lightbox" aria-label="캡처 이미지 확대 화면">
 <button class="image-lightbox-close" type="button" aria-label="확대 이미지 닫기">닫기 ×</button>
@@ -122,6 +127,6 @@ def main():
   });
 })();
 </script>''' if 'class="figure"' in body else ''
-        doc=f'''<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(title)}</title><link rel="stylesheet" href="OM_TEMP_예행연습_공통.css"></head><body><div class="wrap"><main>{body}</main></div>{lightbox}</body></html>\n'''
+        doc=f'''<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(title)}</title><link rel="stylesheet" href="{html.escape(stylesheet,quote=True)}"></head><body><div class="wrap"><main>{body}</main></div>{lightbox}</body></html>\n'''
         src.with_suffix('.html').write_text(doc,encoding='utf-8')
 if __name__=='__main__': main()

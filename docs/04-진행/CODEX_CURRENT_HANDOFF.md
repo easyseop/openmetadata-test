@@ -1,8 +1,8 @@
 # 현재 작업 인수인계
 
-> 마지막 갱신: 2026-08-07 20:35 PDT
+> 마지막 갱신: 2026-08-08 KST
 >
-> 현재 작업: Phase 번들링 L1~L8 구현 검토 완료, P0 보완 전 WIP 원격 공유
+> 현재 작업: Phase 안전 보완 완료 후 고객용 버전 업그레이드 통합 가이드 추가
 >
 > 이 문서는 다음 세션이 가장 먼저 읽는 현재 상태 정본입니다.
 
@@ -286,3 +286,38 @@ source runner와 선택적 Runtime Contract도 postmerge Phase에 연결했다.
 vendor-merge 후보의 postmerge 결과나 운영 승인 완료를 뜻하지 않는다. 상세 구현,
 검증 명령, 외부 입력 대기 항목은
 `PHASE_BUNDLING_진척_인수인계_20260807.md` 13절이 정본이다.
+
+## 12. 2026-08-08 고객용 버전 업그레이드 통합 가이드
+
+기존 `예행연습-1.13.1-1.13.2` 11단계 문서는 수정하지 않았다.
+반복 버전 업그레이드에서 사용할 Phase 통합 실행 솔루션을 고객사
+관점으로 설명하는 다음 독립 문서를 추가했다.
+
+- `docs/00-사용가이드/OpenMetadata_버전_업그레이드_통합실행_고객가이드.md`
+- `docs/00-사용가이드/OpenMetadata_버전_업그레이드_통합실행_고객가이드.html`
+
+가이드는 기준·목표 버전 고정, 병합 전 영향 검사, vendor merge·충돌
+해결, 병합 후 검사·승격 판단의 네 단계로 구성했다. 명령은 펼치기
+안에 두고 고객사·솔루션 제공팀·자동화 도구의 역할과 각 단계의
+완료·중단 기준을 본문에 두었다. `PASS`·`APPROVAL`·`BLOCK`·
+`ANALYSIS_ERROR`의 다음 행동과 재시작 기준도 포함했다.
+
+Markdown을 정본으로 작성하고 기존 renderer에 `--stylesheet`을 추가해
+이 디렉터리의 공통 CSS를 중복 복사하지 않고 재사용했다. 기존 인자 없는
+렌더러 호출은 같은 CSS 파일을 계속 사용한다.
+
+실제 1.13.2 vendor-merge 후보, 실제 충돌률, postmerge 결과, 고객사
+승인과 운영 배포는 완료로 표시하지 않았다. 브라우저 자동 시각 검사는
+`file://` 보안 정책에서 차단됐으며, HTML 구조·CSS 경로·펼치기·표 스크롤은
+정적 검사한다. 다음 작업자는 지원 브라우저에서 HTML을 열어 최종 시각
+확인을 추가한다.
+
+검증 결과:
+
+- renderer Python 문법 검사 통과
+- HTML 펼치기 4개의 여닫기 4/4 일치
+- 공통 CSS 상대경로 존재, 생성 HTML의 원시 Markdown 표시 0개
+- `git diff --check` 통과
+- `.venv/bin/python -m pytest harness/tests/test_phase_cli.py -q`: `6 passed`
+- 시스템 Python은 `jsonschema` 미설치로 test collection에서 중단됐으며,
+  의존성이 설치된 저장소 `.venv`로 동일 test를 재실행해 통과했다.

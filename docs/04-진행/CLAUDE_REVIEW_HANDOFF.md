@@ -2235,6 +2235,7 @@ OpenMetadata 테스트 스택에서 API 4개와 browser 3개를 실행한다. �
 8. retirement가 active ID 재사용이나 증거 없는 제거를 허용하는가.
 9. air-gap payload/signature 구조에 순환 해시나 경로 이탈 취약점이 있는가.
 10. T90의 12단계가 OpenMetadata 운영 실패 모드를 충분히 대표하는가.
+
 11. T25-R이 unrelated snapshot merge나 path-level 오귀속으로 T25를 형식적으로
     우회할 수 있는 counterexample이 있는가.
 12. 실제 7개 commit의 shared hunk 분리가 기능 경계와 맞으며, 특히 generated
@@ -2647,3 +2648,21 @@ P1 2건을 `codex/phase-bundling-safety-fix-20260808`에서 수정했다.
 parity만 집중 검증의 환경 의존 skip이다. 실제 1.13.2 vendor-merge candidate,
 승인된 conflict-rate·change-intent, 조직 승인과 운영 배포는 여전히 외부 입력
 대기이며 이번 구현 완료와 구분한다.
+
+## 18. 2026-08-08 고객용 버전 업그레이드 가이드 검토 대상
+
+기존 1.13.1→1.13.2 예행연습 11단계와 분리한 반복 업그레이드용
+고객 가이드를 추가했다.
+
+- `docs/00-사용가이드/OpenMetadata_버전_업그레이드_통합실행_고객가이드.md`
+- `docs/00-사용가이드/OpenMetadata_버전_업그레이드_통합실행_고객가이드.html`
+
+검토 포인트는 다음과 같다.
+
+1. 고객사·솔루션 제공팀·자동화 역할이 실제 운영 경계와 맞는가.
+2. 네 단계의 완료·중단 기준이 Phase CLI 동작과 맞는가.
+3. `--version 1.13.1`이 기준 등록 묶음을 선택하고, 실제 postmerge
+   검사 대상은 Candidate lock의 1.13.2 후보라는 설명이 명확한가.
+4. 승격 판단과 운영 배포 완료가 서로 다른 상태로 읽히는가.
+5. 실제 vendor-merge·충돌률·postmerge·고객 승인을 완료로 과장한
+   문장이 없는가.
