@@ -599,15 +599,117 @@ PYTHONPATH=harness ./.venv/bin/python -m acgh.shared_code \
 
 ### 5-4. 실행 환경이 있을 때의 Contract test
 
+이 단계는 **등록·소스 검사를 통과한 1.13.1 commit이 실제 Docker 서비스에서도 정상 동작하는지** 확인합니다. Docker 컨테이너가 `healthy`인 것만으로는 완료되지 않습니다.
+
+#### 5-4-1. Docker 서비스 상태 확인
+
+**확인 내용:** OpenMetadata server, DB, 검색 서비스가 모두 `healthy`인지 확인합니다.
+
+```bash
+docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+```
+
+**정상 결과:** `openmetadata_server`, `openmetadata_mysql`, `openmetadata_elasticsearch`가 모두 `healthy`입니다.
+
+#### 5-4-2. API 주소와 실행 commit 확인
+
+**준비:** 로컬 Docker 기본 포트 `8585`를 사용합니다.
+
+```bash
+export OPENMETADATA_BASE_URL="http://127.0.0.1:8585/api"
+```
+
+**확인 내용:** Docker 서비스의 버전과 commit을 표시합니다.
+
+```bash
+curl -fsS "$OPENMETADATA_BASE_URL/v1/system/version" | jq
+```
+
+**확인 내용:** 이번 기준검사에 사용할 제품 코드 저장소 HEAD를 표시합니다.
+
+```bash
+git -C "$OM_CODE_REPO" rev-parse HEAD
+```
+
+`system/version`의 `revision`과 `git rev-parse HEAD`가 같아야 합니다. 다르면 **검사하려는 코드와 Docker에서 실행 중인 코드가 다르므로 중단**합니다.
+
+> **2026-08-07 현재 확인 결과:** Docker 서비스는 `59dae915...`를 실행하고, 등록·소스 검사를 통과한 commit은 `d952a838...`입니다. 현재 서비스로는 연결 연습은 가능하지만 5-4 정식 PASS를 남길 수는 없습니다.
+
+#### 5-4-3. 로컬 API 로그인
+
+**작업 내용:** 로컬 개발 환경의 관리자 계정으로 로그인하고 API token을 현재 터미널에만 저장합니다. 아래 값은 기본 개발 계정을 바꾸지 않은 경우에만 사용합니다.
+
+```bash
+export OPENMETADATA_AUTH_TOKEN="$(
+  curl -fsS -X POST "$OPENMETADATA_BASE_URL/v1/users/login" \
+    -H 'Content-Type: application/json' \
+    --data '{"email":"admin@open-metadata.org","password":"YWRtaW4="}' \
+  | jq -er '.accessToken'
+)"
+```
+
+**확인 내용:** token 원문을 화면에 표시하지 않고 발급 여부만 확인합니다.
+
+```bash
+test -n "$OPENMETADATA_AUTH_TOKEN" && printf 'API token 준비 완료\n'
+```
+
+**정상 결과:** `API token 준비 완료`가 출력됩니다. 이 환경변수는 현재 터미널을 닫으면 사라지며 문서·Git·결과 파일에 기록하지 않습니다.
+
+#### 5-4-4. Contract test 입력 준비
+
+| 입력 | 의미 | 준비 방법 |
+|---|---|---|
+| `OPENMETADATA_AUTH_TOKEN` | API 호출에 쓸 Bearer token | 로컬 basic 로그인으로 발급하고 파일에 저장하지 않음 |
+| `BANK_CONTRACT_QUERY_ID` | QueryReport에 연결할 기존 Query ID | 실행 환경에 Query 1개 생성 후 ID 기록 |
+| `BANK_FAILED_ASSERTION_FQN` | 실패 상태와 담당자가 있는 test case FQN | 실패 test case 하나를 준비한 후 FQN 기록 |
+| `BANK_COLUMN_TABLE_FQN` | 행내 확장 컬럼이 있는 table FQN | table을 생성·수집한 후 FQN 기록 |
+| `BANK_COLUMN_NAME` | 위 table에서 검사할 column 이름 | `attributeName`, `instanceName`, `infoType`가 있는 column 선택 |
+| `BANK_IME_EDITOR_URL` | 한글 조합을 검사할 SchemaEditor 페이지 | 로그인 후 편집 가능한 페이지 URL 기록 |
+| `BANK_DATA_ASSERTIONS_URL` | 실패 test case를 표시하는 행내 페이지 | 위 test case가 보이는 URL 기록 |
+| `BANK_COLUMN_UI_URL` | 행내 확장 컬럼을 표시하는 table 페이지 | 위 table의 schema URL 기록 |
+| `BANK_BROWSER_STORAGE_STATE_B64` | Playwright가 사용할 브라우저 로그인 상태 | Playwright storage state JSON을 base64로 인코딩 |
+
+> **현재 로컬 환경:** Query, 실패 test case, 행내 확장 컬럼 table이 모두 0개로 확인됐습니다. 위 fixture를 준비하기 전에는 BANK-OM-002·003·004 Contract test가 정상 실행될 수 없습니다.
+
+#### 5-4-5. 실행 image digest 고정
+
+**확인 내용:** `openmetadata_server`가 실행 중인 Docker image ID를 이번 test의 배포 확인값으로 저장합니다.
+
+```bash
+export DEPLOYED_ARTIFACT_DIGEST="$(docker inspect --format '{{.Image}}' openmetadata_server)"
+```
+
+```bash
+printf '%s\n' "$DEPLOYED_ARTIFACT_DIGEST"
+```
+
+**정상 결과:** `sha256:` 뒤에 64자리 값이 출력됩니다.
+
+#### 5-4-6. 실행 전 입력 검사
+
+**확인 내용:** 필수 환경변수 11개의 누락·URL 형식·digest 형식을 검사합니다. 비밀값 내용은 출력하지 않습니다.
+
+```bash
+./.venv/bin/python \
+  harness/registrations/kb-openmetadata/runtime_preflight.py
+```
+
+**정상 결과:** `ready: true`, `missing_fields: []`, `invalid_fields: []`입니다. `ready: false`면 표시된 입력을 준비한 후 다시 실행합니다.
+
+#### 5-4-7. Contract test 실행
+
 ```bash
 ./.venv/bin/python harness/om_workflow.py runtime \
   --repo "$OM_CODE_REPO" \
   --version 1.13.1 \
-  --artifact-digest sha256:<실제-배포파일-digest> \
+  --artifact-digest "$DEPLOYED_ARTIFACT_DIGEST" \
   --run-id "om-1.13.1-baseline-$RUN_ID"
 ```
 
-실제 API·브라우저·DB 환경이 없으면 runtime test가 `skipped` 또는 환경 대기로 남을 수 있습니다. **실행된 test의 실패가 0개여도 필수 test가 skip이면 전체 PASS가 아닙니다.**
+**산출물:** 증거 폴더에 `candidate-lock.yaml`, `test-run-set.yaml`, `acgh-result.yaml`이 생성됩니다. `test-run-set.yaml`의 9개 필수 test가 모두 `pass`이고 `acgh-result.yaml`의 최종 verdict가 `pass`일 때만 5-4를 완료합니다.
+
+실제 API·브라우저·DB 입력이 없으면 runtime test가 `skipped`로 남을 수 있습니다. **실행된 test의 실패가 0개여도 필수 test가 skip이면 전체 PASS가 아닙니다.**
 
 ## 6. 결과 확인표
 

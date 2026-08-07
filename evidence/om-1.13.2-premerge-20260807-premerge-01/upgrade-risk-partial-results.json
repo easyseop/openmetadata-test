@@ -1,0 +1,1351 @@
+{
+  "candidate": "d952a83896940116d3d6022323ad76bfe60991e8",
+  "gates": {
+    "T41_sensitive_zones": {
+      "reasons": [
+        "om-temp-1.13.1 registration has no change-intent input; check refused to fabricate it. Provide change-intent or authorize deriving allowed-scope from active manifests to evaluate T41."
+      ],
+      "verdict": "analysis_error"
+    },
+    "T43_debt": {
+      "reasons": [
+        "No approved historical conflict-rate baseline exists; per instruction, 0/arbitrary values were not used, so T43 is left unevaluated."
+      ],
+      "verdict": "not_evaluated"
+    },
+    "T93_exact_scope": {
+      "name": "exact-scope-history",
+      "reasons": [
+        "declared exact scopes equal observed per-ID history"
+      ],
+      "verdict": "pass"
+    },
+    "T93_policy_drift": {
+      "name": "policy-drift",
+      "reasons": [
+        "stale_pattern: openmetadata-ui/src/main/resources/ui/src/utils/EntityUtils.tsx matches 0 paths in official/om-1.13.2"
+      ],
+      "verdict": "approval"
+    }
+  },
+  "run_id": "20260807-premerge-01",
+  "scope": "read-only pre-merge (T93, T51/T52). T41 input-missing, T43 not evaluated.",
+  "structured_diffs_T51_T52": [
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-001",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json",
+      "removed": [
+        "/message/what-should-ask-collate-remember",
+        "/message/workflow-action-successfully",
+        "/message/workflow-data-assets",
+        "/message/workflow-fqn-required",
+        "/message/workflow-id-required",
+        "/message/workflow-name-invalid-characters",
+        "/message/workflow-name-max-length",
+        "/message/workflow-name-min-length",
+        "/message/workflow-on-demand-description",
+        "/message/workflow-schedule-description",
+        "/message/workflow-subtitle",
+        "/message/workflow-trigger-description",
+        "/message/workflow-trigger-requires-data-assets",
+        "/message/workflow-triggered-successfully"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -14 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-001",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-001",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-001",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-001",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-001",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-001",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-001",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-001",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json",
+      "removed": [
+        "/message/define-when-the-workflow-should-run"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -1 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-001",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-001",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-001",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json",
+      "removed": [
+        "/message/define-when-the-workflow-should-run",
+        "/message/dry-run-side-effects-warning"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -2 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-001",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-001",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-001",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json",
+      "removed": [
+        "/message/define-when-the-workflow-should-run"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -1 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-001",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json",
+      "removed": [
+        "/message/manual-upload-agent-context"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -1 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-001",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-001",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-001",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-002",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json",
+      "removed": [
+        "/message/what-should-ask-collate-remember",
+        "/message/workflow-action-successfully",
+        "/message/workflow-data-assets",
+        "/message/workflow-fqn-required",
+        "/message/workflow-id-required",
+        "/message/workflow-name-invalid-characters",
+        "/message/workflow-name-max-length",
+        "/message/workflow-name-min-length",
+        "/message/workflow-on-demand-description",
+        "/message/workflow-schedule-description",
+        "/message/workflow-subtitle",
+        "/message/workflow-trigger-description",
+        "/message/workflow-trigger-requires-data-assets",
+        "/message/workflow-triggered-successfully"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -14 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-002",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-002",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-002",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-002",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-002",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-002",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-002",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-002",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json",
+      "removed": [
+        "/message/define-when-the-workflow-should-run"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -1 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-002",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-002",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-002",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json",
+      "removed": [
+        "/message/define-when-the-workflow-should-run",
+        "/message/dry-run-side-effects-warning"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -2 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-002",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-002",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-002",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json",
+      "removed": [
+        "/message/define-when-the-workflow-should-run"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -1 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-002",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json",
+      "removed": [
+        "/message/manual-upload-agent-context"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -1 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-002",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-002",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-002",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-003",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json",
+      "removed": [
+        "/message/what-should-ask-collate-remember",
+        "/message/workflow-action-successfully",
+        "/message/workflow-data-assets",
+        "/message/workflow-fqn-required",
+        "/message/workflow-id-required",
+        "/message/workflow-name-invalid-characters",
+        "/message/workflow-name-max-length",
+        "/message/workflow-name-min-length",
+        "/message/workflow-on-demand-description",
+        "/message/workflow-schedule-description",
+        "/message/workflow-subtitle",
+        "/message/workflow-trigger-description",
+        "/message/workflow-trigger-requires-data-assets",
+        "/message/workflow-triggered-successfully"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -14 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-003",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-003",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-003",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-003",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-003",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-003",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-003",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-003",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json",
+      "removed": [
+        "/message/define-when-the-workflow-should-run"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -1 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-003",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-003",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-003",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json",
+      "removed": [
+        "/message/define-when-the-workflow-should-run",
+        "/message/dry-run-side-effects-warning"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -2 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-003",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-003",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-003",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json",
+      "removed": [
+        "/message/define-when-the-workflow-should-run"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -1 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-003",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json",
+      "removed": [
+        "/message/manual-upload-agent-context"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -1 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-003",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-003",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-003",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-004",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json",
+      "removed": [
+        "/message/what-should-ask-collate-remember",
+        "/message/workflow-action-successfully",
+        "/message/workflow-data-assets",
+        "/message/workflow-fqn-required",
+        "/message/workflow-id-required",
+        "/message/workflow-name-invalid-characters",
+        "/message/workflow-name-max-length",
+        "/message/workflow-name-min-length",
+        "/message/workflow-on-demand-description",
+        "/message/workflow-schedule-description",
+        "/message/workflow-subtitle",
+        "/message/workflow-trigger-description",
+        "/message/workflow-trigger-requires-data-assets",
+        "/message/workflow-triggered-successfully"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -14 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-004",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-004",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-004",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-004",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-004",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-004",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-004",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-004",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json",
+      "removed": [
+        "/message/define-when-the-workflow-should-run"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -1 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-004",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-004",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-004",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json",
+      "removed": [
+        "/message/define-when-the-workflow-should-run",
+        "/message/dry-run-side-effects-warning"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -2 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-004",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-004",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-004",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json",
+      "removed": [
+        "/message/define-when-the-workflow-should-run"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -1 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-004",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json",
+      "removed": [
+        "/message/manual-upload-agent-context"
+      ],
+      "scalar_changed": [],
+      "summary": "+5 -1 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-004",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-004",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    },
+    {
+      "added": [
+        "/label/allow-impersonation",
+        "/label/column-tag-plural",
+        "/label/impersonation-enabled",
+        "/label/reset-to-default",
+        "/message/allow-impersonation-help"
+      ],
+      "customization_id": "BANK-OM-004",
+      "list_changed": [],
+      "path": "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json",
+      "removed": [],
+      "scalar_changed": [],
+      "summary": "+5 -0 ~type:0 ~scalar:0 ~list:0",
+      "type_changed": []
+    }
+  ],
+  "upstream": {
+    "base": "official/om-1.13.1",
+    "target": "official/om-1.13.2"
+  }
+}

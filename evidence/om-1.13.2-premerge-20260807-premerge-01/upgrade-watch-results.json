@@ -1,0 +1,164 @@
+{
+  "affected_customizations": [
+    {
+      "changed_configuration_keys": [],
+      "changed_dependencies": [],
+      "changed_watch_path_count": 21,
+      "changed_watch_paths": [
+        "openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json",
+        "openmetadata-ui/src/main/resources/ui/src/utils/RouterUtils.ts"
+      ],
+      "customization_id": "BANK-OM-001"
+    },
+    {
+      "changed_configuration_keys": [],
+      "changed_dependencies": [],
+      "changed_watch_path_count": 22,
+      "changed_watch_paths": [
+        "openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json",
+        "openmetadata-ui/src/main/resources/ui/src/rest/queryAPI.ts",
+        "openmetadata-ui/src/main/resources/ui/src/utils/RouterUtils.ts"
+      ],
+      "customization_id": "BANK-OM-002"
+    },
+    {
+      "changed_configuration_keys": [],
+      "changed_dependencies": [],
+      "changed_watch_path_count": 19,
+      "changed_watch_paths": [
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json"
+      ],
+      "customization_id": "BANK-OM-003"
+    },
+    {
+      "changed_configuration_keys": [],
+      "changed_dependencies": [],
+      "changed_watch_path_count": 26,
+      "changed_watch_paths": [
+        "openmetadata-ui/src/main/resources/ui/src/components/DataAssetSummaryPanelV1/DataAssetSummaryPanelV1.tsx",
+        "openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaTable/SchemaTable.component.tsx",
+        "openmetadata-ui/src/main/resources/ui/src/components/Explore/ExploreTree/ExploreTree.tsx",
+        "openmetadata-ui/src/main/resources/ui/src/components/SearchedData/SearchedData.tsx",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json",
+        "openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json",
+        "openmetadata-ui/src/main/resources/ui/src/utils/EntityUtilClassBase.ts",
+        "openmetadata-ui/src/main/resources/ui/src/utils/EntityUtils.tsx",
+        "openmetadata-ui/src/main/resources/ui/src/utils/SearchClassBase.ts"
+      ],
+      "customization_id": "BANK-OM-004"
+    },
+    {
+      "changed_configuration_keys": [],
+      "changed_dependencies": [],
+      "changed_watch_path_count": 4,
+      "changed_watch_paths": [
+        "openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx",
+        "openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx",
+        "openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts",
+        "openmetadata-ui/src/main/resources/ui/src/utils/ServiceUtils.tsx"
+      ],
+      "customization_id": "BANK-OM-006"
+    },
+    {
+      "changed_configuration_keys": [],
+      "changed_dependencies": [],
+      "changed_watch_path_count": 2,
+      "changed_watch_paths": [
+        "openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx",
+        "openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts"
+      ],
+      "customization_id": "BANK-OM-007"
+    }
+  ],
+  "gate": {
+    "meaning": "approval은 자동 실패가 아니라, 영향을 받은 BANK-OM을 검토한 뒤 적용하라는 뜻이다.",
+    "name": "upgrade-watch",
+    "reasons": [
+      "BANK-OM-001: upstream A->B changed paths=21 (e.g. openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java)",
+      "BANK-OM-002: upstream A->B changed paths=22 (e.g. openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java)",
+      "BANK-OM-003: upstream A->B changed paths=19 (e.g. openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json)",
+      "BANK-OM-004: upstream A->B changed paths=26 (e.g. openmetadata-ui/src/main/resources/ui/src/components/DataAssetSummaryPanelV1/DataAssetSummaryPanelV1.tsx)",
+      "BANK-OM-006: upstream A->B changed paths=4 (e.g. openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx)",
+      "BANK-OM-007: upstream A->B changed paths=2 (e.g. openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx)"
+    ],
+    "verdict": "approval"
+  },
+  "upstream": {
+    "base": "official/om-1.13.1",
+    "changed_path_count": 1702,
+    "target": "official/om-1.13.2"
+  }
+}

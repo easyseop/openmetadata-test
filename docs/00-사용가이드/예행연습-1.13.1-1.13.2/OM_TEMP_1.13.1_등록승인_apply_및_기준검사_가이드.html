@@ -376,12 +376,62 @@ decisions:
 <div class="command"><pre><code class="language-json">{&quot;gate&quot;:{&quot;name&quot;:&quot;shared-code-definitions&quot;,&quot;verdict&quot;:&quot;analysis_error&quot;,&quot;reasons&quot;:[&quot;shared code definition coverage mismatch: missing=[Entity.java, BANK-OM-002]&quot;]}}</code></pre></div>
 <p><strong class="diff">차이: <code>verdict</code>가 <code>analysis_error</code>입니다.</strong> 실제 코드를 비교하기 전 단계에서 경로–ID 정의가 빠졌으므로 <code>shared-code-definitions.yaml</code>을 보완합니다. 이 검사는 <code>approval</code>을 내지 않습니다.</p></div></details>
 <h3>5-4. 실행 환경이 있을 때의 Contract test</h3>
+<p>이 단계는 <strong>등록·소스 검사를 통과한 1.13.1 commit이 실제 Docker 서비스에서도 정상 동작하는지</strong> 확인합니다. Docker 컨테이너가 <code>healthy</code>인 것만으로는 완료되지 않습니다.</p>
+<h4>5-4-1. Docker 서비스 상태 확인</h4>
+<p><strong>확인 내용:</strong> OpenMetadata server, DB, 검색 서비스가 모두 <code>healthy</code>인지 확인합니다.</p>
+<div class="command"><pre><code class="language-bash">docker ps --format &#x27;table {{.Names}}\t{{.Status}}\t{{.Ports}}&#x27;</code></pre></div>
+<p><strong>정상 결과:</strong> <code>openmetadata_server</code>, <code>openmetadata_mysql</code>, <code>openmetadata_elasticsearch</code>가 모두 <code>healthy</code>입니다.</p>
+<h4>5-4-2. API 주소와 실행 commit 확인</h4>
+<p><strong>준비:</strong> 로컬 Docker 기본 포트 <code>8585</code>를 사용합니다.</p>
+<div class="command"><pre><code class="language-bash">export OPENMETADATA_BASE_URL=&quot;http://127.0.0.1:8585/api&quot;</code></pre></div>
+<p><strong>확인 내용:</strong> Docker 서비스의 버전과 commit을 표시합니다.</p>
+<div class="command"><pre><code class="language-bash">curl -fsS &quot;$OPENMETADATA_BASE_URL/v1/system/version&quot; | jq</code></pre></div>
+<p><strong>확인 내용:</strong> 이번 기준검사에 사용할 제품 코드 저장소 HEAD를 표시합니다.</p>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; rev-parse HEAD</code></pre></div>
+<p><code>system/version</code>의 <code>revision</code>과 <code>git rev-parse HEAD</code>가 같아야 합니다. 다르면 <strong>검사하려는 코드와 Docker에서 실행 중인 코드가 다르므로 중단</strong>합니다.</p>
+<div class="callout note"><strong>2026-08-07 현재 확인 결과:</strong> Docker 서비스는 <code>59dae915...</code>를 실행하고, 등록·소스 검사를 통과한 commit은 <code>d952a838...</code>입니다. 현재 서비스로는 연결 연습은 가능하지만 5-4 정식 PASS를 남길 수는 없습니다.</div>
+<h4>5-4-3. 로컬 API 로그인</h4>
+<p><strong>작업 내용:</strong> 로컬 개발 환경의 관리자 계정으로 로그인하고 API token을 현재 터미널에만 저장합니다. 아래 값은 기본 개발 계정을 바꾸지 않은 경우에만 사용합니다.</p>
+<div class="command"><pre><code class="language-bash">export OPENMETADATA_AUTH_TOKEN=&quot;$(
+  curl -fsS -X POST &quot;$OPENMETADATA_BASE_URL/v1/users/login&quot; \
+    -H &#x27;Content-Type: application/json&#x27; \
+    --data &#x27;{&quot;email&quot;:&quot;admin@open-metadata.org&quot;,&quot;password&quot;:&quot;YWRtaW4=&quot;}&#x27; \
+  | jq -er &#x27;.accessToken&#x27;
+)&quot;</code></pre></div>
+<p><strong>확인 내용:</strong> token 원문을 화면에 표시하지 않고 발급 여부만 확인합니다.</p>
+<div class="command"><pre><code class="language-bash">test -n &quot;$OPENMETADATA_AUTH_TOKEN&quot; &amp;&amp; printf &#x27;API token 준비 완료\n&#x27;</code></pre></div>
+<p><strong>정상 결과:</strong> <code>API token 준비 완료</code>가 출력됩니다. 이 환경변수는 현재 터미널을 닫으면 사라지며 문서·Git·결과 파일에 기록하지 않습니다.</p>
+<h4>5-4-4. Contract test 입력 준비</h4>
+<div class="table-wrap"><table><thead><tr><th>입력</th><th>의미</th><th>준비 방법</th></tr></thead><tbody>
+<tr><td><code>OPENMETADATA_AUTH_TOKEN</code></td><td>API 호출에 쓸 Bearer token</td><td>로컬 basic 로그인으로 발급하고 파일에 저장하지 않음</td></tr>
+<tr><td><code>BANK_CONTRACT_QUERY_ID</code></td><td>QueryReport에 연결할 기존 Query ID</td><td>실행 환경에 Query 1개 생성 후 ID 기록</td></tr>
+<tr><td><code>BANK_FAILED_ASSERTION_FQN</code></td><td>실패 상태와 담당자가 있는 test case FQN</td><td>실패 test case 하나를 준비한 후 FQN 기록</td></tr>
+<tr><td><code>BANK_COLUMN_TABLE_FQN</code></td><td>행내 확장 컬럼이 있는 table FQN</td><td>table을 생성·수집한 후 FQN 기록</td></tr>
+<tr><td><code>BANK_COLUMN_NAME</code></td><td>위 table에서 검사할 column 이름</td><td><code>attributeName</code>, <code>instanceName</code>, <code>infoType</code>가 있는 column 선택</td></tr>
+<tr><td><code>BANK_IME_EDITOR_URL</code></td><td>한글 조합을 검사할 SchemaEditor 페이지</td><td>로그인 후 편집 가능한 페이지 URL 기록</td></tr>
+<tr><td><code>BANK_DATA_ASSERTIONS_URL</code></td><td>실패 test case를 표시하는 행내 페이지</td><td>위 test case가 보이는 URL 기록</td></tr>
+<tr><td><code>BANK_COLUMN_UI_URL</code></td><td>행내 확장 컬럼을 표시하는 table 페이지</td><td>위 table의 schema URL 기록</td></tr>
+<tr><td><code>BANK_BROWSER_STORAGE_STATE_B64</code></td><td>Playwright가 사용할 브라우저 로그인 상태</td><td>Playwright storage state JSON을 base64로 인코딩</td></tr>
+</tbody></table></div>
+<div class="callout note"><strong>현재 로컬 환경:</strong> Query, 실패 test case, 행내 확장 컬럼 table이 모두 0개로 확인됐습니다. 위 fixture를 준비하기 전에는 BANK-OM-002·003·004 Contract test가 정상 실행될 수 없습니다.</div>
+<h4>5-4-5. 실행 image digest 고정</h4>
+<p><strong>확인 내용:</strong> <code>openmetadata_server</code>가 실행 중인 Docker image ID를 이번 test의 배포 확인값으로 저장합니다.</p>
+<div class="command"><pre><code class="language-bash">export DEPLOYED_ARTIFACT_DIGEST=&quot;$(docker inspect --format &#x27;{{.Image}}&#x27; openmetadata_server)&quot;</code></pre></div>
+<div class="command"><pre><code class="language-bash">printf &#x27;%s\n&#x27; &quot;$DEPLOYED_ARTIFACT_DIGEST&quot;</code></pre></div>
+<p><strong>정상 결과:</strong> <code>sha256:</code> 뒤에 64자리 값이 출력됩니다.</p>
+<h4>5-4-6. 실행 전 입력 검사</h4>
+<p><strong>확인 내용:</strong> 필수 환경변수 11개의 누락·URL 형식·digest 형식을 검사합니다. 비밀값 내용은 출력하지 않습니다.</p>
+<div class="command"><pre><code class="language-bash">./.venv/bin/python \
+  harness/registrations/kb-openmetadata/runtime_preflight.py</code></pre></div>
+<p><strong>정상 결과:</strong> <code>ready: true</code>, <code>missing_fields: []</code>, <code>invalid_fields: []</code>입니다. <code>ready: false</code>면 표시된 입력을 준비한 후 다시 실행합니다.</p>
+<h4>5-4-7. Contract test 실행</h4>
 <div class="command"><pre><code class="language-bash">./.venv/bin/python harness/om_workflow.py runtime \
   --repo &quot;$OM_CODE_REPO&quot; \
   --version 1.13.1 \
-  --artifact-digest sha256:&lt;실제-배포파일-digest&gt; \
+  --artifact-digest &quot;$DEPLOYED_ARTIFACT_DIGEST&quot; \
   --run-id &quot;om-1.13.1-baseline-$RUN_ID&quot;</code></pre></div>
-<p>실제 API·브라우저·DB 환경이 없으면 runtime test가 <code>skipped</code> 또는 환경 대기로 남을 수 있습니다. <strong>실행된 test의 실패가 0개여도 필수 test가 skip이면 전체 PASS가 아닙니다.</strong></p>
+<p><strong>산출물:</strong> 증거 폴더에 <code>candidate-lock.yaml</code>, <code>test-run-set.yaml</code>, <code>acgh-result.yaml</code>이 생성됩니다. <code>test-run-set.yaml</code>의 9개 필수 test가 모두 <code>pass</code>이고 <code>acgh-result.yaml</code>의 최종 verdict가 <code>pass</code>일 때만 5-4를 완료합니다.</p>
+<p>실제 API·브라우저·DB 입력이 없으면 runtime test가 <code>skipped</code>로 남을 수 있습니다. <strong>실행된 test의 실패가 0개여도 필수 test가 skip이면 전체 PASS가 아닙니다.</strong></p>
 <h2>6. 결과 확인표</h2>
 <div class="table-wrap"><table><thead><tr><th>확인 대상</th><th>통과 기준</th><th>통과가 아닌 예</th></tr></thead><tbody>
 <tr><td>apply 결과</td><td><code>status: APPLIED</code></td><td><code>STALE_PROPOSAL</code>, <code>APPLY_LOCKED</code>, <code>ANALYSIS_ERROR</code></td></tr>
