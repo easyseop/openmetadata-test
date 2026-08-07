@@ -1,8 +1,8 @@
 # 현재 작업 인수인계
 
-> 마지막 갱신: 2026-08-07 14:25 PDT
+> 마지막 갱신: 2026-08-07 14:35 PDT
 >
-> 현재 작업: 1.13.1 Runtime Contract 9개 정식 통과, 결과 commit·push 준비
+> 현재 작업: 1.13.1 Runtime Contract 9개 정식 통과 및 원격 공유 완료
 >
 > 이 문서는 다음 세션이 가장 먼저 읽는 현재 상태 정본입니다.
 
@@ -17,12 +17,22 @@ candidate SHA·image digest·검사기 commit이 묶인 증거도 생성했습�
 
 1.13.2 vendor merge와 custom 코드 수정은 아직 실행하지 않습니다.
 
+공유 원격은 다음 두 branch입니다.
+
+- 검사기: `easyseop/openmetadata-test`의 `codex/om-1.13.1-rehearsal-baseline-20260806`
+- 제품 코드: `easyseop/OpenMetadata`의 `codex/om-1.13.1-runtime-ready`
+
+제품 코드를 `easyseop/OM_TEMP`에 처음 push했을 때 공식 Git 이력 객체 전송 중
+GitHub HTTP 500이 발생했습니다. 공식 1.13.1 tag를 이미 가진 실제 fork
+`easyseop/OpenMetadata`에는 정상 push됐습니다. 다른 컴퓨터에서는 위 실제 fork
+branch를 사용합니다.
+
 ## 2. 저장소·branch·commit
 
 | 역할 | 위치 | 현재 branch·commit |
 |---|---|---|
 | 검사기 저장소 | 이 저장소 `easyseop/openmetadata-test` | `codex/om-1.13.1-rehearsal-baseline-20260806` · Runtime 실행 기준 `c6e403125f953fef8f6b0757ac70d68aeeeca6f1` |
-| OpenMetadata 코드 저장소 | `$HOME/om-work/om-temp-real-1.13.1` | `codex/om-1.13.1-runtime-ready` · `8ac18ad053d9274774e274ba17b35911ac0b9dcb` |
+| OpenMetadata 코드 저장소 | `$HOME/om-work/om-temp-real-1.13.1` | `codex/om-1.13.1-runtime-ready` · `8ac18ad053d9274774e274ba17b35911ac0b9dcb` · `easyseop-fork` 추적 |
 | 공식 1.13.1 기준 | 같은 코드 저장소 | `upstream-1.13.1-release` · `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9` |
 | 공식 1.13.2 | 같은 코드 저장소 | `official/om-1.13.2` · 공식 `1.13.2-release` commit `2763bf97…` |
 
@@ -113,10 +123,9 @@ React가 단계 사이에 렌더링할 수 없었습니다. 실제 IME처럼 각
 
 ## 8. 다음 실행 순서
 
-1. 정식 Runtime evidence와 이 인수인계 갱신을 commit합니다.
-2. 현재 작업 branch를 원격에 push합니다.
-3. 다른 세션에서는 이 문서와 정식 evidence를 먼저 확인합니다.
-4. 사용자 지시 후 1.13.2 vendor merge 단계로 이동합니다.
+1. 다른 세션에서는 위 두 원격 branch와 이 문서를 먼저 확인합니다.
+2. 정식 evidence의 candidate·검사기·image digest가 이 문서와 같은지 확인합니다.
+3. 사용자 지시 후 1.13.2 vendor merge 단계로 이동합니다.
 
 정식 실행 명령:
 
