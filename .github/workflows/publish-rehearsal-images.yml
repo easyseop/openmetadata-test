@@ -48,6 +48,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq
 
+      - name: Use canonical Maven Central endpoint
+        run: >-
+          sed --in-place
+          's#https://repo1.maven.org/maven2/#https://repo.maven.apache.org/maven2/#g'
+          pom.xml
+
       - name: Build OpenMetadata distribution
         run: >-
           mvn -DskipTests=true -Dmaven.test.skip=true
