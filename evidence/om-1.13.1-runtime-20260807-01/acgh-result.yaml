@@ -1,0 +1,44 @@
+canonical_payload:
+  gates:
+  - name: required-test-implementations
+    reasons:
+    - implemented_required_tests=9
+    verdict: pass
+  - name: test-candidate-binding
+    reasons:
+    - 'required test passed: tests/bank/contracts/test_bank_columns.py::test_extended_column_projection'
+    - 'required test passed: tests/bank/contracts/test_bank_columns.py::test_extended_column_rendered_row'
+    - 'required test passed: tests/bank/contracts/test_data_assertions.py::test_failed_assertion_projection'
+    - 'required test passed: tests/bank/contracts/test_data_assertions.py::test_failed_assertion_rendered_row'
+    - 'required test passed: tests/bank/contracts/test_instance_code.py::test_crud_search_roundtrip'
+    - 'required test passed: tests/bank/contracts/test_korean_ime.py::test_hangul_composition_roundtrip'
+    - 'required test passed: tests/bank/contracts/test_query_report.py::test_query_usage_roundtrip'
+    - 'required test passed: tests/bank/contracts/test_sybase.py::test_connection_schema_roundtrip'
+    - 'required test passed: tests/bank/contracts/test_tibero.py::test_connection_schema_roundtrip'
+    - test_run_set_digest=sha256:9f6836a617bf20693cd590091a110dc32ffb8e7e97d609456095337c42715bcd
+    verdict: pass
+  harness_version: c6e403125f953fef8f6b0757ac70d68aeeeca6f1
+  inputs:
+    artifact_digest: sha256:96854a63064e563d8a1ce8f9289e3d8b2aad35a0d78836badf7cd7409aff7319
+    artifact_kind: build-artifact
+    candidate_lock_digest: sha256:f722e874dade55f1edb56e1c284edf1d97633138d0a3c1ba38c98a108833419d
+    integration_strategy: vendor-merge
+    repositories:
+      candidate:
+        repository: easyseop/OpenMetadata
+        sha: 8ac18ad053d9274774e274ba17b35911ac0b9dcb
+        tree_sha: e86980f6d71295465fe6e75e5169fab57cebd4c4
+      upstream_base:
+        repository: open-metadata/OpenMetadata
+        sha: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
+      upstream_target:
+        repository: open-metadata/OpenMetadata
+        sha: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
+    verifier_catalog_digest: sha256:dee7976eba3c79bf1b60e26f41eeb41f899bf8c6c3a0b36f9846cb67af02b6bd
+  verdict: pass
+expected_exit_code: 0
+observational_metadata:
+  run_id: om-1.13.1-runtime-20260807-01
+  test_run_set_digest: sha256:9f6836a617bf20693cd590091a110dc32ffb8e7e97d609456095337c42715bcd
+result_digest: sha256:2fecbbd529c3f182e210170355ae88caa0acf465a975a34d7e02b2f0aee0960d
+schema_version: 1

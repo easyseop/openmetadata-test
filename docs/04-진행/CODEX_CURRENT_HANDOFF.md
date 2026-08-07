@@ -1,8 +1,8 @@
 # 현재 작업 인수인계
 
-> 마지막 갱신: 2026-08-07 14:15 PDT
+> 마지막 갱신: 2026-08-07 14:25 PDT
 >
-> 현재 작업: 1.13.1 Runtime Contract 9개 사전 통과, 정식 증거 실행 준비
+> 현재 작업: 1.13.1 Runtime Contract 9개 정식 통과, 결과 commit·push 준비
 >
 > 이 문서는 다음 세션이 가장 먼저 읽는 현재 상태 정본입니다.
 
@@ -12,9 +12,8 @@
 업그레이드하기 전에 1.13.1 기능 기준선을 확정하는 작업입니다.
 
 최초 등록 `plan → 승인 → apply`, 등록자료 검사, 소스 검사는 완료했습니다.
-현재는 5-4 Runtime Contract의 기능 사전 검사가 9/9 통과한 상태입니다.
-정식 실행은 검사기 저장소의 의도한 변경을 commit한 뒤 깨끗한 worktree에서
-candidate SHA·image digest·검사기 commit을 묶어 증거로 저장해야 합니다.
+5-4 Runtime Contract는 깨끗한 검사기 worktree에서 9/9 정식 통과했습니다.
+candidate SHA·image digest·검사기 commit이 묶인 증거도 생성했습니다.
 
 1.13.2 vendor merge와 custom 코드 수정은 아직 실행하지 않습니다.
 
@@ -22,7 +21,7 @@ candidate SHA·image digest·검사기 commit을 묶어 증거로 저장해야 �
 
 | 역할 | 위치 | 현재 branch·commit |
 |---|---|---|
-| 검사기 저장소 | 이 저장소 `easyseop/openmetadata-test` | `codex/om-1.13.1-rehearsal-baseline-20260806` · 작업 시작 HEAD `0af9c6aa7c` · 현재 변경 미commit |
+| 검사기 저장소 | 이 저장소 `easyseop/openmetadata-test` | `codex/om-1.13.1-rehearsal-baseline-20260806` · Runtime 실행 기준 `c6e403125f953fef8f6b0757ac70d68aeeeca6f1` |
 | OpenMetadata 코드 저장소 | `$HOME/om-work/om-temp-real-1.13.1` | `codex/om-1.13.1-runtime-ready` · `8ac18ad053d9274774e274ba17b35911ac0b9dcb` |
 | 공식 1.13.1 기준 | 같은 코드 저장소 | `upstream-1.13.1-release` · `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9` |
 | 공식 1.13.2 | 같은 코드 저장소 | `official/om-1.13.2` · 공식 `1.13.2-release` commit `2763bf97…` |
@@ -76,11 +75,15 @@ harness/prepare_runtime_contract_environment.py
 상태, 실행 image digest를 한 번에 준비해 `/private/tmp/om-runtime-contract.env`에
 권한 600으로 저장합니다. 인증정보는 Git과 인수인계에 기록하지 않습니다.
 
-2026-08-07 사전 실행 결과는 `9 passed in 7.14s`입니다.
+2026-08-07 정식 실행 결과는 `pass`입니다.
 
 - API Contract 6개 통과
 - 브라우저 Contract 3개 통과
-- skip 0, fail 0
+- pass 9, skip 0, fail 0, error 0
+- 제품 candidate: `8ac18ad053d9274774e274ba17b35911ac0b9dcb`
+- 검사기 commit: `c6e403125f953fef8f6b0757ac70d68aeeeca6f1`
+- 실행 image: `sha256:96854a63064e563d8a1ce8f9289e3d8b2aad35a0d78836badf7cd7409aff7319`
+- 정식 증거: `evidence/om-1.13.1-runtime-20260807-01/`
 
 한글 IME Contract는 기존에 모든 조합 단계를 한 JavaScript 작업 안에서 실행해
 React가 단계 사이에 렌더링할 수 없었습니다. 실제 IME처럼 각 조합 단계를 별도
@@ -110,13 +113,10 @@ React가 단계 사이에 렌더링할 수 없었습니다. 실제 IME처럼 각
 
 ## 8. 다음 실행 순서
 
-1. 의도한 검사기 변경만 test·검토하고 commit합니다.
-2. 해당 commit의 깨끗한 임시 worktree를 만듭니다.
-3. `/private/tmp/om-runtime-contract.env`를 불러옵니다.
-4. 깨끗한 worktree에서 정식 Runtime Contract runner를 실행합니다.
-5. `test-run-set.yaml`의 9개 결과와 `acgh-result.yaml`의 최종 `pass`를 확인합니다.
-6. 정식 evidence와 결과를 이 문서에 추가합니다.
-7. 원격에 push한 뒤에만 1.13.2 업그레이드 단계로 이동합니다.
+1. 정식 Runtime evidence와 이 인수인계 갱신을 commit합니다.
+2. 현재 작업 branch를 원격에 push합니다.
+3. 다른 세션에서는 이 문서와 정식 evidence를 먼저 확인합니다.
+4. 사용자 지시 후 1.13.2 vendor merge 단계로 이동합니다.
 
 정식 실행 명령:
 

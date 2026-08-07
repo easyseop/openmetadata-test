@@ -722,7 +722,7 @@ export RUN_ID="20260807-01"
 
 **산출물:** 증거 폴더에 `candidate-lock.yaml`, `test-run-set.yaml`, `acgh-result.yaml`이 생성됩니다. `test-run-set.yaml`의 9개 필수 test가 모두 `pass`이고 `acgh-result.yaml`의 최종 verdict가 `pass`일 때만 5-4를 완료합니다.
 
-> **현재 사전 확인 결과:** API Contract 6개, 브라우저 Contract 3개를 포함한 9개가 모두 실제 실행되어 통과했습니다. 정식 증거 실행에서는 이 결과를 다시 실행하고 candidate SHA·image digest·검사기 commit과 함께 저장합니다.
+> **2026-08-07 정식 결과:** API Contract 6개와 브라우저 Contract 3개가 모두 실제 실행되어 `9 pass`, `0 fail`, `0 error`, `0 skipped`입니다. 최종 verdict는 `pass`이며 결과는 `evidence/om-1.13.1-runtime-20260807-01/`에 저장했습니다. 검사한 제품 코드는 `8ac18ad...`, 검사기 코드는 `c6e40312...`, image digest는 `sha256:96854a63...`입니다.
 
 ## 6. 결과 확인표
 

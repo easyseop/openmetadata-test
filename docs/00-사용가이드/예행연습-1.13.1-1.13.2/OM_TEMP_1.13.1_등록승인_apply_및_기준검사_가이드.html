@@ -430,7 +430,7 @@ decisions:
   --artifact-digest &quot;$DEPLOYED_ARTIFACT_DIGEST&quot; \
   --run-id &quot;om-1.13.1-runtime-$RUN_ID&quot;</code></pre></div>
 <p><strong>산출물:</strong> 증거 폴더에 <code>candidate-lock.yaml</code>, <code>test-run-set.yaml</code>, <code>acgh-result.yaml</code>이 생성됩니다. <code>test-run-set.yaml</code>의 9개 필수 test가 모두 <code>pass</code>이고 <code>acgh-result.yaml</code>의 최종 verdict가 <code>pass</code>일 때만 5-4를 완료합니다.</p>
-<div class="callout note"><strong>현재 사전 확인 결과:</strong> API Contract 6개, 브라우저 Contract 3개를 포함한 9개가 모두 실제 실행되어 통과했습니다. 정식 증거 실행에서는 이 결과를 다시 실행하고 candidate SHA·image digest·검사기 commit과 함께 저장합니다.</div>
+<div class="callout note"><strong>2026-08-07 정식 결과:</strong> API Contract 6개와 브라우저 Contract 3개가 모두 실제 실행되어 <code>9 pass</code>, <code>0 fail</code>, <code>0 error</code>, <code>0 skipped</code>입니다. 최종 verdict는 <code>pass</code>이며 결과는 <code>evidence/om-1.13.1-runtime-20260807-01/</code>에 저장했습니다. 검사한 제품 코드는 <code>8ac18ad...</code>, 검사기 코드는 <code>c6e40312...</code>, image digest는 <code>sha256:96854a63...</code>입니다.</div>
 <h2>6. 결과 확인표</h2>
 <div class="table-wrap"><table><thead><tr><th>확인 대상</th><th>통과 기준</th><th>통과가 아닌 예</th></tr></thead><tbody>
 <tr><td>apply 결과</td><td><code>status: APPLIED</code></td><td><code>STALE_PROPOSAL</code>, <code>APPLY_LOCKED</code>, <code>ANALYSIS_ERROR</code></td></tr>
