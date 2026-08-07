@@ -2666,3 +2666,5 @@ parity만 집중 검증의 환경 의존 skip이다. 실제 1.13.2 vendor-merge 
 4. 승격 판단과 운영 배포 완료가 서로 다른 상태로 읽히는가.
 5. 실제 vendor-merge·충돌률·postmerge·고객 승인을 완료로 과장한
    문장이 없는가.
+6. BANK-OM ID·required·watch·공용 코드·Contract·충돌·승인·배포에서
+   사람이 반드시 판단할 부분과 자동화 부분이 충분히 구분되는가.

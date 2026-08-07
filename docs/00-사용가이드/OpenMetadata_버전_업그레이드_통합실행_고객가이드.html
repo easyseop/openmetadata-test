@@ -20,10 +20,25 @@
 <tr><td>자동화 도구</td><td>입력 누락 차단, 검사 순서 강제, 결과 집계, commit·증거 digest 결속</td></tr>
 </tbody></table></div>
 <p>Git이 변경 경로와 충돌 파일을 계산할 수는 있지만, 충돌 해결 후의 화면·API·DB 동작이 고객사의 업무 기준에 맞는지는 고객사 담당자가 판단합니다.</p>
+<h3>사람이 반드시 결정해야 하는 항목</h3>
+<div class="callout note"><strong>중요:</strong> 아래 값은 솔루션이 추측하거나 빈칸을 임의로 채우지 않습니다. 자동화는 코드에서 후보와 누락을 찾고, 고객사 담당자가 업무 의미를 판단해 승인합니다.</div>
+<ul><li>기능 범위: BANK-OM ID, 필수 경로, 간접 감시 경로, 공용 코드 정의를 사람이 확정합니다.</li><li>정상 동작: 어떤 API·화면·DB 결과가 정상인지와 필수 test를 사람이 정합니다.</li><li>병합 판단: 충돌 해결안과 민감 경로 변경 사유를 사람이 승인합니다.</li><li>승격·배포: 승인자, 판단 사유, 릴리스·운영 진행 여부를 고객사가 결정합니다.</li></ul>
+<details class="details"><summary>사람 판단 항목별 담당자·시점·중단 기준 보기</summary><div class="details-body"><div class="table-wrap"><table><thead><tr><th>사람이 결정할 항목</th><th>언제 결정하나요?</th><th>누가 결정하나요?</th><th>결과는 어디에 남나요?</th><th>없으면 어떻게 되나요?</th></tr></thead><tbody>
+<tr><td>새 BANK-OM ID 또는 기존 ID 유지</td><td>독립 기능이 추가되거나 후속 commit의 목적이 바뀐 때</td><td>기능 책임자·변경관리 담당자</td><td>Registry와 commit의 <code>Customization-ID</code></td><td>ID 소유가 불명하면 등록·승인 진행 금지</td></tr>
+<tr><td><code>required_changed_paths</code></td><td>최초 등록 또는 후속 commit에서 새 파일이 나온 때</td><td>기능 책임자·개발 담당자</td><td>승인된 Manifest</td><td>필수 파일이 정해지지 않으면 등록 변경안 승인 금지</td></tr>
+<tr><td>간접 <code>upgrade_watch</code> 경로</td><td>직접 수정하지 않았지만 기능이 의존하는 공식 코드가 있을 때</td><td>개발 담당자·기능 책임자</td><td>Manifest의 <code>upgrade_watch.paths</code></td><td>자동 검사가 간접 영향을 알 수 없으므로 담당자 검토 필요</td></tr>
+<tr><td>공용 파일의 BANK-OM별 코드 정의</td><td>한 파일을 두 개 이상 BANK-OM 기능이 함께 바꿀 때</td><td>각 기능의 개발 담당자</td><td><code>shared-code-definitions.yaml</code></td><td>필수 정의 누락은 <code>ANALYSIS_ERROR</code>, 승인한 코드 누락은 <code>BLOCK</code></td></tr>
+<tr><td>Contract의 정상 동작·필수 test</td><td>기능 최초 등록 또는 업무 동작이 바뀌 때</td><td>업무 책임자·QA·개발 담당자</td><td>Contract·test 연결</td><td>필수 test 연결·실행 근거가 없으면 통과 금지</td></tr>
+<tr><td>Git 충돌 해결안</td><td>vendor merge에서 공식 코드와 고객사 코드가 겹칠 때</td><td>기능 책임자·개발 담당자</td><td>해결 diff·commit·판단 기록</td><td>해결 선택이 없으면 vendor merge 중단</td></tr>
+<tr><td><code>change-intent.yaml</code></td><td>병합 후 민감 경로 변경이 있을 때</td><td>기능 책임자·보안 담당자</td><td>변경 의도 파일과 승인 기록</td><td>필수 의도가 없으면 postmerge Phase 완료 금지</td></tr>
+<tr><td>승인자·승인 시각·구체적 사유</td><td><code>APPROVAL</code> 결과를 받았거나 승격을 결정할 때</td><td>고객사가 지정한 승인자</td><td>결과 digest에 결속된 승인서</td><td>자리표시자·시간대 없는 시각·모호한 사유는 승인 거부</td></tr>
+<tr><td>운영 승격·배포 판단</td><td>소스·산출물·Runtime 검증 후</td><td>고객사 운영·보안·서비스 책임자</td><td>Release lock·산출물 digest·배포 승인</td><td>외부 입력이 없으면 소스 검사 완료만 표시하고 배포 완료로 표시 금지</td></tr>
+</tbody></table></div></div></details>
+<p><code>required_changed_paths</code>는 <code>changed_paths</code>의 다른 이름이 아닙니다. <code>changed_paths</code>는 Git이 찾은 해당 기능의 전체 변경 파일이고, <code>required_changed_paths</code>는 그중 빠지면 기능 소실이 확실한 핵심 파일입니다. 자동화는 새 경로를 제안할 수 있지만 어느 파일이 핵심인지는 임의로 결정하지 않습니다.</p>
 <h2>4. 네 단계로 진행하는 버전 업그레이드</h2>
 <h3>1단계 · 기준과 목표 버전 고정</h3>
 <p><strong>무엇을 하나요?</strong> 현재 공식 버전, 현재 커스터마이징 commit, 새 공식 tag를 정확히 고정합니다. 솔루션은 새 공식 tag와 동일한 commit으로 공식 branch를 준비하고, 현재 활성 Candidate lock을 선택합니다.</p>
-<ul><li>고객사: 목표 버전과 변경 금지 기간을 확정합니다.</li><li>솔루션: tag·branch·commit 존재와 서로의 관계를 검사합니다.</li><li>완료 기준: 현재 기준 SHA와 목표 공식 SHA가 결과에 기록됩니다.</li><li>중단 기준: tag가 없거나 등록된 commit을 repository에서 찾을 수 없습니다.</li></ul>
+<ul><li>사람이 할 일: 고객사가 목표 버전, 변경 금지 기간, 기능·승인 담당자를 확정합니다.</li><li>솔루션: tag·branch·commit 존재와 서로의 관계를 검사합니다.</li><li>완료 기준: 현재 기준 SHA와 목표 공식 SHA가 결과에 기록됩니다.</li><li>중단 기준: tag가 없거나 등록된 commit을 repository에서 찾을 수 없습니다.</li></ul>
 <details class="details"><summary>솔루션 제공팀 실행 예시</summary><div class="details-body"><div class="command"><pre><code class="language-bash">python harness/om_workflow.py prep-official \
   --repo /path/to/OpenMetadata \
   --tag-ref 1.13.2-release \
@@ -33,7 +48,7 @@ python harness/om_workflow.py candidate-select --version 1.13.1</code></pre></di
 <p>정상이면 공식 branch 준비 결과와 활성 Candidate lock 선택 결과가 <code>evidence/</code>에 생성됩니다. 두 명령 중 하나라도 실패하면 2단계로 이동하지 않습니다.</p></div></details>
 <h3>2단계 · 병합 전 영향 검사</h3>
 <p><strong>무엇을 하나요?</strong> 새 공식 버전이 고객사의 BANK-OM 변경 경로와 의존 경로를 바꾸었는지 병합 전에 확인합니다. BANK-OM ID는 고객사 커스터마이징 기능을 코드·테스트·승인 기록과 연결하는 이 솔루션의 관리 ID입니다.</p>
-<ul><li>고객사: 영향 경로의 업무 중요도와 병합 계속 여부를 판단합니다.</li><li>솔루션: 공식 버전 간 diff와 <code>upgrade_watch</code> 경로를 비교하고 결과를 하나의 digest로 고정합니다.</li><li>완료 기준: 결과가 <code>PASS</code> 또는 담당자가 검토할 수 있는 <code>APPROVAL</code>입니다.</li><li>중단 기준: 필수 commit·정책·등록 입력이 누락되었거나 결과가 <code>BLOCK</code>입니다.</li></ul>
+<ul><li>사람이 할 일: 고객사가 영향 경로의 업무 중요도, 간접 <code>upgrade_watch</code> 추가 필요성, 병합 계속 여부를 판단합니다.</li><li>솔루션: 공식 버전 간 diff와 <code>upgrade_watch</code> 경로를 비교하고 결과를 하나의 digest로 고정합니다.</li><li>완료 기준: 결과가 <code>PASS</code> 또는 담당자가 검토할 수 있는 <code>APPROVAL</code>입니다.</li><li>중단 기준: 필수 commit·정책·등록 입력이 누락되었거나 결과가 <code>BLOCK</code>입니다.</li></ul>
 <details class="details"><summary>솔루션 제공팀 실행 예시</summary><div class="details-body"><div class="command"><pre><code class="language-bash">python harness/om_workflow.py phase-preflight \
   --repo /path/to/OpenMetadata \
   --version 1.13.1 \
@@ -49,13 +64,13 @@ python harness/om_workflow.py premerge-check \
 <p><code>2763bf97...</code>는 읽기 쉽게 줄인 표시입니다. 실제 명령에는 저장소에서 확인한 전체 Git commit SHA를 입력합니다.</p></div></details>
 <h3>3단계 · vendor merge와 충돌 해결</h3>
 <p><strong>무엇을 하나요?</strong> 직전 커스터마이징 branch에 새 공식 버전을 병합해 새 업그레이드 후보를 만듭니다. <code>vendor merge</code>는 직전 커스터마이징 이력을 보존한 채 새 공식 코드를 Git merge하는 이 솔루션의 기본 업그레이드 전략입니다.</p>
-<ul><li>고객사: 충돌 해결안이 업무 기능 정책에 맞는지 승인합니다.</li><li>솔루션: 격리 branch에서 병합하고, 충돌 파일·해결 diff·실제 충돌률을 기록합니다. 병합 후 후보를 가리키는 등록 변경안과 Candidate lock도 제시합니다.</li><li>완료 기준: 미해결 Git 충돌이 없고, 고객사가 승인한 병합 후 Git commit SHA가 활성 Candidate lock에 고정되며, 실제 충돌률이 기록됩니다.</li><li>중단 기준: 업무 의미를 결정해야 하는 충돌에 고객사 판단이 없거나, 병합 중 예상하지 못한 변경이 확인됩니다.</li></ul>
+<ul><li>사람이 할 일: 고객사가 충돌 해결안을 승인하고, 후속 commit의 새 경로가 <code>required_changed_paths</code>·<code>upgrade_watch</code>·공용 코드 정의·Contract 변경을 필요로 하는지 결정합니다.</li><li>솔루션: 격리 branch에서 병합하고, 충돌 파일·해결 diff·실제 충돌률을 기록합니다. 병합 후 후보를 가리키는 등록 변경안과 Candidate lock도 제시합니다.</li><li>완료 기준: 미해결 Git 충돌이 없고, 고객사가 승인한 병합 후 Git commit SHA가 활성 Candidate lock에 고정되며, 실제 충돌률이 기록됩니다.</li><li>중단 기준: 업무 의미를 결정해야 하는 충돌에 고객사 판단이 없거나, 병합 중 예상하지 못한 변경이 확인됩니다.</li></ul>
 <div class="callout warning"><strong>주의:</strong> 충돌률은 예상값을 입력하지 않습니다. 실제 vendor merge에서 생성된 충돌 증거로 계산한 값만 4단계에 사용합니다.</div>
 <details class="details"><summary>충돌이 있을 때 처리 방식</summary><div class="details-body"><ol><li>솔루션 제공팀이 충돌 파일과 서로 다른 코드 구간을 제시합니다.</li><li>자동 합쳐지지 않는 JSON은 보조 도구로 겹치지 않는 항목만 제안합니다.</li><li>고객사 담당자가 업무 규칙·화면 표현·API 행위를 선택합니다.</li><li>솔루션 제공팀이 승인된 해결안을 반영하고 같은 파일을 다시 검토합니다.</li></ol></div></details>
 <h3>4단계 · 병합 후 검사와 승격 판단</h3>
 <p><strong>무엇을 하나요?</strong> 병합된 후보에 BANK-OM 기능 코드·필수 경로·등록자료가 남아 있는지 확인하고, 실제 충돌률과 변경 의도를 위험 정책에 대입합니다. <code>change-intent.yaml</code>은 민감 경로를 왜 변경했는지 고객사가 승인한 사유를 기록한 파일입니다. 병합 후 검사 전에 작성하며 민감 경로 검사가 이 파일을 읽습니다.</p>
 <p>배포 산출물 digest가 있을 때만 API·화면·DB 동작을 확인하는 Runtime Contract를 같은 단계에 포함합니다. 이 문서의 <code>승격</code>은 검사한 후보를 릴리스 대상으로 고정할 수 있다는 판단이며, 고객사 운영 배포 완료를 뜻하지 않습니다.</p>
-<ul><li>고객사: 변경 의도와 검사 결과를 확인하고 재수정·재검사·승격 중 하나를 결정합니다.</li><li>솔루션: 등록 검증, 소스 검사, 업그레이드 위험 검사를 같은 후보에서 실행합니다.</li><li>완료 기준: 필수 검사가 <code>PASS</code> 또는 승인 조건을 명시한 <code>APPROVAL</code>이고, 고객사 승인이 같은 결과 digest에 결속됩니다.</li><li>중단 기준: <code>BLOCK</code>, <code>ANALYSIS_ERROR</code>, 필수 증거 누락, 후보 SHA 변경 중 하나라도 있습니다.</li></ul>
+<ul><li>사람이 할 일: 고객사가 <code>change-intent.yaml</code>, Contract 결과, 승인 사유를 확정하고 재수정·재검사·승격 중 하나를 결정합니다.</li><li>솔루션: 등록 검증, 소스 검사, 업그레이드 위험 검사를 같은 후보에서 실행합니다.</li><li>완료 기준: 필수 검사가 <code>PASS</code> 또는 승인 조건을 명시한 <code>APPROVAL</code>이고, 고객사 승인이 같은 결과 digest에 결속됩니다.</li><li>중단 기준: <code>BLOCK</code>, <code>ANALYSIS_ERROR</code>, 필수 증거 누락, 후보 SHA 변경 중 하나라도 있습니다.</li></ul>
 <details class="details"><summary>솔루션 제공팀 실행 예시</summary><div class="details-body"><div class="command"><pre><code class="language-bash">python harness/om_workflow.py phase-preflight \
   --repo /path/to/OpenMetadata \
   --version 1.13.1 \

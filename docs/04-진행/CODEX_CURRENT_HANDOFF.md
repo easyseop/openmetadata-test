@@ -315,9 +315,18 @@ Markdown을 정본으로 작성하고 기존 renderer에 `--stylesheet`을 추�
 검증 결과:
 
 - renderer Python 문법 검사 통과
-- HTML 펼치기 4개의 여닫기 4/4 일치
+- HTML 펼치기 5개의 여닫기 5/5 일치
 - 공통 CSS 상대경로 존재, 생성 HTML의 원시 Markdown 표시 0개
 - `git diff --check` 통과
 - `.venv/bin/python -m pytest harness/tests/test_phase_cli.py -q`: `6 passed`
 - 시스템 Python은 `jsonschema` 미설치로 test collection에서 중단됐으며,
   의존성이 설치된 저장소 `.venv`로 동일 test를 재실행해 통과했다.
+
+고객이 `required_changed_paths`·후속 commit 등 사람 판단 항목이 가이드에
+부족하다고 지적해 다음을 보강했다.
+
+- 기능 범위, 정상 동작, 병합 판단, 승격·배포의 네 가지 필수 사람 판단
+- BANK-OM ID, required, 간접 watch, 공용 코드 정의, Contract, 충돌,
+  change-intent, 승인, 배포의 담당자·시점·기록 위치·미입력 결과
+- 각 업그레이드 단계에 `사람이 할 일` 명시
+- `changed_paths`와 `required_changed_paths`의 차이와 자동 결정하지 않는 이유
