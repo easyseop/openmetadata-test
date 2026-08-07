@@ -1,12 +1,8 @@
 # Current implementation status
 
-> Updated: 2026-08-08 KST — 기존 11단계 예행연습 문서와 분리해,
-> 반복 버전 업그레이드용 `OpenMetadata_버전_업그레이드_통합실행_고객가이드`
-> Markdown·HTML을 추가했다. 고객사와 솔루션 제공팀의 역할, 기준 고정,
-> 병합 전 검사, vendor merge, 병합 후 검사·승격을 네 단계로 설명한다.
-> 고객 피드백을 반영해 BANK-OM ID·`required_changed_paths`·간접 watch·
-> 공용 코드 정의·Contract·충돌 해결·승인·배포 판단을 사람 필수 항목으로 보강했다.
-> 실제 1.13.2 vendor-merge·postmerge·운영 배포가 완료된 것으로는 표시하지 않았다.
+> Updated: 2026-08-08 KST — 고객사·솔루션 제공업체 관점으로 작성한
+> 독립 버전 업그레이드 가이드 Markdown·HTML은 사용자 요청으로 폐기했다.
+> 기존 11단계 예행연습 문서와 Phase 구현은 변경하지 않았다.
 
 > Updated: 2026-08-08 KST — Phase 번들링 독립 검토의 P0 6건과 P1 2건을
 > `codex/phase-bundling-safety-fix-20260808`에서 보완했다. 실제 timeout,
