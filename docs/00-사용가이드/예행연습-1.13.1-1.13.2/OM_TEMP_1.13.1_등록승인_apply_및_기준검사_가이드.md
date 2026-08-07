@@ -633,7 +633,7 @@ git -C "$OM_CODE_REPO" rev-parse HEAD
 
 `system/version`의 `revision`과 `git rev-parse HEAD`가 같아야 합니다. 다르면 **검사하려는 코드와 Docker에서 실행 중인 코드가 다르므로 중단**합니다.
 
-> **2026-08-07 현재 확인 결과:** Docker 서비스는 `59dae915...`를 실행하고, 등록·소스 검사를 통과한 commit은 `d952a838...`입니다. 현재 서비스로는 연결 연습은 가능하지만 5-4 정식 PASS를 남길 수는 없습니다.
+> **2026-08-07 현재 확인 결과:** Docker 서비스와 등록·소스 검사를 통과한 코드가 모두 `d952a838...`입니다. migration 종료 코드는 0이고 MySQL·Elasticsearch·OpenMetadata server가 모두 `healthy`입니다. 실행 image digest는 `sha256:85138760...`입니다.
 
 #### 5-4-3. 로컬 API 로그인
 
@@ -670,7 +670,9 @@ test -n "$OPENMETADATA_AUTH_TOKEN" && printf 'API token 준비 완료\n'
 | `BANK_COLUMN_UI_URL` | 행내 확장 컬럼을 표시하는 table 페이지 | 위 table의 schema URL 기록 |
 | `BANK_BROWSER_STORAGE_STATE_B64` | Playwright가 사용할 브라우저 로그인 상태 | Playwright storage state JSON을 base64로 인코딩 |
 
-> **현재 로컬 환경:** Query, 실패 test case, 행내 확장 컬럼 table이 모두 0개로 확인됐습니다. 위 fixture를 준비하기 전에는 BANK-OM-002·003·004 Contract test가 정상 실행될 수 없습니다.
+> **현재 로컬 환경:** Playwright와 Chromium 설치, OpenMetadata UI 접속, Query·실패 test case·행내 확장 컬럼 table fixture 생성까지 완료했습니다. 브라우저용 세 URL과 로그인 storage state는 아직 준비하지 않았습니다.
+
+> **사전 실행에서 발견한 중단 사유:** fixture 생성 후 브라우저를 제외한 검사를 실행했으며, QueryReport 검사 응답 해석 오류는 수정했습니다. 그러나 BANK-OM-007 candidate에서 `serviceConnection.ts`의 Tibero enum이 누락된 것을 확인했습니다. 새 candidate를 구성하고 등록 승인을 다시 받기 전에는 5-4 전체 PASS를 진행하지 않습니다.
 
 #### 5-4-5. 실행 image digest 고정
 

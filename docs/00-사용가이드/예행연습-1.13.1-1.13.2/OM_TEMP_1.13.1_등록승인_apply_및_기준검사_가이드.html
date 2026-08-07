@@ -389,7 +389,7 @@ decisions:
 <p><strong>확인 내용:</strong> 이번 기준검사에 사용할 제품 코드 저장소 HEAD를 표시합니다.</p>
 <div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; rev-parse HEAD</code></pre></div>
 <p><code>system/version</code>의 <code>revision</code>과 <code>git rev-parse HEAD</code>가 같아야 합니다. 다르면 <strong>검사하려는 코드와 Docker에서 실행 중인 코드가 다르므로 중단</strong>합니다.</p>
-<div class="callout note"><strong>2026-08-07 현재 확인 결과:</strong> Docker 서비스는 <code>59dae915...</code>를 실행하고, 등록·소스 검사를 통과한 commit은 <code>d952a838...</code>입니다. 현재 서비스로는 연결 연습은 가능하지만 5-4 정식 PASS를 남길 수는 없습니다.</div>
+<div class="callout note"><strong>2026-08-07 현재 확인 결과:</strong> Docker 서비스와 등록·소스 검사를 통과한 코드가 모두 <code>d952a838...</code>입니다. migration 종료 코드는 0이고 MySQL·Elasticsearch·OpenMetadata server가 모두 <code>healthy</code>입니다. 실행 image digest는 <code>sha256:85138760...</code>입니다.</div>
 <h4>5-4-3. 로컬 API 로그인</h4>
 <p><strong>작업 내용:</strong> 로컬 개발 환경의 관리자 계정으로 로그인하고 API token을 현재 터미널에만 저장합니다. 아래 값은 기본 개발 계정을 바꾸지 않은 경우에만 사용합니다.</p>
 <div class="command"><pre><code class="language-bash">export OPENMETADATA_AUTH_TOKEN=&quot;$(
@@ -413,7 +413,8 @@ decisions:
 <tr><td><code>BANK_COLUMN_UI_URL</code></td><td>행내 확장 컬럼을 표시하는 table 페이지</td><td>위 table의 schema URL 기록</td></tr>
 <tr><td><code>BANK_BROWSER_STORAGE_STATE_B64</code></td><td>Playwright가 사용할 브라우저 로그인 상태</td><td>Playwright storage state JSON을 base64로 인코딩</td></tr>
 </tbody></table></div>
-<div class="callout note"><strong>현재 로컬 환경:</strong> Query, 실패 test case, 행내 확장 컬럼 table이 모두 0개로 확인됐습니다. 위 fixture를 준비하기 전에는 BANK-OM-002·003·004 Contract test가 정상 실행될 수 없습니다.</div>
+<div class="callout note"><strong>현재 로컬 환경:</strong> Playwright와 Chromium 설치, OpenMetadata UI 접속, Query·실패 test case·행내 확장 컬럼 table fixture 생성까지 완료했습니다. 브라우저용 세 URL과 로그인 storage state는 아직 준비하지 않았습니다.</div>
+<div class="callout stop"><strong>사전 실행에서 발견한 중단 사유:</strong> fixture 생성 후 브라우저를 제외한 검사를 실행했으며, QueryReport 검사 응답 해석 오류는 수정했습니다. 그러나 BANK-OM-007 candidate에서 <code>serviceConnection.ts</code>의 Tibero enum이 누락된 것을 확인했습니다. 새 candidate를 구성하고 등록 승인을 다시 받기 전에는 5-4 전체 PASS를 진행하지 않습니다.</div>
 <h4>5-4-5. 실행 image digest 고정</h4>
 <p><strong>확인 내용:</strong> <code>openmetadata_server</code>가 실행 중인 Docker image ID를 이번 test의 배포 확인값으로 저장합니다.</p>
 <div class="command"><pre><code class="language-bash">export DEPLOYED_ARTIFACT_DIGEST=&quot;$(docker inspect --format &#x27;{{.Image}}&#x27; openmetadata_server)&quot;</code></pre></div>

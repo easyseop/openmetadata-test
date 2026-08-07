@@ -24,7 +24,12 @@ def test_query_usage_roundtrip():
             f"/v1/queries/{query_id}/usage",
             [{"id": report_id, "type": "queryReport"}],
         )
-        assert linked["id"] == query_id
+        linked_query_id = (
+            linked.get("entityId")
+            or (linked.get("entity") or {}).get("id")
+            or linked.get("id")
+        )
+        assert linked_query_id == query_id
 
         def usage_hit():
             result = client.get(
