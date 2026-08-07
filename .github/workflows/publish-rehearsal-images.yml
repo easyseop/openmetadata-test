@@ -50,7 +50,7 @@ jobs:
 
       - name: Build OpenMetadata distribution
         run: >-
-          mvn -Dmaven.test.skip=true
+          mvn -DskipTests=true -Dmaven.test.skip=true
           --projects openmetadata-dist
           --also-make
           clean package
