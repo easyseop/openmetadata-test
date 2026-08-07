@@ -35,40 +35,28 @@ def test_hangul_composition_source_guard():
 
 
 def _replace_during_composition(wrapper, stages):
-    """Drive the rendered CodeMirror through real composition DOM events."""
-    wrapper.evaluate(
-        """(element, values) => {
-          const editor = element.CodeMirror;
-          if (!editor) {
-            throw new Error('CodeMirror instance is not attached to wrapper');
-          }
-          if (editor.getOption('readOnly')) {
-            throw new Error('target SchemaEditor is read-only');
-          }
-          element.dispatchEvent(
-            new CompositionEvent('compositionstart', {
-              bubbles: true,
-              data: values[0],
-            })
-          );
-          for (const value of values) {
-            editor.setValue(value);
-            element.dispatchEvent(
-              new CompositionEvent('compositionupdate', {
-                bubbles: true,
-                data: value,
-              })
-            );
-          }
-          element.dispatchEvent(
-            new CompositionEvent('compositionend', {
-              bubbles: true,
-              data: values[values.length - 1],
-            })
-          );
-        }""",
-        stages,
+    """Drive CodeMirror with the separate browser tasks produced by a real IME."""
+    state = wrapper.evaluate(
+        """element => ({
+          attached: Boolean(element.CodeMirror),
+          readOnly: element.CodeMirror?.getOption('readOnly'),
+        })"""
     )
+    if not state["attached"]:
+        pytest.fail("CodeMirror instance is not attached to wrapper")
+    if state["readOnly"]:
+        pytest.fail("target SchemaEditor is read-only")
+
+    wrapper.dispatch_event("compositionstart", {"data": stages[0]})
+    for value in stages:
+        wrapper.evaluate(
+            "(element, nextValue) => element.CodeMirror.setValue(nextValue)",
+            value,
+        )
+        wrapper.dispatch_event("compositionupdate", {"data": value})
+        wrapper.page.wait_for_timeout(25)
+    wrapper.dispatch_event("compositionend", {"data": stages[-1]})
+    wrapper.page.wait_for_timeout(25)
 
 
 def test_hangul_composition_roundtrip():

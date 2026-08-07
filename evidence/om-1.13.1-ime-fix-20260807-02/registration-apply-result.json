@@ -1,0 +1,13 @@
+{
+  "approved_by": "데이터시스템부",
+  "custom_head_sha": "85e60d426173f286894079c1c27262785ca0c811",
+  "patch_sha": "afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9",
+  "proposal_digest": "sha256:9193f9c94b81e52d4b7acd22593db8dba503b1cc2d85707064767bbad9e712e6",
+  "schema_version": 1,
+  "status": "APPLIED",
+  "written_files": [
+    "commit-inventory.yaml",
+    "current-diff-paths.txt",
+    "manifests/BANK-OM-005.yaml"
+  ]
+}

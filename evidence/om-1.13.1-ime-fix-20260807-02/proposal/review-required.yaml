@@ -1,0 +1,13 @@
+schema_version: 1
+proposal_digest: sha256:9193f9c94b81e52d4b7acd22593db8dba503b1cc2d85707064767bbad9e712e6
+status: REVIEW_REQUIRED
+items:
+- finding_id: REVIEW-0001
+  code: SERIES_ENABLE_DECISION
+  question: 같은 BANK-OM ID의 후속 commit을 하나의 커스터마이징 이력으로 관리할지 확인해야 합니다.
+  customization_id: BANK-OM-005
+- finding_id: REVIEW-0002
+  code: REQUIRED_PATH_DECISION
+  question: 새 변경 파일이 빠질 때 기능이 소실되는지 판단하고 required_changed_paths 추가 여부를 확인해야 합니다.
+  customization_id: BANK-OM-005
+  path: openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.test.tsx

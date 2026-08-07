@@ -1,0 +1,578 @@
+schema_version: 1
+status: READY
+apply_ready: true
+inputs:
+  repository: easyseop/OM_TEMP
+  registration: om-temp-1.13.1
+  patch_ref: upstream-1.13.1-release
+  patch_sha: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
+  custom_ref: codex/om-1.13.1-runtime-ready
+  custom_head_sha: 8ac18ad053d9274774e274ba17b35911ac0b9dcb
+  registration_state_digest: sha256:fc95fb2cdb8a32b6c63d4e475a29572cf09a7b7bca00b63940298bc5fef70c01
+generated:
+  commit_inventory:
+    schema_version: 1
+    product_version: 1.13.1
+    range:
+      patch_ref: upstream-1.13.1-release
+      patch_sha: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
+      custom_ref: codex/om-1.13.1-runtime-ready
+      custom_head_sha: 8ac18ad053d9274774e274ba17b35911ac0b9dcb
+    customizations:
+      BANK-OM-001:
+        commits:
+        - sha: 23ec5bf00e67d22815ef314b389abe424097bba2
+          subject: restore InstanceCode customization
+          changed_paths:
+          - bootstrap/sql/migrations/native/1.13.1/mysql/schemaChanges.sql
+          - bootstrap/sql/migrations/native/1.13.1/postgres/schemaChanges.sql
+          - openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
+          - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java
+          - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/InstanceCodeRepository.java
+          - openmetadata-service/src/main/java/org/openmetadata/service/resources/instancecode/InstanceCodeMapper.java
+          - openmetadata-service/src/main/java/org/openmetadata/service/resources/instancecode/InstanceCodeResource.java
+          - openmetadata-service/src/main/java/org/openmetadata/service/search/SearchIndexFactory.java
+          - openmetadata-service/src/main/java/org/openmetadata/service/search/indexes/InstanceCodeIndex.java
+          - openmetadata-spec/src/main/resources/elasticsearch/en/instance_code_index_mapping.json
+          - openmetadata-spec/src/main/resources/elasticsearch/indexMapping.json
+          - openmetadata-spec/src/main/resources/elasticsearch/jp/instance_code_index_mapping.json
+          - openmetadata-spec/src/main/resources/elasticsearch/ru/instance_code_index_mapping.json
+          - openmetadata-spec/src/main/resources/elasticsearch/zh/instance_code_index_mapping.json
+          - openmetadata-spec/src/main/resources/json/schema/api/data/createInstanceCode.json
+          - openmetadata-spec/src/main/resources/json/schema/entity/data/instanceCode.json
+          - openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+          - openmetadata-ui/src/main/resources/ui/src/components/InstanceCode/InstanceCodeListPage.tsx
+          - openmetadata-ui/src/main/resources/ui/src/constants/constants.ts
+          - openmetadata-ui/src/main/resources/ui/src/context/PermissionProvider/PermissionProvider.interface.ts
+          - openmetadata-ui/src/main/resources/ui/src/enums/Explore.enum.ts
+          - openmetadata-ui/src/main/resources/ui/src/enums/entity.enum.ts
+          - openmetadata-ui/src/main/resources/ui/src/enums/search.enum.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/api/data/createInstanceCode.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/instanceCode.ts
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json
+          - openmetadata-ui/src/main/resources/ui/src/pages/InstanceCodeDetailsPage/InstanceCodeDetailsPage.tsx
+          - openmetadata-ui/src/main/resources/ui/src/pages/InstanceCodeGroupDetailsPage/InstanceCodeGroupDetailsPage.tsx
+          - openmetadata-ui/src/main/resources/ui/src/rest/instanceCodeAPI.ts
+          - openmetadata-ui/src/main/resources/ui/src/utils/RouterUtils.ts
+        latest_commit_sha: 23ec5bf00e67d22815ef314b389abe424097bba2
+        changed_paths:
+        - bootstrap/sql/migrations/native/1.13.1/mysql/schemaChanges.sql
+        - bootstrap/sql/migrations/native/1.13.1/postgres/schemaChanges.sql
+        - openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
+        - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java
+        - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/InstanceCodeRepository.java
+        - openmetadata-service/src/main/java/org/openmetadata/service/resources/instancecode/InstanceCodeMapper.java
+        - openmetadata-service/src/main/java/org/openmetadata/service/resources/instancecode/InstanceCodeResource.java
+        - openmetadata-service/src/main/java/org/openmetadata/service/search/SearchIndexFactory.java
+        - openmetadata-service/src/main/java/org/openmetadata/service/search/indexes/InstanceCodeIndex.java
+        - openmetadata-spec/src/main/resources/elasticsearch/en/instance_code_index_mapping.json
+        - openmetadata-spec/src/main/resources/elasticsearch/indexMapping.json
+        - openmetadata-spec/src/main/resources/elasticsearch/jp/instance_code_index_mapping.json
+        - openmetadata-spec/src/main/resources/elasticsearch/ru/instance_code_index_mapping.json
+        - openmetadata-spec/src/main/resources/elasticsearch/zh/instance_code_index_mapping.json
+        - openmetadata-spec/src/main/resources/json/schema/api/data/createInstanceCode.json
+        - openmetadata-spec/src/main/resources/json/schema/entity/data/instanceCode.json
+        - openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+        - openmetadata-ui/src/main/resources/ui/src/components/InstanceCode/InstanceCodeListPage.tsx
+        - openmetadata-ui/src/main/resources/ui/src/constants/constants.ts
+        - openmetadata-ui/src/main/resources/ui/src/context/PermissionProvider/PermissionProvider.interface.ts
+        - openmetadata-ui/src/main/resources/ui/src/enums/Explore.enum.ts
+        - openmetadata-ui/src/main/resources/ui/src/enums/entity.enum.ts
+        - openmetadata-ui/src/main/resources/ui/src/enums/search.enum.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/api/data/createInstanceCode.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/instanceCode.ts
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json
+        - openmetadata-ui/src/main/resources/ui/src/pages/InstanceCodeDetailsPage/InstanceCodeDetailsPage.tsx
+        - openmetadata-ui/src/main/resources/ui/src/pages/InstanceCodeGroupDetailsPage/InstanceCodeGroupDetailsPage.tsx
+        - openmetadata-ui/src/main/resources/ui/src/rest/instanceCodeAPI.ts
+        - openmetadata-ui/src/main/resources/ui/src/utils/RouterUtils.ts
+      BANK-OM-002:
+        commits:
+        - sha: c899f5b0149e03cf99a0e58ff130b791922b2133
+          subject: restore QueryReport customization
+          changed_paths:
+          - bootstrap/sql/migrations/native/1.13.1/mysql/schemaChanges.sql
+          - bootstrap/sql/migrations/native/1.13.1/postgres/schemaChanges.sql
+          - openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
+          - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java
+          - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/QueryReportRepository.java
+          - openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/QueryReportMapper.java
+          - openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/QueryReportResource.java
+          - openmetadata-service/src/main/java/org/openmetadata/service/search/SearchIndexFactory.java
+          - openmetadata-service/src/main/java/org/openmetadata/service/search/indexes/QueryReportIndex.java
+          - openmetadata-spec/src/main/resources/elasticsearch/en/query_index_mapping.json
+          - openmetadata-spec/src/main/resources/elasticsearch/en/query_report_index_mapping.json
+          - openmetadata-spec/src/main/resources/elasticsearch/indexMapping.json
+          - openmetadata-spec/src/main/resources/elasticsearch/jp/query_index_mapping.json
+          - openmetadata-spec/src/main/resources/elasticsearch/jp/query_report_index_mapping.json
+          - openmetadata-spec/src/main/resources/elasticsearch/ru/query_index_mapping.json
+          - openmetadata-spec/src/main/resources/elasticsearch/ru/query_report_index_mapping.json
+          - openmetadata-spec/src/main/resources/elasticsearch/zh/query_index_mapping.json
+          - openmetadata-spec/src/main/resources/elasticsearch/zh/query_report_index_mapping.json
+          - openmetadata-spec/src/main/resources/json/schema/api/data/createQueryReport.json
+          - openmetadata-spec/src/main/resources/json/schema/entity/data/queryReport.json
+          - openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+          - openmetadata-ui/src/main/resources/ui/src/components/QueryReport/QueryReportListPage.tsx
+          - openmetadata-ui/src/main/resources/ui/src/components/QueryReport/QueryReportQueryEditor/QueryReportQueryEditor.component.tsx
+          - openmetadata-ui/src/main/resources/ui/src/constants/constants.ts
+          - openmetadata-ui/src/main/resources/ui/src/context/PermissionProvider/PermissionProvider.interface.ts
+          - openmetadata-ui/src/main/resources/ui/src/enums/Explore.enum.ts
+          - openmetadata-ui/src/main/resources/ui/src/enums/entity.enum.ts
+          - openmetadata-ui/src/main/resources/ui/src/enums/search.enum.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/api/data/createQueryReport.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/queryReport.ts
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json
+          - openmetadata-ui/src/main/resources/ui/src/pages/QueryReportDetailsPage/QueryReportDetailsPage.tsx
+          - openmetadata-ui/src/main/resources/ui/src/pages/QueryReportYearDetailsPage/QueryReportYearDetailsPage.tsx
+          - openmetadata-ui/src/main/resources/ui/src/rest/queryAPI.ts
+          - openmetadata-ui/src/main/resources/ui/src/rest/queryReportAPI.ts
+          - openmetadata-ui/src/main/resources/ui/src/utils/QueryReportUtils.ts
+          - openmetadata-ui/src/main/resources/ui/src/utils/RouterUtils.ts
+        latest_commit_sha: c899f5b0149e03cf99a0e58ff130b791922b2133
+        changed_paths:
+        - bootstrap/sql/migrations/native/1.13.1/mysql/schemaChanges.sql
+        - bootstrap/sql/migrations/native/1.13.1/postgres/schemaChanges.sql
+        - openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
+        - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java
+        - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/QueryReportRepository.java
+        - openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/QueryReportMapper.java
+        - openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/QueryReportResource.java
+        - openmetadata-service/src/main/java/org/openmetadata/service/search/SearchIndexFactory.java
+        - openmetadata-service/src/main/java/org/openmetadata/service/search/indexes/QueryReportIndex.java
+        - openmetadata-spec/src/main/resources/elasticsearch/en/query_index_mapping.json
+        - openmetadata-spec/src/main/resources/elasticsearch/en/query_report_index_mapping.json
+        - openmetadata-spec/src/main/resources/elasticsearch/indexMapping.json
+        - openmetadata-spec/src/main/resources/elasticsearch/jp/query_index_mapping.json
+        - openmetadata-spec/src/main/resources/elasticsearch/jp/query_report_index_mapping.json
+        - openmetadata-spec/src/main/resources/elasticsearch/ru/query_index_mapping.json
+        - openmetadata-spec/src/main/resources/elasticsearch/ru/query_report_index_mapping.json
+        - openmetadata-spec/src/main/resources/elasticsearch/zh/query_index_mapping.json
+        - openmetadata-spec/src/main/resources/elasticsearch/zh/query_report_index_mapping.json
+        - openmetadata-spec/src/main/resources/json/schema/api/data/createQueryReport.json
+        - openmetadata-spec/src/main/resources/json/schema/entity/data/queryReport.json
+        - openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+        - openmetadata-ui/src/main/resources/ui/src/components/QueryReport/QueryReportListPage.tsx
+        - openmetadata-ui/src/main/resources/ui/src/components/QueryReport/QueryReportQueryEditor/QueryReportQueryEditor.component.tsx
+        - openmetadata-ui/src/main/resources/ui/src/constants/constants.ts
+        - openmetadata-ui/src/main/resources/ui/src/context/PermissionProvider/PermissionProvider.interface.ts
+        - openmetadata-ui/src/main/resources/ui/src/enums/Explore.enum.ts
+        - openmetadata-ui/src/main/resources/ui/src/enums/entity.enum.ts
+        - openmetadata-ui/src/main/resources/ui/src/enums/search.enum.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/api/data/createQueryReport.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/queryReport.ts
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json
+        - openmetadata-ui/src/main/resources/ui/src/pages/QueryReportDetailsPage/QueryReportDetailsPage.tsx
+        - openmetadata-ui/src/main/resources/ui/src/pages/QueryReportYearDetailsPage/QueryReportYearDetailsPage.tsx
+        - openmetadata-ui/src/main/resources/ui/src/rest/queryAPI.ts
+        - openmetadata-ui/src/main/resources/ui/src/rest/queryReportAPI.ts
+        - openmetadata-ui/src/main/resources/ui/src/utils/QueryReportUtils.ts
+        - openmetadata-ui/src/main/resources/ui/src/utils/RouterUtils.ts
+      BANK-OM-003:
+        commits:
+        - sha: 8cb6f00abc702a9596308fcdb53406f192501673
+          subject: restore Data Assertions customization
+          changed_paths:
+          - openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+          - openmetadata-ui/src/main/resources/ui/src/components/MyData/MyDataFailedAssertions/MyDataFailedAssertions.component.tsx
+          - openmetadata-ui/src/main/resources/ui/src/constants/constants.ts
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json
+          - openmetadata-ui/src/main/resources/ui/src/pages/DataAssertionsPage/DataAssertionsPage.tsx
+          - openmetadata-ui/src/main/resources/ui/src/pages/MyDataPage/MyDataPage.component.tsx
+          - openmetadata-ui/src/main/resources/ui/src/rest/dataAssertionsAPI.ts
+        latest_commit_sha: 8cb6f00abc702a9596308fcdb53406f192501673
+        changed_paths:
+        - openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+        - openmetadata-ui/src/main/resources/ui/src/components/MyData/MyDataFailedAssertions/MyDataFailedAssertions.component.tsx
+        - openmetadata-ui/src/main/resources/ui/src/constants/constants.ts
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json
+        - openmetadata-ui/src/main/resources/ui/src/pages/DataAssertionsPage/DataAssertionsPage.tsx
+        - openmetadata-ui/src/main/resources/ui/src/pages/MyDataPage/MyDataPage.component.tsx
+        - openmetadata-ui/src/main/resources/ui/src/rest/dataAssertionsAPI.ts
+      BANK-OM-004:
+        commits:
+        - sha: 8a376508ede7de44588dbd5f7ed47f9b1b74bac0
+          subject: restore bank column display customization
+          changed_paths:
+          - openmetadata-ui/src/main/resources/ui/src/components/DataAssetSummaryPanelV1/DataAssetSummaryPanelV1.tsx
+          - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaTable/SchemaTable.component.tsx
+          - openmetadata-ui/src/main/resources/ui/src/components/Explore/ExploreTree/ExploreTree.tsx
+          - openmetadata-ui/src/main/resources/ui/src/components/SearchedData/SearchedData.tsx
+          - openmetadata-ui/src/main/resources/ui/src/constants/TableKeys.constants.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/database.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/databaseSchema.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/storedProcedure.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/table.ts
+          - openmetadata-ui/src/main/resources/ui/src/interface/search.interface.ts
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json
+          - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json
+          - openmetadata-ui/src/main/resources/ui/src/utils/EntityUtilClassBase.ts
+          - openmetadata-ui/src/main/resources/ui/src/utils/EntityUtils.interface.ts
+          - openmetadata-ui/src/main/resources/ui/src/utils/EntityUtils.tsx
+          - openmetadata-ui/src/main/resources/ui/src/utils/SearchClassBase.ts
+        latest_commit_sha: 8a376508ede7de44588dbd5f7ed47f9b1b74bac0
+        changed_paths:
+        - openmetadata-ui/src/main/resources/ui/src/components/DataAssetSummaryPanelV1/DataAssetSummaryPanelV1.tsx
+        - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaTable/SchemaTable.component.tsx
+        - openmetadata-ui/src/main/resources/ui/src/components/Explore/ExploreTree/ExploreTree.tsx
+        - openmetadata-ui/src/main/resources/ui/src/components/SearchedData/SearchedData.tsx
+        - openmetadata-ui/src/main/resources/ui/src/constants/TableKeys.constants.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/database.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/databaseSchema.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/storedProcedure.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/table.ts
+        - openmetadata-ui/src/main/resources/ui/src/interface/search.interface.ts
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json
+        - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json
+        - openmetadata-ui/src/main/resources/ui/src/utils/EntityUtilClassBase.ts
+        - openmetadata-ui/src/main/resources/ui/src/utils/EntityUtils.interface.ts
+        - openmetadata-ui/src/main/resources/ui/src/utils/EntityUtils.tsx
+        - openmetadata-ui/src/main/resources/ui/src/utils/SearchClassBase.ts
+      BANK-OM-005:
+        commits:
+        - sha: a5c8b9d098c13afc22f319989a5fcd766f308dd3
+          subject: restore Korean IME customization
+          changed_paths:
+          - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
+        - sha: 1cf40ff403c818c5d2e564c5d6872f0a865dae59
+          subject: preserve Korean IME composition in controlled editor
+          changed_paths:
+          - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.test.tsx
+          - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
+        latest_commit_sha: 1cf40ff403c818c5d2e564c5d6872f0a865dae59
+        changed_paths:
+        - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.test.tsx
+        - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
+      BANK-OM-006:
+        commits:
+        - sha: d430b33ae800c6a8038736aea29696acb851506a
+          subject: restore Sybase customization
+          changed_paths:
+          - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/sybaseConnection.json
+          - openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json
+          - openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-sybase.svg
+          - openmetadata-ui/src/main/resources/ui/src/generated/api/automations/createWorkflow.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/api/services/createDatabaseService.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/api/services/ingestionPipelines/createIngestionPipeline.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/entity/automations/testServiceConnection.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/entity/automations/workflow.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/sybaseConnection.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/databaseService.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/ingestionPipelines/ingestionPipeline.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/testSuitePipeline.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/workflow.ts
+          - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx
+          - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx
+          - openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts
+          - openmetadata-ui/src/main/resources/ui/src/utils/ServiceUtils.tsx
+        latest_commit_sha: d430b33ae800c6a8038736aea29696acb851506a
+        changed_paths:
+        - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/sybaseConnection.json
+        - openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json
+        - openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-sybase.svg
+        - openmetadata-ui/src/main/resources/ui/src/generated/api/automations/createWorkflow.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/api/services/createDatabaseService.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/api/services/ingestionPipelines/createIngestionPipeline.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/entity/automations/testServiceConnection.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/entity/automations/workflow.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/sybaseConnection.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/databaseService.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/ingestionPipelines/ingestionPipeline.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/testSuitePipeline.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/workflow.ts
+        - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx
+        - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx
+        - openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts
+        - openmetadata-ui/src/main/resources/ui/src/utils/ServiceUtils.tsx
+      BANK-OM-007:
+        commits:
+        - sha: a2393b5f07e32d137ea5f6ab56aa396808c0ceb6
+          subject: restore Tibero customization
+          changed_paths:
+          - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/tiberoConnection.json
+          - openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json
+          - openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-tibero.svg
+          - openmetadata-ui/src/main/resources/ui/src/generated/api/services/createDatabaseService.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/tiberoConnection.ts
+          - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/databaseService.ts
+          - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx
+          - openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts
+        - sha: 8ac18ad053d9274774e274ba17b35911ac0b9dcb
+          subject: complete Tibero service connection coverage
+          changed_paths:
+          - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts
+          - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx
+        latest_commit_sha: 8ac18ad053d9274774e274ba17b35911ac0b9dcb
+        changed_paths:
+        - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/tiberoConnection.json
+        - openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json
+        - openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-tibero.svg
+        - openmetadata-ui/src/main/resources/ui/src/generated/api/services/createDatabaseService.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/tiberoConnection.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts
+        - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/databaseService.ts
+        - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx
+        - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx
+        - openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts
+    net_changed_paths: &id001
+    - bootstrap/sql/migrations/native/1.13.1/mysql/schemaChanges.sql
+    - bootstrap/sql/migrations/native/1.13.1/postgres/schemaChanges.sql
+    - openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/InstanceCodeRepository.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/QueryReportRepository.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/resources/instancecode/InstanceCodeMapper.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/resources/instancecode/InstanceCodeResource.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/QueryReportMapper.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/QueryReportResource.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/search/SearchIndexFactory.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/search/indexes/InstanceCodeIndex.java
+    - openmetadata-service/src/main/java/org/openmetadata/service/search/indexes/QueryReportIndex.java
+    - openmetadata-spec/src/main/resources/elasticsearch/en/instance_code_index_mapping.json
+    - openmetadata-spec/src/main/resources/elasticsearch/en/query_index_mapping.json
+    - openmetadata-spec/src/main/resources/elasticsearch/en/query_report_index_mapping.json
+    - openmetadata-spec/src/main/resources/elasticsearch/indexMapping.json
+    - openmetadata-spec/src/main/resources/elasticsearch/jp/instance_code_index_mapping.json
+    - openmetadata-spec/src/main/resources/elasticsearch/jp/query_index_mapping.json
+    - openmetadata-spec/src/main/resources/elasticsearch/jp/query_report_index_mapping.json
+    - openmetadata-spec/src/main/resources/elasticsearch/ru/instance_code_index_mapping.json
+    - openmetadata-spec/src/main/resources/elasticsearch/ru/query_index_mapping.json
+    - openmetadata-spec/src/main/resources/elasticsearch/ru/query_report_index_mapping.json
+    - openmetadata-spec/src/main/resources/elasticsearch/zh/instance_code_index_mapping.json
+    - openmetadata-spec/src/main/resources/elasticsearch/zh/query_index_mapping.json
+    - openmetadata-spec/src/main/resources/elasticsearch/zh/query_report_index_mapping.json
+    - openmetadata-spec/src/main/resources/json/schema/api/data/createInstanceCode.json
+    - openmetadata-spec/src/main/resources/json/schema/api/data/createQueryReport.json
+    - openmetadata-spec/src/main/resources/json/schema/entity/data/instanceCode.json
+    - openmetadata-spec/src/main/resources/json/schema/entity/data/queryReport.json
+    - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/sybaseConnection.json
+    - openmetadata-spec/src/main/resources/json/schema/entity/services/connections/database/tiberoConnection.json
+    - openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json
+    - openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-sybase.svg
+    - openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-tibero.svg
+    - openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+    - openmetadata-ui/src/main/resources/ui/src/components/DataAssetSummaryPanelV1/DataAssetSummaryPanelV1.tsx
+    - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.test.tsx
+    - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
+    - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaTable/SchemaTable.component.tsx
+    - openmetadata-ui/src/main/resources/ui/src/components/Explore/ExploreTree/ExploreTree.tsx
+    - openmetadata-ui/src/main/resources/ui/src/components/InstanceCode/InstanceCodeListPage.tsx
+    - openmetadata-ui/src/main/resources/ui/src/components/MyData/MyDataFailedAssertions/MyDataFailedAssertions.component.tsx
+    - openmetadata-ui/src/main/resources/ui/src/components/QueryReport/QueryReportListPage.tsx
+    - openmetadata-ui/src/main/resources/ui/src/components/QueryReport/QueryReportQueryEditor/QueryReportQueryEditor.component.tsx
+    - openmetadata-ui/src/main/resources/ui/src/components/SearchedData/SearchedData.tsx
+    - openmetadata-ui/src/main/resources/ui/src/constants/TableKeys.constants.ts
+    - openmetadata-ui/src/main/resources/ui/src/constants/constants.ts
+    - openmetadata-ui/src/main/resources/ui/src/context/PermissionProvider/PermissionProvider.interface.ts
+    - openmetadata-ui/src/main/resources/ui/src/enums/Explore.enum.ts
+    - openmetadata-ui/src/main/resources/ui/src/enums/entity.enum.ts
+    - openmetadata-ui/src/main/resources/ui/src/enums/search.enum.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/api/automations/createWorkflow.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/api/data/createInstanceCode.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/api/data/createQueryReport.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/api/services/createDatabaseService.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/api/services/ingestionPipelines/createIngestionPipeline.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/automations/testServiceConnection.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/automations/workflow.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/database.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/databaseSchema.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/instanceCode.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/queryReport.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/storedProcedure.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/table.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/sybaseConnection.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/tiberoConnection.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/databaseService.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/ingestionPipelines/ingestionPipeline.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/testSuitePipeline.ts
+    - openmetadata-ui/src/main/resources/ui/src/generated/metadataIngestion/workflow.ts
+    - openmetadata-ui/src/main/resources/ui/src/interface/search.interface.ts
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json
+    - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json
+    - openmetadata-ui/src/main/resources/ui/src/pages/DataAssertionsPage/DataAssertionsPage.tsx
+    - openmetadata-ui/src/main/resources/ui/src/pages/InstanceCodeDetailsPage/InstanceCodeDetailsPage.tsx
+    - openmetadata-ui/src/main/resources/ui/src/pages/InstanceCodeGroupDetailsPage/InstanceCodeGroupDetailsPage.tsx
+    - openmetadata-ui/src/main/resources/ui/src/pages/MyDataPage/MyDataPage.component.tsx
+    - openmetadata-ui/src/main/resources/ui/src/pages/QueryReportDetailsPage/QueryReportDetailsPage.tsx
+    - openmetadata-ui/src/main/resources/ui/src/pages/QueryReportYearDetailsPage/QueryReportYearDetailsPage.tsx
+    - openmetadata-ui/src/main/resources/ui/src/rest/dataAssertionsAPI.ts
+    - openmetadata-ui/src/main/resources/ui/src/rest/instanceCodeAPI.ts
+    - openmetadata-ui/src/main/resources/ui/src/rest/queryAPI.ts
+    - openmetadata-ui/src/main/resources/ui/src/rest/queryReportAPI.ts
+    - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx
+    - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx
+    - openmetadata-ui/src/main/resources/ui/src/utils/EntityUtilClassBase.ts
+    - openmetadata-ui/src/main/resources/ui/src/utils/EntityUtils.interface.ts
+    - openmetadata-ui/src/main/resources/ui/src/utils/EntityUtils.tsx
+    - openmetadata-ui/src/main/resources/ui/src/utils/QueryReportUtils.ts
+    - openmetadata-ui/src/main/resources/ui/src/utils/RouterUtils.ts
+    - openmetadata-ui/src/main/resources/ui/src/utils/SearchClassBase.ts
+    - openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts
+    - openmetadata-ui/src/main/resources/ui/src/utils/ServiceUtils.tsx
+  current_diff_paths: *id001
+changes: []
+registry_after: null
+review_required: []
+blocked: []
+analysis_errors: []

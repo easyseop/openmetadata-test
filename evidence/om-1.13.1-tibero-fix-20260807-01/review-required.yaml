@@ -1,0 +1,18 @@
+schema_version: 1
+proposal_digest: sha256:2f86b39a6fe99d26e39db040390d03f7ef35d3b1ef471c53fa83c27a924c680a
+status: REVIEW_REQUIRED
+items:
+- finding_id: REVIEW-0001
+  code: SERIES_ENABLE_DECISION
+  question: 같은 BANK-OM ID의 후속 commit을 하나의 커스터마이징 이력으로 관리할지 확인해야 합니다.
+  customization_id: BANK-OM-007
+- finding_id: REVIEW-0002
+  code: REQUIRED_PATH_DECISION
+  question: 새 변경 파일이 빠질 때 기능이 소실되는지 판단하고 required_changed_paths 추가 여부를 확인해야 합니다.
+  customization_id: BANK-OM-007
+  path: openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts
+- finding_id: REVIEW-0003
+  code: REQUIRED_PATH_DECISION
+  question: 새 변경 파일이 빠질 때 기능이 소실되는지 판단하고 required_changed_paths 추가 여부를 확인해야 합니다.
+  customization_id: BANK-OM-007
+  path: openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx

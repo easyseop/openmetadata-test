@@ -1,0 +1,29 @@
+--- a/manifests/BANK-OM-007.yaml
++++ b/manifests/BANK-OM-007.yaml
+@@ -10,7 +10,9 @@
+   - openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-tibero.svg
+   - openmetadata-ui/src/main/resources/ui/src/generated/api/services/createDatabaseService.ts
+   - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/tiberoConnection.ts
++  - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts
+   - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/databaseService.ts
++  - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx
+   - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx
+   - openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts
+   required_changed_paths:
+@@ -19,7 +21,9 @@
+   paths:
+   - openmetadata-spec/src/main/resources/json/schema/entity/services/databaseService.json
+   - openmetadata-ui/src/main/resources/ui/src/generated/api/services/createDatabaseService.ts
++  - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts
+   - openmetadata-ui/src/main/resources/ui/src/generated/entity/services/databaseService.ts
++  - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx
+   - openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx
+   - openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts
+ assurance:
+@@ -27,5 +31,5 @@
+   - CONTRACT-TIBERO-CONNECTOR
+   direct_tests: []
+ series:
+-  allowed: false
++  allowed: true
+   depends_on: []

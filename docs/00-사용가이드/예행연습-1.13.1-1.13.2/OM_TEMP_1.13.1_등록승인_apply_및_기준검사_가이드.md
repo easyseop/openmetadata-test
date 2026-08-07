@@ -3,7 +3,7 @@
 **전체 순서:** 7/11 · [전체 목차](./OM_TEMP_1.13.1_1.13.2_예행연습_전체목차.html)
 
 > 문서 성격: 사용자가 승인한 1.13.1 등록 변경안을 검사기 저장소에 반영하고, 업그레이드 전 기준 검사를 실행하는 문서입니다.  
-> 시작 조건: `codex/om-1.13.1-id-series-upstream`의 111개 변경 경로와 7개 BANK-OM ID별 commit, 공용 코드 정의 114개 조합이 승인돼 있어야 합니다. 이전 단계와 같은 터미널을 사용하여 `OM_TEST_REPO`와 `OM_CODE_REPO`가 설정된 상태에서 시작합니다.
+> 시작 조건: `codex/om-1.13.1-runtime-ready`의 111개 변경 경로와 7개 BANK-OM ID별 commit series, 공용 코드 정의 114개 조합이 승인돼 있어야 합니다. 이전 단계와 같은 터미널을 사용하여 `OM_TEST_REPO`와 `OM_CODE_REPO`가 설정된 상태에서 시작합니다.
 > 종료점: 공식 1.13.1과 커스텀 1.13.1의 실제 차이가 승인한 등록자료와 일치한다는 기준 결과를 보관합니다. 아직 1.13.2와 비교하거나 업그레이드 성공을 판정하지 않습니다.  
 > 이 문서에서 하지 않는 일: 공식 1.13.2 준비, vendor merge, release branch 생성.
 
@@ -95,7 +95,7 @@ cd "$OM_TEST_REPO"
 ### 3-2. OpenMetadata 코드 branch와 작업 폴더 확인
 
 ```bash
-git -C "$OM_CODE_REPO" switch codex/om-1.13.1-id-series-upstream
+git -C "$OM_CODE_REPO" switch codex/om-1.13.1-runtime-ready
 ```
 
 ```bash
@@ -104,17 +104,17 @@ git -C "$OM_CODE_REPO" status --short
 
 **정상 결과:** 빈 출력. 미커밋 변경이 있으면 `plan`을 실행하지 않습니다.
 
-아래 명령은 이전 페이지 7-4 재검사에서 통과한 `codex/om-1.13.1-id-series-upstream` branch의 마지막 commit SHA를 출력합니다. 이 commit에는 BANK-OM-001부터 007까지 7개 commit이 순서대로 포함되어 있습니다.
+아래 명령은 이전 단계에서 구성한 `codex/om-1.13.1-runtime-ready` branch의 마지막 commit SHA를 출력합니다. 이 commit에는 BANK-OM-001부터 007까지의 변경과 후속 보정 commit이 ID 순서대로 포함되어 있습니다.
 
 이 commit은 **1.13.1 기준검사 대상 commit**입니다. 아직 1.13.2를 합친 코드는 아닙니다. 뒤에서 공식 1.13.2를 합쳐 만든 commit은 별도로 **1.13.2 업그레이드 후보 commit**이라고 부릅니다.
 
 ```bash
-git -C "$OM_CODE_REPO" rev-parse codex/om-1.13.1-id-series-upstream
+git -C "$OM_CODE_REPO" rev-parse codex/om-1.13.1-runtime-ready
 ```
 
-**현재 예행연습 출력:** `d952a83896940116d3d6022323ad76bfe60991e8`
+**현재 예행연습 출력:** `8ac18ad053d9274774e274ba17b35911ac0b9dcb`
 
-이 값은 이전 4/11 가이드에서 만든 7개 BANK-OM commit 중 마지막 `BANK-OM-007` commit입니다. 앞의 6개 commit도 이 commit의 Git 이력에 포함돼 있습니다.
+이 값은 7개 BANK-OM ID의 변경을 순서대로 쌓은 9개 commit 중 마지막 `BANK-OM-007` 보정 commit입니다. BANK-OM-005와 BANK-OM-007은 각각 원본 복원 commit과 후속 보정 commit이 있어 전체 commit 수가 9개입니다.
 
 **확인 방법:** 출력된 SHA를 아래 두 결과의 SHA와 비교합니다. 점(`.`)으로 연결된 이름은 JSON 안쪽으로 들어가는 순서를 뜻합니다.
 
@@ -180,7 +180,7 @@ sed -n '1,200p' "$PLAN_DIR/proposal/summary.md"
 
 - 상태: `REVIEW_REQUIRED`
 - 반영 가능: `yes`
-- BANK-OM 7개, commit 7개, 변경 경로 111개, 공용 경로 37개
+- BANK-OM ID 7개, commit 9개, 변경 경로 111개, 공용 경로 37개
 - **반드시 수정할 항목**이 없음
 
 `BLOCKED`이면 승인 단계가 아닙니다. `summary.md`의 수정 항목에 따라 최초 등록 입력 YAML을 고치고, 새 실행 ID로 `bootstrap-plan`을 다시 실행합니다. 차단된 proposal로 승인 양식을 만들거나 `apply`하면 도구가 `PROPOSAL_NOT_APPLY_READY`로 다시 차단합니다.
@@ -497,7 +497,7 @@ git -C "$OM_TEST_REPO" diff -- harness/registrations/om-temp-1.13.1
 {
   "candidate_lock": {
     "candidate": {
-      "commit_sha": "d952a838...",
+      "commit_sha": "8ac18ad0...",
       "tree_sha": "e490ed82..."
     },
     "upstream": {
@@ -510,7 +510,7 @@ git -C "$OM_TEST_REPO" diff -- harness/registrations/om-temp-1.13.1
     {
       "name": "vendor-ancestry",
       "verdict": "pass",
-      "reasons": ["candidate=d952a838...", "approved_target=afcb2d2c..."]
+      "reasons": ["candidate=8ac18ad0...", "approved_target=afcb2d2c..."]
     }
   ]
 }
@@ -539,7 +539,7 @@ git -C "$OM_TEST_REPO" diff -- harness/registrations/om-temp-1.13.1
 ```bash
 PYTHONPATH=harness ./.venv/bin/python -m acgh.shared_code \
   --repo "$OM_CODE_REPO" \
-  --candidate codex/om-1.13.1-id-series-upstream \
+  --candidate codex/om-1.13.1-runtime-ready \
   --owners harness/registrations/om-temp-1.13.1/shared-path-owners.yaml \
   --definitions harness/registrations/om-temp-1.13.1/shared-code-definitions.yaml \
   --output "$BASELINE_DIR/shared-code-results.json"
@@ -609,7 +609,7 @@ PYTHONPATH=harness ./.venv/bin/python -m acgh.shared_code \
 docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
 ```
 
-**정상 결과:** `openmetadata_server`, `openmetadata_mysql`, `openmetadata_elasticsearch`가 모두 `healthy`입니다.
+**정상 결과:** `openmetadata_server`, `openmetadata_mysql`, `openmetadata_elasticsearch`가 모두 `healthy`입니다. 하나라도 중지됐으면 먼저 Docker 서비스를 시작합니다.
 
 #### 5-4-2. API 주소와 실행 commit 확인
 
@@ -633,85 +633,96 @@ git -C "$OM_CODE_REPO" rev-parse HEAD
 
 `system/version`의 `revision`과 `git rev-parse HEAD`가 같아야 합니다. 다르면 **검사하려는 코드와 Docker에서 실행 중인 코드가 다르므로 중단**합니다.
 
-> **2026-08-07 현재 확인 결과:** Docker 서비스와 등록·소스 검사를 통과한 코드가 모두 `d952a838...`입니다. migration 종료 코드는 0이고 MySQL·Elasticsearch·OpenMetadata server가 모두 `healthy`입니다. 실행 image digest는 `sha256:85138760...`입니다.
+> **2026-08-07 현재 확인 결과:** Docker 서비스와 등록·소스 검사를 통과한 코드가 모두 `8ac18ad053d9274774e274ba17b35911ac0b9dcb`입니다. MySQL·Elasticsearch·OpenMetadata server가 모두 `healthy`이며, 실행 image digest는 `sha256:96854a63064e563d8a1ce8f9289e3d8b2aad35a0d78836badf7cd7409aff7319`입니다.
 
-#### 5-4-3. 로컬 API 로그인
+#### 5-4-3. Contract 입력을 한 번에 준비
 
-**작업 내용:** 로컬 개발 환경의 관리자 계정으로 로그인하고 API token을 현재 터미널에만 저장합니다. 아래 값은 기본 개발 계정을 바꾸지 않은 경우에만 사용합니다.
-
-```bash
-export OPENMETADATA_AUTH_TOKEN="$(
-  curl -fsS -X POST "$OPENMETADATA_BASE_URL/v1/users/login" \
-    -H 'Content-Type: application/json' \
-    --data '{"email":"admin@open-metadata.org","password":"YWRtaW4="}' \
-  | jq -er '.accessToken'
-)"
-```
-
-**확인 내용:** token 원문을 화면에 표시하지 않고 발급 여부만 확인합니다.
+**작업 내용:** 준비 도구가 로컬 API에 로그인하고, Query·실패 test case·확장 컬럼 table fixture와 브라우저 로그인 상태를 준비합니다. 결과는 Git 밖의 권한 제한 파일에 저장합니다.
 
 ```bash
-test -n "$OPENMETADATA_AUTH_TOKEN" && printf 'API token 준비 완료\n'
+export OM_LOCAL_ADMIN_EMAIL="admin@open-metadata.org"
 ```
 
-**정상 결과:** `API token 준비 완료`가 출력됩니다. 이 환경변수는 현재 터미널을 닫으면 사라지며 문서·Git·결과 파일에 기록하지 않습니다.
-
-#### 5-4-4. Contract test 입력 준비
-
-| 입력 | 의미 | 준비 방법 |
-|---|---|---|
-| `OPENMETADATA_AUTH_TOKEN` | API 호출에 쓸 Bearer token | 로컬 basic 로그인으로 발급하고 파일에 저장하지 않음 |
-| `BANK_CONTRACT_QUERY_ID` | QueryReport에 연결할 기존 Query ID | 실행 환경에 Query 1개 생성 후 ID 기록 |
-| `BANK_FAILED_ASSERTION_FQN` | 실패 상태와 담당자가 있는 test case FQN | 실패 test case 하나를 준비한 후 FQN 기록 |
-| `BANK_COLUMN_TABLE_FQN` | 행내 확장 컬럼이 있는 table FQN | table을 생성·수집한 후 FQN 기록 |
-| `BANK_COLUMN_NAME` | 위 table에서 검사할 column 이름 | `attributeName`, `instanceName`, `infoType`가 있는 column 선택 |
-| `BANK_IME_EDITOR_URL` | 한글 조합을 검사할 SchemaEditor 페이지 | 로그인 후 편집 가능한 페이지 URL 기록 |
-| `BANK_DATA_ASSERTIONS_URL` | 실패 test case를 표시하는 행내 페이지 | 위 test case가 보이는 URL 기록 |
-| `BANK_COLUMN_UI_URL` | 행내 확장 컬럼을 표시하는 table 페이지 | 위 table의 schema URL 기록 |
-| `BANK_BROWSER_STORAGE_STATE_B64` | Playwright가 사용할 브라우저 로그인 상태 | Playwright storage state JSON을 base64로 인코딩 |
-
-> **현재 로컬 환경:** Playwright와 Chromium 설치, OpenMetadata UI 접속, Query·실패 test case·행내 확장 컬럼 table fixture 생성까지 완료했습니다. 브라우저용 세 URL과 로그인 storage state는 아직 준비하지 않았습니다.
-
-> **사전 실행에서 발견한 중단 사유:** fixture 생성 후 브라우저를 제외한 검사를 실행했으며, QueryReport 검사 응답 해석 오류는 수정했습니다. 그러나 BANK-OM-007 candidate에서 `serviceConnection.ts`의 Tibero enum이 누락된 것을 확인했습니다. 새 candidate를 구성하고 등록 승인을 다시 받기 전에는 5-4 전체 PASS를 진행하지 않습니다.
-
-#### 5-4-5. 실행 image digest 고정
-
-**확인 내용:** `openmetadata_server`가 실행 중인 Docker image ID를 이번 test의 배포 확인값으로 저장합니다.
+```bash
+export OM_LOCAL_ADMIN_PASSWORD="admin"
+```
 
 ```bash
 export DEPLOYED_ARTIFACT_DIGEST="$(docker inspect --format '{{.Image}}' openmetadata_server)"
 ```
 
 ```bash
-printf '%s\n' "$DEPLOYED_ARTIFACT_DIGEST"
+./.venv/bin/python harness/prepare_runtime_contract_environment.py \
+  --product-repo "$OM_CODE_REPO" \
+  --artifact-digest "$DEPLOYED_ARTIFACT_DIGEST" \
+  --output /private/tmp/om-runtime-contract.env
 ```
 
-**정상 결과:** `sha256:` 뒤에 64자리 값이 출력됩니다.
+**정상 결과:** `status`가 `ready`이고 `secret_values_printed`가 `false`입니다. 같은 이름의 fixture가 이미 있으면 재사용하므로 명령을 다시 실행해도 중복 생성하지 않습니다.
 
-#### 5-4-6. 실행 전 입력 검사
+> **주의 — 인증정보:** `/private/tmp/om-runtime-contract.env`는 권한 `600`으로 생성됩니다. Git에 추가하거나 화면 캡처에 내용을 노출하지 않습니다.
 
-**확인 내용:** 필수 환경변수 11개의 누락·URL 형식·digest 형식을 검사합니다. 비밀값 내용은 출력하지 않습니다.
+:::details 준비 도구가 만드는 입력 펼치기
+| 입력 | 검사에서 사용하는 용도 |
+|---|---|
+| `OPENMETADATA_AUTH_TOKEN` | API Contract 호출 인증 |
+| `BANK_CONTRACT_QUERY_ID` | QueryReport 생성·조회·삭제 |
+| `BANK_FAILED_ASSERTION_FQN` | 실패한 Data Assertion 조회 |
+| `BANK_COLUMN_TABLE_FQN`, `BANK_COLUMN_NAME` | 행내 확장 컬럼 API·화면 확인 |
+| `BANK_IME_EDITOR_URL` | 편집 가능한 SchemaEditor에서 한글 조합 확인 |
+| `BANK_DATA_ASSERTIONS_URL`, `BANK_COLUMN_UI_URL` | Data Assertion·확장 컬럼 화면 확인 |
+| `BANK_BROWSER_STORAGE_STATE_B64` | Playwright 브라우저 로그인 상태 |
+| `DEPLOYED_ARTIFACT_DIGEST` | 검사한 Docker image 고정 |
+:::
+
+:::details `Expired token`이 나오는 경우 펼치기
+호스트와 Docker VM의 시간이 크게 다르면 짧은 로그인 token이 발급 즉시 만료될 수 있습니다. 먼저 두 시간을 비교합니다.
+
+```bash
+date -u
+```
+
+```bash
+colima ssh -- date -u
+```
+
+현재 예행연습에서는 Colima 시간이 약 16시간 느려 로컬 DB의 `loginConfiguration.jwtTokenExpiryTime`을 유한한 24시간으로 조정했습니다. 무제한 token은 사용하지 않습니다. 다른 환경에서는 시간을 먼저 동기화하고, 임의로 운영 인증 정책을 바꾸지 않습니다.
+:::
+
+#### 5-4-4. 준비 결과 불러오기
+
+```bash
+source /private/tmp/om-runtime-contract.env
+```
+
+**확인 내용:** 11개 필수 입력의 누락·URL 형식·digest 형식을 검사합니다. 비밀값 내용은 출력하지 않습니다.
 
 ```bash
 ./.venv/bin/python \
   harness/registrations/kb-openmetadata/runtime_preflight.py
 ```
 
-**정상 결과:** `ready: true`, `missing_fields: []`, `invalid_fields: []`입니다. `ready: false`면 표시된 입력을 준비한 후 다시 실행합니다.
+**정상 결과:** `ready: true`, `missing_fields: []`, `invalid_fields: []`입니다.
 
-#### 5-4-7. Contract test 실행
+#### 5-4-5. Contract test 실행
+
+정식 결과에는 제품 코드와 검사기 코드의 정확한 commit을 기록합니다. 두 작업 폴더에 미반영 변경이 있으면 다른 코드를 검사한 결과로 오해하지 않도록 실행을 중단합니다.
+
+```bash
+export RUN_ID="20260807-01"
+```
 
 ```bash
 ./.venv/bin/python harness/om_workflow.py runtime \
   --repo "$OM_CODE_REPO" \
   --version 1.13.1 \
   --artifact-digest "$DEPLOYED_ARTIFACT_DIGEST" \
-  --run-id "om-1.13.1-baseline-$RUN_ID"
+  --run-id "om-1.13.1-runtime-$RUN_ID"
 ```
 
 **산출물:** 증거 폴더에 `candidate-lock.yaml`, `test-run-set.yaml`, `acgh-result.yaml`이 생성됩니다. `test-run-set.yaml`의 9개 필수 test가 모두 `pass`이고 `acgh-result.yaml`의 최종 verdict가 `pass`일 때만 5-4를 완료합니다.
 
-실제 API·브라우저·DB 입력이 없으면 runtime test가 `skipped`로 남을 수 있습니다. **실행된 test의 실패가 0개여도 필수 test가 skip이면 전체 PASS가 아닙니다.**
+> **현재 사전 확인 결과:** API Contract 6개, 브라우저 Contract 3개를 포함한 9개가 모두 실제 실행되어 통과했습니다. 정식 증거 실행에서는 이 결과를 다시 실행하고 candidate SHA·image digest·검사기 commit과 함께 저장합니다.
 
 ## 6. 결과 확인표
 

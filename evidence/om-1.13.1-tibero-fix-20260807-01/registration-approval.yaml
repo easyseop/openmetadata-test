@@ -1,0 +1,14 @@
+schema_version: 1
+proposal_digest: sha256:2f86b39a6fe99d26e39db040390d03f7ef35d3b1ef471c53fa83c27a924c680a
+approved_by: 데이터시스템부
+approved_at: "2026-08-07T12:59:07-07:00"
+decisions:
+- finding_id: REVIEW-0001
+  decision: accept_proposal
+  reason: BANK-OM-007 본체와 누락 보정 commit을 연속된 하나의 Tibero 커스터마이징 이력으로 관리합니다.
+- finding_id: REVIEW-0002
+  decision: accept_proposal
+  reason: serviceConnection.ts의 Tibero ConfigType 정의는 실행 시 Tibero 연결 유형을 식별하는 필수 코드이므로 필수 경로 추가를 승인합니다.
+- finding_id: REVIEW-0003
+  decision: accept_proposal
+  reason: DatabaseServiceUtils.test.tsx는 Tibero 동작을 확인하는 단위 test이므로 변경 경로 포함을 승인하되 기능 필수 경로로는 지정하지 않습니다.

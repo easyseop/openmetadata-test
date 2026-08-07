@@ -221,15 +221,13 @@ def test_followup_path_requires_human_decision_then_applies_atomically(
         "followup\n\nCustomization-ID: BANK-OM-001",
     )
     manifest_path = registration / "manifests/BANK-OM-001.yaml"
-    manifest = yaml.safe_load(manifest_path.read_text())
-    manifest["series"]["allowed"] = True
-    _dump(manifest_path, manifest)
 
     proposal = _plan(prepared)
     assert proposal["status"] == "REVIEW_REQUIRED"
     assert proposal["apply_ready"] is True
     assert {item["code"] for item in proposal["review_required"]} == {
-        "REQUIRED_PATH_DECISION"
+        "REQUIRED_PATH_DECISION",
+        "SERIES_ENABLE_DECISION",
     }
     output = tmp_path / "proposal"
     P.write_plan(output, proposal, registration=registration)
@@ -255,6 +253,7 @@ def test_followup_path_requires_human_decision_then_applies_atomically(
     ]
     assert applied["implementation"]["required_changed_paths"] == ["core/a.txt"]
     assert applied["upgrade_watch"]["paths"] == ["core/a.txt"]
+    assert applied["series"]["allowed"] is True
 
 
 def test_idless_commit_blocks(prepared):

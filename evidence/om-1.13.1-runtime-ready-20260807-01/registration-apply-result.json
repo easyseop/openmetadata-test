@@ -1,0 +1,12 @@
+{
+  "approved_by": "데이터시스템부",
+  "custom_head_sha": "8ac18ad053d9274774e274ba17b35911ac0b9dcb",
+  "patch_sha": "afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9",
+  "proposal_digest": "sha256:d6da2576d811dbd64c08dd56426c3f34b8da4674b33ce1f68b7ff1b977793b41",
+  "schema_version": 1,
+  "status": "APPLIED",
+  "written_files": [
+    "commit-inventory.yaml",
+    "current-diff-paths.txt"
+  ]
+}

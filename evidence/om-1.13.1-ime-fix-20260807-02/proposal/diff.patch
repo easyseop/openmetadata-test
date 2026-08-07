@@ -1,0 +1,22 @@
+--- a/manifests/BANK-OM-005.yaml
++++ b/manifests/BANK-OM-005.yaml
+@@ -5,16 +5,18 @@
+ title: 한글 입력 조합 보정
+ implementation:
+   changed_paths:
++  - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.test.tsx
+   - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
+   required_changed_paths:
+   - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
+ upgrade_watch:
+   paths:
++  - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.test.tsx
+   - openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx
+ assurance:
+   contracts:
+   - CONTRACT-KOREAN-IME
+   direct_tests: []
+ series:
+-  allowed: false
++  allowed: true
+   depends_on: []

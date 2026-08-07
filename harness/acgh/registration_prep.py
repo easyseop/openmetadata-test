@@ -421,7 +421,6 @@ def build_plan(
     layout_by_path: dict[str, str] = {}
     commit_records: dict[str, list[dict]] = defaultdict(list)
     changed_by_id: dict[str, set[str]] = defaultdict(set)
-    sequence: list[str] = []
     for commit in commits:
         paths = sorted(set(gitprim.changed_paths(str(repo), commit.sha)))
         if commit.is_merge:
@@ -474,7 +473,6 @@ def build_plan(
             )
             continue
         customization_id = commit.customization_ids[0]
-        sequence.append(customization_id)
         commit_records[customization_id].append(
             {
                 "sha": commit.sha,
@@ -484,6 +482,11 @@ def build_plan(
         )
         changed_by_id[customization_id].update(paths)
 
+    sequence = [
+        commit.customization_ids[0]
+        for commit in commits
+        if len(commit.customization_ids) == 1
+    ]
     for customization_id in sorted(set(sequence)):
         positions = [
             index for index, value in enumerate(sequence) if value == customization_id
@@ -591,13 +594,6 @@ def build_plan(
             continue
 
         series_allowed = manifest.get("series", {}).get("allowed", False)
-        if len(commit_records[customization_id]) > 1 and not series_allowed:
-            blocked.append(
-                _finding(
-                    "SERIES_NOT_ALLOWED",
-                    f"{customization_id}: multiple commits require series.allowed",
-                )
-            )
 
         before_changed = set(manifest_module.declared_changed_paths(manifest))
         schema_migrated = manifest.get("schema_version") != 2
@@ -620,6 +616,19 @@ def build_plan(
         after_manifest["implementation"].pop("allowed_changed_paths", None)
         after_manifest["implementation"].pop("candidate_additional_paths", None)
         after_manifest["implementation"]["changed_paths"] = actual
+        series_enabled = (
+            len(commit_records[customization_id]) > 1 and not series_allowed
+        )
+        if series_enabled:
+            after_manifest.setdefault("series", {})["allowed"] = True
+            after_manifest["series"].setdefault("depends_on", [])
+            _review(
+                reviews,
+                "SERIES_ENABLE_DECISION",
+                "같은 BANK-OM ID의 후속 commit을 하나의 커스터마이징 이력으로 "
+                "관리할지 확인해야 합니다.",
+                customization_id=customization_id,
+            )
         existing_watch = set(
             after_manifest.get("upgrade_watch", {}).get("paths", [])
         )
@@ -669,6 +678,7 @@ def build_plan(
             or added
             or removed
             or added_watch
+            or series_enabled
         ):
             changes.append(
                 {

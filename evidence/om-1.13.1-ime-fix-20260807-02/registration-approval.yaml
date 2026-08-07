@@ -1,0 +1,11 @@
+schema_version: 1
+proposal_digest: sha256:9193f9c94b81e52d4b7acd22593db8dba503b1cc2d85707064767bbad9e712e6
+approved_by: 데이터시스템부
+approved_at: '2026-08-07T12:00:00-07:00'
+decisions:
+- finding_id: REVIEW-0001
+  decision: accept_proposal
+  reason: BANK-OM-005의 한글 IME 보정 후속 커밋을 동일 커스터마이징 이력으로 관리한다.
+- finding_id: REVIEW-0002
+  decision: accept_proposal
+  reason: SchemaEditor.test.tsx는 회귀 테스트 파일이므로 변경 경로에는 포함하되 기능 구동 필수 경로로 지정하지 않는다.
