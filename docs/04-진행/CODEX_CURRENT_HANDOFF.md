@@ -278,6 +278,9 @@ timeout, catalog 강제, 빈 후보 차단, 판단 근거 digest, 승인 메타�
 debt 정책 fail-closed와 detail 보존을 회귀 테스트로 고정했다. 기존 validate·
 source runner와 선택적 Runtime Contract도 postmerge Phase에 연결했다.
 
+구현 commit은 `7a963853c7554be60db64cd1ba1fc4ce1bad26ef`이다. 이 SHA 뒤의
+인수인계 전용 commit은 구현 동작을 바꾸지 않는다.
+
 현재 완료 상태는 **구현과 synthetic E2E 검증 완료**다. 실제 1.13.2
 vendor-merge 후보의 postmerge 결과나 운영 승인 완료를 뜻하지 않는다. 상세 구현,
 검증 명령, 외부 입력 대기 항목은

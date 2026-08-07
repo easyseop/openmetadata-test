@@ -145,6 +145,10 @@ cp -R /tmp/tob/plugins/property-based-testing/skills/property-based-testing .cla
 작업 branch는 `codex/phase-bundling-safety-fix-20260808`이다. 기존 예행연습
 branch와 OpenMetadata 제품 코드는 수정하지 않았다.
 
+- 구현 commit: `7a963853c7554be60db64cd1ba1fc4ce1bad26ef`
+- 검증 당시 worktree: 구현 commit 후 이 인수인계 갱신만 추가
+- 원격 branch: `origin/codex/phase-bundling-safety-fix-20260808`
+
 ### 구현한 내용
 
 1. `GateSpec.timeout`을 POSIX wall-clock timer로 실제 강제했다. 지원하지 않는

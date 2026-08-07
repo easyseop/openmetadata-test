@@ -10,6 +10,7 @@
 > 같은 결과로 집계한다. Phase 143개 중 142 passed, 실제 로컬 제품 ref가 없는
 > parity 1개는 skip, 실패 0개다. 이는 구현·합성 E2E 완료이며 실제 1.13.2
 > vendor-merge 후보의 postmerge 실행·담당자 승인은 아직 수행하지 않았다.
+> 구현 commit: `7a963853c7554be60db64cd1ba1fc4ce1bad26ef`.
 
 > Updated: 2026-08-04 KST — OM_TEMP 1.13.1의 113개 실제 변경 경로 전체를
 > 시연용 YAML로 분류했다. 37개 공용 경로는 여러 BANK-OM ID에 연결하며
