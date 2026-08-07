@@ -269,3 +269,16 @@ Codex는 구현 코드를 수정하지 않고 독립 검토했습니다.
 운영 완료 승인을 할 수 없다는 것입니다. 정확한 문제와 다음 순서는
 `PHASE_BUNDLING_진척_인수인계_20260807.md` 12절과
 `PHASE_BUNDLING_CODEX_구현검토_20260807.md`를 확인합니다.
+
+## 11. 2026-08-08 Phase 검토 보완 branch
+
+Codex 독립 검토에서 확인한 P0 6건과 P1 2건은
+`codex/phase-bundling-safety-fix-20260808`에서 수정했다. phase 명령, 실제
+timeout, catalog 강제, 빈 후보 차단, 판단 근거 digest, 승인 메타데이터,
+debt 정책 fail-closed와 detail 보존을 회귀 테스트로 고정했다. 기존 validate·
+source runner와 선택적 Runtime Contract도 postmerge Phase에 연결했다.
+
+현재 완료 상태는 **구현과 synthetic E2E 검증 완료**다. 실제 1.13.2
+vendor-merge 후보의 postmerge 결과나 운영 승인 완료를 뜻하지 않는다. 상세 구현,
+검증 명령, 외부 입력 대기 항목은
+`PHASE_BUNDLING_진척_인수인계_20260807.md` 13절이 정본이다.

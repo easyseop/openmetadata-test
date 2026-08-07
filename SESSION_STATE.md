@@ -1,5 +1,15 @@
 # 세션 상태 / 인수인계 (SESSION_STATE)
 
+> **2026-08-08 Phase 안전 보완:** `codex/phase-bundling-safety-fix-20260808`
+> branch에서 2026-08-07 Codex 검토의 P0 6건과 P1 2건을 수정했다. Phase 결과
+> digest는 verdict뿐 아니라 reasons·evidence·detail도 보호하고, 승인에는 실제
+> 승인자·RFC3339 시각·구체적 사유가 필요하다. timeout과 단계별 gate catalog가
+> 실제 실행에서 강제되며 active source 0개와 debt 정책 누락은 fail-closed다.
+> `om_workflow.py`의 6개 Phase 명령과 synthetic Git E2E를 추가했다. 실제
+> 1.13.2 postmerge 후보 실행과 조직 승인·운영 배포 증거는 생성하지 않았다.
+> 정확한 재개 순서는 `docs/04-진행/PHASE_BUNDLING_진척_인수인계_20260807.md`
+> 13절을 따른다.
+
 > **2026-08-04 최신 시연 초안:** 실제 OM_TEMP 1.13.1 branch를 비교해 113개
 > 변경 경로(추가 43·수정 70)를 전용 74·공용 37·제외 2로 분류한 전체 YAML을
 > 만들었다. 사용자는 공용 파일을 관련 BANK-OM ID 여러 개에 연결하는 방식을

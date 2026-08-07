@@ -22,6 +22,16 @@ def _result(verdicts, *, inputs=None, phase=P.POSTMERGE, observational=None, run
                              run_id=run_id, observational=observational or {})
 
 
+def _approval(result):
+    return {
+        "target_result_digest": result.result_digest(),
+        "phase": result.phase,
+        "approver": "데이터플랫폼 승인자",
+        "approved_at": "2026-08-08T00:00:00Z",
+        "rationale": "검사 결과와 근거를 확인함",
+    }
+
+
 _VERDICTS = st.lists(st.sampled_from(verdict.VERDICTS), min_size=1, max_size=5)
 _INPUTS = st.dictionaries(
     st.sampled_from(["base_sha", "target_sha", "candidate_lock_digest", "policy_digest"]),
@@ -74,7 +84,7 @@ def test_c87_tampered_file_fails_verification(tmp_path):
 # ---- C88 : after approval, an input file change voids the old approval ----
 def test_c88_input_change_voids_approval():
     r1 = _result([verdict.APPROVAL], inputs={"policy_digest": "p1"})
-    approval = {"target_result_digest": r1.result_digest(), "phase": r1.phase}
+    approval = _approval(r1)
     assert P.approval_binds(approval, r1)[0]
     r2 = _result([verdict.APPROVAL], inputs={"policy_digest": "p2"})  # policy changed
     binds, reasons = P.approval_binds(approval, r2)
@@ -84,7 +94,7 @@ def test_c88_input_change_voids_approval():
 # ---- C44 : adding a commit to the candidate voids the prior result/approval ----
 def test_c44_new_candidate_commit_invalidates_result_and_approval():
     before = _result([verdict.APPROVAL], inputs={"candidate_lock_digest": "sha256:before"})
-    approval = {"target_result_digest": before.result_digest(), "phase": before.phase}
+    approval = _approval(before)
     assert P.approval_binds(approval, before)[0]
     # a new candidate commit => new candidate_lock_digest => new result identity
     after = _result([verdict.APPROVAL], inputs={"candidate_lock_digest": "sha256:after"})
@@ -97,7 +107,7 @@ def test_c44_new_candidate_commit_invalidates_result_and_approval():
 def test_c89_approval_of_a_not_valid_for_b():
     a = _result([verdict.APPROVAL], inputs={"candidate_lock_digest": "A"})
     b = _result([verdict.APPROVAL], inputs={"candidate_lock_digest": "B"})
-    approval = {"target_result_digest": a.result_digest(), "phase": a.phase}
+    approval = _approval(a)
     assert not P.approval_binds(approval, b)[0]
 
 
@@ -105,7 +115,7 @@ def test_c89_approval_of_a_not_valid_for_b():
 @pytest.mark.parametrize("v", [verdict.BLOCK, verdict.ANALYSIS_ERROR])
 def test_c90_cannot_approve_block_into_pass(v):
     r = _result([v], inputs={"base_sha": "x"})
-    approval = {"target_result_digest": r.result_digest(), "phase": r.phase}
+    approval = _approval(r)
     binds, reasons = P.approval_binds(approval, r)
     assert not binds
     assert any("cannot be approved" in x for x in reasons)
@@ -153,3 +163,63 @@ def test_c93_atomic_write_no_partial(tmp_path):
     leftovers = [p.name for p in tmp_path.iterdir() if p.name.startswith(".run.json.tmp")]
     assert leftovers == []
     assert P.verify_phase_result(path)[0]
+
+
+@pytest.mark.parametrize("field", ["reasons", "evidence", "detail"])
+def test_judgment_evidence_change_changes_digest(field):
+    values = {
+        "reasons": ("reason-a",),
+        "evidence": ("evidence-a",),
+        "detail": {"metric": 1},
+    }
+    a = P.aggregate_phase([
+        P.GateExecution("vendor-ancestry", P.EXECUTED, verdict.PASS, **values)
+    ], phase=P.POSTMERGE)
+    changed = dict(values)
+    changed[field] = {
+        "reasons": ("reason-b",),
+        "evidence": ("evidence-b",),
+        "detail": {"metric": 2},
+    }[field]
+    b = P.aggregate_phase([
+        P.GateExecution("vendor-ancestry", P.EXECUTED, verdict.PASS, **changed)
+    ], phase=P.POSTMERGE)
+    assert a.result_digest() != b.result_digest()
+
+
+def test_detail_is_present_in_system_json():
+    execution = P.GateExecution(
+        "debt", P.EXECUTED, verdict.PASS, detail={"conflict_rate": 0.0}
+    )
+    assert execution.to_json()["detail"] == {"conflict_rate": 0.0}
+
+
+def test_system_json_judgment_tamper_fails_verification(tmp_path):
+    result = _result([verdict.PASS])
+    path = tmp_path / "result.json"
+    P.write_phase_result(result, path)
+    data = json.loads(path.read_text(encoding="utf-8"))
+    data["system_json"]["gates"][0]["reasons"] = ["tampered"]
+    path.write_text(json.dumps(data), encoding="utf-8")
+    ok, reason = P.verify_phase_result(path)
+    assert not ok
+    assert "disagree" in reason
+
+
+@pytest.mark.parametrize(
+    "approval",
+    [
+        {},
+        {"approver": "TBD", "approved_at": "2026-08-08", "rationale": "TODO"},
+    ],
+)
+def test_approval_requires_real_identity_time_and_rationale(approval):
+    result = _result([verdict.APPROVAL])
+    approval.update({
+        "target_result_digest": result.result_digest(), "phase": result.phase,
+    })
+    binds, reasons = P.approval_binds(approval, result)
+    assert not binds
+    assert any("approver" in reason for reason in reasons)
+    assert any("approved_at" in reason for reason in reasons)
+    assert any("rationale" in reason for reason in reasons)

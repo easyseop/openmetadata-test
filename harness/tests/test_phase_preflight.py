@@ -86,6 +86,14 @@ def test_c4_consistent_sources(repo):
     assert report.ready
 
 
+def test_empty_active_sources_is_blocking_missing_candidate(repo):
+    report = PF.run_preflight(repo[0], active_sources=[])
+    check = next(x for x in report.checks if x.name == "candidate_consistency")
+    assert check.status == PF.MISSING
+    assert not report.ready
+    assert "no active candidate" in check.detail
+
+
 # ---- C5 : runtime lock differs -> STOP, values shown ----
 def test_c5_inconsistent_runtime_lock_blocks(repo):
     report = PF.run_preflight(

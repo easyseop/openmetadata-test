@@ -29,15 +29,26 @@ def test_c52_gate_exception_is_failed_analysis_error():
     assert any("kaboom" in r for r in ex.reasons)
 
 
-# ---- C53 : timeout is failed (a TimeoutError is just an exception here) ----
+# ---- C53 : configured timeout interrupts a slow gate ----
 def test_c53_gate_timeout_is_failed():
     def slow():
-        raise TimeoutError("gate exceeded 30s")
+        time.sleep(0.2)
+        return P.GateOutcome(verdict.GateResult("t42", verdict.PASS))
 
-    ex = P.execute_gate(P.GateSpec("t42", slow, timeout=30))
+    started = time.monotonic()
+    ex = P.execute_gate(P.GateSpec("t42", slow, timeout=0.01))
     assert ex.execution_status == P.FAILED
     assert ex.verdict == verdict.ANALYSIS_ERROR
-    assert any("30s" in r or "Timeout" in r for r in ex.reasons)
+    assert time.monotonic() - started < 0.15
+    assert any("0.01s" in r or "Timeout" in r for r in ex.reasons)
+
+
+def test_keyboard_interrupt_is_not_swallowed():
+    def cancel():
+        raise KeyboardInterrupt
+
+    with pytest.raises(KeyboardInterrupt):
+        P.execute_gate(P.GateSpec("upgrade-watch", cancel))
 
 
 # ---- C54 : bad JSON output -> failed, log preserved ----
@@ -76,11 +87,11 @@ def test_c56_failing_gate_does_not_abort_others():
     def boom():
         raise RuntimeError("t43 broke")
 
-    specs = [_ok("upgrade-watch", verdict.PASS), P.GateSpec("debt", boom)]
+    specs = [_ok("vendor-ancestry", verdict.PASS), P.GateSpec("debt", boom)]
     result = P.run_gates(specs, phase=P.POSTMERGE)
     by = {e.name: e for e in result.executions}
-    assert by["upgrade-watch"].execution_status == P.EXECUTED
-    assert by["upgrade-watch"].verdict == verdict.PASS
+    assert by["vendor-ancestry"].execution_status == P.EXECUTED
+    assert by["vendor-ancestry"].verdict == verdict.PASS
     assert by["debt"].execution_status == P.FAILED
     assert result.overall_verdict == verdict.ANALYSIS_ERROR
 
@@ -90,7 +101,7 @@ def test_c57_zero_executed_gates_is_analysis_error():
     def miss():
         raise P.MissingInput("no input")
 
-    specs = [P.GateSpec("a", miss), P.GateSpec("b", miss)]
+    specs = [P.GateSpec("upgrade-watch", miss), P.GateSpec("policy-drift", miss)]
     result = P.run_gates(specs)
     assert all(e.execution_status == P.SKIPPED_MISSING_INPUT for e in result.executions)
     assert result.overall_verdict == verdict.ANALYSIS_ERROR

@@ -103,6 +103,24 @@ def test_c36_c37_c38_premerge_excludes_postmerge_gates(synth):
             P.assert_gate_applicable(P.PREMERGE, g)
 
 
+def test_run_gates_rejects_wrong_phase_even_with_passing_callable():
+    spec = P.GateSpec(
+        "debt",
+        lambda: P.GateOutcome(verdict.GateResult("debt", verdict.PASS)),
+    )
+    with pytest.raises(P.PhaseError, match="not applicable"):
+        P.run_gates([spec], phase=P.PREMERGE)
+
+
+def test_run_gates_rejects_duplicate_gate_names():
+    spec = P.GateSpec(
+        "upgrade-watch",
+        lambda: P.GateOutcome(verdict.GateResult("upgrade-watch", verdict.PASS)),
+    )
+    with pytest.raises(P.PhaseError, match="duplicate"):
+        P.run_gates([spec, spec], phase=P.PREMERGE)
+
+
 # ---- C39 : watch-suggest advisory, excluded from verdict ----
 def test_c39_watch_suggest_is_advisory(synth):
     specs = P.build_premerge_catalog(
@@ -123,6 +141,12 @@ def test_c42_correct_candidate_runs_postmerge_gates(synth):
     specs = P.build_postmerge_catalog(
         synth["repo"], synth["lock"], synth["manifests"],
         zones=zones, change_intent=change_intent, conflict_rate=0.0,
+        thresholds={
+            "core_patch_count": {"soft": 20, "hard": 40},
+            "changed_lines": {"soft": 2000, "hard": 5000},
+            "conflict_rate": {"soft": 0.15, "hard": 0.35},
+            "hotspot_overlap": {"soft": 3, "hard": 6},
+        },
     )
     names = {s.name for s in specs}
     assert {"vendor-ancestry", "sensitive-zones", "debt", "exact-scope-history"} <= names
@@ -180,7 +204,11 @@ def test_c43_cross_phase_approval_rejected():
     post = P.aggregate_phase(
         [P.GateExecution("a", P.EXECUTED, verdict.APPROVAL)], phase=P.POSTMERGE
     )
-    approval = {"target_result_digest": pre.result_digest(), "phase": P.PREMERGE}
+    approval = {
+        "target_result_digest": pre.result_digest(), "phase": P.PREMERGE,
+        "approver": "데이터플랫폼 승인자", "approved_at": "2026-08-08T00:00:00Z",
+        "rationale": "premerge 결과 검토 완료",
+    }
     binds, reasons = P.approval_binds(approval, post)
     assert not binds
     assert any("phase mismatch" in r or "digest mismatch" in r for r in reasons)

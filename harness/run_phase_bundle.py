@@ -1,0 +1,648 @@
+#!/usr/bin/env python3
+"""Execute candidate selection, preflight, and phase bundles as real CLI steps."""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+import yaml
+
+from acgh import candidate
+from acgh import candidate_select
+from acgh import debt
+from acgh import layout as layout_module
+from acgh import manifest as manifest_module
+from acgh import phase
+from acgh import preflight
+from acgh import rollup
+from acgh import verdict
+from acgh import zones as zones_module
+
+
+class PhaseCLIError(RuntimeError):
+    """The requested phase cannot produce trustworthy evidence."""
+
+
+def _atomic_json(path: Path, payload: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    blob = json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
+    tmp = path.with_name(f".{path.name}.tmp.{os.getpid()}")
+    tmp.write_text(blob, encoding="utf-8")
+    os.replace(tmp, path)
+
+
+def _sha256_file(path: Path | None) -> str | None:
+    if path is None or not path.is_file():
+        return None
+    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _load_manifests(registration: Path, layout) -> dict[str, dict]:
+    manifests: dict[str, dict] = {}
+    for path in sorted((registration / "manifests").glob("BANK-OM-*.yaml")):
+        data = manifest_module.load_manifest(path, layout)
+        customization_id = data["customization_id"]
+        if customization_id in manifests:
+            raise PhaseCLIError(f"duplicate manifest: {customization_id}")
+        manifests[customization_id] = data
+    if not manifests:
+        raise PhaseCLIError(f"no manifests found under {registration / 'manifests'}")
+    return manifests
+
+
+def _selection_payload(selection) -> dict:
+    return {
+        "status": selection.status,
+        "reasons": list(selection.reasons),
+        "candidate_lock_digest": selection.lock_digest,
+        "candidate_lock_path": selection.lock_path,
+        "candidate_commit_sha": (
+            selection.lock.candidate.commit_sha if selection.lock is not None else None
+        ),
+        "provenance": list(selection.provenance),
+    }
+
+
+def _selected(registration: Path):
+    selection = candidate_select.select_active_candidate(registration)
+    if selection.status != candidate_select.SELECTED or selection.lock is None:
+        raise PhaseCLIError(
+            f"active candidate is not selected ({selection.status}): "
+            + "; ".join(selection.reasons)
+        )
+    return selection
+
+
+def _parse_active_sources(values: list[str]) -> list[tuple[str, str]]:
+    parsed: list[tuple[str, str]] = []
+    for raw in values:
+        if "=" not in raw:
+            raise PhaseCLIError(f"--active-source must be NAME=SHA: {raw!r}")
+        name, sha = raw.split("=", 1)
+        if not name.strip() or not sha.strip():
+            raise PhaseCLIError(f"--active-source must be NAME=SHA: {raw!r}")
+        parsed.append((name.strip(), sha.strip()))
+    return parsed
+
+
+def _preflight(
+    args,
+    selection,
+    *,
+    phase_name: str,
+    required_files: dict[str, Path],
+    optional_inputs: dict | None = None,
+) -> preflight.PreflightReport:
+    lock = selection.lock
+    default_base = (
+        lock.upstream.target_sha if phase_name == phase.PREMERGE
+        else lock.upstream.base_sha
+    )
+    refs = {
+        "upstream_base": args.base or default_base,
+        "upstream_target": args.target or lock.upstream.target_sha,
+        "candidate": lock.candidate.commit_sha,
+    }
+    active_sources = [("active-candidate", lock.candidate.commit_sha)]
+    active_sources.extend(_parse_active_sources(args.active_source))
+    return preflight.run_preflight(
+        str(args.repo),
+        refs=refs,
+        required_files=required_files,
+        optional_inputs=optional_inputs,
+        conflict_rate=getattr(args, "conflict_rate", ...),
+        active_sources=active_sources,
+        provenance=[
+            (Path(item["lock_path"]).name, item["commit_sha"])
+            for item in selection.provenance
+        ],
+    )
+
+
+def _assert_transition_binding(args, selection, phase_name: str) -> None:
+    """Reject CLI refs that contradict the approved Candidate lock."""
+    lock = selection.lock
+    if phase_name == phase.PREMERGE:
+        if args.base is not None and args.base != lock.upstream.target_sha:
+            raise PhaseCLIError(
+                "premerge base must equal the active baseline's upstream target: "
+                f"{args.base} != {lock.upstream.target_sha}"
+            )
+        return
+    for label, supplied, locked in (
+        ("base", args.base, lock.upstream.base_sha),
+        ("target", args.target, lock.upstream.target_sha),
+    ):
+        if supplied is not None and supplied != locked:
+            raise PhaseCLIError(
+                f"postmerge {label} contradicts Candidate lock: {supplied} != {locked}"
+            )
+
+
+def _harness_version() -> str:
+    harness = Path(__file__).resolve().parent
+    files = [
+        harness / "run_phase_bundle.py",
+        harness / "acgh" / "phase.py",
+        harness / "acgh" / "preflight.py",
+        harness / "acgh" / "candidate_select.py",
+        harness / "acgh" / "rollup.py",
+        harness / "registrations" / "kb-openmetadata" / "run_source_candidate_gates.py",
+    ]
+    payload = {path.relative_to(harness).as_posix(): _sha256_file(path) for path in files}
+    return verdict.canonical_digest(payload)
+
+
+def _phase_inputs(
+    args,
+    selection,
+    policy_files: dict[str, Path | None],
+    *,
+    specs=(),
+) -> dict:
+    lock = selection.lock
+    return {
+        "repositories": {
+            "upstream": {
+                "base_sha": args.base or lock.upstream.base_sha,
+                "target_sha": args.target or lock.upstream.target_sha,
+            },
+            "candidate": {
+                "commit_sha": lock.candidate.commit_sha,
+                "tree_sha": lock.candidate.tree_sha,
+            },
+        },
+        "candidate_lock_digest": selection.lock_digest,
+        "harness_version": _harness_version(),
+        "verifier_catalog_digest": phase.gate_catalog_digest(specs),
+        "policy_digests": {
+            name: _sha256_file(path) for name, path in sorted(policy_files.items())
+        },
+        **(
+            {"conflict_rate": args.conflict_rate}
+            if hasattr(args, "conflict_rate") else {}
+        ),
+        **(
+            {"runtime_artifact_digest": args.artifact_digest}
+            if getattr(args, "artifact_digest", None) else {}
+        ),
+    }
+
+
+def _command_gate(
+    name: str,
+    command: list[str],
+    output: Path,
+    collection_key: str,
+    *,
+    evidence_label: str | None = None,
+):
+    """Run an existing JSON gate command without reimplementing its judgment."""
+    def run() -> phase.GateOutcome:
+        if output.exists():
+            raise phase.GateExecutionError(f"refusing stale/overwritten gate evidence: {output}")
+        output.parent.mkdir(parents=True, exist_ok=True)
+        environment = {**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parent)}
+        completed = subprocess.run(
+            command,
+            cwd=Path(__file__).resolve().parent.parent,
+            env=environment,
+            capture_output=True,
+            text=True,
+            timeout=300,
+            check=False,
+        )
+        try:
+            if output.is_file():
+                payload = json.loads(output.read_text(encoding="utf-8"))
+            else:
+                payload = json.loads(completed.stdout)
+                _atomic_json(output, payload)
+        except (OSError, json.JSONDecodeError) as exc:
+            raise phase.GateExecutionError(
+                f"{name} did not produce valid JSON at {output}: {exc}; "
+                f"stderr={completed.stderr[-1000:]}"
+            ) from exc
+        entries = payload.get(collection_key)
+        if not isinstance(entries, list) or not entries:
+            raise phase.GateExecutionError(f"{name} result missing non-empty {collection_key}")
+        gate_results = []
+        reasons: list[str] = []
+        for entry in entries:
+            if not isinstance(entry, dict):
+                raise phase.GateExecutionError(f"{name} contains a non-mapping result")
+            entry_name = entry.get("name")
+            entry_verdict = entry.get("verdict")
+            gate_results.append(entry_verdict)
+            raw_reasons = entry.get("reasons", [])
+            if isinstance(raw_reasons, list) and raw_reasons:
+                reasons.extend(f"{entry_name}: {reason}" for reason in raw_reasons)
+            elif entry.get("detail"):
+                reasons.append(f"{entry_name}: {entry['detail']}")
+        combined = verdict.aggregate(gate_results)
+        expected_exit = verdict.to_exit_code(combined)
+        if completed.returncode != expected_exit:
+            raise phase.GateExecutionError(
+                f"{name} JSON verdict={combined} expects exit {expected_exit}, "
+                f"got {completed.returncode}; stderr={completed.stderr[-1000:]}"
+            )
+        judgment_detail = {collection_key: entries}
+        for key in (
+            "candidate_lock_digest", "reconstruction_plan_digest", "artifact_note",
+        ):
+            if key in payload:
+                judgment_detail[key] = payload[key]
+        return phase.GateOutcome(
+            verdict.GateResult(name, combined, tuple(reasons)),
+            target_count=len(entries),
+            evidence=(evidence_label or output.name,),
+            detail=judgment_detail,
+        )
+
+    return phase.GateSpec(name, run, required=True, timeout=310)
+
+
+def _contract_gate(args, output_dir: Path):
+    result_path = output_dir / "acgh-result.yaml"
+
+    def run() -> phase.GateOutcome:
+        if result_path.exists():
+            raise phase.GateExecutionError(
+                f"refusing stale/overwritten contract evidence: {result_path}"
+            )
+        command = [
+            sys.executable, str(Path(__file__).resolve().parent / "run_runtime_contracts.py"),
+            "--repo", str(args.repo),
+            "--harness", str(Path(__file__).resolve().parent),
+            "--registration", str(args.registration),
+            "--artifact-digest", args.artifact_digest,
+            "--output-dir", str(output_dir),
+            "--run-id", args.run_id + "-contract",
+        ]
+        environment = {**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parent)}
+        completed = subprocess.run(
+            command, cwd=Path(__file__).resolve().parent.parent, env=environment,
+            capture_output=True, text=True, timeout=1800, check=False,
+        )
+        try:
+            payload = yaml.safe_load(result_path.read_text(encoding="utf-8"))
+            canonical = payload["canonical_payload"]
+            combined = canonical["verdict"]
+            gates = canonical["gates"]
+        except (OSError, KeyError, TypeError, yaml.YAMLError) as exc:
+            raise phase.GateExecutionError(
+                f"contract did not produce a valid result: {exc}; stderr={completed.stderr[-1000:]}"
+            ) from exc
+        expected_exit = verdict.to_exit_code(combined)
+        if completed.returncode != expected_exit:
+            raise phase.GateExecutionError(
+                f"contract JSON verdict={combined} expects exit {expected_exit}, "
+                f"got {completed.returncode}"
+            )
+        reasons = tuple(
+            f"{gate.get('name')}: {reason}"
+            for gate in gates
+            for reason in gate.get("reasons", [])
+        )
+        return phase.GateOutcome(
+            verdict.GateResult("contract", combined, reasons),
+            target_count=len(gates),
+            evidence=("gates/contract/acgh-result.yaml",),
+            detail={
+                "canonical_payload": canonical,
+                "result_digest": payload.get("result_digest"),
+            },
+        )
+
+    return phase.GateSpec("contract", run, required=True, timeout=1810)
+
+
+def _write_result(result, report, output: Path) -> int:
+    enriched = phase.PhaseResult(
+        phase=result.phase,
+        executions=result.executions,
+        overall_verdict=result.overall_verdict,
+        phase_status=result.phase_status,
+        exit_code=result.exit_code,
+        inputs=result.inputs,
+        run_id=result.run_id,
+        observational={**result.observational, "preflight": report.to_json()},
+    )
+    system_json = enriched.to_system_json()
+    rendered = rollup.render_all(system_json)
+    problems = rollup.check_output_invariants(rendered)
+    if problems:
+        raise PhaseCLIError("three-tier output mismatch: " + "; ".join(problems))
+    phase.write_phase_result(enriched, output)
+    manager_output = output.with_name("manager-summary.json")
+    practitioner_output = output.with_name("practitioner-detail.json")
+    _atomic_json(manager_output, rendered["manager"])
+    _atomic_json(practitioner_output, rendered["practitioner"])
+    print(json.dumps({
+        "phase": enriched.phase,
+        "phase_status": enriched.phase_status,
+        "overall_verdict": enriched.overall_verdict,
+        "result_digest": enriched.result_digest(),
+        "output": str(output),
+        "manager_output": str(manager_output),
+        "practitioner_output": str(practitioner_output),
+    }, ensure_ascii=False, sort_keys=True))
+    return enriched.exit_code
+
+
+def _blocked_phase_result(args, selection, report, phase_name: str, names, policy_files):
+    """Persist an incomplete result without touching unavailable policy inputs."""
+    advisory_names = phase.PREMERGE_ADVISORY if phase_name == phase.PREMERGE else frozenset()
+    specs = [
+        phase.GateSpec(
+            name,
+            lambda name=name: phase.GateOutcome(
+                verdict.GateResult(name, verdict.ANALYSIS_ERROR)
+            ),
+            required=name not in advisory_names,
+            advisory=name in advisory_names,
+        )
+        for name in names
+    ]
+    result = phase.run_gates(
+        specs,
+        phase=phase_name,
+        preflight_blocked=True,
+        inputs=_phase_inputs(args, selection, policy_files, specs=specs),
+        run_id=args.run_id,
+    )
+    return _write_result(result, report, args.output)
+
+
+def candidate_command(args) -> int:
+    selection = candidate_select.select_active_candidate(args.registration)
+    payload = _selection_payload(selection)
+    _atomic_json(args.output, payload)
+    print(json.dumps(payload, ensure_ascii=False, sort_keys=True))
+    if selection.status == candidate_select.SELECTED:
+        return 0
+    return 1 if selection.status == candidate_select.BLOCKED else 3
+
+
+def prep_official_command(args) -> int:
+    prepared = phase.prepare_official_branch(str(args.repo), args.tag_ref, args.branch)
+    payload = {
+        "status": "created" if prepared.created else "already_correct",
+        "branch": prepared.branch,
+        "commit_sha": prepared.commit_sha,
+        "tree_sha": prepared.tree_sha,
+    }
+    _atomic_json(args.output, payload)
+    print(json.dumps(payload, ensure_ascii=False, sort_keys=True))
+    return 0
+
+
+def preflight_command(args) -> int:
+    selection = _selected(args.registration)
+    _assert_transition_binding(args, selection, args.phase)
+    required = {
+        "repository_layout": args.registration / "repository-layout.yaml",
+        "sensitive_zones": args.registration / "sensitive-zones.yaml",
+    }
+    optional = {}
+    if args.phase == phase.POSTMERGE:
+        required["debt_thresholds"] = args.debt_policy
+        optional["change_intent"] = {
+            "path": args.change_intent,
+            "required_for": ["sensitive-zones"],
+        }
+    report = _preflight(
+        args, selection, phase_name=args.phase,
+        required_files=required, optional_inputs=optional,
+    )
+    _atomic_json(args.output, report.to_json())
+    print(json.dumps(report.to_json(), ensure_ascii=False, sort_keys=True))
+    return 0 if report.ready else 3
+
+
+def premerge_command(args) -> int:
+    selection = _selected(args.registration)
+    _assert_transition_binding(args, selection, phase.PREMERGE)
+    layout_path = args.registration / "repository-layout.yaml"
+    zones_path = args.registration / "sensitive-zones.yaml"
+    report = _preflight(
+        args, selection, phase_name=phase.PREMERGE,
+        required_files={"repository_layout": layout_path, "sensitive_zones": zones_path},
+    )
+    if not report.ready:
+        return _blocked_phase_result(
+            args, selection, report, phase.PREMERGE,
+            ("upgrade-watch", "policy-drift", "structdiff", "watch-suggest"),
+            {"repository_layout": layout_path, "sensitive_zones": zones_path},
+        )
+    layout = layout_module.load_layout(layout_path)
+    manifests = _load_manifests(args.registration, layout)
+    specs = phase.build_premerge_catalog(
+        str(args.repo), args.base, args.target, manifests,
+        layout=layout, candidate_ref=args.candidate_ref or selection.lock.candidate.commit_sha,
+    )
+    result = phase.run_gates(
+        specs,
+        phase=phase.PREMERGE,
+        preflight_blocked=not report.ready,
+        inputs=_phase_inputs(
+            args, selection,
+            {"repository_layout": layout_path, "sensitive_zones": zones_path},
+            specs=specs,
+        ),
+        run_id=args.run_id,
+    )
+    return _write_result(result, report, args.output)
+
+
+def postmerge_command(args) -> int:
+    selection = _selected(args.registration)
+    _assert_transition_binding(args, selection, phase.POSTMERGE)
+    lock = selection.lock
+    layout_path = args.registration / "repository-layout.yaml"
+    zones_path = args.registration / "sensitive-zones.yaml"
+    optional = {
+        "change_intent": {"path": args.change_intent, "required_for": ["sensitive-zones"]},
+    }
+    report = _preflight(
+        args, selection, phase_name=phase.POSTMERGE,
+        required_files={
+            "repository_layout": layout_path,
+            "sensitive_zones": zones_path,
+            "debt_thresholds": args.debt_policy,
+        },
+        optional_inputs=optional,
+    )
+    policy_files = {
+        "repository_layout": layout_path,
+        "sensitive_zones": zones_path,
+        "change_intent": args.change_intent,
+        "debt_thresholds": args.debt_policy,
+    }
+    if not report.ready:
+        names = [
+            "vendor-ancestry", "sensitive-zones", "debt", "exact-scope-history",
+            "validate", "source",
+        ]
+        if args.artifact_digest:
+            names.append("contract")
+        return _blocked_phase_result(
+            args, selection, report, phase.POSTMERGE, names, policy_files,
+        )
+    candidate.assert_candidate_binding(str(args.repo), lock)
+    phase.validate_postmerge_candidate(str(args.repo), lock)
+    layout = layout_module.load_layout(layout_path)
+    manifests = _load_manifests(args.registration, layout)
+    zones = zones_module.load_zones(zones_path)
+    thresholds = debt.load_thresholds(args.debt_policy) if args.debt_policy.is_file() else None
+    specs = phase.build_postmerge_catalog(
+        str(args.repo), lock, manifests,
+        zones=zones,
+        change_intent_path=str(args.change_intent) if args.change_intent else None,
+        thresholds=thresholds,
+        conflict_rate=args.conflict_rate,
+        upstream_base=args.base,
+        upstream_target=args.target,
+    )
+    gate_dir = args.output.parent / "gates"
+    validator = args.registration / "validate_registration_bundle.py"
+    if not validator.is_file():
+        validator = (
+            Path(__file__).resolve().parent / "registrations" / "om-temp-1.13.0"
+            / "validate_registration_bundle.py"
+        )
+    validation_output = gate_dir / "registration-validation-results.json"
+    specs.append(_command_gate(
+        "validate",
+        [
+            sys.executable, str(validator),
+            "--repo", str(args.repo),
+            "--registration", str(args.registration),
+            "--layout", str(layout_path),
+            "--output", str(validation_output),
+        ],
+        validation_output,
+        "checks",
+        evidence_label="gates/registration-validation-results.json",
+    ))
+    source_output = gate_dir / "source-gate-results.json"
+    specs.append(_command_gate(
+        "source",
+        [
+            sys.executable, str(Path(__file__).resolve().parent / "run_source_candidate_gates.py"),
+            "--repo", str(args.repo),
+            "--harness", str(Path(__file__).resolve().parent),
+            "--registration", str(args.registration),
+            "--layout", str(layout_path),
+            "--sensitive-zones", str(zones_path),
+            "--output", str(source_output),
+        ],
+        source_output,
+        "gates",
+        evidence_label="gates/source-gate-results.json",
+    ))
+    if args.artifact_digest:
+        specs.append(_contract_gate(args, args.contract_output_dir or gate_dir / "contract"))
+    result = phase.run_gates(
+        specs,
+        phase=phase.POSTMERGE,
+        preflight_blocked=not report.ready,
+        inputs=_phase_inputs(
+            args, selection,
+            policy_files,
+            specs=specs,
+        ),
+        run_id=args.run_id,
+    )
+    return _write_result(result, report, args.output)
+
+
+def status_command(args) -> int:
+    ok, reason = phase.verify_phase_result(args.result)
+    data = json.loads(args.result.read_text(encoding="utf-8")) if ok else {}
+    payload = {
+        "verified": ok,
+        "reason": reason,
+        "phase": data.get("canonical_payload", {}).get("phase"),
+        "phase_status": data.get("canonical_payload", {}).get("phase_status"),
+        "overall_verdict": data.get("canonical_payload", {}).get("overall_verdict"),
+        "result_digest": data.get("result_digest"),
+    }
+    print(json.dumps(payload, ensure_ascii=False, sort_keys=True))
+    return 0 if ok else 3
+
+
+def _common(parser: argparse.ArgumentParser, *, transition_required: bool = False) -> None:
+    parser.add_argument("--repo", required=True, type=Path)
+    parser.add_argument("--registration", required=True, type=Path)
+    parser.add_argument("--base", required=transition_required)
+    parser.add_argument("--target", required=transition_required)
+    parser.add_argument("--active-source", action="append", default=[])
+
+
+def parse_args(argv=None):
+    parser = argparse.ArgumentParser(description="OpenMetadata phase bundle runner")
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    candidate_parser = sub.add_parser("candidate")
+    candidate_parser.add_argument("--registration", required=True, type=Path)
+    candidate_parser.add_argument("--output", required=True, type=Path)
+
+    prep_parser = sub.add_parser("prep-official")
+    prep_parser.add_argument("--repo", required=True, type=Path)
+    prep_parser.add_argument("--tag-ref", required=True)
+    prep_parser.add_argument("--branch", required=True)
+    prep_parser.add_argument("--output", required=True, type=Path)
+
+    preflight_parser = sub.add_parser("preflight")
+    _common(preflight_parser)
+    preflight_parser.add_argument("--phase", required=True, choices=[phase.PREMERGE, phase.POSTMERGE])
+    preflight_parser.add_argument("--change-intent", type=Path)
+    preflight_parser.add_argument("--debt-policy", type=Path)
+    preflight_parser.add_argument("--conflict-rate", type=float, default=...)
+    preflight_parser.add_argument("--output", required=True, type=Path)
+
+    premerge_parser = sub.add_parser("premerge")
+    _common(premerge_parser, transition_required=True)
+    premerge_parser.add_argument("--candidate-ref")
+    premerge_parser.add_argument("--run-id", required=True)
+    premerge_parser.add_argument("--output", required=True, type=Path)
+
+    postmerge_parser = sub.add_parser("postmerge")
+    _common(postmerge_parser)
+    postmerge_parser.add_argument("--change-intent", type=Path)
+    postmerge_parser.add_argument("--debt-policy", required=True, type=Path)
+    postmerge_parser.add_argument("--conflict-rate", type=float)
+    postmerge_parser.add_argument("--artifact-digest")
+    postmerge_parser.add_argument("--contract-output-dir", type=Path)
+    postmerge_parser.add_argument("--run-id", required=True)
+    postmerge_parser.add_argument("--output", required=True, type=Path)
+
+    status_parser = sub.add_parser("status")
+    status_parser.add_argument("--result", required=True, type=Path)
+    return parser.parse_args(argv)
+
+
+def main(argv=None) -> int:
+    try:
+        args = parse_args(argv)
+        return {
+            "candidate": candidate_command,
+            "prep-official": prep_official_command,
+            "preflight": preflight_command,
+            "premerge": premerge_command,
+            "postmerge": postmerge_command,
+            "status": status_command,
+        }[args.command](args)
+    except (PhaseCLIError, phase.PhaseError, candidate.CandidateLockError, OSError, ValueError) as exc:
+        print(json.dumps({"status": "analysis_error", "reason": str(exc)}, ensure_ascii=False))
+        return verdict.EXIT_CODE[verdict.ANALYSIS_ERROR]
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

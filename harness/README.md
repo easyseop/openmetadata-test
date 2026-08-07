@@ -17,7 +17,7 @@ OpenMetadata 커스터마이징 자동 검증 도구의 구현.
 ## 빠른 시작
 
 ```bash
-pip install jsonschema pathspec pyyaml pytest
+pip install -e 'harness[dev]'
 OPENMETADATA_PRODUCT_REPO=/path/to/OpenMetadata \
   python -m pytest harness/tests tests/bank/contracts
 # 고정 mirror 연결 시 323개: 316 pass·7 operational skip
@@ -25,6 +25,27 @@ bash harness/fixtures/fetch_upstream.sh            # 실제 OM 미러(없으면 
 ```
 
 Python 3.11 · git 2.43+ · 의존: PyYAML·jsonschema≥4.18·pathspec≥0.11.
+
+### Phase 단위 실행
+
+검사를 개별 실행하지 않고 같은 후보·정책·결과 digest에 묶으려면 저장소 루트에서
+다음 공개 명령을 사용한다.
+
+```bash
+python harness/om_workflow.py candidate-select --version <현재버전>
+python harness/om_workflow.py phase-preflight \
+  --repo /path/to/OpenMetadata --version <현재버전> --phase premerge \
+  --base <현재공식SHA> --target <새공식SHA>
+python harness/om_workflow.py premerge-check \
+  --repo /path/to/OpenMetadata --version <현재버전> \
+  --base <현재공식SHA> --target <새공식SHA>
+```
+
+vendor-merge 후에는 새 후보의 Candidate lock을 승인·활성화한 다음
+`postmerge-check`를 실행한다. 이 명령은 등록 검증, source gate와 위험 검사를
+묶고, `--artifact-digest`를 제공했을 때만 Runtime Contract를 추가한다. 결과는
+`manager-summary.json`, `practitioner-detail.json`, `result.json` 세 파일이다.
+필수 입력 누락이나 `analysis_error`는 PASS가 아니다.
 
 ## 구현 모듈 (현재 323개 테스트: 316 pass·7 operational skip)
 

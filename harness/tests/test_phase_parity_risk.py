@@ -68,12 +68,25 @@ def postmerge(tmp_path):
 
 
 def _debt_exec(postmerge, conflict_rate, thresholds=None):
+    if thresholds is None:
+        thresholds = debt.DEFAULT_THRESHOLDS
     specs = P.build_postmerge_catalog(
         postmerge["repo"], postmerge["lock"], postmerge["manifests"],
         conflict_rate=conflict_rate, thresholds=thresholds,
     )
     result = P.run_gates(specs, phase=P.POSTMERGE)
     return next(e for e in result.executions if e.name == "debt")
+
+
+def test_missing_debt_policy_fails_closed(postmerge):
+    specs = P.build_postmerge_catalog(
+        postmerge["repo"], postmerge["lock"], postmerge["manifests"],
+        conflict_rate=0.1, thresholds=None,
+    )
+    execution = P.execute_gate(next(spec for spec in specs if spec.name == "debt"))
+    assert execution.execution_status == P.FAILED
+    assert execution.verdict == verdict.ANALYSIS_ERROR
+    assert any("threshold policy not provided" in reason for reason in execution.reasons)
 
 
 # ---- C15 / C70 : conflict-rate absent -> T43 skipped; other gates still parity ----

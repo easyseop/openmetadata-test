@@ -215,7 +215,19 @@ def test_c74_reimplementing_mutant_fails_parity(tmp_path):
 
 
 # ================= real-repo T42 subprocess parity (integration) =================
-_HAVE_REAL = Path(REPO).is_dir() and (REG / "customization-registry.yaml").is_file()
+def _real_refs_available() -> bool:
+    if not Path(REPO).is_dir() or not (REG / "customization-registry.yaml").is_file():
+        return False
+    return all(
+        subprocess.run(
+            ["git", "-C", REPO, "rev-parse", "--verify", "--quiet", ref],
+            capture_output=True,
+        ).returncode == 0
+        for ref in (BASE_113_1, TARGET_113_2)
+    )
+
+
+_HAVE_REAL = _real_refs_available()
 
 
 @pytest.mark.skipif(not _HAVE_REAL, reason="real OM_CODE_REPO / om-temp-1.13.1 registration not present")

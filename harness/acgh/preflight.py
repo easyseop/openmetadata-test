@@ -176,6 +176,24 @@ def check_active_source_consistency(active_sources, provenance=()) -> tuple[Chec
     """
     active = list(active_sources)
     checks: list[Check] = []
+    if not active:
+        checks.append(
+            Check(
+                "candidate_consistency",
+                MISSING,
+                blocking=True,
+                detail="no active candidate source was provided",
+                next_action="select and bind at least one active candidate source",
+            )
+        )
+        for name, sha in provenance:
+            checks.append(
+                Check(
+                    f"provenance:{name}", OK, blocking=False,
+                    detail="provenance only (excluded from consistency)", value=sha,
+                )
+            )
+        return tuple(checks)
     shas = {sha for _n, sha in active}
     consistent = len(shas) <= 1
     if consistent:

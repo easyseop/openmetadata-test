@@ -139,3 +139,79 @@ cp -R /tmp/tob/plugins/property-based-testing/skills/property-based-testing .cla
 
 추가 P1 문제는 phase 승인자·시각·근거 검증 부재와 GateExecution detail 유실이다.
 원격에는 검토용 WIP branch로만 공유하고, 수정 전 병합·운영 사용을 금지한다.
+
+## 13. 2026-08-08 Codex 안전 보완 완료
+
+작업 branch는 `codex/phase-bundling-safety-fix-20260808`이다. 기존 예행연습
+branch와 OpenMetadata 제품 코드는 수정하지 않았다.
+
+### 구현한 내용
+
+1. `GateSpec.timeout`을 POSIX wall-clock timer로 실제 강제했다. 지원하지 않는
+   환경이나 main thread 밖 실행은 제한을 무시하지 않고 `analysis_error`다.
+2. `run_gates()`가 phase catalog와 gate 이름 중복을 실행 전에 검사한다.
+3. active source가 0개면 preflight가 blocking `missing`으로 끝난다.
+4. canonical digest에 gate reasons·evidence·detail을 포함하고, 저장된 system
+   JSON이 canonical payload와 완전히 같은지 재검증한다.
+5. 승인에는 실제 `approver`, timezone이 있는 `approved_at`, placeholder가 아닌
+   `rationale`이 필요하다.
+6. debt threshold 정책이 없으면 기본값으로 대체하지 않고 fail-closed한다.
+7. 시스템 JSON에 gate `detail`을 보존하며 `KeyboardInterrupt`를 삼키지 않는다.
+8. `om_workflow.py`에 다음 명령을 연결했다.
+   - `candidate-select`
+   - `prep-official`
+   - `phase-preflight`
+   - `premerge-check`
+   - `postmerge-check`
+   - `phase-status`
+9. postmerge 명령은 기존 등록 검증과 source runner를 GateSpec으로 실행한다.
+   `--artifact-digest`를 제공한 경우에만 Runtime Contract도 실행한다.
+10. manager summary, practitioner detail, system result를 하나의 PhaseResult에서
+    생성하고 서로 verdict·수량이 다르면 저장하지 않는다.
+
+### 검증
+
+```bash
+PYTHONPATH=harness:. .venv/bin/python -m pytest \
+  harness/tests/test_phase_*.py \
+  harness/tests/test_source_candidate_workflow.py \
+  -o addopts='' -q
+```
+
+결과는 `145 passed, 1 skipped`다. skip 1개는 이 컴퓨터의 기존 제품 저장소에
+`official/om-1.13.1`, `official/om-1.13.2` ref가 함께 없어서 실행할 수 없는 실제
+T42 parity다. synthetic Git 저장소를 사용하는 premerge E2E는 활성 후보 선택,
+preflight, 네 gate 실행, 3단 출력 저장, digest 재검증까지 통과했다.
+
+전체 harness 회귀는 다음 명령으로 실행했다.
+
+```bash
+PYTHONPATH=harness:. .venv/bin/python -m pytest harness/tests \
+  -o addopts='' -q
+```
+
+결과는 `531 passed, 38 skipped`, 실패 0개다. skip은 실제 제품 repository,
+API·브라우저 및 기타 외부 환경 입력이 없는 테스트이며 PASS에 포함하지 않았다.
+
+### 아직 실제로 실행하지 않은 범위
+
+- 실제 OpenMetadata 1.13.2 vendor-merge 후보의 `postmerge-check`
+- 실제 병합에서 측정한 승인된 `conflict-rate`
+- 담당자가 승인한 change-intent와 Phase 승인서
+- 실제 배포 artifact digest에 결속한 Runtime Contract 재실행
+- 운영 승격·배포
+
+위 항목은 코드 미구현이 아니라 실제 후보·조직 판단·환경 입력 대기다. 값을
+추측해 PASS로 만들지 않는다.
+
+### 다음 실행 순서
+
+1. 실제 제품 저장소에서 공식 1.13.2 tag를 fetch한다.
+2. `prep-official`로 tag commit과 정확히 같은 공식 branch를 준비한다.
+3. `candidate-select`와 `phase-preflight --phase premerge`를 실행한다.
+4. `premerge-check` 결과가 approval이면 담당자가 영향 경로를 확인한다.
+5. 승인 후 별도 제품 branch에서 vendor-merge 후보를 만든다.
+6. 새 Candidate lock을 승인·활성화하고 실제 conflict-rate와 change-intent를
+   제공해 `postmerge-check`를 실행한다.
+7. 결과가 pass/approval이어도 조직 승인과 운영 승격 증거 전에는 배포 완료로
+   표시하지 않는다.

@@ -1,5 +1,16 @@
 # Current implementation status
 
+> Updated: 2026-08-08 KST — Phase 번들링 독립 검토의 P0 6건과 P1 2건을
+> `codex/phase-bundling-safety-fix-20260808`에서 보완했다. 실제 timeout,
+> phase catalog 강제, 빈 active source 차단, gate 근거 digest 결속,
+> 승인자·시각·사유 검증, debt 정책 fail-closed, detail 보존을 구현했다.
+> `om_workflow.py`에는 `candidate-select`, `prep-official`,
+> `phase-preflight`, `premerge-check`, `postmerge-check`, `phase-status`를
+> 연결했고 postmerge는 기존 validate·source runner와 선택적 Runtime Contract를
+> 같은 결과로 집계한다. Phase 143개 중 142 passed, 실제 로컬 제품 ref가 없는
+> parity 1개는 skip, 실패 0개다. 이는 구현·합성 E2E 완료이며 실제 1.13.2
+> vendor-merge 후보의 postmerge 실행·담당자 승인은 아직 수행하지 않았다.
+
 > Updated: 2026-08-04 KST — OM_TEMP 1.13.1의 113개 실제 변경 경로 전체를
 > 시연용 YAML로 분류했다. 37개 공용 경로는 여러 BANK-OM ID에 연결하며
 > 중복되지 않는 114개 경로·ID 조합의 `shared-code-definitions` 빈 초안을

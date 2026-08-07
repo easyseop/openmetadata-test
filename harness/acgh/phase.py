@@ -49,6 +49,7 @@ INCOMPLETE = "incomplete"
 # --- phases -----------------------------------------------------------------
 PREMERGE = "premerge"
 POSTMERGE = "postmerge"
+DEFAULT_GATE_TIMEOUT = 300.0
 
 
 class MissingInput(Exception):
@@ -106,6 +107,7 @@ class GateExecution:
             "advisory": self.advisory,
             "target_count": self.target_count,
             "evidence": list(self.evidence),
+            "detail": self.detail,
         }
 
 
@@ -134,7 +136,7 @@ def execute_gate(spec: GateSpec, *, preflight_blocked: bool = False) -> GateExec
             **common,
         )
     try:
-        outcome = spec.run()
+        outcome = _run_gate_callable(spec)
     except MissingInput as exc:
         return GateExecution(
             execution_status=SKIPPED_MISSING_INPUT,
@@ -142,7 +144,7 @@ def execute_gate(spec: GateSpec, *, preflight_blocked: bool = False) -> GateExec
             reasons=(str(exc),) if str(exc) else (),
             **common,
         )
-    except BaseException as exc:  # noqa: BLE001 - timeout, JSON, exit mismatch, bugs
+    except Exception as exc:  # noqa: BLE001 - gate failures become analysis_error
         return GateExecution(
             execution_status=FAILED,
             verdict=verdict.ANALYSIS_ERROR,
@@ -158,6 +160,43 @@ def execute_gate(spec: GateSpec, *, preflight_blocked: bool = False) -> GateExec
         detail=dict(outcome.detail),
         **common,
     )
+
+
+def _run_gate_callable(spec: GateSpec) -> GateOutcome:
+    """Run a gate with a real wall-clock deadline.
+
+    Phase execution is intentionally sequential.  On POSIX the interval timer
+    interrupts the callable itself, so a timed-out gate cannot keep mutating
+    state in a background thread.  Unsupported/non-main-thread execution fails
+    closed instead of silently ignoring the configured timeout.
+    """
+    if spec.timeout is None:
+        return spec.run()
+    if isinstance(spec.timeout, bool) or spec.timeout <= 0:
+        raise GateExecutionError(f"invalid timeout for {spec.name}: {spec.timeout!r}")
+
+    import signal
+    import threading
+
+    if threading.current_thread() is not threading.main_thread():
+        raise GateExecutionError("gate timeout requires execution on the main thread")
+    if not hasattr(signal, "SIGALRM") or not hasattr(signal, "setitimer"):
+        raise GateExecutionError("gate timeout is unsupported on this platform")
+
+    def expired(_signum, _frame):
+        raise TimeoutError(f"gate {spec.name} exceeded {spec.timeout}s")
+
+    previous_handler = signal.getsignal(signal.SIGALRM)
+    previous_timer = signal.getitimer(signal.ITIMER_REAL)
+    signal.signal(signal.SIGALRM, expired)
+    signal.setitimer(signal.ITIMER_REAL, float(spec.timeout))
+    try:
+        return spec.run()
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        signal.signal(signal.SIGALRM, previous_handler)
+        if previous_timer[0] > 0:
+            signal.setitimer(signal.ITIMER_REAL, *previous_timer)
 
 
 # --- L4: aggregation --------------------------------------------------------
@@ -198,6 +237,9 @@ class PhaseResult:
                     "applicable": e.applicable,
                     "advisory": e.advisory,
                     "target_count": e.target_count,
+                    "reasons": list(e.reasons),
+                    "evidence": list(e.evidence),
+                    "detail": e.detail,
                 }
                 for e in sorted(self.executions, key=lambda x: x.name)
             ],
@@ -272,6 +314,13 @@ def run_gates(
     observational: dict | None = None,
 ) -> PhaseResult:
     """Execute each gate independently, then aggregate (L3 + L4)."""
+    specs = tuple(specs)
+    names = [s.name for s in specs]
+    duplicates = sorted({name for name in names if names.count(name) > 1})
+    if duplicates:
+        raise PhaseError(f"duplicate gates in {phase!r}: {duplicates}")
+    for spec in specs:
+        assert_gate_applicable(phase, spec.name)
     executions = [execute_gate(s, preflight_blocked=preflight_blocked) for s in specs]
     return aggregate_phase(
         executions,
@@ -301,6 +350,21 @@ def applicable_gates(phase: str) -> frozenset[str]:
     if phase == POSTMERGE:
         return POSTMERGE_GATES
     raise PhaseError(f"unknown phase: {phase!r}")
+
+
+def gate_catalog_digest(specs) -> str:
+    """Bind a result to the exact gate catalog metadata used for the run."""
+    payload = [
+        {
+            "name": spec.name,
+            "required": spec.required,
+            "applicable": spec.applicable,
+            "advisory": spec.advisory,
+            "timeout": spec.timeout,
+        }
+        for spec in sorted(specs, key=lambda item: item.name)
+    ]
+    return verdict.canonical_digest({"gates": payload})
 
 
 def assert_gate_applicable(phase: str, gate_name: str) -> None:
@@ -504,10 +568,16 @@ def build_premerge_catalog(
         )
 
     return [
-        GateSpec("upgrade-watch", run_upgrade_watch, required=True),
-        GateSpec("policy-drift", run_policy_drift, required=True),
-        GateSpec("structdiff", run_structdiff, required=False, advisory=True),
-        GateSpec("watch-suggest", run_watch_suggest, required=False, advisory=True),
+        GateSpec("upgrade-watch", run_upgrade_watch, required=True, timeout=DEFAULT_GATE_TIMEOUT),
+        GateSpec("policy-drift", run_policy_drift, required=True, timeout=DEFAULT_GATE_TIMEOUT),
+        GateSpec(
+            "structdiff", run_structdiff, required=False, advisory=True,
+            timeout=DEFAULT_GATE_TIMEOUT,
+        ),
+        GateSpec(
+            "watch-suggest", run_watch_suggest, required=False, advisory=True,
+            timeout=DEFAULT_GATE_TIMEOUT,
+        ),
     ]
 
 
@@ -574,10 +644,12 @@ def build_postmerge_catalog(
     def run_debt() -> GateOutcome:
         if conflict_rate is ... or conflict_rate is None:
             raise MissingInput("conflict-rate not provided (T43 skipped)")
+        if thresholds is None:
+            raise GateExecutionError("debt threshold policy not provided")
         metrics = debt.collect_metrics(
             repo, target, candidate, active_manifests, conflict_rate=conflict_rate
         )
-        result = debt.evaluate_debt(metrics, thresholds or debt.DEFAULT_THRESHOLDS)
+        result = debt.evaluate_debt(metrics, thresholds)
         return GateOutcome(result, target_count=metrics.get("core_patch_count"), detail=metrics)
 
     def run_exact_scope() -> GateOutcome:
@@ -585,10 +657,10 @@ def build_postmerge_catalog(
         return GateOutcome(result)
 
     return [
-        GateSpec("vendor-ancestry", run_ancestry, required=True),
-        GateSpec("sensitive-zones", run_sensitive_zones, required=True),
-        GateSpec("debt", run_debt, required=True),
-        GateSpec("exact-scope-history", run_exact_scope, required=True),
+        GateSpec("vendor-ancestry", run_ancestry, required=True, timeout=DEFAULT_GATE_TIMEOUT),
+        GateSpec("sensitive-zones", run_sensitive_zones, required=True, timeout=DEFAULT_GATE_TIMEOUT),
+        GateSpec("debt", run_debt, required=True, timeout=DEFAULT_GATE_TIMEOUT),
+        GateSpec("exact-scope-history", run_exact_scope, required=True, timeout=DEFAULT_GATE_TIMEOUT),
     ]
 
 
@@ -675,8 +747,40 @@ def verify_phase_result(path) -> tuple[bool, str]:
     if recomputed != data.get("result_digest"):
         return False, f"digest mismatch (tampered): stored {data.get('result_digest')} != {recomputed}"
     sysj = data.get("system_json", {})
+    if not isinstance(sysj, dict):
+        return False, "system_json must be a mapping"
     if sysj.get("result_digest") not in (None, recomputed):
         return False, "system_json result_digest disagrees with canonical digest"
+    system_gates = sysj.get("gates")
+    if not isinstance(system_gates, list):
+        return False, "system_json gates must be a list"
+    system_judgment = {
+        "phase": sysj.get("phase"),
+        "overall_verdict": sysj.get("overall_verdict"),
+        "phase_status": sysj.get("phase_status"),
+        "inputs": sysj.get("inputs"),
+        "gates": sorted(
+            [
+                {
+                    "name": gate.get("name"),
+                    "verdict": gate.get("verdict"),
+                    "execution_status": gate.get("execution_status"),
+                    "required": gate.get("required"),
+                    "applicable": gate.get("applicable"),
+                    "advisory": gate.get("advisory"),
+                    "target_count": gate.get("target_count"),
+                    "reasons": gate.get("reasons"),
+                    "evidence": gate.get("evidence"),
+                    "detail": gate.get("detail"),
+                }
+                for gate in system_gates
+                if isinstance(gate, dict)
+            ],
+            key=lambda gate: gate["name"] or "",
+        ),
+    }
+    if system_judgment != data["canonical_payload"]:
+        return False, "system_json judgment fields disagree with canonical_payload"
     return True, "consistent"
 
 
@@ -689,7 +793,9 @@ def approval_binds(approval: dict, result: PhaseResult) -> tuple[bool, tuple[str
     a pass (C90): approval is only meaningful when the machine verdict is
     approval (needs sign-off) or pass.
     """
-    reasons: list[str] = []
+    from acgh.approval import validate_approval_metadata
+
+    reasons: list[str] = list(validate_approval_metadata(approval))
     digest = result.result_digest()
     if approval.get("target_result_digest") != digest:
         reasons.append(

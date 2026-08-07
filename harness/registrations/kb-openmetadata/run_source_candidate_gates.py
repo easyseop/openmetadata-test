@@ -158,7 +158,8 @@ def main() -> int:
     print(rendered)
     if args.output:
         args.output.write_text(rendered + "\n", encoding="utf-8")
-    return 0 if all(result.verdict == "pass" for result in gates) else 1
+    combined = verdict.aggregate(result.verdict for result in gates)
+    return verdict.to_exit_code(combined)
 
 
 if __name__ == "__main__":

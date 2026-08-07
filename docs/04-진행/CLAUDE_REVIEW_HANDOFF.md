@@ -2625,3 +2625,25 @@ gates와 source patch-kill 2건도 통과했다. 90일 artifact
 다음 검토 대상은 1단계 읽기 전용 Git 분석기다. `plan`·`apply`, artifact
 kind 구분, bank-only watch 처리, symlink·submodule·LFS mode 차단과 1.13.1
 재검증은 아직 구현하지 않았다. 이 미구현 범위를 운영 완료로 해석하지 않는다.
+
+## 17. 2026-08-08 Phase 번들링 독립 검토 보완
+
+검토 기준 `dbf169bfd4d1a721dd196a643f2080b84b013b43`에서 재현된 P0 6건과
+P1 2건을 `codex/phase-bundling-safety-fix-20260808`에서 수정했다.
+
+- digest가 gate reasons·evidence·detail과 system JSON 일치를 보호한다.
+- timeout과 phase catalog가 실행 시점에 강제된다.
+- 빈 active source, debt 정책 누락, placeholder 승인이 fail-closed다.
+- `GateExecution.detail`이 보존되고 사용자 취소를 분석 오류로 삼키지 않는다.
+- `candidate-select`, `prep-official`, `phase-preflight`, `premerge-check`,
+  `postmerge-check`, `phase-status`가 공개 workflow 명령으로 연결됐다.
+- postmerge는 기존 validate·source runner를 재사용하며 artifact digest가 있을 때
+  Runtime Contract를 추가한다.
+- synthetic Git E2E가 Phase 결과와 manager/practitioner/system 3단 출력,
+  digest 재검증을 확인한다.
+
+집중 검증은 `145 passed, 1 skipped`이며 실패는 없다. 전체 harness는
+`531 passed, 38 skipped`, 실패 0개다. 실제 제품 ref 두 개가 없는 T42
+parity만 집중 검증의 환경 의존 skip이다. 실제 1.13.2 vendor-merge candidate,
+승인된 conflict-rate·change-intent, 조직 승인과 운영 배포는 여전히 외부 입력
+대기이며 이번 구현 완료와 구분한다.

@@ -265,6 +265,70 @@ def parse_args() -> argparse.Namespace:
     )
     resolve_json.add_argument("--repo", required=True, type=Path)
 
+    phase_candidate = subparsers.add_parser(
+        "candidate-select",
+        help="승인된 활성 Candidate lock을 명시적으로 선택",
+    )
+    phase_candidate.add_argument("--version", required=True)
+    phase_candidate.add_argument("--output", type=Path)
+
+    prep_official = subparsers.add_parser(
+        "prep-official",
+        help="공식 tag commit에 고정된 로컬 공식 branch 준비",
+    )
+    prep_official.add_argument("--repo", required=True, type=Path)
+    prep_official.add_argument("--tag-ref", required=True)
+    prep_official.add_argument("--branch", required=True)
+    prep_official.add_argument("--output", type=Path)
+
+    phase_preflight = subparsers.add_parser(
+        "phase-preflight",
+        help="Phase 실행 전에 commit·정책·후보 입력을 한 번에 검사",
+    )
+    add_repo_version(phase_preflight)
+    phase_preflight.add_argument("--phase", required=True, choices=["premerge", "postmerge"])
+    phase_preflight.add_argument("--base")
+    phase_preflight.add_argument("--target")
+    phase_preflight.add_argument("--change-intent", type=Path)
+    phase_preflight.add_argument("--debt-policy", type=Path)
+    phase_preflight.add_argument("--conflict-rate", type=float)
+    phase_preflight.add_argument("--active-source", action="append", default=[])
+    phase_preflight.add_argument("--output", type=Path)
+
+    premerge = subparsers.add_parser(
+        "premerge-check",
+        help="공식 새 버전을 병합하기 전 영향 검사 Phase 실행",
+    )
+    add_repo_version(premerge)
+    premerge.add_argument("--base", required=True)
+    premerge.add_argument("--target", required=True)
+    premerge.add_argument("--candidate-ref")
+    premerge.add_argument("--active-source", action="append", default=[])
+    premerge.add_argument("--run-id")
+    premerge.add_argument("--output", type=Path)
+
+    postmerge = subparsers.add_parser(
+        "postmerge-check",
+        help="vendor-merge 후보를 만든 뒤 최종 소스 위험 검사 Phase 실행",
+    )
+    add_repo_version(postmerge)
+    postmerge.add_argument("--base")
+    postmerge.add_argument("--target")
+    postmerge.add_argument("--change-intent", type=Path)
+    postmerge.add_argument("--debt-policy", type=Path)
+    postmerge.add_argument("--conflict-rate", type=float)
+    postmerge.add_argument("--artifact-digest")
+    postmerge.add_argument("--contract-output-dir", type=Path)
+    postmerge.add_argument("--active-source", action="append", default=[])
+    postmerge.add_argument("--run-id")
+    postmerge.add_argument("--output", type=Path)
+
+    phase_status = subparsers.add_parser(
+        "phase-status",
+        help="저장된 Phase 결과 digest와 상태 확인",
+    )
+    phase_status.add_argument("--result", required=True, type=Path)
+
     return parser.parse_args()
 
 
@@ -304,6 +368,98 @@ def plan_command(args: argparse.Namespace) -> tuple[list[str], dict[str, object]
 
 
 def dispatch(args: argparse.Namespace) -> int:
+    if args.command == "prep-official":
+        output = args.output or PROJECT / "evidence" / f"official-branch-{timestamp()}.json"
+        print_selection(
+            {"제품 저장소": args.repo, "공식 tag": args.tag_ref, "준비할 branch": args.branch, "결과": output}
+        )
+        return run(
+            python_command(
+                HARNESS / "run_phase_bundle.py",
+                "prep-official",
+                "--repo", args.repo,
+                "--tag-ref", args.tag_ref,
+                "--branch", args.branch,
+                "--output", output,
+            )
+        )
+
+    if args.command == "candidate-select":
+        registration = registration_for(args.version)
+        output = args.output or PROJECT / "evidence" / f"phase-candidate-{args.version}.json"
+        print_selection({"등록 폴더": registration, "선택 결과": output})
+        return run(
+            python_command(
+                HARNESS / "run_phase_bundle.py",
+                "candidate",
+                "--registration", registration,
+                "--output", output,
+            )
+        )
+
+    if args.command == "phase-preflight":
+        registration = registration_for(args.version)
+        output = args.output or PROJECT / "evidence" / f"{args.phase}-preflight-{timestamp()}.json"
+        debt_policy = args.debt_policy
+        if args.phase == "postmerge" and debt_policy is None:
+            debt_policy = HARNESS / "policies" / "debt-thresholds.yaml"
+        command = python_command(
+            HARNESS / "run_phase_bundle.py",
+            "preflight",
+            "--repo", args.repo,
+            "--registration", registration,
+            "--phase", args.phase,
+            "--output", output,
+        )
+        for option, value in (
+            ("--base", args.base), ("--target", args.target),
+            ("--change-intent", args.change_intent), ("--debt-policy", debt_policy),
+            ("--conflict-rate", args.conflict_rate),
+        ):
+            if value is not None:
+                command.extend([option, str(value)])
+        for source in args.active_source:
+            command.extend(["--active-source", source])
+        print_selection({"등록 폴더": registration, "Phase": args.phase, "사전검사 결과": output})
+        return run(command)
+
+    if args.command in {"premerge-check", "postmerge-check"}:
+        registration = registration_for(args.version)
+        phase_name = "premerge" if args.command == "premerge-check" else "postmerge"
+        run_id = args.run_id or f"{phase_name}-{timestamp()}"
+        output = args.output or PROJECT / "evidence" / run_id / "result.json"
+        command = python_command(
+            HARNESS / "run_phase_bundle.py",
+            phase_name,
+            "--repo", args.repo,
+            "--registration", registration,
+            "--run-id", run_id,
+            "--output", output,
+        )
+        for option in (
+            "base", "target", "candidate_ref", "change_intent", "debt_policy",
+            "conflict_rate", "artifact_digest", "contract_output_dir",
+        ):
+            value = getattr(args, option, None)
+            if value is not None:
+                command.extend(["--" + option.replace("_", "-"), str(value)])
+        if phase_name == "postmerge" and args.debt_policy is None:
+            command.extend(["--debt-policy", str(HARNESS / "policies" / "debt-thresholds.yaml")])
+        for source in args.active_source:
+            command.extend(["--active-source", source])
+        print_selection(
+            {"등록 폴더": registration, "Phase": phase_name, "실행 ID": run_id, "결과": output}
+        )
+        return run(command)
+
+    if args.command == "phase-status":
+        require_file(args.result, "Phase 결과")
+        return run(
+            python_command(
+                HARNESS / "run_phase_bundle.py", "status", "--result", args.result,
+            )
+        )
+
     if args.command == "plan":
         command, selected = plan_command(args)
         print_selection(selected)

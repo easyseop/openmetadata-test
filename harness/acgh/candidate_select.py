@@ -17,23 +17,17 @@ Outcomes (status):
 """
 from __future__ import annotations
 
-import datetime as _dt
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
 
 from acgh import candidate as candidate_mod
+from acgh.approval import _is_placeholder, validate_approval_metadata
 
 SELECTED = "selected"
 ANALYSIS_ERROR = "analysis_error"
 BLOCKED = "blocked"
-
-_PLACEHOLDERS = {
-    "", "tbd", "todo", "unassigned", "placeholder", "changeme",
-    "none", "n/a", "요청자", "담당자", "approver", "rationale",
-}
-
 
 @dataclass(frozen=True)
 class ActiveCandidateSelection:
@@ -43,25 +37,6 @@ class ActiveCandidateSelection:
     lock_digest: str | None = None
     lock_path: str | None = None
     provenance: tuple[dict, ...] = field(default_factory=tuple)
-
-
-def _is_placeholder(value) -> bool:
-    if not isinstance(value, str):
-        return True
-    stripped = value.strip()
-    if stripped.lower() in _PLACEHOLDERS:
-        return True
-    return "<" in stripped and ">" in stripped
-
-
-def _valid_rfc3339(value) -> bool:
-    if not isinstance(value, str):
-        return False
-    try:
-        parsed = _dt.datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
-    except ValueError:
-        return False
-    return parsed.tzinfo is not None
 
 
 def _load_locks(locks_dir: Path):
@@ -171,12 +146,7 @@ def select_active_candidate(registration_dir) -> ActiveCandidateSelection:
         reasons.append(
             f"approval digest mismatch: {approval.get('candidate_lock_digest')} != {lock_digest}"
         )
-    if _is_placeholder(approval.get("approver")):
-        reasons.append("approver is placeholder/empty — real sign-off required")
-    if _is_placeholder(approval.get("rationale")):
-        reasons.append("rationale is placeholder/empty")
-    if not _valid_rfc3339(approval.get("approved_at")):
-        reasons.append("approved_at not RFC3339 (e.g. 2026-08-07T23:00:00Z)")
+    reasons.extend(validate_approval_metadata(approval))
 
     if reasons:
         return ActiveCandidateSelection(BLOCKED, reasons=tuple(reasons), **common)
