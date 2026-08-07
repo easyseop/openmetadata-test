@@ -139,6 +139,42 @@ DB2·PostgreSQL 서비스와 DB·스키마·테이블·컬럼을 등록합니다
 제품 코드 커스터마이징은 추가하지 않았습니다. Tibero·Sybase 유형은 현재 candidate에
 이미 구현되어 있고, 나머지는 OpenMetadata 공통 메타데이터·데이터 품질 API를 사용합니다.
 
+### 7.2 다른 컴퓨터용 Docker 전용 예행연습
+
+다른 컴퓨터에서 Java·Maven·Python 없이 Docker Desktop과 Git만으로 같은 환경을
+실행하도록 다음 묶음을 추가했습니다.
+
+```text
+docker/rehearsal/
+├── README.md
+├── start.sh
+├── test.sh
+├── stop.sh
+├── common.sh
+├── docker-compose.override.yml
+├── Dockerfile.contract-runner
+└── run_portable_contracts.sh
+```
+
+공개 image 이름은 다음과 같습니다.
+
+- server: `ghcr.io/easyseop/openmetadata-bank:1.13.1-bank-8ac18ad0`
+- Contract runner: `ghcr.io/easyseop/openmetadata-contract-runner:1.13.1-runtime`
+
+고정 입력:
+
+- 제품 candidate: `8ac18ad053d9274774e274ba17b35911ac0b9dcb`
+- 검사기 tag: `om-1.13.1-rehearsal-runtime-v1`
+- 검사기 commit: `7fdb182c299e51fd94a4a9c7d56473a3e849c019`
+- 공식 Compose 기준: `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9`
+
+GitHub Actions의 깨끗한 Ubuntu 장비에서 server 시작, 5종 DB 목 데이터 등록,
+Runtime Contract 9개 실행까지 검증하는 워크플로도 추가했습니다.
+
+- workflow: `.github/workflows/publish-rehearsal-images.yml`
+- 최종 실행: `https://github.com/easyseop/openmetadata-test/actions/runs/31153676001`
+- 현재 상태: 실행 중
+
 다음 미추적 자료는 기존 사용자 파일이므로 수정·삭제·stage하지 않습니다.
 
 - `docs/00-사용가이드/OM_TEMP_wiki_context_logic_Claude_review_package_20260730 2/`
