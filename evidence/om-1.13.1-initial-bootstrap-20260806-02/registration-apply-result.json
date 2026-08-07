@@ -1,0 +1,21 @@
+{
+  "approved_by": "데이터시스템부",
+  "custom_sha": "d952a83896940116d3d6022323ad76bfe60991e8",
+  "official_sha": "afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9",
+  "proposal_digest": "sha256:502530c1a732d28121d84a0225e1629fad47f0e0c208fb83ad6393a066d74457",
+  "status": "APPLIED",
+  "written_files": [
+    "contracts.yaml",
+    "customization-registry.yaml",
+    "manifests/BANK-OM-001.yaml",
+    "manifests/BANK-OM-002.yaml",
+    "manifests/BANK-OM-003.yaml",
+    "manifests/BANK-OM-004.yaml",
+    "manifests/BANK-OM-005.yaml",
+    "manifests/BANK-OM-006.yaml",
+    "manifests/BANK-OM-007.yaml",
+    "shared-path-owners.yaml",
+    "source-diff-paths.txt",
+    "source-snapshot-path-owners.yaml"
+  ]
+}

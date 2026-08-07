@@ -600,3 +600,45 @@ Manifest 생성 전에 실제 113개 변경 파일을 업무 기능 단위로 �
 - 사람 승인은 자동검증 `PASS`만 보고 끝내지 않음. 이전 4/11 페이지에서 승인한 일곱 ID commit SHA, 114개 경로·ID 조합, 제안 내용의 ID 귀속을 확인한 뒤 등록 초안 폴더에 복사함.
 - 등록 초안 복사는 정식 승인 완료가 아님을 명시함. 이후 7/11 페이지의 `plan`이 주요 등록자료 전체 digest를 만들고, 사용자가 `registration-approval.yaml`에 승인자·시각·근거를 작성하며, `apply`가 같은 digest인지 확인해야 정식 승인이 완료됨.
 - 관련 단위 test 16개와 실제 114개 정의 검사기 실행을 통과함.
+
+## 2026-08-06 — 최초 등록 필수 입력 자동 차단
+
+- 최초 등록 입력에서 담당자가 `UNASSIGNED`이거나 `owner_status`가 `assigned`가 아닌데도 승인 가능한 proposal이 만들어지던 문제를 수정함.
+- 빈 필수 경로, 미완성 Contract, 알 수 없는 선행 ID, 자기 자신 의존, 순환 의존도 plan 단계에서 중단하도록 검증을 추가함.
+- 의미상 미완성 입력은 `BLOCKED` proposal과 수정 항목을 남기고, YAML 구조·빈 필수 목록처럼 분석 자체가 불가능한 입력은 `ANALYSIS_ERROR`로 구분함.
+- 차단된 proposal은 승인 양식을 만들거나 `apply`할 수 없으며 `PROPOSAL_NOT_APPLY_READY`와 종료코드 `1`을 반환함.
+- `summary.md`에 ID별 담당자·담당자 상태·중요도·선행 ID와 반드시 수정할 항목·다음 행동을 표시함.
+- 실제 1.13.1 입력으로 실행하여 7개 ID의 `OWNER_NOT_ASSIGNED`가 각각 표시되고 plan이 차단되는 것을 확인함.
+- 5/11 가이드에 입력 완료 기준, `BLOCKED`·`PROPOSAL_WRITTEN`·`ANALYSIS_ERROR`별 예시와 재실행 방법을 추가함.
+- 7/11 가이드에서 빈 증거 폴더를 먼저 만드는 절차를 제거하고, 앞 페이지가 만든 `summary.md`를 확인한 뒤에만 승인하도록 수정함.
+- 실행 경로는 `PLAN_DIR`과 `BASELINE_DIR`로 통일하여 `<실행ID>` 자리표시자를 여러 명령에 반복 입력하지 않도록 개선함.
+- 관련 최초 등록·워크플로 test 20개와 실제 차단 proposal의 승인 양식 재차단을 통과함.
+
+## 2026-08-06 · 7/11 가이드 경로 설정 오류 정정
+
+- `OM_TEMP_1.13.1_등록승인_apply_및_기준검사_가이드.md/html`의 `공통 경로 설정` 절을 제거함.
+- 7단계는 이전 단계와 같은 터미널의 `OM_TEST_REPO`·`OM_CODE_REPO`를 이어 사용하며, 경로를 다시 설정하지 않고 두 값을 확인한 뒤 진행하도록 수정함.
+- 이 단계에서 사용하지 않는 `KB_SOURCE_REPO` 설명과 복사해 실행할 수 없는 `<검사기-저장소-clone-경로>` 명령을 삭제함.
+- 등록자료의 `shared-path-owners.yaml`도 7개 BANK-OM commit의 실제 변경 경로와 다시 대조함. 실제·선언 모두 공용 경로 37개·경로-ID 조합 114개였고, 누락·추가·ID 불일치는 0개였음.
+- `20260806-02` proposal의 `proposed-registration/shared-path-owners.yaml`과 현재 등록 폴더의 파일은 내용과 SHA-256이 같음.
+- 7/11 가이드에 과거 기준 SHA `dee330eb…`가 현재 정상값처럼 남아 있던 오류를 수정함. 현재 branch·`20260806-01`·`20260806-02` proposal의 기준은 모두 `d952a83896940116d3d6022323ad76bfe60991e8`임.
+- 제안서 SHA 필드 설명을 실제 `proposal.yaml`과 다른 `custom_head_sha`에서 `custom_sha`로 정정함.
+- 7/11 가이드의 `git status --short`가 검사기 저장소 전체 변경을 보여 이번 등록 변경과 관계없는 문서·코드 변경까지 섞이던 문제를 수정함. `harness/registrations/om-temp-1.13.1`만 확인하도록 경로를 제한함.
+- `status --short`의 빈 출력·`M`·`??`·`D` 해석, `git diff`의 `+`·`-` 해석, 새 파일은 `git diff`에 보이지 않는 주의사항과 출력 발생 시 재승인 절차를 추가함.
+
+## 2026-08-06 · 최초 등록 승인서 오류 한국어 진단
+
+- `bootstrap-apply`의 승인서 오류가 영어 `message`만 반환하던 문제를 수정함.
+- 기존 `status`·`message`를 유지하고 `code`·`field`·`current_value`·`message_ko`·`next_action`·`file`을 추가하여 자동화 호환성과 사용자 해석을 모두 유지함.
+- 승인자·승인 시각·승인 근거 자리표시자, 승인서 스키마 오류, proposal 검토 항목 누락·추가를 서로 다른 오류 코드로 구분함.
+- 승인 시각은 문자열 여부만 보지 않고 RFC 3339 형식과 timezone 포함 여부를 실제로 검증하도록 보완함.
+- 승인서 자리표시자·복수 스키마 오류·검토 항목 누락 test를 추가하고 관련 test 25개가 통과함.
+- 복수 오류를 한 번에 수정할 수 있도록 최상위 `APPROVAL_INPUT_INVALID`와 `issues` 목록을 추가함.
+- 실제 `20260806-02` 승인서로 `om_workflow.py bootstrap-apply`를 재실행하여 `approved_by`·`approved_at`·`decisions[0].reason`의 문제 필드·현재 값·한국어 원인·수정 방법·파일 경로가 함께 출력되는 것을 확인함.
+
+## 2026-08-06 · 등록 검사 결과 폴더 자동 생성
+
+- `om_workflow.py validate --output <새 폴더>/registration-validation-results.json` 실행 시 상위 폴더가 없으면 검사 판정 출력 뒤 `FileNotFoundError`가 발생하던 문제를 수정함.
+- 워크플로와 공용 등록자료 검사기가 결과 파일의 상위 폴더를 자동 생성하도록 보완함.
+- 중첩된 새 결과 경로 생성 회귀 test를 추가했으며 관련 test 9개가 통과함.
+- 실제 `20260806-02` 기준 검사로 재실행하여 종료코드 `0`, 다섯 검사 `pass`, 결과 JSON 저장을 확인함.

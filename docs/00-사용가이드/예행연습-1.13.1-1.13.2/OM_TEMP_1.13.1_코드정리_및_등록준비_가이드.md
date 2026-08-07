@@ -5,7 +5,7 @@
 > 문서 성격: 실제 1.13.1 커스터마이징의 최초 등록자료를 자동 작성·검증하고 사람 승인 절차에 연결하는 실행 문서  
 > 시작 조건: `OM_TEST_REPO`·`OM_CODE_REPO` 설정, `BANK-OM-001`~`007` ID별 commit 후보 branch, 111개 등록 경로, 2개 제외 경로와 경로 기준 파일 준비 완료  
 > 종료점: 이번 1.13.1용 등록 초안을 작성하고, 114개 공용 경로·ID 조합의 자동 작성 제안을 최종 커스텀 코드에서 검증한 뒤 등록 `plan`의 검토 입력으로 준비  
-> 이 문서에서 하지 않는 일: 원격 push, 준비도구 `plan`·`apply`, 1.13.2 병합, 릴리즈 승인
+> 이 문서에서 하지 않는 일: 원격 push, 최초 등록 제안 승인·반영(`bootstrap-apply`), 1.13.2 병합, 릴리즈 승인
 
 **문서 이동:** [← 이전 단계 — BANK-OM ID별 commit 후보 branch 구성](./OM_TEMP_1.13.1_BANK-OM_ID별_커밋_후보브랜치_구성_가이드.html) · [다음 — 검사기 간단 학습 →](./OM_TEMP_1.13.1_1.13.2_검사기_간단_학습_가이드.html)
 
@@ -442,7 +442,17 @@ apply
 
 ## 3. 나머지 최초 등록 입력 준비
 
-`bootstrap-plan`은 제품 버전에 관계없이 최초 등록 제안을 만듭니다. Git에서 commit과 변경 경로를 읽고, 사용자가 작성한 업무 정보를 합칩니다.
+이 단계에서는 다음 두 종류의 파일을 순서대로 만듭니다.
+
+```text
+1. 사람이 작성할 최초 등록 입력 파일 생성
+                    ↓
+2. 입력 파일의 담당자·필수 경로·Contract 확인
+                    ↓
+3. Manifest·Registry·Contract 제안 파일 자동 생성
+```
+
+첫 번째 파일은 사람이 작성하는 입력이고, 세 번째 단계의 파일들은 생성기가 만든 검토용 제안입니다. 아직 승인하거나 활성 등록 폴더에 반영하지 않습니다.
 
 | 입력 | 자동으로 준비되는 부분 | 사용자가 작성·승인할 부분 | 다음 사용 |
 |---|---|---|---|
@@ -453,17 +463,94 @@ apply
 | `customization-registry.yaml` | 코드 SHA·경로 수를 Git에서 생성 | 제목·담당자·중요도 확인 | 등록 기준 |
 | `contracts.yaml` | 업무 입력 파일의 Contract를 옮겨 생성 | 정상 조건과 필수 test 확인 | Contract test 기준 |
 
-### 3-1. 업무 입력 확인
+### 3-1. 최초 등록 입력 파일 생성
 
-다음 파일에는 Git으로 판단할 수 없는 제목·담당자·필수 경로·Contract가 들어 있습니다.
+아래 명령은 BANK-OM commit 이력을 읽어 최초 등록 입력 양식을 만듭니다. 특정 OpenMetadata 버전에만 사용하는 명령이 아닙니다.
+
+```bash
+cd "$OM_TEST_REPO"
+```
+
+```bash
+./.venv/bin/python harness/om_workflow.py bootstrap-input-template \
+  --repo "$OM_CODE_REPO" \
+  --version 1.13.1 \
+  --official-ref upstream-1.13.1-release \
+  --custom-ref codex/om-1.13.1-id-series-upstream \
+  --repository easyseop/OM_TEMP \
+  --upstream-repository open-metadata/OpenMetadata \
+  --upstream-tag 1.13.1-release \
+  --output harness/preparation-inputs/om-temp-1.13.1/initial-registration-input.yaml
+```
+
+**처음 생성한 경우:** `status`가 `INPUT_TEMPLATE_WRITTEN`입니다.
+
+**이미 파일이 있는 경우:** `status`가 `INPUT_TEMPLATE_EXISTS`입니다. 기존 작성 내용을 덮어쓰지 않으므로 그대로 다음 단계로 이동합니다.
+
+```json
+{
+  "status": "INPUT_TEMPLATE_WRITTEN",
+  "input": "harness/preparation-inputs/om-temp-1.13.1/initial-registration-input.yaml",
+  "customization_count": 7,
+  "contract_count": 7
+}
+```
+
+### 3-2. 생성된 입력 파일의 경로와 작성 내용 확인
+
+사람이 수정할 파일은 다음 한 개입니다.
 
 ```text
 $OM_TEST_REPO/harness/preparation-inputs/om-temp-1.13.1/initial-registration-input.yaml
 ```
 
-이번 초안의 담당자는 `UNASSIGNED`입니다. 실제 담당자로 바꾸기 전에는 승인하지 않습니다.
+경로와 앞부분을 터미널에서 확인합니다. 이 화면은 **최초 등록 입력 파일 생성 결과 예시**로 캡처할 수 있습니다.
 
-### 3-2. 최초 등록 제안 생성
+```bash
+INITIAL_INPUT="$OM_TEST_REPO/harness/preparation-inputs/om-temp-1.13.1/initial-registration-input.yaml"
+```
+
+```bash
+printf '[최초 등록 입력 파일] %s\n' "$INITIAL_INPUT"
+```
+
+```bash
+sed -n '1,100p' "$INITIAL_INPUT"
+```
+
+| 입력 항목 | 자동으로 채우는 값 | 사람이 확인·수정할 값 |
+|---|---|---|
+| BANK-OM ID | commit의 `Customization-ID` | ID가 기능과 맞는지 확인 |
+| 제목 | commit 제목 | 운영 문서에서 사용할 기능명으로 수정 |
+| 담당자 | `UNASSIGNED` | 실제 담당자로 수정 |
+| 중요도 | `medium` | 실제 영향도에 맞게 수정 |
+| 필수 경로 | 해당 ID commit이 수정한 경로 | 기능에 반드시 필요한 경로만 남김 |
+| Contract | ID별 `TODO` 초안 | 정상 동작 설명과 실제 test 경로 작성 |
+
+다음 항목을 모두 채운 뒤 `plan`을 실행합니다.
+
+| 반드시 채울 항목 | 완료 기준 | 누락 시 결과 |
+|---|---|---|
+| 담당자 | `owner`에 실제 담당자 식별값을 쓰고 `owner_status: assigned`로 변경 | `BLOCKED · OWNER_NOT_ASSIGNED` |
+| 필수 경로 | 기능 유지에 반드시 필요한 경로가 한 개 이상 있음 | 입력 형식 오류로 생성 중단 |
+| Contract | `invariant`에 정상 동작, `required_tests`에 실제 test를 기록 | `BLOCKED · CONTRACT_INCOMPLETE` |
+| 선행 ID | 실제 선행 기능이 있을 때만 `depends_on`에 등록된 BANK-OM ID 작성 | 알 수 없는 ID·자기 자신·순환 관계는 `BLOCKED` |
+
+`depends_on`은 Git이 자동으로 판단하지 않습니다. 예를 들어 `BANK-OM-002`가 `BANK-OM-001`이 만든 공통코드 없이는 동작하지 않을 때만 `BANK-OM-001`을 적습니다.
+
+### 3-3. 제안 파일을 저장할 폴더 지정
+
+`RUN_ID`는 한 번의 `plan → 승인 → apply` 시도를 구분하는 값입니다. 입력이나 코드를 고쳐 `plan`을 다시 실행할 때는 이전 결과를 보존하도록 새 값을 사용합니다.
+
+```bash
+RUN_ID=20260806-01
+```
+
+```bash
+PROPOSAL_DIR="$OM_TEST_REPO/evidence/om-1.13.1-initial-bootstrap-$RUN_ID/proposal"
+```
+
+### 3-4. 최초 등록 제안 생성
 
 ```bash
 cd "$OM_TEST_REPO"
@@ -475,19 +562,106 @@ cd "$OM_TEST_REPO"
   --version 1.13.1 \
   --official-ref afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9 \
   --custom-ref codex/om-1.13.1-id-series-upstream \
-  --input harness/preparation-inputs/om-temp-1.13.1/initial-registration-input.yaml \
-  --output evidence/om-1.13.1-initial-bootstrap-<실행ID>/proposal
+  --input "$INITIAL_INPUT" \
+  --output "$PROPOSAL_DIR"
 ```
 
-**확인할 결과:** `BANK-OM 7개`, `commit 7개`, `변경 경로 111개`, `공용 경로 37개`가 출력되어야 합니다. 종료코드 `2`는 오류가 아니라 사람 검토가 필요하다는 뜻입니다.
+먼저 `status`를 확인합니다.
+
+| 결과 | 뜻 | 다음 행동 |
+|---|---|---|
+| `BLOCKED` · 종료코드 `1` | 담당자·Contract·선행 ID 등 필수 결정이 미완료 | `summary.md`의 **반드시 수정할 항목**을 고치고 새 `RUN_ID`로 다시 실행 |
+| `PROPOSAL_WRITTEN` · 종료코드 `2` | 필수 입력이 완성되어 사람 검토 가능 | 수량과 제안 파일을 확인한 뒤 다음 페이지로 이동 |
+| `ANALYSIS_ERROR` · 종료코드 `3` | YAML 형식·Git 참조·필수 목록 오류로 분석 불가 | 출력된 오류를 고친 뒤 새 `RUN_ID`로 다시 실행 |
+
+현재 예행연습 입력처럼 담당자가 아직 정해지지 않았다면 다음과 같이 **정상적으로 차단**됩니다.
+
+```json
+{
+  "status": "BLOCKED",
+  "customization_count": 7,
+  "commit_count": 7,
+  "changed_path_count": 111,
+  "shared_path_count": 37,
+  "blocking_findings": [
+    {
+      "code": "OWNER_NOT_ASSIGNED",
+      "customization_id": "BANK-OM-001",
+      "next_action": "owner에 실제 담당자를 입력하고 owner_status를 assigned로 변경합니다."
+    }
+  ]
+}
+```
+
+이 경우 proposal은 진단용으로 남지만 승인 양식 생성과 `apply`는 실행할 수 없습니다.
+
+입력을 모두 고쳐 다시 실행하면 다음 결과가 나와야 합니다.
+
+```json
+{
+  "status": "PROPOSAL_WRITTEN",
+  "customization_count": 7,
+  "commit_count": 7,
+  "changed_path_count": 111,
+  "shared_path_count": 37,
+  "proposal": ".../proposal/proposal.yaml",
+  "summary": ".../proposal/summary.md",
+  "proposed_registration": ".../proposal/proposed-registration"
+}
+```
+
+`BANK-OM 7개`, `commit 7개`, `변경 경로 111개`, `공용 경로 37개`도 함께 확인합니다. ID별 commit과 전체 변경 경로는 `proposal.yaml`에 저장됩니다.
+
+### 3-5. 생성된 제안 파일의 경로 확인
+
+먼저 요약을 읽습니다. `BLOCKED`이면 **반드시 수정할 항목**이 함께 표시됩니다.
+
+```bash
+sed -n '1,200p' "$PROPOSAL_DIR/summary.md"
+```
+
+다음 명령은 이번 실행에서 생성된 파일만 경로순으로 보여줍니다. 이 화면은 **최초 등록 제안 생성 결과 예시**로 캡처할 수 있습니다.
+
+```bash
+find "$PROPOSAL_DIR" -type f | sort
+```
+
+**생성 경로:**
+
+```text
+$PROPOSAL_DIR/
+├── proposal.yaml
+├── proposal-digest.txt
+├── summary.md
+└── proposed-registration/
+    ├── customization-registry.yaml
+    ├── contracts.yaml
+    ├── manifests/
+    │   ├── BANK-OM-001.yaml
+    │   ├── BANK-OM-002.yaml
+    │   └── ... BANK-OM-007.yaml
+    ├── shared-path-owners.yaml
+    ├── source-diff-paths.txt
+    └── source-snapshot-path-owners.yaml
+```
 
 | 생성 결과 | 내용 |
 |---|---|
 | `proposal.yaml` | 입력·commit·생성 파일의 기준값 |
+| `proposal-digest.txt` | 이번 제안 전체를 식별하는 값 |
 | `summary.md` | 수량과 제안 식별값 요약 |
-| `proposed-registration/` | Manifest 7개·Registry·Contract·경로 연결표 초안 |
+| `proposed-registration/customization-registry.yaml` | 7개 BANK-OM ID의 제목·담당자·코드 기준값 제안 |
+| `proposed-registration/contracts.yaml` | 정상 동작과 필수 test 연결 제안 |
+| `proposed-registration/manifests/` | ID별 Manifest 7개 제안 |
+| `proposed-registration/*path*` | 변경 경로와 ID 연결 제안 |
 
-활성 등록 폴더는 아직 바뀌지 않습니다. 다음 페이지에서 제안을 검토하고 승인한 뒤 반영합니다.
+Manifest 한 개를 캡처하려면 다음 명령으로 `BANK-OM-001` 예시를 엽니다.
+
+```bash
+sed -n '1,140p' "$PROPOSAL_DIR/proposed-registration/manifests/BANK-OM-001.yaml"
+```
+
+활성 등록 폴더는 아직 바뀌지 않습니다. `summary.md`가 `REVIEW_REQUIRED`이고 `반영 가능: yes`일 때만 다음 페이지에서 승인합니다.
 
 ## 4. 다음 페이지로 넘길 입력 확인
 
@@ -497,8 +671,8 @@ cd "$OM_TEST_REPO"
 | `source-snapshot-path-owners.yaml` | 111개 경로가 하나 이상의 BANK-OM ID에 연결 | 누락 경로가 있음 |
 | `shared-path-owners.yaml` | 37개 공용 경로가 114개 경로·ID 조합을 설명 | ID가 하나뿐인 경로가 공용 표에 들어감 |
 | `shared-code-definitions.yaml` | 자동 작성 제안이 114개 조합을 모두 포함하고 최종 커스텀 branch 검증이 `PASS`; 등록 `plan`의 검토 입력으로 복사됨 | `assertions: []`, `draft_notice`, 114개 미만 조합 또는 자동검증 오류 |
-| 최초 등록 제안 | 7개 Manifest·Registry·Contract가 `proposed-registration/`에 생성됨 | 수량이 다르거나 `ANALYSIS_ERROR`가 발생 |
-| 업무 입력 | 7개 ID의 담당자와 정상 조건을 사용자가 확인 | 담당자가 `UNASSIGNED`이거나 test가 실제 코드에 없음 |
+| 최초 등록 제안 | `status: REVIEW_REQUIRED`, `반영 가능: yes`; 7개 Manifest·Registry·Contract가 생성됨 | `BLOCKED`, `ANALYSIS_ERROR` 또는 수량 불일치 |
+| 업무 입력 | 7개 ID의 담당자·필수 경로·Contract·선행 ID 확인 완료 | `UNASSIGNED`, `TODO`, 빈 필수 경로, 잘못된 선행 ID |
 
 ## 5. 이번 가이드 완료 기준
 
@@ -507,6 +681,7 @@ cd "$OM_TEST_REPO"
 - [ ] 이번 1.13.1용 경로 기준 파일이 준비되어 있습니다.
 - [ ] 114개 공용 경로·ID 조합의 assertion 자동 작성과 최종 커스텀 branch 검증이 완료됐습니다.
 - [ ] 사용자가 ID별 commit SHA와 114개 조합의 귀속을 확인했고, 자동 작성 제안을 등록 `plan`의 검토 입력으로 복사했습니다.
+- [ ] `bootstrap-plan` 요약이 `REVIEW_REQUIRED`이고 `반영 가능: yes`입니다.
 - [ ] `bootstrap-plan`이 Manifest 7개·Registry·Contract 초안을 생성했습니다.
 
 위 항목을 모두 확인하기 전에는 승인·반영 또는 1.13.2 업그레이드 병합으로 이동하지 않습니다.

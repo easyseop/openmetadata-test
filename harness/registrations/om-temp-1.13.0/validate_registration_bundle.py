@@ -33,6 +33,7 @@ def emit_result(output: dict, output_path: Path | None) -> None:
     rendered = json.dumps(output, ensure_ascii=False, indent=2, sort_keys=True)
     print(rendered)
     if output_path:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(rendered + "\n", encoding="utf-8")
 
 

@@ -58,6 +58,7 @@
           "provenance": {"enum": ["source-snapshot", "candidate-follow-up"]},
           "required_changed_paths": {
             "type": "array",
+            "minItems": 1,
             "items": {"type": "string", "minLength": 1},
             "uniqueItems": true
           },

@@ -65,3 +65,14 @@ def test_reconstruction_error_is_structured_analysis_error(
             "detail": "BANK-OM-008: explicit provenance is required",
         }
     ]
+
+
+def test_emit_result_creates_missing_output_directory(tmp_path, capsys):
+    module = _load_script()
+    output = tmp_path / "new-evidence" / "nested" / "result.json"
+    result = {"checks": [], "release_note": "saved"}
+
+    module.emit_result(result, output)
+
+    assert json.loads(output.read_text(encoding="utf-8")) == result
+    assert json.loads(capsys.readouterr().out) == result

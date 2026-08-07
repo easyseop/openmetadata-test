@@ -1,12 +1,13 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OM_TEMP 1.13.1 등록 승인·apply 및 기준 검사 가이드</title><link rel="stylesheet" href="OM_TEMP_예행연습_공통.css"></head><body><div class="wrap"><main><header class="hero"><h1>OM_TEMP 1.13.1 등록 승인·apply 및 기준 검사 가이드</h1></header>
 <p><strong>전체 순서:</strong> 7/11 · <a href="./OM_TEMP_1.13.1_1.13.2_예행연습_전체목차.html">전체 목차</a></p>
-<div class="callout note">문서 성격: 사용자가 승인한 1.13.1 등록 변경안을 검사기 저장소에 반영하고, 업그레이드 전 기준 검사를 실행하는 문서입니다.  <br>시작 조건: <code>codex/om-1.13.1-id-series-upstream</code>의 111개 변경 경로와 7개 BANK-OM ID별 commit, 공용 코드 정의 114개 조합이 승인돼 있어야 합니다.  <br>종료점: 공식 1.13.1과 커스텀 1.13.1의 실제 차이가 승인한 등록자료와 일치한다는 기준 결과를 보관합니다. 아직 1.13.2와 비교하거나 업그레이드 성공을 판정하지 않습니다.  <br>이 문서에서 하지 않는 일: 공식 1.13.2 준비, vendor merge, release branch 생성.</div>
+<div class="callout note">문서 성격: 사용자가 승인한 1.13.1 등록 변경안을 검사기 저장소에 반영하고, 업그레이드 전 기준 검사를 실행하는 문서입니다.  <br>시작 조건: <code>codex/om-1.13.1-id-series-upstream</code>의 111개 변경 경로와 7개 BANK-OM ID별 commit, 공용 코드 정의 114개 조합이 승인돼 있어야 합니다. 이전 단계와 같은 터미널을 사용하여 <code>OM_TEST_REPO</code>와 <code>OM_CODE_REPO</code>가 설정된 상태에서 시작합니다.<br>종료점: 공식 1.13.1과 커스텀 1.13.1의 실제 차이가 승인한 등록자료와 일치한다는 기준 결과를 보관합니다. 아직 1.13.2와 비교하거나 업그레이드 성공을 판정하지 않습니다.  <br>이 문서에서 하지 않는 일: 공식 1.13.2 준비, vendor merge, release branch 생성.</div>
 <p class="pager"><strong>문서 이동:</strong> <a href="./OM_TEMP_1.13.1_1.13.2_검사기_간단_학습_가이드.html">← 이전 — 검사기 간단 학습</a> · <a href="./OM_TEMP_1.13.2_공식코드_준비_및_사전영향검사_가이드.html">다음 — 공식 1.13.2 준비·사전 영향 검사 →</a></p>
-<h2>공통 경로 설정</h2>
-<p>이 페이지의 명령을 실행할 터미널에서 검사기 저장소로 이동한 뒤 공통 경로를 불러옵니다. 다른 컴퓨터에서는 clone 위치만 바꾸면 됩니다.</p>
-<div class="command"><pre><code class="language-bash">cd &lt;검사기-저장소-clone-경로&gt;</code></pre></div>
-<div class="command"><pre><code class="language-bash">source harness/rehearsal_env.sh</code></pre></div>
-<p><code>OM_TEST_REPO</code>는 검사기 저장소, <code>OM_CODE_REPO</code>는 OpenMetadata 코드 작업 폴더, <code>KB_SOURCE_REPO</code>는 실제 커스터마이징 원본 폴더를 가리킵니다. 새 터미널을 열면 다시 실행합니다.</p>
+<h2>이전 단계의 경로 확인</h2>
+<p>이전 단계와 같은 터미널을 이어서 사용합니다. 경로를 다시 설정하지 않고, 아래 명령으로 두 값만 확인합니다.</p>
+<div class="command"><pre><code class="language-bash">printf &#x27;[검사기 저장소] %s\n[OpenMetadata 코드 저장소] %s\n&#x27; \
+  &quot;$OM_TEST_REPO&quot; \
+  &quot;$OM_CODE_REPO&quot;</code></pre></div>
+<p><strong>확인할 내용:</strong> 두 항목 모두에 실제 폴더 경로가 나와야 합니다. 빈 값이 있으면 진행하지 말고, 예행연습 시작 단계에서 경로를 불러온 뒤 다시 확인합니다.</p>
 <h2>1. 이 단계가 필요한 이유</h2>
 <p>검사기는 코드만 보고 BANK-OM 기능의 의미를 알아내지 않습니다. 검사기가 읽을 등록자료가 서로 연결돼 있어야 “어느 ID가 어느 파일을 바꾸었고, 무엇이 반드시 남아 있어야 하며, 어떤 test로 정상 동작을 확인할지” 판단할 수 있습니다.</p>
 <div class="callout reference">*<strong>참고 — 등록자료</strong>는 검사 전에 장기 보관하는 YAML·텍스트 기준 파일입니다. <code>plan</code> 결과나 검사 JSON처럼 한 번의 실행에서 만들어지는 결과 파일과 구분합니다.</div>
@@ -53,7 +54,7 @@ Manifest.changed_paths ─┬─ shared-path-owners.yaml의 파일·ID 관계
 <div class="callout reference">*<strong>참고 — <code>plan</code></strong>은 등록자료를 수정하지 않고 “무엇을 바꿀지” 제안합니다. <strong><code>apply</code></strong>는 같은 코드·같은 proposal·사용자가 승인한 승인서인지 다시 확인한 뒤 등록자료를 수정합니다.</div>
 <h2>3. 실행 전 입력 확인</h2>
 <h3>3-1. 검사기 저장소로 이동</h3>
-<p><strong>입력:</strong> <code>openmetadata-test</code> 로컬 저장소. <strong>산출물:</strong> 이후 명령의 기준 작업 경로.</p>
+<p><strong>실행 내용:</strong> 위에서 확인한 검사기 저장소로 이동합니다. <strong>산출물:</strong> 이후 명령의 기준 작업 경로.</p>
 <div class="command"><pre><code class="language-bash">cd &quot;$OM_TEST_REPO&quot;</code></pre></div>
 <h3>3-2. OpenMetadata 코드 branch와 작업 폴더 확인</h3>
 <div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; switch codex/om-1.13.1-id-series-upstream</code></pre></div>
@@ -62,12 +63,13 @@ Manifest.changed_paths ─┬─ shared-path-owners.yaml의 파일·ID 관계
 <p>아래 명령은 이전 페이지 7-4 재검사에서 통과한 <code>codex/om-1.13.1-id-series-upstream</code> branch의 마지막 commit SHA를 출력합니다. 이 commit에는 BANK-OM-001부터 007까지 7개 commit이 순서대로 포함되어 있습니다.</p>
 <p>이 commit은 <strong>1.13.1 기준검사 대상 commit</strong>입니다. 아직 1.13.2를 합친 코드는 아닙니다. 뒤에서 공식 1.13.2를 합쳐 만든 commit은 별도로 <strong>1.13.2 업그레이드 후보 commit</strong>이라고 부릅니다.</p>
 <div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; rev-parse codex/om-1.13.1-id-series-upstream</code></pre></div>
-<p><strong>정상 출력 예시:</strong> <code>dee330ebd5abfe33e1ac61e1ca31879746a1b423</code></p>
+<p><strong>현재 예행연습 출력:</strong> <code>d952a83896940116d3d6022323ad76bfe60991e8</code></p>
+<p>이 값은 이전 4/11 가이드에서 만든 7개 BANK-OM commit 중 마지막 <code>BANK-OM-007</code> commit입니다. 앞의 6개 commit도 이 commit의 Git 이력에 포함돼 있습니다.</p>
 <p><strong>확인 방법:</strong> 출력된 SHA를 아래 두 결과의 SHA와 비교합니다. 점(<code>.</code>)으로 연결된 이름은 JSON 안쪽으로 들어가는 순서를 뜻합니다.</p>
 <div class="table-wrap"><table><thead><tr><th>실제 이름</th><th>우리말 의미</th></tr></thead><tbody>
 <tr><td><code>proposal/</code></td><td>등록 변경안을 승인받기 전에 보관하는 폴더</td></tr>
 <tr><td><code>proposal.yaml</code></td><td>어떤 등록자료를 어떻게 바꿀지 적은 <strong>등록 변경 제안서</strong></td></tr>
-<tr><td><code>custom_head_sha</code></td><td>제안서를 만들 때 커스텀 branch가 가리키던 정확한 commit SHA</td></tr>
+<tr><td><code>custom_sha</code></td><td>제안서를 만들 때 커스텀 branch가 가리키던 정확한 commit SHA</td></tr>
 <tr><td><code>source-gate-results.json</code></td><td>5-2 소스 검사에서 무엇을 검사했고 어떤 판정이 나왔는지 기록한 <strong>소스 검사 결과 파일</strong></td></tr>
 <tr><td><code>candidate_lock</code></td><td>검사 도중 branch가 바뀌어도 대상이 섞이지 않도록, 검사할 commit과 공식 기준 commit을 묶어 고정한 정보</td></tr>
 <tr><td><code>candidate</code></td><td><code>candidate_lock</code> 안에서 이번에 검사한 1.13.1 코드 정보</td></tr>
@@ -75,7 +77,7 @@ Manifest.changed_paths ─┬─ shared-path-owners.yaml의 파일·ID 관계
 </tbody></table></div>
 <p>따라서 <code>candidate_lock.candidate.commit_sha</code> 전체는 <strong>“소스 검사가 대상으로 고정하고 실제로 검사한 1.13.1 코드의 commit SHA”</strong>라는 뜻입니다.</p>
 <p>세 SHA가 모두 같아야 <code>plan</code>과 소스 검사가 같은 코드를 사용한 것입니다. 하나라도 다르면 서로 다른 코드를 분석한 결과이므로 중단하고 새 실행 ID로 <code>plan</code>부터 다시 실행합니다.</p>
-<h3>3-3. 실행 ID와 증거 폴더 준비</h3>
+<h3>3-3. 앞 페이지의 실행 ID 연결</h3>
 <p><code>&lt;실행ID&gt;</code>는 <strong>같은 1.13.1 기준검사 대상 commit에 대해 plan부터 기준 검사까지 수행한 한 번의 시도</strong>를 묶는 폴더 이름입니다. 도구가 무작위로 발급하는 값이 아니라 실행자가 중복되지 않게 정합니다.</p>
 <div class="table-wrap"><table><thead><tr><th>질문</th><th>기준</th></tr></thead><tbody>
 <tr><td>어떤 값을 쓰는가</td><td><code>20260805-01</code>처럼 <code>날짜-그날의 순번</code> 사용을 권장</td></tr>
@@ -84,25 +86,31 @@ Manifest.changed_paths ─┬─ shared-path-owners.yaml의 파일·ID 관계
 <tr><td>어디에 남는가</td><td><code>evidence/om-1.13.1-baseline-&lt;실행ID&gt;/</code> 폴더명과 일부 <code>run-id</code>에 남음</td></tr>
 <tr><td>Registry에 기록되는가</td><td>아니요. 검사 실행 이력을 묶는 증거 경로이며 Registry의 BANK-OM 이력과는 별개</td></tr>
 </tbody></table></div>
-<p>예를 들어 이번 시도의 ID를 <code>20260805-01</code>로 정했다면 뒤의 모든 <code>&lt;실행ID&gt;</code> 자리에 똑같이 <code>20260805-01</code>을 넣습니다. 오류를 수정하고 다시 실행하면 <code>20260805-02</code>처럼 새 ID를 사용하여 이전 결과를 보존합니다.</p>
-<div class="command"><pre><code class="language-bash">mkdir -p evidence/om-1.13.1-initial-bootstrap-&lt;실행ID&gt;</code></pre></div>
-<p><strong>명령의 역할:</strong> 이번 시도의 proposal·승인서·apply 결과·검사 JSON을 한곳에 보관할 빈 증거 폴더를 만듭니다.</p>
+<p>앞 페이지에서 <code>PROPOSAL_WRITTEN</code>이 나온 실행 ID를 그대로 넣습니다. 아래 <code>20260806-02</code>는 예시입니다.</p>
+<div class="command"><pre><code class="language-bash">RUN_ID=20260806-02</code></pre></div>
+<div class="command"><pre><code class="language-bash">PLAN_DIR=&quot;$OM_TEST_REPO/evidence/om-1.13.1-initial-bootstrap-$RUN_ID&quot;</code></pre></div>
+<div class="command"><pre><code class="language-bash">BASELINE_DIR=&quot;$OM_TEST_REPO/evidence/om-1.13.1-baseline-$RUN_ID&quot;</code></pre></div>
+<p>proposal 폴더는 앞 페이지의 <code>bootstrap-plan</code>이 이미 만들었습니다. 이 페이지에서 빈 폴더를 따로 만들지 않습니다. <code>BASELINE_DIR</code>은 5장에서 검사 결과를 저장할 때 자동으로 생성됩니다.</p>
 <h2>4. plan → 승인 → apply</h2>
 <h3>4-1. 최초 등록 제안 확인</h3>
-<p>앞 페이지의 <code>bootstrap-plan</code>이 만든 제안을 확인합니다. 활성 등록 폴더에는 아직 반영되지 않았습니다.</p>
-<div class="command"><pre><code class="language-bash">sed -n &#x27;1,120p&#x27; evidence/om-1.13.1-initial-bootstrap-&lt;실행ID&gt;/proposal/summary.md</code></pre></div>
-<p><strong>확인할 값:</strong> BANK-OM 7개, commit 7개, 변경 경로 111개, 공용 경로 37개입니다. 담당자가 <code>UNASSIGNED</code>이면 업무 입력을 고치고 <code>bootstrap-plan</code>을 다시 실행합니다.</p>
+<p>앞 페이지의 <code>bootstrap-plan</code>이 만든 제안을 확인합니다. 다음 명령은 파일을 생성하지 않고, 이미 생성된 요약을 화면에 보여줍니다.</p>
+<div class="command"><pre><code class="language-bash">test -f &quot;$PLAN_DIR/proposal/summary.md&quot; &amp;&amp; echo &quot;[확인 완료] 최초 등록 제안이 있습니다.&quot;</code></pre></div>
+<p><code>No such file</code>이 나오면 <code>RUN_ID</code>가 앞 페이지와 다르거나 <code>bootstrap-plan</code>을 아직 실행하지 않은 것입니다. 빈 폴더를 만들지 말고 앞 페이지 3-3~3-5를 먼저 수행합니다.</p>
+<div class="command"><pre><code class="language-bash">sed -n &#x27;1,200p&#x27; &quot;$PLAN_DIR/proposal/summary.md&quot;</code></pre></div>
+<p>다음 조건을 모두 만족해야 4-2로 이동합니다.</p>
+<ul><li>상태: <code>REVIEW_REQUIRED</code></li><li>반영 가능: <code>yes</code></li><li>BANK-OM 7개, commit 7개, 변경 경로 111개, 공용 경로 37개</li><li><strong>반드시 수정할 항목</strong>이 없음</li></ul>
+<p><code>BLOCKED</code>이면 승인 단계가 아닙니다. <code>summary.md</code>의 수정 항목에 따라 최초 등록 입력 YAML을 고치고, 새 실행 ID로 <code>bootstrap-plan</code>을 다시 실행합니다. 차단된 proposal로 승인 양식을 만들거나 <code>apply</code>하면 도구가 <code>PROPOSAL_NOT_APPLY_READY</code>로 다시 차단합니다.</p>
 <div class="table-wrap"><table><thead><tr><th>관리 대상</th><th>이력이 남는 위치</th><th>언제 이력이 확정되는가</th></tr></thead><tbody>
 <tr><td>BANK-OM 실제 코드와 commit SHA</td><td>OpenMetadata 코드 저장소</td><td>코드 commit을 만들고 저장소에 보관할 때</td></tr>
 <tr><td>Registry·Manifest·Contract 등 등록자료</td><td>검사기 저장소의 <code>harness/registrations/om-temp-1.13.1/</code></td><td><code>apply</code> 후 변경 내용을 검사기 저장소에 commit할 때</td></tr>
-<tr><td>proposal·승인서·검사 결과</td><td><code>evidence/om-1.13.1-initial-bootstrap-&lt;실행ID&gt;/</code></td><td>증거 폴더를 별도 보관하거나 저장소에 commit할 때</td></tr>
+<tr><td>proposal·승인서·검사 결과</td><td><code>$PLAN_DIR/</code></td><td>증거 폴더를 별도 보관하거나 저장소에 commit할 때</td></tr>
 </tbody></table></div>
 <div class="callout warning"><strong>주의 — 도구 실행만으로 Git 이력이 자동 생성되지는 않습니다.</strong> <code>apply</code>는 파일을 수정하고, Git commit·push는 그 변경을 장기 이력으로 확정하는 별도 작업입니다.</div>
-<div class="callout reference">*<strong>참고 — 종료코드 2:</strong> 최초 등록 제안이 만들어졌고 사람 검토가 필요하다는 뜻입니다.</div>
+<div class="callout reference">*<strong>참고 — 종료코드:</strong> <code>1</code>은 필수 입력 미완료로 차단, <code>2</code>는 승인 전 사람 검토 필요, <code>3</code>은 분석 불가입니다.</div>
 <h3>4-2. 승인서 작성용 양식 생성</h3>
 <div class="command"><pre><code class="language-bash">./.venv/bin/python harness/om_workflow.py bootstrap-approval-template \
-  --proposal evidence/om-1.13.1-initial-bootstrap-&lt;실행ID&gt;/proposal/proposal.yaml \
-  --output evidence/om-1.13.1-initial-bootstrap-&lt;실행ID&gt;/registration-approval.yaml</code></pre></div>
+  --proposal &quot;$PLAN_DIR/proposal/proposal.yaml&quot; \
+  --output &quot;$PLAN_DIR/registration-approval.yaml&quot;</code></pre></div>
 <p>승인 양식은 <code>plan</code>을 실행할 때마다 새로 만듭니다. <code>plan</code>을 다시 실행했다면 새 실행 ID를 사용합니다.</p>
 <p>정상 결과는 <code>status: TEMPLATE_WRITTEN</code>입니다. 사용자는 승인자·승인 시각·승인 근거만 작성합니다.</p>
 <div class="table-wrap"><table><thead><tr><th>파일</th><th>역할</th><th>누가 작성하는가</th></tr></thead><tbody>
@@ -136,17 +144,31 @@ decisions:
 <tr><td>승인 후 <code>apply</code> 전</td><td>사용 불가</td><td><code>apply</code>가 중단됨. 새 실행 ID로 다시 진행</td></tr>
 <tr><td><code>apply</code> 후</td><td>사용 불가</td><td>새 변경 작업으로 <code>plan → 승인 → apply</code> 진행</td></tr>
 </tbody></table></div>
-<p>파일 한 개만 바뀌어도 등록자료 전체를 다시 승인합니다. 변경 파일은 다음 명령으로 확인합니다.</p>
-<div class="command"><pre><code class="language-bash">git -C &quot;$OM_TEST_REPO&quot; status --short</code></pre></div>
+<p>파일 한 개만 바뀌어도 등록자료 전체를 다시 승인합니다. <code>apply</code> 전에 등록 폴더가 수동으로 바뀌지 않았는지 아래 두 명령으로 확인합니다.</p>
+<h4>등록 폴더의 변경 파일 유무 확인</h4>
+<p>아래 명령은 <strong>검사기 저장소 전체가 아니라 1.13.1 등록 폴더만</strong> 확인합니다.</p>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_TEST_REPO&quot; status --short -- \
+  harness/registrations/om-temp-1.13.1</code></pre></div>
+<p><strong>확인할 내용:</strong> 현재 <code>plan</code>이 만들어진 뒤 <code>apply</code>는 아직 실행하지 않은 시점이므로, <strong>빈 출력이 정상</strong>입니다.</p>
+<div class="table-wrap"><table><thead><tr><th>표시</th><th>의미</th><th>이 단계의 처리</th></tr></thead><tbody>
+<tr><td>빈 출력</td><td>등록 폴더에 수동 변경 없음</td><td>계속 진행</td></tr>
+<tr><td><code>M</code></td><td>Git이 관리하는 파일의 내용이 변경됨</td><td>중단하고 변경 내용 확인</td></tr>
+<tr><td><code>??</code></td><td>Git에 아직 등록되지 않은 새 파일이 생김</td><td>중단하고 파일 용도 확인</td></tr>
+<tr><td><code>D</code></td><td>Git이 관리하는 파일이 삭제됨</td><td>중단하고 삭제 의도 확인</td></tr>
+</tbody></table></div>
+<h4>기존 등록 파일의 실제 변경 내용 확인</h4>
 <div class="command"><pre><code class="language-bash">git -C &quot;$OM_TEST_REPO&quot; diff -- harness/registrations/om-temp-1.13.1</code></pre></div>
+<p><strong>확인할 내용:</strong> Git이 이미 관리하는 등록 파일에서 <code>+</code>는 추가된 내용, <code>-</code>는 삭제된 내용입니다. 위 명령이 빈 출력이었다면 이 명령도 빈 출력이어야 합니다.</p>
+<div class="callout warning"><strong>주의:</strong> <code>??</code>로 표시된 새 파일의 내용은 <code>git diff</code>에 나오지 않습니다. 새 파일 유무는 반드시 첫 번째 <code>status --short</code> 결과에서 확인합니다.</div>
+<p>두 명령 중 하나라도 출력이 있으면 현재 승인서를 사용하지 않습니다. 변경 의도를 확인한 뒤 새 실행 ID로 <code>plan → 승인</code>을 다시 진행합니다.</p>
 <p><code>apply</code>는 가장 최근 승인서를 자동으로 찾지 않습니다. 같은 실행 ID 폴더의 <code>proposal.yaml</code>과 <code>registration-approval.yaml</code>을 명령에 직접 지정합니다.</p>
 <h3>4-3. 승인된 변경 반영</h3>
 <div class="command"><pre><code class="language-bash">./.venv/bin/python harness/om_workflow.py bootstrap-apply \
   --repo &quot;$OM_CODE_REPO&quot; \
   --version 1.13.1 \
-  --proposal evidence/om-1.13.1-initial-bootstrap-&lt;실행ID&gt;/proposal/proposal.yaml \
-  --approval evidence/om-1.13.1-initial-bootstrap-&lt;실행ID&gt;/registration-approval.yaml \
-  --result evidence/om-1.13.1-initial-bootstrap-&lt;실행ID&gt;/registration-apply-result.json</code></pre></div>
+  --proposal &quot;$PLAN_DIR/proposal/proposal.yaml&quot; \
+  --approval &quot;$PLAN_DIR/registration-approval.yaml&quot; \
+  --result &quot;$PLAN_DIR/registration-apply-result.json&quot;</code></pre></div>
 <p><code>apply</code>는 승인한 제안과 현재 코드·등록자료가 같은지 확인합니다. 같으면 반영하고, 다르면 중단합니다. 반영 중 실패하면 수정된 파일을 원래 상태로 복구합니다.</p>
 <details class="details"><summary>apply 성공·중단 라벨별 실제 형식 예시 펼치기</summary><div class="details-body"><p><strong>성공 — 등록자료 반영 완료</strong></p>
 <div class="command"><pre><code class="language-json">{
@@ -174,12 +196,47 @@ decisions:
   &quot;message&quot;: &quot;registration apply lock exists: .../.registration-apply.lock&quot;
 }</code></pre></div>
 <p><strong class="diff">차이: <code>code</code>가 <code>APPLY_LOCKED</code>입니다.</strong> 다른 apply 실행 여부를 확인합니다. 실행 중인 작업이 없다면 잠금이 남은 원인을 담당자와 확인하고, 잠금 파일을 임의 삭제하지 않습니다.</p>
-<p><strong>분석 오류 — 승인서나 입력을 해석할 수 없음</strong></p>
+<p><strong>분석 오류 — 승인서에 작성하지 않은 항목이 있음</strong></p>
 <div class="command"><pre><code class="language-json">{
+  &quot;code&quot;: &quot;APPROVAL_INPUT_INVALID&quot;,
+  &quot;field&quot;: &quot;approved_by&quot;,
+  &quot;file&quot;: &quot;.../registration-approval.yaml&quot;,
+  &quot;message_ko&quot;: &quot;승인서에 수정해야 할 항목이 3개 있습니다.&quot;,
+  &quot;next_action&quot;: &quot;issues의 각 필드와 수정 방법을 확인해 registration-approval.yaml을 수정합니다.&quot;,
   &quot;status&quot;: &quot;ANALYSIS_ERROR&quot;,
-  &quot;message&quot;: &quot;approval still contains placeholder approver&quot;
+  &quot;issues&quot;: [
+    {
+      &quot;code&quot;: &quot;APPROVAL_APPROVER_PLACEHOLDER&quot;,
+      &quot;field&quot;: &quot;approved_by&quot;,
+      &quot;current_value&quot;: &quot;REPLACE_WITH_APPROVER_ID&quot;,
+      &quot;message_ko&quot;: &quot;승인자 항목이 아직 기본 자리표시자입니다.&quot;,
+      &quot;next_action&quot;: &quot;approved_by에 실제 승인자 이름이나 조직 식별값을 입력합니다.&quot;
+    },
+    {
+      &quot;code&quot;: &quot;APPROVAL_TIME_PLACEHOLDER&quot;,
+      &quot;field&quot;: &quot;approved_at&quot;,
+      &quot;current_value&quot;: &quot;REPLACE_WITH_RFC3339_TIME&quot;,
+      &quot;message_ko&quot;: &quot;승인 시각 항목이 아직 기본 자리표시자입니다.&quot;,
+      &quot;next_action&quot;: &quot;approved_at에 RFC 3339 형식의 승인 시각을 입력합니다. 예: 2026-08-06T10:30:00-07:00&quot;
+    },
+    {
+      &quot;code&quot;: &quot;APPROVAL_REASON_PLACEHOLDER&quot;,
+      &quot;field&quot;: &quot;decisions[0].reason&quot;,
+      &quot;current_value&quot;: &quot;REPLACE_WITH_REVIEW_REASON&quot;,
+      &quot;message_ko&quot;: &quot;승인 근거 항목이 아직 기본 자리표시자입니다.&quot;,
+      &quot;next_action&quot;: &quot;reason에 제안 내용을 확인하고 승인한 근거를 입력합니다.&quot;
+    }
+  ]
 }</code></pre></div>
-<p><strong class="diff">차이: <code>status</code>가 <code>ANALYSIS_ERROR</code>이며 <code>code</code> 대신 입력 오류 원인이 <code>message</code>에 표시됩니다.</strong> 승인서의 자리표시자·YAML 형식·필수 필드를 수정한 뒤 같은 등록 변경 제안서로 다시 실행합니다.</p></div></details>
+<p><strong class="diff">확인할 곳: <code>issues</code>에 문제 필드, 현재 값, 한국어 원인, 수정 방법이 모두 표시됩니다.</strong> <code>file</code>에 표시된 승인서의 항목을 모두 수정한 뒤 같은 <code>bootstrap-apply</code> 명령을 다시 실행합니다.</p>
+<div class="table-wrap"><table><thead><tr><th><code>code</code></th><th>문제 필드</th><th>수정 내용</th></tr></thead><tbody>
+<tr><td><code>APPROVAL_APPROVER_PLACEHOLDER</code></td><td><code>approved_by</code></td><td>실제 승인자 이름 또는 조직 식별값 입력</td></tr>
+<tr><td><code>APPROVAL_TIME_PLACEHOLDER</code></td><td><code>approved_at</code></td><td>RFC 3339 승인 시각 입력. 예: <code>2026-08-06T10:30:00-07:00</code></td></tr>
+<tr><td><code>APPROVAL_REASON_PLACEHOLDER</code></td><td><code>decisions[0].reason</code></td><td>제안 내용을 확인하고 승인한 근거 입력</td></tr>
+<tr><td><code>APPROVAL_INPUT_INVALID</code></td><td><code>issues[].field</code></td><td><code>issues</code>에 나온 모든 필드의 자리표시자·형식 오류 수정</td></tr>
+<tr><td><code>APPROVAL_DECISION_COVERAGE_MISMATCH</code></td><td><code>decisions[].finding_id</code></td><td>proposal에서 승인 양식을 다시 생성</td></tr>
+</tbody></table></div>
+<p>여러 항목에 문제가 있으면 <code>issues</code> 배열에 한 번에 표시됩니다.</p></div></details>
 <h2>5. 1.13.1 기준 검사 실행</h2>
 <h3>5-0. 묶음 실행 명령과 <code>results.json</code>의 차이</h3>
 <p><code>om_workflow.py validate</code>와 <code>om_workflow.py source</code>는 여러 검사를 정해진 순서로 호출하는 <strong>묶음 실행 명령</strong>입니다. 반면 <code>registration-validation-results.json</code>, <code>source-gate-results.json</code>, <code>shared-code-results.json</code>은 검사가 끝난 뒤 판정과 근거를 보관하는 <strong>결과 파일</strong>입니다.</p>
@@ -201,7 +258,7 @@ decisions:
 <div class="command"><pre><code class="language-bash">./.venv/bin/python harness/om_workflow.py validate \
   --repo &quot;$OM_CODE_REPO&quot; \
   --version 1.13.1 \
-  --output evidence/om-1.13.1-baseline-&lt;실행ID&gt;/registration-validation-results.json</code></pre></div>
+  --output &quot;$BASELINE_DIR/registration-validation-results.json&quot;</code></pre></div>
 <p>이 명령은 아래 5개 검사를 한 번에 실행하고 <code>registration-validation-results.json</code>의 <code>checks[]</code>에 저장합니다. 이 묶음은 등록자료를 실행 가능한 입력으로 신뢰할 수 있는지 확인하는 사전 검사이며, 각 항목에 별도의 T 번호를 붙인 묶음은 아닙니다. 단, 마지막 항목은 검사기 학습 페이지의 <strong>T60-I 필수 test 존재 검사</strong>와 같은 구현을 사용합니다.</p>
 <div class="table-wrap"><table><thead><tr><th><code>checks[].name</code></th><th>무엇을 읽는가</th><th>무엇을 확인하는가</th><th>실패 의미</th></tr></thead><tbody>
 <tr><td>Manifest 구조와 작성 규칙</td><td>7개 Manifest·<code>repository-layout.yaml</code></td><td>필수 필드·경로 표현·작성 규칙을 해석할 수 있는가</td><td>YAML·필드·경로 규칙을 신뢰할 수 없으면 <code>analysis_error</code></td></tr>
@@ -236,7 +293,7 @@ decisions:
 <div class="command"><pre><code class="language-bash">./.venv/bin/python harness/om_workflow.py source \
   --repo &quot;$OM_CODE_REPO&quot; \
   --version 1.13.1 \
-  --output evidence/om-1.13.1-baseline-&lt;실행ID&gt;/source-gate-results.json</code></pre></div>
+  --output &quot;$BASELINE_DIR/source-gate-results.json&quot;</code></pre></div>
 <p>이 명령은 현재 <strong>1.13.1 기준검사 대상 commit</strong>을 <code>candidate_lock</code>에 고정하고, 아래 소스 검사들을 같은 commit에 실행합니다. 여기서 고정하는 대상은 아직 1.13.2를 합친 업그레이드 후보가 아닙니다. 각 결과는 <code>source-gate-results.json</code>의 <code>gates[]</code>에 저장됩니다.</p>
 <div class="table-wrap"><table><thead><tr><th>검사기</th><th>JSON의 <code>gates[].name</code></th><th>무엇을 검사하는가</th><th>실패 시 확인할 것</th></tr></thead><tbody>
 <tr><td>T25 공식 코드 포함 관계</td><td><code>vendor-ancestry</code></td><td>1.13.1 기준검사 대상의 Git 이력에 승인한 공식 1.13.1 commit이 포함됐는가</td><td>잘못된 공식 기준에서 branch를 만들거나 병합하지 않았는지 확인</td></tr>
@@ -254,7 +311,7 @@ decisions:
 <div class="command"><pre><code class="language-json">{
   &quot;candidate_lock&quot;: {
     &quot;candidate&quot;: {
-      &quot;commit_sha&quot;: &quot;dee330eb...&quot;,
+      &quot;commit_sha&quot;: &quot;d952a838...&quot;,
       &quot;tree_sha&quot;: &quot;e490ed82...&quot;
     },
     &quot;upstream&quot;: {
@@ -267,7 +324,7 @@ decisions:
     {
       &quot;name&quot;: &quot;vendor-ancestry&quot;,
       &quot;verdict&quot;: &quot;pass&quot;,
-      &quot;reasons&quot;: [&quot;candidate=dee330eb...&quot;, &quot;approved_target=afcb2d2c...&quot;]
+      &quot;reasons&quot;: [&quot;candidate=d952a838...&quot;, &quot;approved_target=afcb2d2c...&quot;]
     }
   ]
 }</code></pre></div>
@@ -290,7 +347,7 @@ decisions:
   --candidate codex/om-1.13.1-id-series-upstream \
   --owners harness/registrations/om-temp-1.13.1/shared-path-owners.yaml \
   --definitions harness/registrations/om-temp-1.13.1/shared-code-definitions.yaml \
-  --output evidence/om-1.13.1-baseline-&lt;실행ID&gt;/shared-code-results.json</code></pre></div>
+  --output &quot;$BASELINE_DIR/shared-code-results.json&quot;</code></pre></div>
 <p>5-3은 여러 검사기의 묶음이 아니라 <strong>공용 파일 ID별 코드 정의 검사 하나만 실행하는 진단 명령</strong>입니다. <code>shared-path-owners.yaml</code>에 있는 모든 <code>공용 파일 경로 + BANK-OM ID</code> 조합이 <code>shared-code-definitions.yaml</code>에 정확히 한 번씩 정의됐는지 먼저 확인하고, <code>--candidate</code>로 지정한 1.13.1 기준검사 대상 파일의 실제 내용을 다음 방식으로 비교합니다.</p>
 <div class="table-wrap"><table><thead><tr><th>대상 파일</th><th>정의 방식</th><th>실제 비교 내용</th></tr></thead><tbody>
 <tr><td>Java·TypeScript·TSX·SQL</td><td><code>code_fragment</code></td><td>주석과 공백을 제외한 실제 코드 토큰이 승인한 조각과 정해진 횟수만큼 존재하는가</td></tr>
@@ -323,7 +380,7 @@ decisions:
   --repo &quot;$OM_CODE_REPO&quot; \
   --version 1.13.1 \
   --artifact-digest sha256:&lt;실제-배포파일-digest&gt; \
-  --run-id om-1.13.1-baseline-&lt;실행ID&gt;</code></pre></div>
+  --run-id &quot;om-1.13.1-baseline-$RUN_ID&quot;</code></pre></div>
 <p>실제 API·브라우저·DB 환경이 없으면 runtime test가 <code>skipped</code> 또는 환경 대기로 남을 수 있습니다. <strong>실행된 test의 실패가 0개여도 필수 test가 skip이면 전체 PASS가 아닙니다.</strong></p>
 <h2>6. 결과 확인표</h2>
 <div class="table-wrap"><table><thead><tr><th>확인 대상</th><th>통과 기준</th><th>통과가 아닌 예</th></tr></thead><tbody>
@@ -333,7 +390,7 @@ decisions:
 <tr><td>공용 코드 정의</td><td>114개 승인 조합이 모두 존재</td><td>다른 ID 코드만 존재, 기대값 변경</td></tr>
 <tr><td>Contract test</td><td>필수 test가 실제 실행되어 통과</td><td>skip, 환경 미준비, 다른 기준검사 대상 SHA 결과</td></tr>
 </tbody></table></div>
-<div class="callout warning"><strong>주의 — 결과 JSON 보관 위치:</strong> 과거 재현 결과는 5번 페이지의 보관 폴더에만 있어야 합니다. 이번 1.13.1 기준 검사 결과는 <code>evidence/om-1.13.1-baseline-&lt;실행ID&gt;/</code>에 새로 생성하고, 다른 SHA를 가리키는 결과를 재사용하지 않습니다.</div>
+<div class="callout warning"><strong>주의 — 결과 JSON 보관 위치:</strong> 이번 1.13.1 기준 검사 결과는 <code>$BASELINE_DIR/</code>에 새로 생성하고, 다른 SHA를 가리키는 결과를 재사용하지 않습니다.</div>
 <h2>7. 완료 기준</h2>
 <ul><li>proposal·승인서·apply 결과가 같은 digest와 1.13.1 기준검사 대상 SHA를 가리킵니다.</li><li>Registry·Manifest·Contract·공용 경로·공용 코드 정의 연결이 통과했습니다.</li><li>모든 검사 결과 파일에서 verdict뿐 아니라 <code>reasons</code>를 확인했습니다.</li><li>환경이 없어 실행하지 못한 runtime test를 PASS로 기록하지 않았습니다.</li><li>BLOCK·APPROVAL·ANALYSIS_ERROR와 담당자 결정을 증거 폴더에 보관했습니다.</li></ul>
 <div class="callout stop"><strong>중단 조건:</strong> 위 기준을 충족하지 못하면 공식 1.13.2를 병합하지 않습니다. 1.13.1 기준이 불완전하면 업그레이드 뒤 누락 원인을 구분할 수 없습니다.</div>

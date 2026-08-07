@@ -499,7 +499,26 @@ git -C "$OM_CODE_REPO" diff \
 
 **정상 결과:** 빈 출력입니다.
 
-### 7-4. 재구성 검사
+### 7-4. ID별로 재구성한 후보 branch 검증
+
+이 검사는 공식 1.13.1에서 시작해 `BANK-OM-001`~`007` commit을 순서대로 적용한 후보 branch가 기존 은행 커스터마이징 코드를 빠짐없이 재현했는지 확인합니다. 서버를 실행하거나 화면 기능을 시험하는 검사는 아닙니다.
+
+:::details 펼쳐보기 — 무엇을 검사하고 어떤 경우에 중단하는가
+
+| 검사항목 | 검사기가 비교하는 것 | 중단하는 경우 예시 |
+|---|---|---|
+| 공식 코드 출발점 | 후보 branch의 Git 이력이 검사기에 등록된 공식 1.13.1 commit에서 시작하는지 확인 | 파일 내용은 같지만 공식 1.13.1 commit과 Git 이력이 연결되지 않음 |
+| commit과 BANK-OM ID 연결 | 공식 1.13.1 이후의 각 기능 commit에 `Customization-ID`가 정확히 하나 있는지 확인 | ID 누락, 한 commit에 ID 두 개, 등록되지 않은 ID 사용 |
+| ID별 변경 경로 | 각 commit이 해당 ID의 Manifest에 등록된 파일만 수정했는지 확인 | `BANK-OM-001` commit이 `BANK-OM-002` 전용 파일을 수정함 |
+| 공용 파일 연결 | 공용 파일을 수정한 BANK-OM ID가 `shared-path-owners.yaml`의 연결과 일치하는지 확인 | 001·002 공용 파일인데 한 ID의 commit에서만 수정됨 |
+| 전체 변경 파일 범위 | 공식 1.13.1과 후보 branch 사이의 최종 변경 경로가 등록 대상 111개와 일치하는지 확인 | 미등록 파일 추가, 등록 파일 누락, 제외 파일 변경 |
+| 최종 파일 내용 | 등록 대상 파일은 기존 은행 커스터마이징 코드와 같고, 제외 파일은 공식 1.13.1과 같은지 확인 | commit은 모두 있지만 코드 일부가 누락되거나 제외 파일이 바뀜 |
+
+예를 들어 `schemaChanges.sql`을 `BANK-OM-001`과 `BANK-OM-002`가 함께 수정했다면, 두 ID가 공용 경로 연결표에 모두 기록되어 있고 두 commit이 해당 파일을 수정했으며 최종 파일에 두 기능의 코드가 모두 남아 있어야 통과합니다.
+
+이 검사는 Git 이력, ID, 변경 경로와 최종 파일 내용을 검증합니다. 서버 실행, 화면 동작, DB 기능과 업무 기능의 정상 여부는 이후 Contract test와 기능 검사에서 별도로 확인합니다.
+
+:::
 
 #### 7-4-1. 전체 검사 결과를 증거 파일로 저장
 
@@ -589,32 +608,7 @@ jq '{
 
 이 경우 `commit_identity` 두 건은 **문제로 확정된 항목이 아닙니다.** 각각을 BANK-OM commit으로 고치지 않습니다. 대표 원인인 `git_lineage`를 해결하면 검사 범위에서 중간 복사 commit이 빠지므로 두 사유도 함께 없어집니다. 계보를 고친 뒤에도 `commit_identity`가 다시 나오면 그때는 실제 commit ID 기록 문제로 판단합니다.
 
-#### 7-4-3. BANK-OM-001의 경로 분류 예시 확인
-
-아래 한 줄을 실행합니다. 도구가 7-4-1에서 저장한 결과 파일을 찾아 BANK-OM-001의 전체 경로 개수와 화면 확인용 예시를 보여 줍니다.
-
-```bash
-bash harness/registrations/kb-openmetadata/show_vendor_rebuild_id_paths.sh BANK-OM-001
-```
-
-다른 ID를 확인할 때는 마지막 값만 `BANK-OM-002`~`BANK-OM-007`로 바꿉니다. 결과 파일이 없으면 도구가 임의로 빈 결과를 만들지 않고 **7-4-1을 먼저 실행하라**고 알려 줍니다.
-
-![BANK-OM-001에만 연결된 경로와 BANK-OM-001·002가 함께 사용하는 경로를 나누어 표시한 화면](assets/vendor-rebuild-bank-om-001-path-summary.png)
-
-| 결과 변수 | 의미 | 화면에서 확인할 내용 |
-|---|---|---|
-| 맨 위의 `customization_id` | 지금 조회한 BANK-OM ID | 입력한 `BANK-OM-001`과 같은지 확인합니다. |
-| `unique_path_count` | BANK-OM-001에만 연결된 전체 파일 수 | `unique_path_examples`에 보이는 3개보다 전체 수가 많을 수 있습니다. |
-| `shared_path_count` | BANK-OM-001과 다른 ID가 함께 사용하는 전체 파일 수 | `shared_path_examples`에 보이는 2개보다 전체 수가 많을 수 있습니다. |
-| `unique_path_examples` | BANK-OM-001 전용 경로 중 앞의 3개 | 각 항목의 `customization_id`가 `BANK-OM-001`인지 확인합니다. |
-| `unique_path_examples[].customization_id` | 해당 전용 경로를 사용하는 BANK-OM ID | 다른 ID가 표시되면 BANK-OM-001 전용 경로가 아닙니다. |
-| `shared_path_examples` | BANK-OM-001 공용 경로 중 앞의 2개 | `candidate_ids`에 `BANK-OM-001`과 공동 사용 ID가 함께 표시되는지 확인합니다. |
-| `candidate_ids` | 같은 파일에 코드가 들어 있는 BANK-OM ID 목록 | 화면의 SQL 두 파일은 BANK-OM-001과 BANK-OM-002가 함께 사용합니다. |
-| `path` | 제품 코드 저장소를 기준으로 한 파일 위치 | 예상하지 않은 파일이면 경로·ID 연결표를 다시 검토합니다. |
-
-> *참고 — `examples`는 터미널 화면을 짧게 유지하기 위한 일부 예시입니다. 전체 경로는 삭제되지 않았으며 `vendor-rebuild-result.json`에 모두 보관됩니다. 운영 판단에서는 예시 개수가 아니라 `unique_path_count`, `shared_path_count`와 전체 JSON을 함께 사용합니다.
-
-#### 7-4-4. 판정별 다음 행동
+#### 7-4-3. 판정별 다음 행동
 
 | 결과 | 의미 | 다음 행동 |
 |---|---|---|
@@ -640,7 +634,7 @@ candidate does not descend from the approved upstream target
 └─ 차단 원인: 공식 1.13.1 commit에서 이어진 Git 이력 없음
 ```
 
-#### 7-4-5. 초기 `block` 해결 절차 — 수행 완료
+#### 7-4-4. 초기 `block` 해결 및 재검사 — 수행 완료
 
 실제로 적용한 해결 방법은 **검사기에 이미 승인된 공식 1.13.1 commit에서 새 branch를 만들고, 검토가 끝난 일곱 BANK-OM commit을 순서대로 옮기는 것**이었습니다. 기존 branch는 삭제하거나 강제로 고치지 않고 비교·복구용으로 보존했습니다.
 
@@ -737,6 +731,29 @@ VENDOR_REBUILD_CANDIDATE=codex/om-1.13.1-id-series-upstream \
 | `excluded_paths` | 제외 파일 2개 | 제외하기로 한 두 파일이 그대로 유지됐습니다. |
 
 공식 1.13.1에서 시작한 뒤 같은 일곱 commit을 옮기자 `active_ids` 7개, 변경 경로 111개, 제외 파일 2개가 유지됐고 `gate.verdict`가 `pass`로 바뀌었습니다.
+
+#### 7-4-5. 추가 확인 — ID별 고유·공용 경로 분류
+
+이 절은 재구성 검사의 PASS/BLOCK을 결정하는 필수 단계가 아닙니다. 재검사를 통과한 뒤 특정 BANK-OM ID에 연결된 고유 경로와 공용 경로를 확인할 때만 사용합니다.
+
+```bash
+bash harness/registrations/kb-openmetadata/show_vendor_rebuild_id_paths.sh BANK-OM-001
+```
+
+다른 ID를 확인할 때는 마지막 값만 `BANK-OM-002`~`BANK-OM-007`로 바꿉니다. 이 명령은 7-4-1에서 저장한 결과 파일을 읽으므로 결과 파일이 없으면 먼저 7-4-1을 실행합니다.
+
+![BANK-OM-001에만 연결된 경로와 BANK-OM-001·002가 함께 사용하는 경로를 나누어 표시한 화면](assets/vendor-rebuild-bank-om-001-path-summary.png)
+
+| 결과 변수 | 확인할 내용 |
+|---|---|
+| `customization_id` | 입력한 `BANK-OM-001`과 같은지 확인합니다. |
+| `unique_path_count` | BANK-OM-001만 수정하는 전체 파일 수입니다. |
+| `shared_path_count` | BANK-OM-001과 다른 ID가 함께 수정하는 전체 파일 수입니다. |
+| `unique_path_examples` | BANK-OM-001 전용 경로의 일부 예시입니다. |
+| `shared_path_examples` | BANK-OM-001 공용 경로의 일부 예시입니다. |
+| `candidate_ids` | 해당 공용 파일을 함께 수정하는 BANK-OM ID 목록입니다. |
+
+`examples`에는 화면 확인용 일부 경로만 표시됩니다. 전체 경로는 `vendor-rebuild-result.json`에 보관됩니다.
 
 최종 실행에서 `pass`와 종료코드 `0`을 확인했으므로 8장의 완료 기준을 충족했습니다.
 

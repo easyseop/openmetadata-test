@@ -1,0 +1,93 @@
+{
+  "artifact_note": "artifact_digest binds the source Git tree identity; binary/image release artifacts are not built yet",
+  "candidate_lock": {
+    "candidate": {
+      "artifact_digest": "sha256:b4ee95455daa5ca1b5ea5a2066d712de824e0c9db80b88bebfa57a1a8104a485",
+      "artifact_kind": "source-tree",
+      "commit_sha": "d952a83896940116d3d6022323ad76bfe60991e8",
+      "repository": "easyseop/OM_TEMP",
+      "tree_sha": "4ac7817d9e495edc14fcfae5af0382f839a098a3"
+    },
+    "integration_strategy": "vendor-merge",
+    "schema_version": 2,
+    "upstream": {
+      "base_sha": "afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9",
+      "base_tag": "1.13.1-release",
+      "repository": "open-metadata/OpenMetadata",
+      "target_sha": "afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9",
+      "target_tag": "1.13.1-release"
+    }
+  },
+  "candidate_lock_digest": "sha256:2194342eebc1daeabb431d17623cf9fa2b15cf725f02a5e3481c860e0e03dd39",
+  "gates": [
+    {
+      "name": "vendor-ancestry",
+      "reasons": [
+        "candidate=d952a83896940116d3d6022323ad76bfe60991e8",
+        "approved_target=afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9",
+        "base_target_merge_base=afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9",
+        "candidate_lock_digest=sha256:2194342eebc1daeabb431d17623cf9fa2b15cf725f02a5e3481c860e0e03dd39"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "name": "customization-survival",
+      "reasons": [
+        "BANK-OM-001: expected_paths=48, required_paths=2, contracts=1, effective_tests=1",
+        "BANK-OM-002: expected_paths=55, required_paths=2, contracts=1, effective_tests=1",
+        "BANK-OM-003: expected_paths=25, required_paths=2, contracts=1, effective_tests=2",
+        "BANK-OM-004: expected_paths=33, required_paths=1, contracts=1, effective_tests=2",
+        "BANK-OM-005: expected_paths=1, required_paths=1, contracts=1, effective_tests=1",
+        "BANK-OM-006: expected_paths=18, required_paths=1, contracts=1, effective_tests=1",
+        "BANK-OM-007: expected_paths=8, required_paths=1, contracts=1, effective_tests=1"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "name": "required-test-implementations",
+      "reasons": [
+        "implemented_required_tests=9"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "name": "commit-invariants",
+      "reasons": [],
+      "verdict": "pass"
+    },
+    {
+      "name": "id-invariants",
+      "reasons": [],
+      "verdict": "pass"
+    },
+    {
+      "name": "drift",
+      "reasons": [],
+      "verdict": "pass"
+    },
+    {
+      "name": "sensitive-zones",
+      "reasons": [
+        "bootstrap/sql/migrations/native/1.13.1/mysql/schemaChanges.sql: zone=watched visibility_only -> pass",
+        "bootstrap/sql/migrations/native/1.13.1/postgres/schemaChanges.sql: zone=watched visibility_only -> pass"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "name": "exact-scope-history",
+      "reasons": [
+        "declared exact scopes equal observed per-ID history"
+      ],
+      "verdict": "pass"
+    },
+    {
+      "name": "shared-code-definitions",
+      "reasons": [
+        "candidate=d952a83896940116d3d6022323ad76bfe60991e8",
+        "shared_owner_pairs=114",
+        "assertions=790"
+      ],
+      "verdict": "pass"
+    }
+  ]
+}

@@ -96,3 +96,35 @@ def test_bootstrap_plan_cli_accepts_any_product_version(
     assert args.version == "42.7"
     assert args.official_ref == "official/42.7"
     assert args.custom_ref == "custom/42.7"
+
+
+def test_bootstrap_input_template_cli_accepts_any_product_version(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    argv = [
+        "om_workflow.py",
+        "bootstrap-input-template",
+        "--repo",
+        "/work/product",
+        "--version",
+        "42.7",
+        "--official-ref",
+        "official/42.7",
+        "--custom-ref",
+        "custom/42.7",
+        "--repository",
+        "example/product",
+        "--upstream-repository",
+        "vendor/product",
+        "--upstream-tag",
+        "42.7-release",
+        "--output",
+        "/work/inputs/initial-registration-input.yaml",
+    ]
+    monkeypatch.setattr(sys, "argv", argv)
+
+    args = om_workflow.parse_args()
+
+    assert args.command == "bootstrap-input-template"
+    assert args.version == "42.7"
+    assert args.output == Path("/work/inputs/initial-registration-input.yaml")

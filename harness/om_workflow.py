@@ -170,6 +170,18 @@ def parse_args() -> argparse.Namespace:
         help="기존 등록 파일을 다시 만들겠다는 명시적 확인",
     )
 
+    bootstrap_input = subparsers.add_parser(
+        "bootstrap-input-template",
+        help="BANK-OM commit 이력에서 최초 등록 업무 입력 양식 생성",
+    )
+    add_repo_version(bootstrap_input)
+    bootstrap_input.add_argument("--official-ref", required=True)
+    bootstrap_input.add_argument("--custom-ref", required=True)
+    bootstrap_input.add_argument("--repository", required=True)
+    bootstrap_input.add_argument("--upstream-repository", required=True)
+    bootstrap_input.add_argument("--upstream-tag", required=True)
+    bootstrap_input.add_argument("--output", required=True, type=Path)
+
     bootstrap_plan = subparsers.add_parser(
         "bootstrap-plan",
         help="버전과 무관한 최초 등록 제안 생성",
@@ -368,6 +380,35 @@ def dispatch(args: argparse.Namespace) -> int:
             )
         )
 
+    if args.command == "bootstrap-input-template":
+        print_selection(
+            {
+                "공식 OpenMetadata 브랜치": args.official_ref,
+                "커스터마이징 브랜치": args.custom_ref,
+                "최초 등록 업무 입력 양식": args.output,
+            }
+        )
+        return run(
+            python_command(
+                HARNESS / "bootstrap_registration.py",
+                "input-template",
+                "--repo",
+                args.repo,
+                "--official-ref",
+                args.official_ref,
+                "--custom-ref",
+                args.custom_ref,
+                "--repository",
+                args.repository,
+                "--upstream-repository",
+                args.upstream_repository,
+                "--upstream-tag",
+                args.upstream_tag,
+                "--output",
+                args.output,
+            )
+        )
+
     if args.command == "bootstrap-plan":
         paths = common_paths(args.version)
         print_selection(
@@ -443,6 +484,7 @@ def dispatch(args: argparse.Namespace) -> int:
     if args.command == "validate":
         paths = common_paths(args.version)
         output = args.output or paths["registration"] / "registration-validation-results.json"
+        output.parent.mkdir(parents=True, exist_ok=True)
         # The validator is registration-directory agnostic. Older
         # registrations keep the executable copy under om-temp-1.13.0; pass
         # the selected registration and layout explicitly below.

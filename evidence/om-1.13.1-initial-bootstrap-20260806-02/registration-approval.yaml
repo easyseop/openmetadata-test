@@ -1,0 +1,8 @@
+schema_version: 1
+proposal_digest: sha256:502530c1a732d28121d84a0225e1629fad47f0e0c208fb83ad6393a066d74457
+approved_by: 데이터시스템부
+approved_at: "2026-08-06T10:30:00-07:00"
+decisions:
+- finding_id: REVIEW-0001
+  decision: accept_proposal
+  reason: BANK-OM-001~007의 담당자, 변경 경로, Contract와 등록 제안을 확인하고 승인함

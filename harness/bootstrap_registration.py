@@ -10,10 +10,14 @@ from pathlib import Path
 import yaml
 
 from acgh.initial_registration import (
+    ApprovalValidationError,
+    BlockedInitialRegistrationError,
     InitialRegistrationError,
     StaleInitialRegistrationError,
     apply_plan,
+    build_input_template,
     build_plan,
+    write_input_template,
     write_approval_template,
     write_plan,
 )
@@ -21,6 +25,8 @@ from acgh.gitprim import GitPrimitiveError
 
 
 EXIT_CODES = {
+    "INPUT_TEMPLATE_WRITTEN": 0,
+    "INPUT_TEMPLATE_EXISTS": 0,
     "PROPOSAL_WRITTEN": 2,
     "TEMPLATE_WRITTEN": 0,
     "APPLIED": 0,
@@ -41,6 +47,17 @@ def _parser() -> argparse.ArgumentParser:
         )
     )
     commands = parser.add_subparsers(dest="command", required=True)
+
+    input_template = commands.add_parser(
+        "input-template", help="Git commit 이력에서 최초 등록 업무 입력 양식 생성"
+    )
+    input_template.add_argument("--repo", required=True, type=Path)
+    input_template.add_argument("--official-ref", required=True)
+    input_template.add_argument("--custom-ref", required=True)
+    input_template.add_argument("--repository", required=True)
+    input_template.add_argument("--upstream-repository", required=True)
+    input_template.add_argument("--upstream-tag", required=True)
+    input_template.add_argument("--output", required=True, type=Path)
 
     plan = commands.add_parser("plan", help="활성 등록 폴더를 수정하지 않고 제안 생성")
     plan.add_argument("--repo", required=True, type=Path)
@@ -69,6 +86,29 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
+        if args.command == "input-template":
+            template = build_input_template(
+                args.repo,
+                official_ref=args.official_ref,
+                custom_ref=args.custom_ref,
+                repository=args.repository,
+                upstream_repository=args.upstream_repository,
+                upstream_tag=args.upstream_tag,
+            )
+            created = write_input_template(args.output, template)
+            status = (
+                "INPUT_TEMPLATE_WRITTEN" if created else "INPUT_TEMPLATE_EXISTS"
+            )
+            _print(
+                {
+                    "status": status,
+                    "input": str(args.output),
+                    "customization_count": len(template["customizations"]),
+                    "contract_count": len(template["contracts"]),
+                }
+            )
+            return EXIT_CODES[status]
+
         if args.command == "plan":
             proposal, generated = build_plan(
                 args.repo,
@@ -79,15 +119,31 @@ def main(argv: list[str] | None = None) -> int:
                 product_version=args.product_version,
             )
             digest = write_plan(args.output, proposal, generated)
+            facts = proposal["facts"]
+            status = "BLOCKED" if not proposal["apply_ready"] else "PROPOSAL_WRITTEN"
             _print(
                 {
-                    "status": "PROPOSAL_WRITTEN",
+                    "status": status,
                     "proposal": str(args.output / "proposal.yaml"),
+                    "summary": str(args.output / "summary.md"),
+                    "proposed_registration": str(
+                        args.output / "proposed-registration"
+                    ),
                     "proposal_digest": digest,
-                    **proposal["facts"],
+                    "customization_count": facts["customization_count"],
+                    "commit_count": facts["commit_count"],
+                    "changed_path_count": facts["changed_path_count"],
+                    "shared_path_count": facts["shared_path_count"],
+                    "blocking_findings": proposal.get("blocking_findings", []),
+                    "next_action": (
+                        "summary.md의 반드시 수정할 항목을 고치고 새 실행 ID로 "
+                        "bootstrap-plan을 다시 실행합니다."
+                        if status == "BLOCKED"
+                        else "summary.md와 proposed-registration을 검토합니다."
+                    ),
                 }
             )
-            return EXIT_CODES["PROPOSAL_WRITTEN"]
+            return EXIT_CODES[status]
 
         if args.command == "approval-template":
             write_approval_template(args.proposal, args.output)
@@ -111,6 +167,21 @@ def main(argv: list[str] | None = None) -> int:
         )
         _print(result)
         return EXIT_CODES["APPLIED"]
+    except ApprovalValidationError as exc:
+        result = exc.as_result()
+        if getattr(args, "command", None) == "apply":
+            result["file"] = str(args.approval)
+        _print(result)
+        return EXIT_CODES["ANALYSIS_ERROR"]
+    except BlockedInitialRegistrationError as exc:
+        _print(
+            {
+                "status": "BLOCKED",
+                "code": "PROPOSAL_NOT_APPLY_READY",
+                "message": str(exc),
+            }
+        )
+        return EXIT_CODES["BLOCKED"]
     except StaleInitialRegistrationError as exc:
         _print({"status": "BLOCKED", "code": "STALE_PROPOSAL", "message": str(exc)})
         return EXIT_CODES["BLOCKED"]

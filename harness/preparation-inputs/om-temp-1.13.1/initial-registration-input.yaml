@@ -12,8 +12,8 @@ source:
 customizations:
   - customization_id: BANK-OM-001
     title: 기준코드(InstanceCode)
-    owner: UNASSIGNED
-    owner_status: pending
+    owner: 데이터시스템부
+    owner_status: assigned
     criticality: high
     kind: core-patch
     provenance: source-snapshot
@@ -25,8 +25,8 @@ customizations:
 
   - customization_id: BANK-OM-002
     title: 쿼리 리포트(QueryReport)
-    owner: UNASSIGNED
-    owner_status: pending
+    owner: 데이터시스템부
+    owner_status: assigned
     criticality: high
     kind: core-patch
     provenance: source-snapshot
@@ -38,8 +38,8 @@ customizations:
 
   - customization_id: BANK-OM-003
     title: 데이터 검증 결과(Data Assertions)
-    owner: UNASSIGNED
-    owner_status: pending
+    owner: 데이터시스템부
+    owner_status: assigned
     criticality: high
     kind: core-patch
     provenance: source-snapshot
@@ -51,8 +51,8 @@ customizations:
 
   - customization_id: BANK-OM-004
     title: 은행 컬럼 확장 표시
-    owner: UNASSIGNED
-    owner_status: pending
+    owner: 데이터시스템부
+    owner_status: assigned
     criticality: high
     kind: core-patch
     provenance: source-snapshot
@@ -63,8 +63,8 @@ customizations:
 
   - customization_id: BANK-OM-005
     title: 한글 입력 조합 보정
-    owner: UNASSIGNED
-    owner_status: pending
+    owner: 데이터시스템부
+    owner_status: assigned
     criticality: medium
     kind: core-patch
     provenance: source-snapshot
@@ -75,8 +75,8 @@ customizations:
 
   - customization_id: BANK-OM-006
     title: Sybase 연결 유형
-    owner: UNASSIGNED
-    owner_status: pending
+    owner: 데이터시스템부
+    owner_status: assigned
     criticality: high
     kind: core-patch
     provenance: source-snapshot
@@ -87,8 +87,8 @@ customizations:
 
   - customization_id: BANK-OM-007
     title: Tibero 연결 유형
-    owner: UNASSIGNED
-    owner_status: pending
+    owner: 데이터시스템부
+    owner_status: assigned
     criticality: high
     kind: core-patch
     provenance: source-snapshot

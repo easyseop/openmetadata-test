@@ -55,9 +55,14 @@ def render(md:str)->tuple[str,str]:
         image_match=re.fullmatch(r"!\[([^]]*)\]\(([^)]+)\)",line.strip())
         if image_match:
             alt,src=image_match.groups()
+            escaped_alt=html.escape(alt,quote=True)
+            escaped_src=html.escape(src,quote=True)
             out.append(
-                f'<figure class="figure"><img src="{html.escape(src,quote=True)}" '
-                f'alt="{html.escape(alt,quote=True)}" loading="lazy">'
+                f'<figure class="figure"><button class="figure-zoom" type="button" '
+                f'data-image-src="{escaped_src}" data-image-alt="{escaped_alt}" '
+                f'aria-label="{escaped_alt} 확대해서 보기">'
+                f'<img src="{escaped_src}" alt="{escaped_alt}" loading="lazy">'
+                f'<span class="zoom-hint" aria-hidden="true">눌러서 확대</span></button>'
                 f'<figcaption>{inline(alt)}</figcaption></figure>'
             ); i+=1; continue
         if line.startswith("|") and i+1<len(lines) and re.match(r"^\|?\s*:?-+",lines[i+1]):
@@ -86,6 +91,37 @@ def render(md:str)->tuple[str,str]:
 def main():
     for arg in sys.argv[1:]:
         src=Path(arg); title,body=render(src.read_text(encoding="utf-8"))
-        doc=f'''<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(title)}</title><link rel="stylesheet" href="OM_TEMP_예행연습_공통.css"></head><body><div class="wrap"><main>{body}</main></div></body></html>\n'''
+        lightbox='''<dialog class="image-lightbox" id="image-lightbox" aria-label="캡처 이미지 확대 화면">
+<button class="image-lightbox-close" type="button" aria-label="확대 이미지 닫기">닫기 ×</button>
+<img src="" alt="">
+<p class="image-lightbox-caption"></p>
+</dialog>
+<script>
+(() => {
+  const dialog = document.getElementById('image-lightbox');
+  if (!dialog) return;
+  const expandedImage = dialog.querySelector('img');
+  const caption = dialog.querySelector('.image-lightbox-caption');
+  const closeButton = dialog.querySelector('.image-lightbox-close');
+  document.querySelectorAll('.figure-zoom').forEach((button) => {
+    button.addEventListener('click', () => {
+      expandedImage.src = button.dataset.imageSrc;
+      expandedImage.alt = button.dataset.imageAlt;
+      caption.textContent = button.dataset.imageAlt;
+      dialog.showModal();
+    });
+  });
+  closeButton.addEventListener('click', () => dialog.close());
+  dialog.addEventListener('click', (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+  dialog.addEventListener('close', () => {
+    expandedImage.src = '';
+    expandedImage.alt = '';
+    caption.textContent = '';
+  });
+})();
+</script>''' if 'class="figure"' in body else ''
+        doc=f'''<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(title)}</title><link rel="stylesheet" href="OM_TEMP_예행연습_공통.css"></head><body><div class="wrap"><main>{body}</main></div>{lightbox}</body></html>\n'''
         src.with_suffix('.html').write_text(doc,encoding='utf-8')
 if __name__=='__main__': main()
