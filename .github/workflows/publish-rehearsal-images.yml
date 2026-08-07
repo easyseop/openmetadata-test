@@ -58,7 +58,9 @@ jobs:
         run: |
           for attempt in 1 2 3; do
             echo "[Maven 시도] $attempt/3"
-            if timeout 20m mvn \
+            if timeout --kill-after=30s 20m mvn \
+              --batch-mode \
+              --no-transfer-progress \
               -DskipTests=true \
               -Dmaven.test.skip=true \
               -Dmaven.resolver.transport=wagon \
