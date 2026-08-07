@@ -1,6 +1,6 @@
 # 현재 작업 인수인계
 
-> 마지막 갱신: 2026-08-07 11:35 PDT
+> 마지막 갱신: 2026-08-07 11:45 PDT
 >
 > 현재 작업: OM_TEMP 1.13.1 기준 코드의 5-4 Runtime Contract test 준비
 >
@@ -24,9 +24,11 @@ OpenMetadata 공식 1.13.1에 BANK-OM-001~007 커스터마이징을 적용한 �
 | OpenMetadata 코드 저장소 | `$HOME/om-work/om-temp-real-1.13.1` | `codex/om-1.13.1-id-series-upstream` · `d952a83896940116d3d6022323ad76bfe60991e8` |
 | 1.13.2 공식 코드 branch | 같은 OpenMetadata 코드 저장소 | `official/om-1.13.2` · 공식 `1.13.2-release` commit `2763bf97…` |
 
-이 인수인계 문서를 포함한 최신 검사기 commit은 `git log -1 --oneline`으로
-확인합니다. `origin/claude/markdown-file-feedback-26933w`는 날짜상 최근 원격
-branch이지만 현재 5-4 작업 branch가 아니므로 대신 사용하지 않습니다.
+현재 작업 branch는 같은 이름의 `origin` branch를 추적합니다. 가이드·검토서·
+1.13.2 병합 전 증거를 함께 공유한 commit은 `e1258a8e80`입니다. 이 인수인계만
+후속 갱신한 최신 commit은 `git log -1 --oneline`으로 확인합니다.
+`origin/claude/markdown-file-feedback-26933w`는 날짜상 최근 원격 branch이지만
+현재 5-4 작업 branch가 아니므로 대신 사용하지 않습니다.
 
 ## 3. 완료된 작업
 
