@@ -15,14 +15,60 @@
 
 필요한 프로그램은 Docker Desktop과 Git입니다. Java·Maven·Python은 설치하지
 않습니다. `curl`이 없는 환경에서는 Docker image로 공식 Compose 파일을 받습니다.
-검사기 저장소에서 다음 branch를 사용합니다.
+다른 컴퓨터에서는 작업 폴더를 하나 정한 뒤 검사기 저장소의 다음 branch를 받습니다.
+
+```bash
+git clone \
+  --branch codex/om-1.13.1-rehearsal-baseline-20260806 \
+  --single-branch \
+  https://github.com/easyseop/openmetadata-test.git
+```
+
+```bash
+cd openmetadata-test
+```
+
+이후 명령은 모두 이 폴더에서 실행합니다. 제품 코드 저장소를 별도로 clone하거나
+OpenMetadata를 직접 build할 필요는 없습니다.
+
+**입력:** Docker image를 받을 수 있는 네트워크와 실행 중인 Docker Desktop
+
+**산출물:** 커스텀 OpenMetadata·MySQL·Elasticsearch 컨테이너와 검사 증거 파일
+
+검사기 저장소에서 사용하는 branch는 다음 값으로 고정합니다.
 
 ```text
 codex/om-1.13.1-rehearsal-baseline-20260806
 ```
 
+Runtime Contract 실행 코드는 다음 commit으로 고정됩니다. branch에 새 문서나 코드가
+추가되어도 이 예행연습에서 검사하는 코드가 자동으로 바뀌지 않습니다.
+
+```text
+tag: om-1.13.1-rehearsal-runtime-v1
+commit: 7fdb182c299e51fd94a4a9c7d56473a3e849c019
+```
+
+검사 결과에는 위 commit과 제품 candidate commit이 함께 기록됩니다.
+
+```text
+제품 candidate commit: 8ac18ad053d9274774e274ba17b35911ac0b9dcb
+검사기 commit: 7fdb182c299e51fd94a4a9c7d56473a3e849c019
+```
+
 GitHub Container Registry image가 비공개 상태라면 최초 한 번 `docker login
-ghcr.io`가 필요합니다. image를 공개로 전환하면 로그인 없이 받을 수 있습니다.
+ghcr.io`가 필요합니다. 공개 image는 로그인 없이 받을 수 있습니다.
+
+이 실행 묶음에서 자동으로 받는 핵심 image는 다음과 같습니다.
+
+| 역할 | image | 포함 내용 |
+|---|---|---|
+| 커스텀 OpenMetadata | `ghcr.io/easyseop/openmetadata-bank:1.13.1-bank-8ac18ad0` | 제품 candidate `8ac18ad...`의 server와 migration |
+| Runtime Contract 실행기 | `ghcr.io/easyseop/openmetadata-contract-runner:1.13.1-runtime` | Python·Playwright·9개 Contract 실행 환경 |
+| 목 데이터 적재기 | `python:3.12-alpine` | 5종 DB 목 메타데이터 API 등록 |
+
+MySQL·Elasticsearch 설정은 공식 OpenMetadata 1.13.1 Compose 파일을 사용합니다.
+Compose 파일도 공식 commit `afcb2d2...`의 주소로 고정되어 있습니다.
 
 ## 3. 환경 시작과 목 데이터 등록
 

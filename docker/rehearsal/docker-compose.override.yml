@@ -43,7 +43,7 @@ services:
       OM_LOCAL_ADMIN_EMAIL: ${OPENMETADATA_EMAIL:-admin@open-metadata.org}
       OM_LOCAL_ADMIN_PASSWORD: ${OPENMETADATA_PASSWORD:-admin}
       PRODUCT_COMMIT: ${PRODUCT_COMMIT:-8ac18ad053d9274774e274ba17b35911ac0b9dcb}
-      HARNESS_REF: ${HARNESS_REF:-codex/om-1.13.1-rehearsal-baseline-20260806}
+      HARNESS_REF: ${HARNESS_REF:-om-1.13.1-rehearsal-runtime-v1}
       DEPLOYED_ARTIFACT_DIGEST: ${DEPLOYED_ARTIFACT_DIGEST}
       RUNTIME_RUN_ID: ${RUNTIME_RUN_ID:-om-1.13.1-portable-runtime}
     volumes:
@@ -52,4 +52,3 @@ services:
         target: /evidence
     networks:
       - app_net
-
