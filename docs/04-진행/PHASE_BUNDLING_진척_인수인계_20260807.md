@@ -146,8 +146,14 @@ cp -R /tmp/tob/plugins/property-based-testing/skills/property-based-testing .cla
 branch와 OpenMetadata 제품 코드는 수정하지 않았다.
 
 - 구현 commit: `7a963853c7554be60db64cd1ba1fc4ce1bad26ef`
+- 최초 인수인계 commit: `7e73a876259351c508137d959701704aee81d704`
 - 검증 당시 worktree: 구현 commit 후 이 인수인계 갱신만 추가
 - 원격 branch: `origin/codex/phase-bundling-safety-fix-20260808`
+- 원격 push: 완료. 최종 동기화 여부는 아래 명령의 `0 0`으로 확인한다.
+
+```bash
+git rev-list --left-right --count HEAD...origin/codex/phase-bundling-safety-fix-20260808
+```
 
 ### 구현한 내용
 
