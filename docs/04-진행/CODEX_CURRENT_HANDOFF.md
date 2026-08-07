@@ -114,6 +114,31 @@ React가 단계 사이에 렌더링할 수 없었습니다. 실제 IME처럼 각
 - 이 인수인계
 - `om-1.13.1-runtime-ready-*` plan·검사 evidence
 
+### 7.1 API 목 메타데이터 시연 환경
+
+재실행 가능한 목 메타데이터 등록 도구를 추가했습니다.
+
+```text
+harness/create_mock_database_metadata.py
+```
+
+이 도구는 실제 원천 DB에 연결하지 않고 OpenMetadata API로 Oracle·Tibero·Sybase·
+DB2·PostgreSQL 서비스와 DB·스키마·테이블·컬럼을 등록합니다. 각 DB에는 고객 및
+계좌 거래 테이블과 화면 확인용 데이터 품질 정상 1건·의도적 실패 1건을 만듭니다.
+동일한 FQN이 있으면 재사용하므로 다시 실행해도 중복 생성되지 않습니다.
+
+2026-08-07 확인 결과:
+
+- 서비스 5, DB 5, 스키마 5, 테이블 10
+- Elasticsearch `table_search_index`에서 테이블 10개 검색 확인
+- 데이터 품질 Test Case 10개: Success 5, Failed 5
+- 내부 MySQL에서 서비스 5, DB 5, 스키마 5, 테이블 10, Test Case 10 확인
+- 결과: `evidence/mock-database-metadata-20260807-01/result.json`
+- 화면 예시: `http://127.0.0.1:8585/table/bank_mock_oracle.oracle_bank.banking.customer/profiler/data-quality`
+
+제품 코드 커스터마이징은 추가하지 않았습니다. Tibero·Sybase 유형은 현재 candidate에
+이미 구현되어 있고, 나머지는 OpenMetadata 공통 메타데이터·데이터 품질 API를 사용합니다.
+
 다음 미추적 자료는 기존 사용자 파일이므로 수정·삭제·stage하지 않습니다.
 
 - `docs/00-사용가이드/OM_TEMP_wiki_context_logic_Claude_review_package_20260730 2/`

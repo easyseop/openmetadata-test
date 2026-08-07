@@ -1,0 +1,236 @@
+{
+  "status": "PASS",
+  "base_url": "http://127.0.0.1:8585/api/v1",
+  "summary": {
+    "database_services": 5,
+    "databases": 5,
+    "schemas": 5,
+    "tables": 10,
+    "indexed_tables": 10,
+    "data_quality_tests": 10
+  },
+  "services": [
+    {
+      "engine": "Oracle",
+      "serviceType": "Oracle",
+      "service": "bank_mock_oracle",
+      "service_state": "existing",
+      "database": "bank_mock_oracle.oracle_bank",
+      "database_state": "existing",
+      "schema": "bank_mock_oracle.oracle_bank.banking",
+      "schema_state": "existing",
+      "tables": [
+        {
+          "name": "customer",
+          "fullyQualifiedName": "bank_mock_oracle.oracle_bank.banking.customer",
+          "id": "cca51e1b-8f2d-4d5e-bac8-f27760636ea2",
+          "state": "existing",
+          "column_count": 3,
+          "ui": "http://127.0.0.1:8585/table/bank_mock_oracle.oracle_bank.banking.customer",
+          "data_quality_ui": "http://127.0.0.1:8585/table/bank_mock_oracle.oracle_bank.banking.customer/profiler/data-quality"
+        },
+        {
+          "name": "account_transaction",
+          "fullyQualifiedName": "bank_mock_oracle.oracle_bank.banking.account_transaction",
+          "id": "e3941693-da41-404a-b488-a57652173d32",
+          "state": "existing",
+          "column_count": 4,
+          "ui": "http://127.0.0.1:8585/table/bank_mock_oracle.oracle_bank.banking.account_transaction",
+          "data_quality_ui": "http://127.0.0.1:8585/table/bank_mock_oracle.oracle_bank.banking.account_transaction/profiler/data-quality"
+        }
+      ],
+      "data_quality_tests": [
+        {
+          "fullyQualifiedName": "bank_mock_oracle.oracle_bank.banking.customer.customer_id.mock_customer_id_not_null_pass",
+          "state": "existing",
+          "result": "Success",
+          "mock": true
+        },
+        {
+          "fullyQualifiedName": "bank_mock_oracle.oracle_bank.banking.account_transaction.transaction_id.mock_transaction_id_not_null_fail",
+          "state": "existing",
+          "result": "Failed",
+          "mock": true
+        }
+      ]
+    },
+    {
+      "engine": "Tibero",
+      "serviceType": "Tibero",
+      "service": "bank_mock_tibero",
+      "service_state": "existing",
+      "database": "bank_mock_tibero.tibero_bank",
+      "database_state": "existing",
+      "schema": "bank_mock_tibero.tibero_bank.banking",
+      "schema_state": "existing",
+      "tables": [
+        {
+          "name": "customer",
+          "fullyQualifiedName": "bank_mock_tibero.tibero_bank.banking.customer",
+          "id": "f77f9a65-a17b-492e-9b8b-fd9166a4579e",
+          "state": "existing",
+          "column_count": 3,
+          "ui": "http://127.0.0.1:8585/table/bank_mock_tibero.tibero_bank.banking.customer",
+          "data_quality_ui": "http://127.0.0.1:8585/table/bank_mock_tibero.tibero_bank.banking.customer/profiler/data-quality"
+        },
+        {
+          "name": "account_transaction",
+          "fullyQualifiedName": "bank_mock_tibero.tibero_bank.banking.account_transaction",
+          "id": "f6efff0c-5cb5-41b8-b0e8-1f5467f2a549",
+          "state": "existing",
+          "column_count": 4,
+          "ui": "http://127.0.0.1:8585/table/bank_mock_tibero.tibero_bank.banking.account_transaction",
+          "data_quality_ui": "http://127.0.0.1:8585/table/bank_mock_tibero.tibero_bank.banking.account_transaction/profiler/data-quality"
+        }
+      ],
+      "data_quality_tests": [
+        {
+          "fullyQualifiedName": "bank_mock_tibero.tibero_bank.banking.customer.customer_id.mock_customer_id_not_null_pass",
+          "state": "existing",
+          "result": "Success",
+          "mock": true
+        },
+        {
+          "fullyQualifiedName": "bank_mock_tibero.tibero_bank.banking.account_transaction.transaction_id.mock_transaction_id_not_null_fail",
+          "state": "existing",
+          "result": "Failed",
+          "mock": true
+        }
+      ]
+    },
+    {
+      "engine": "Sybase",
+      "serviceType": "Sybase",
+      "service": "bank_mock_sybase",
+      "service_state": "existing",
+      "database": "bank_mock_sybase.sybase_bank",
+      "database_state": "existing",
+      "schema": "bank_mock_sybase.sybase_bank.banking",
+      "schema_state": "existing",
+      "tables": [
+        {
+          "name": "customer",
+          "fullyQualifiedName": "bank_mock_sybase.sybase_bank.banking.customer",
+          "id": "b9fbc616-c2ef-4ff1-a681-3cf1fcb9ea56",
+          "state": "existing",
+          "column_count": 3,
+          "ui": "http://127.0.0.1:8585/table/bank_mock_sybase.sybase_bank.banking.customer",
+          "data_quality_ui": "http://127.0.0.1:8585/table/bank_mock_sybase.sybase_bank.banking.customer/profiler/data-quality"
+        },
+        {
+          "name": "account_transaction",
+          "fullyQualifiedName": "bank_mock_sybase.sybase_bank.banking.account_transaction",
+          "id": "0935128c-ebea-4755-90e5-b699f567560e",
+          "state": "existing",
+          "column_count": 4,
+          "ui": "http://127.0.0.1:8585/table/bank_mock_sybase.sybase_bank.banking.account_transaction",
+          "data_quality_ui": "http://127.0.0.1:8585/table/bank_mock_sybase.sybase_bank.banking.account_transaction/profiler/data-quality"
+        }
+      ],
+      "data_quality_tests": [
+        {
+          "fullyQualifiedName": "bank_mock_sybase.sybase_bank.banking.customer.customer_id.mock_customer_id_not_null_pass",
+          "state": "existing",
+          "result": "Success",
+          "mock": true
+        },
+        {
+          "fullyQualifiedName": "bank_mock_sybase.sybase_bank.banking.account_transaction.transaction_id.mock_transaction_id_not_null_fail",
+          "state": "existing",
+          "result": "Failed",
+          "mock": true
+        }
+      ]
+    },
+    {
+      "engine": "DB2",
+      "serviceType": "Db2",
+      "service": "bank_mock_db2",
+      "service_state": "existing",
+      "database": "bank_mock_db2.db2_bank",
+      "database_state": "existing",
+      "schema": "bank_mock_db2.db2_bank.banking",
+      "schema_state": "existing",
+      "tables": [
+        {
+          "name": "customer",
+          "fullyQualifiedName": "bank_mock_db2.db2_bank.banking.customer",
+          "id": "a58d94b0-8c82-4c96-b468-6e8bb4d06158",
+          "state": "existing",
+          "column_count": 3,
+          "ui": "http://127.0.0.1:8585/table/bank_mock_db2.db2_bank.banking.customer",
+          "data_quality_ui": "http://127.0.0.1:8585/table/bank_mock_db2.db2_bank.banking.customer/profiler/data-quality"
+        },
+        {
+          "name": "account_transaction",
+          "fullyQualifiedName": "bank_mock_db2.db2_bank.banking.account_transaction",
+          "id": "96b0aa3d-e521-4b02-8227-f3f1aed72731",
+          "state": "existing",
+          "column_count": 4,
+          "ui": "http://127.0.0.1:8585/table/bank_mock_db2.db2_bank.banking.account_transaction",
+          "data_quality_ui": "http://127.0.0.1:8585/table/bank_mock_db2.db2_bank.banking.account_transaction/profiler/data-quality"
+        }
+      ],
+      "data_quality_tests": [
+        {
+          "fullyQualifiedName": "bank_mock_db2.db2_bank.banking.customer.customer_id.mock_customer_id_not_null_pass",
+          "state": "existing",
+          "result": "Success",
+          "mock": true
+        },
+        {
+          "fullyQualifiedName": "bank_mock_db2.db2_bank.banking.account_transaction.transaction_id.mock_transaction_id_not_null_fail",
+          "state": "existing",
+          "result": "Failed",
+          "mock": true
+        }
+      ]
+    },
+    {
+      "engine": "PostgreSQL",
+      "serviceType": "Postgres",
+      "service": "bank_mock_postgres",
+      "service_state": "existing",
+      "database": "bank_mock_postgres.postgres_bank",
+      "database_state": "existing",
+      "schema": "bank_mock_postgres.postgres_bank.banking",
+      "schema_state": "existing",
+      "tables": [
+        {
+          "name": "customer",
+          "fullyQualifiedName": "bank_mock_postgres.postgres_bank.banking.customer",
+          "id": "a37e2c4b-13dd-4a18-9abd-45ca332d3768",
+          "state": "existing",
+          "column_count": 3,
+          "ui": "http://127.0.0.1:8585/table/bank_mock_postgres.postgres_bank.banking.customer",
+          "data_quality_ui": "http://127.0.0.1:8585/table/bank_mock_postgres.postgres_bank.banking.customer/profiler/data-quality"
+        },
+        {
+          "name": "account_transaction",
+          "fullyQualifiedName": "bank_mock_postgres.postgres_bank.banking.account_transaction",
+          "id": "1d491d97-5e39-444f-be1c-c797f4042ef4",
+          "state": "existing",
+          "column_count": 4,
+          "ui": "http://127.0.0.1:8585/table/bank_mock_postgres.postgres_bank.banking.account_transaction",
+          "data_quality_ui": "http://127.0.0.1:8585/table/bank_mock_postgres.postgres_bank.banking.account_transaction/profiler/data-quality"
+        }
+      ],
+      "data_quality_tests": [
+        {
+          "fullyQualifiedName": "bank_mock_postgres.postgres_bank.banking.customer.customer_id.mock_customer_id_not_null_pass",
+          "state": "existing",
+          "result": "Success",
+          "mock": true
+        },
+        {
+          "fullyQualifiedName": "bank_mock_postgres.postgres_bank.banking.account_transaction.transaction_id.mock_transaction_id_not_null_fail",
+          "state": "existing",
+          "result": "Failed",
+          "mock": true
+        }
+      ]
+    }
+  ],
+  "ui": "http://127.0.0.1:8585/settings/services/databases",
+  "data_quality_ui": "http://127.0.0.1:8585/data-quality/test-cases"
+}
