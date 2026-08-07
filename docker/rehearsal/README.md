@@ -9,7 +9,7 @@
 - MySQL과 Elasticsearch
 - Oracle·Tibero·Sybase·DB2·PostgreSQL 목 메타데이터
 - 정상 5건·의도적 실패 5건의 데이터 품질 결과
-- Runtime Contract 9개
+- Runtime Contract 9개: 커스텀 기능의 API·화면 동작 검사
 
 ## 2. 준비
 
@@ -56,8 +56,8 @@ commit: 7fdb182c299e51fd94a4a9c7d56473a3e849c019
 검사기 commit: 7fdb182c299e51fd94a4a9c7d56473a3e849c019
 ```
 
-GitHub Container Registry image가 비공개 상태라면 최초 한 번 `docker login
-ghcr.io`가 필요합니다. 공개 image는 로그인 없이 받을 수 있습니다.
+두 GitHub Container Registry image는 공개 상태입니다. `docker login ghcr.io` 없이
+받을 수 있습니다.
 
 이 실행 묶음에서 자동으로 받는 핵심 image는 다음과 같습니다.
 
@@ -67,8 +67,19 @@ ghcr.io`가 필요합니다. 공개 image는 로그인 없이 받을 수 있습�
 | Runtime Contract 실행기 | `ghcr.io/easyseop/openmetadata-contract-runner:1.13.1-runtime` | Python·Playwright·9개 Contract 실행 환경 |
 | 목 데이터 적재기 | `python:3.12-alpine` | 5종 DB 목 메타데이터 API 등록 |
 
+서버 image는 `linux/amd64`와 `linux/arm64`를 지원합니다. Contract runner는
+`linux/amd64`이며 ARM 기반 Docker Desktop에서는 에뮬레이션으로 실행됩니다.
+
+```text
+server digest: sha256:a28ade3e3b2ab27c9f34ae4d1c745e295dc665df400a29b31a9f753374c58c00
+Contract runner digest: sha256:08f27c0776c381a3d10b78c49a646f4939759ccfad95d241bcf3fd661047eca4
+```
+
 MySQL·Elasticsearch 설정은 공식 OpenMetadata 1.13.1 Compose 파일을 사용합니다.
 Compose 파일도 공식 commit `afcb2d2...`의 주소로 고정되어 있습니다.
+
+2026-08-07에 깨끗한 Ubuntu 장비에서 환경 시작, 목 데이터 등록, Runtime Contract
+9개를 확인했습니다. 결과는 [GitHub Actions 실행 31156553806](https://github.com/easyseop/openmetadata-test/actions/runs/31156553806)에서 확인할 수 있습니다.
 
 ## 3. 환경 시작과 목 데이터 등록
 
@@ -80,6 +91,8 @@ bash docker/rehearsal/start.sh
 
 이 명령은 image를 받은 뒤 서버를 시작하고 목 메타데이터를 등록합니다. 정상 종료
 시 다음 두 결과가 표시됩니다.
+
+처음 실행할 때는 image를 받아야 하므로 이후 실행보다 오래 걸릴 수 있습니다.
 
 ```text
 [완료] OpenMetadata: http://127.0.0.1:8585

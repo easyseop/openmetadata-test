@@ -1,6 +1,6 @@
 # 현재 작업 인수인계
 
-> 마지막 갱신: 2026-08-07 14:35 PDT
+> 마지막 갱신: 2026-08-07 16:34 PDT
 >
 > 현재 작업: 1.13.1 Runtime Contract 9개 정식 통과 및 원격 공유 완료
 >
@@ -31,7 +31,7 @@ branch를 사용합니다.
 
 | 역할 | 위치 | 현재 branch·commit |
 |---|---|---|
-| 검사기 저장소 | 이 저장소 `easyseop/openmetadata-test` | `codex/om-1.13.1-rehearsal-baseline-20260806` · Runtime 실행 기준 `c6e403125f953fef8f6b0757ac70d68aeeeca6f1` |
+| 검사기 저장소 | 이 저장소 `easyseop/openmetadata-test` | 작업 branch `codex/om-1.13.1-rehearsal-baseline-20260806` · Docker workflow 기준 `80a4dd1f9b877bf7fae15515fa185f1f1fd0883d` · Runtime 고정 tag `om-1.13.1-rehearsal-runtime-v1` |
 | OpenMetadata 코드 저장소 | `$HOME/om-work/om-temp-real-1.13.1` | `codex/om-1.13.1-runtime-ready` · `8ac18ad053d9274774e274ba17b35911ac0b9dcb` · `easyseop-fork` 추적 |
 | 공식 1.13.1 기준 | 같은 코드 저장소 | `upstream-1.13.1-release` · `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9` |
 | 공식 1.13.2 | 같은 코드 저장소 | `official/om-1.13.2` · 공식 `1.13.2-release` commit `2763bf97…` |
@@ -172,8 +172,33 @@ GitHub Actions의 깨끗한 Ubuntu 장비에서 server 시작, 5종 DB 목 데�
 Runtime Contract 9개 실행까지 검증하는 워크플로도 추가했습니다.
 
 - workflow: `.github/workflows/publish-rehearsal-images.yml`
-- 최종 실행: `https://github.com/easyseop/openmetadata-test/actions/runs/31153676001`
-- 현재 상태: 실행 중
+- 최종 실행: `https://github.com/easyseop/openmetadata-test/actions/runs/31156553806`
+- 최종 상태: server·Contract runner image 발행, 깨끗한 Ubuntu 환경 시작,
+  목 데이터 등록, Runtime Contract 9개가 모두 성공
+- 네트워크 보호: Maven 다운로드가 20분 동안 끝나지 않으면 프로세스를 강제
+  종료하고 이미 받은 의존성을 보존한 채 최대 3회 재시도
+
+공개 image 확인 결과:
+
+- server: `ghcr.io/easyseop/openmetadata-bank:1.13.1-bank-8ac18ad0`
+  - index digest: `sha256:a28ade3e3b2ab27c9f34ae4d1c745e295dc665df400a29b31a9f753374c58c00`
+  - platform: `linux/amd64`, `linux/arm64`
+- Contract runner: `ghcr.io/easyseop/openmetadata-contract-runner:1.13.1-runtime`
+  - index digest: `sha256:08f27c0776c381a3d10b78c49a646f4939759ccfad95d241bcf3fd661047eca4`
+  - platform: `linux/amd64`
+- 두 image 모두 인증 없는 GHCR manifest 요청이 HTTP 200이므로 공개 pull 가능
+- 원본 배포 tar.gz는 별도 공개 파일로 올리지 않았습니다. 다른 컴퓨터는 공개
+  container image만 받습니다.
+
+깨끗한 환경 증거:
+
+- artifact: `docker-only-rehearsal-evidence`
+- 보존 기한: `2026-11-05T07:09:15Z`
+- candidate: `8ac18ad053d9274774e274ba17b35911ac0b9dcb`
+- 검사기: `7fdb182c299e51fd94a4a9c7d56473a3e849c019`
+- Contract: 9개 모두 `pass`, 재시도 없음
+- 목 데이터: 서비스 5, DB 5, 스키마 5, 테이블 10, 검색 색인 테이블 10,
+  데이터 품질 결과 10
 
 다음 미추적 자료는 기존 사용자 파일이므로 수정·삭제·stage하지 않습니다.
 
