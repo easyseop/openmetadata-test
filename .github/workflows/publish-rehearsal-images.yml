@@ -55,11 +55,27 @@ jobs:
           pom.xml
 
       - name: Build OpenMetadata distribution
-        run: >-
-          mvn -DskipTests=true -Dmaven.test.skip=true
-          --projects openmetadata-dist
-          --also-make
-          clean package
+        run: |
+          for attempt in 1 2 3; do
+            echo "[Maven 시도] $attempt/3"
+            if timeout 20m mvn \
+              -DskipTests=true \
+              -Dmaven.test.skip=true \
+              -Dmaven.resolver.transport=wagon \
+              -Dmaven.wagon.http.pool=false \
+              -Dmaven.wagon.rto=60000 \
+              -Dmaven.wagon.http.retryHandler.count=5 \
+              --projects openmetadata-dist \
+              --also-make \
+              clean package; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "[중단] Maven build가 3회 모두 실패했습니다." >&2
+              exit 1
+            fi
+            echo "[재시도] 내려받은 의존성은 보존하고 Maven build를 다시 시작합니다."
+          done
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
