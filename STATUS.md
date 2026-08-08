@@ -5,7 +5,8 @@
 > 사람용 요약과 선택적 JSON 출력을 추가했다. 실제 조직 승인 권한은 보호 branch·
 > CODEOWNERS 또는 사내 결재 정책이 필요한 외부 항목이다. 출력 초안과 검토 질문은
 > `docs/04-진행/PHASE_BUNDLING_출력형식_CLAUDE_검토요청_20260808.md`가 정본이다.
-> 실제 1.13.2 vendor-merge·postmerge·운영 배포는 아직 수행하지 않았다.
+> 구현 commit은 `cf17ed206de63a8dd4dfb88ca54cee6cd6a081c8`이다. 실제 1.13.2
+> vendor-merge·postmerge·운영 배포는 아직 수행하지 않았다.
 
 > Updated: 2026-08-08 KST — Claude의 Phase 번들링 초기 구현 commit
 > `ae1bdbc...`·`446b5a0...`, 검토 기준 `dbf169b...`, Codex 안전 보완

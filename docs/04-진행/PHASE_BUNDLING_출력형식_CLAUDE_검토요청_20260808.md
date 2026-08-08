@@ -3,7 +3,7 @@
 > 상태: 구현 초안·합성 회귀 테스트 완료, 문구 검토 전
 > 작업 branch: `codex/phase-bundling-safety-fix-20260808`
 > 비교 기준: 외부 검토 기준 `295307d6568b5102c065fc5a093dfa7fa1b46ba5`
-> 구현 commit: 이 문서를 포함하는 다음 commit에서 확정
+> 구현 commit: `cf17ed206de63a8dd4dfb88ca54cee6cd6a081c8`
 
 ## 1. 왜 다시 고쳤는가
 

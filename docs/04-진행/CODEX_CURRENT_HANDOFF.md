@@ -320,8 +320,8 @@ Claude 외부 검토에서 새로 확인한 artifact 결속, 공개 CLI run-id, 
 `om_workflow.py`의 여섯 Phase 명령은 기본 `human` 요약을 출력하고 기존 자동화는
 `--output-format json`으로 하위 실행기 JSON을 그대로 받을 수 있다.
 
-현재 branch는 `codex/phase-bundling-safety-fix-20260808`이다. 구현 commit SHA와
-최종 commit SHA는 commit 직후 이 절에 결속한다. 출력 초안·예시·Claude
+현재 branch는 `codex/phase-bundling-safety-fix-20260808`이다. 구현 commit은
+`cf17ed206de63a8dd4dfb88ca54cee6cd6a081c8`이다. 출력 초안·예시·Claude
 검토 질문은 `PHASE_BUNDLING_출력형식_CLAUDE_검토요청_20260808.md`가 정본이다.
 
 최종 집중 테스트는 `53 passed`, 전체 harness는 `543 passed, 38 skipped`, 실패

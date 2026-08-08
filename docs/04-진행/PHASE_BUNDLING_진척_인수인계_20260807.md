@@ -239,7 +239,8 @@ result 경로의 동시 기록과 run-id 경로 이탈을 차단하며, `phase-s
 CI는 `--output-format json`으로 기존 JSON 계약을 사용한다. 출력 형식 검토 자료는
 `PHASE_BUNDLING_출력형식_CLAUDE_검토요청_20260808.md`다.
 
-구현 commit은 commit 이후 이 절에 결속한다. 집중 테스트는 `53 passed`, 전체
+구현 commit은 `cf17ed206de63a8dd4dfb88ca54cee6cd6a081c8`이다. 집중 테스트는
+`53 passed`, 전체
 harness는 `543 passed, 38 skipped`, 실패 0건이다. 실제 조직 승인
 권한, 1.13.2 vendor-merge Candidate, 실측 conflict evidence, change-intent,
 build-artifact Runtime Contract와 운영 배포는 여전히 외부 입력 대기다.
