@@ -296,3 +296,19 @@ vendor-merge 후보의 postmerge 결과나 운영 승인 완료를 뜻하지 않
 기존 `예행연습-1.13.1-1.13.2` 11단계 문서, Phase 구현, 검사
 증거와 제품 코드는 수정하지 않았다. 삭제한 가이드는 더 이상
 Claude 검토 대상이 아니다.
+
+## 13. 2026-08-08 외부 모델 설계 검토 요청서
+
+다음 단일 Markdown에 Claude 초기 구현, Codex 보완, 제품 1.13.1→1.13.2
+상태, 후속 commit·사람 판단 경계, 필수 설계 질문 20개를 정리했다.
+
+- `docs/04-진행/PHASE_BUNDLING_외부모델_설계검토_요청서_20260808.md`
+
+외부 모델은 이 문서를 먼저 끝까지 읽고 `dbf169b...`→`7a96385...`
+diff와 코드·test를 직접 대조한다. 코드 수정·push 없이 P0·P1·P2,
+반례 test, 최종 승인 권고만 작성한다. 폐기한 고객사 관점 HTML·Markdown은
+검토 대상에서 제외했다.
+
+검증: 문서가 참조하는 7개 commit 객체와 주요 설계·코드·test 파일의
+존재를 확인했고, `.venv/bin/python -m pytest harness/tests/test_phase_cli.py -q`
+결과는 `6 passed`이다. `git diff --check`도 통과했다.

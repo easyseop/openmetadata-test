@@ -1,5 +1,10 @@
 # Current implementation status
 
+> Updated: 2026-08-08 KST — Claude의 Phase 번들링 초기 구현 commit
+> `ae1bdbc...`·`446b5a0...`, 검토 기준 `dbf169b...`, Codex 안전 보완
+> `7a96385...`, 현재 미실행 범위와 외부 검토 질문을 하나로 묶은
+> `PHASE_BUNDLING_외부모델_설계검토_요청서_20260808.md`를 추가했다.
+
 > Updated: 2026-08-08 KST — 고객사·솔루션 제공업체 관점으로 작성한
 > 독립 버전 업그레이드 가이드 Markdown·HTML은 사용자 요청으로 폐기했다.
 > 기존 11단계 예행연습 문서와 Phase 구현은 변경하지 않았다.
