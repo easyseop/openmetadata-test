@@ -523,3 +523,15 @@ upstream commit은 T30 `CORE_CHANGE_WITHOUT_ID` `BLOCK`으로 이미 검출하�
 이 문서 batch의 범위는 이 인수인계서, Claude 검토 요청서,
 Claude 검토 반영 문서 3개다. PPT·검사기 코드·정책 파일은
 수정하지 않았다.
+
+### 17.2 문서 commit·원격 이관
+
+위 3개 문서를 다음 commit으로 저장했다.
+
+```text
+6764d58 docs: record PPT phase verifier review
+```
+
+이 commit은 PPT 분석·Claude 검토 요청·검토 반영과 이 인수인계만
+포함한다. 검사기 코드·정책·PPT 원본은 바꾸지 않았다. 다음
+commit은 이 이관 상태를 인수인계에 고정하는 문서 전용 commit이다.
