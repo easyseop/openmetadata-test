@@ -1,8 +1,8 @@
 # Phase 번들링 진척·인수인계 (다른 컴퓨터에서 이어받기용)
 
-> 브랜치: `codex/phase-bundling` (검토 대상 구현 HEAD `446b5a0e53`). 2026-08-07
-> 20:20 PDT 확인 시 이 commit을 포함하는 원격 branch는 아직 확인되지 않았다. push 전
-> 아래 dirty 파일을 기존 작업자와 구분한다.
+> 브랜치: `codex/phase-bundling`, 원격 `origin/codex/phase-bundling` 추적.
+> 구현 HEAD `446b5a0e53`, Codex 검토·인수인계 commit `cb225109d3`까지 2026-08-07
+> 원격 push 완료. 아래 로컬 전용 파일을 원격 작업과 구분한다.
 > 작성: 2026-08-07. 격리 원칙: 예행연습 브랜치(`codex/om-1.13.1-rehearsal-baseline-20260806`)·제품 코드·evidence·vendor merge **무수정**.
 
 ## 1. 이어받기 (다른 컴퓨터)
@@ -89,24 +89,19 @@ cp -R /tmp/tob/plugins/property-based-testing/skills/property-based-testing .cla
 ## 9. 제약 (항상 유지)
 예행연습 브랜치·제품 코드·evidence·vendor merge 무수정. custom branch 수정/충돌해결/merge 금지. 구현은 격리 브랜치에서만, 병합은 승인 후.
 
-## 10. 2026-08-07 20:20 PDT 현재 dirty 상태
+## 10. 2026-08-07 원격 공유 후 로컬 상태
 
 ```text
-M  docs/04-진행/CODEX_CURRENT_HANDOFF.md
-M  docs/04-진행/PHASE_BUNDLING_진척_인수인계_20260807.md
 ?? .claude/
-?? docs/04-진행/PHASE_BUNDLING_구현완료_검토요청_20260807.md
-?? docs/04-진행/PHASE_BUNDLING_CODEX_구현검토_20260807.md
 ```
 
-- `CODEX_CURRENT_HANDOFF.md` 수정은 Codex가 이 격리 작업을 기록하기 위해 추가했다.
 - `.claude/`는 기존 사용자·Claude 도구 자료이므로 수정·stage하지 않는다.
 - L1~L8 Python 파일은 commit `ae1bdbce4b`, `446b5a0e53`에 포함됐다.
-- 위 목록은 2026-08-07 20:20 PDT 확인값이다. 다른 세션이 계속 작업할 수 있으므로 재개
+- 구현 완료보고·Codex 검토·인수인계는 commit `cb225109d3`까지 원격에 포함됐다.
+- 다른 세션이 계속 작업할 수 있으므로 재개
   시 이 목록만 믿지 말고 가장 먼저 `git status --short --branch`를 다시 실행한다.
-- 현재 로컬 branch는 원격 tracking branch가 설정되지 않았으며 `git branch -r
-  --contains HEAD` 결과도 비어 있었다. 원격 공유 여부를 추정하지 말고 push 전에
-  commit 범위와 dirty 파일을 다시 확인한다.
+- branch는 `origin/codex/phase-bundling`을 추적한다. 다른 컴퓨터에서는 fetch 후 이
+  원격 branch와 `CODEX_CURRENT_HANDOFF.md`를 먼저 확인한다.
 
 ## 11. Codex가 이번에 수행한 내용
 

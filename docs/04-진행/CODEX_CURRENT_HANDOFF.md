@@ -1,6 +1,6 @@
 # 현재 작업 인수인계
 
-> 마지막 갱신: 2026-08-07 20:20 PDT
+> 마지막 갱신: 2026-08-07 20:35 PDT
 >
 > 현재 작업: Phase 번들링 L1~L8 구현 검토 완료, P0 보완 전 WIP 원격 공유
 >
@@ -257,16 +257,15 @@ CandidateLock schema 재사용, premerge·postmerge 분리, 입력 누락과 프
 이후 같은 branch에 commit `ae1bdbce4b`(L1)와 `446b5a0e53`(L2~L8)이 추가됐습니다.
 Codex는 구현 코드를 수정하지 않고 독립 검토했습니다.
 
-현재 다음 문서와 로컬 도구가 미반영 상태입니다.
+구현 완료보고, Codex 검토, 두 인수인계는 commit `cb225109d3`까지
+`origin/codex/phase-bundling`에 push했습니다. 현재 남은 미추적 항목은 로컬 테스트
+스킬뿐입니다.
 
 ```text
 ?? .claude/
-?? docs/04-진행/PHASE_BUNDLING_구현완료_검토요청_20260807.md
-?? docs/04-진행/PHASE_BUNDLING_CODEX_구현검토_20260807.md
 ```
 
-`.claude/`는 stage하지 않습니다. 완료보고와 Codex 검토 문서는 원격 인수인계에
-포함합니다. 검토 결론은 phase 테스트 125개 통과와 별개로 P0 문제 6건이 남아 있어
+`.claude/`는 stage하지 않습니다. 검토 결론은 phase 테스트 125개 통과와 별개로 P0 문제 6건이 남아 있어
 운영 완료 승인을 할 수 없다는 것입니다. 정확한 문제와 다음 순서는
 `PHASE_BUNDLING_진척_인수인계_20260807.md` 12절과
 `PHASE_BUNDLING_CODEX_구현검토_20260807.md`를 확인합니다.
