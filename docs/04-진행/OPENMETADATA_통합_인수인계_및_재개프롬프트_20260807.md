@@ -197,12 +197,19 @@ Codex가 처음 보고해야 할 항목:
 
 ## 6. Claude 작업 — Phase 번들링 부족 개발 요청 프롬프트
 
-Phase 번들링의 P0/P1 보완은 Claude에게 아래 내용으로 요청한다. Claude는 예행연습
-branch나 제품 코드를 수정하지 않고 `codex/phase-bundling`에서만 작업한다.
+Phase 번들링의 P0/P1 보완은 Claude에게 아래 내용으로 요청한다. Claude는
+`codex/phase-bundling`을 기준으로 별도 worktree와
+`claude/phase-bundling-p0-p1-fix-20260807` branch를 만든다. 예행연습 branch나 제품
+코드는 수정하지 않는다.
 
 ```text
-easyseop/openmetadata-test의 origin/codex/phase-bundling에서 Phase 번들링 구현을
-보완해 주세요. 현재 구현은 완료본이 아니라 Codex 검토용 WIP입니다.
+easyseop/openmetadata-test의 origin/codex/phase-bundling을 기준으로 Phase 번들링
+구현을 보완해 주세요. 현재 구현은 완료본이 아니라 Codex 검토용 WIP입니다.
+
+기존 작업 폴더를 재사용하지 말고 별도 git worktree를 만든 뒤
+claude/phase-bundling-p0-p1-fix-20260807 branch에서만 수정하세요. 저장소 안에 제품
+코드를 복제한 별도 하위 폴더를 만들지 마세요. 작업 완료 후 이 새 branch를 원격에
+push하고, codex/phase-bundling에 직접 merge하거나 force-push하지 마세요.
 
 먼저 다음 문서를 전부 읽으세요.
 - docs/04-진행/OPENMETADATA_통합_인수인계_및_재개프롬프트_20260807.md
@@ -244,15 +251,17 @@ Claude의 완료 조건:
 - 한 명령으로 premerge 또는 postmerge phase를 실행할 수 있다.
 - 입력 누락, 프로그램 오류, approval, block, pass가 서로 구분된다.
 - 결과 JSON과 사람이 읽는 요약의 수치가 일치한다.
-- 변경 commit과 인수인계가 원격 `codex/phase-bundling`에 반영된다.
+- 변경 commit과 인수인계가 원격
+  `claude/phase-bundling-p0-p1-fix-20260807`에 반영된다.
 
 ## 7. Codex 작업 B — Claude 수정본 독립 재검토 프롬프트
 
 Claude가 보완 개발을 끝낸 뒤 다른 Codex 세션에 다음 내용을 전달한다.
 
 ```text
-Claude가 수정한 easyseop/openmetadata-test의 codex/phase-bundling을 독립적으로
-재검토해 주세요.
+Claude가 수정한 easyseop/openmetadata-test의
+claude/phase-bundling-p0-p1-fix-20260807을 codex/phase-bundling 기준과 비교해
+독립적으로 재검토해 주세요.
 
 1. 작업 트리와 원격 최신 commit을 확인하고 검토 commit을 고정하세요.
 2. OPENMETADATA_통합_인수인계_및_재개프롬프트_20260807.md와
