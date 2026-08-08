@@ -1,5 +1,14 @@
 # Current implementation status
 
+> Updated: 2026-08-08 KST — Claude 최종 검토를 반영해 Phase의 conflict evidence를
+> 승인된 `custom_head_sha`·이전 기준선 lock·실제 merge-base에 결속하고,
+> `git merge-tree --write-tree` 재현 충돌 목록과 완전 일치하도록 강화했다.
+> `phase-status`는 digest 보호 영역의 검사 범위와 배포 제한을 표시한다. 잔존
+> reservation lock 진단, 구버전 증거 재실행 안내, 선택적 conflict-rate,
+> `--registration-version` 별칭, 80열 human 출력과 4→5단계 수작업 안내도
+> 반영했다. Phase 회귀는 182 passed/1 environment skip, 전체 harness는
+> 560 passed/38 skipped, 실패 0건이다. 실제 1.13.2 병합·승인·배포는 미수행이다.
+
 > Updated: 2026-08-08 KST — 외부 설계 검토의 신규 P0 1건·P1 7건 중
 > 코드로 해결 가능한 결속·무결성 항목을 보완하고, 여섯 Phase 명령에 기본
 > 사람용 요약과 선택적 JSON 출력을 추가했다. 실제 조직 승인 권한은 보호 branch·

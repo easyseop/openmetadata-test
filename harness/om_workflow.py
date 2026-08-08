@@ -14,6 +14,7 @@ import json
 import os
 import subprocess
 import sys
+import unicodedata
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -151,38 +152,112 @@ def _result_label(payload: dict) -> str:
     }.get(payload.get("status"), "확인 필요"))
 
 
+def _verdict_label(value: str | None) -> str:
+    return {
+        "pass": "pass (계속 가능)",
+        "approval": "approval (담당자 검토 필요)",
+        "block": "block (중단)",
+        "analysis_error": "analysis_error (분석 오류)",
+    }.get(value, value or "-")
+
+
+def _display_width(value: str) -> int:
+    """Approximate terminal columns without padding fields into a table."""
+    return sum(
+        0 if unicodedata.combining(char)
+        else 2 if unicodedata.east_asian_width(char) in {"W", "F"}
+        else 1
+        for char in value
+    )
+
+
+def _wrap_display(value: str, first_width: int, continuation_width: int) -> list[str]:
+    """Wrap at spaces by terminal columns; leave copyable long tokens intact."""
+    lines: list[str] = []
+    limit = first_width
+    for paragraph in value.splitlines() or [""]:
+        words = paragraph.split()
+        if not words:
+            lines.append("")
+            limit = continuation_width
+            continue
+        current = words[0]
+        for word in words[1:]:
+            candidate = f"{current} {word}"
+            if _display_width(candidate) <= limit:
+                current = candidate
+            else:
+                lines.append(current)
+                current = word
+                limit = continuation_width
+        lines.append(current)
+        limit = continuation_width
+    return lines or [""]
+
+
+def _emit(label: str, value: object, *, width: int = 80) -> None:
+    prefix = f"{label}: "
+    lines = _wrap_display(
+        str(value),
+        max(20, width - _display_width(prefix)),
+        max(20, width - 2),
+    )
+    print(prefix + lines[0])
+    for line in lines[1:]:
+        print("  " + line)
+
+
+def _print_premerge_next_steps() -> None:
+    print("다음 행동:")
+    print("  1. 담당자가 premerge 결과를 승인합니다.")
+    print("  2. 별도 제품 branch에서 vendor-merge Candidate를 만듭니다.")
+    print("  3. 새 Candidate lock을 작성하고 담당자가 승인합니다.")
+    print("  4. candidate-select를 다시 실행합니다.")
+    print("  5. postmerge-check를 실행합니다.")
+
+
 def _print_human_phase(stage: str, payload: dict, *, evidence: Path | None = None) -> None:
     number, title = _PHASE_LABELS[stage]
     print(f"\n[{number}/6] {title}")
-    print(f"결과        : {_result_label(payload)}")
+    if stage == "status":
+        _emit("저장된 판정", _verdict_label(payload.get("overall_verdict")))
+        _emit(
+            "재검증 결과",
+            "canonical·관리자·실무자 결과 일치"
+            if payload.get("verified")
+            else "불일치 또는 읽기 오류",
+        )
+    else:
+        _emit("결과", _result_label(payload))
     if payload.get("process_exit_code") is not None:
-        print(f"종료 코드   : {payload['process_exit_code']}")
+        _emit("종료 코드", payload["process_exit_code"])
     if payload.get("reason"):
-        print(f"사유        : {payload['reason']}")
+        _emit("사유", payload["reason"])
     for reason in payload.get("reasons", []):
-        print(f"사유        : {reason}")
+        _emit("사유", reason)
 
     if stage == "candidate":
-        print(f"Candidate   : {payload.get('candidate_commit_sha') or '-'}")
-        print(f"산출물 종류 : {payload.get('candidate_artifact_kind') or '-'}")
-        print(f"Lock digest : {payload.get('candidate_lock_digest') or '-'}")
+        _emit("등록 묶음", payload.get("registration_bundle") or "-")
+        _emit("Candidate", payload.get("candidate_commit_sha") or "-")
+        _emit("산출물 종류", payload.get("candidate_artifact_kind") or "-")
+        _emit("Lock digest", payload.get("candidate_lock_digest") or "-")
         if payload.get("status") == "selected":
-            print("다음 행동   : 공식 새 버전을 prep-official로 고정하세요.")
+            _emit("다음 행동", "공식 새 버전을 prep-official로 고정하세요.")
         else:
-            print("다음 행동   : 승인된 Candidate lock과 active-candidate.yaml을 준비한 뒤 다시 실행하세요.")
+            _emit("다음 행동", "승인된 Candidate lock과 active-candidate.yaml을 준비한 뒤 다시 실행하세요.")
     elif stage == "official":
-        print(f"공식 tag    : {payload.get('tag_ref') or '-'}")
-        print(f"공식 commit : {payload.get('commit_sha') or '-'}")
-        print(f"로컬 branch : {payload.get('branch') or '-'}")
+        _emit("공식 tag", payload.get("tag_ref") or "-")
+        _emit("공식 commit", payload.get("commit_sha") or "-")
+        _emit("로컬 branch", payload.get("branch") or "-")
         if payload.get("status") == "analysis_error":
-            print("다음 행동   : 공식 tag·branch·commit 결속 오류를 해결한 뒤 다시 실행하세요.")
+            _emit("다음 행동", "공식 tag·branch·commit 결속 오류를 해결한 뒤 다시 실행하세요.")
         else:
-            print("다음 행동   : 생성된 증거 파일을 premerge-check에 전달하세요.")
+            _emit("다음 행동", "생성된 증거 파일을 premerge-check에 전달하세요.")
     elif stage == "preflight":
         problems = payload.get("blocking_problems", [])
         disabled = payload.get("disabled_gates", [])
-        print(f"차단 항목   : {len(problems)}개")
-        print(f"미실행 검사 : {', '.join(disabled) if disabled else '없음'}")
+        _emit("차단 항목", f"{len(problems)}개")
+        _emit("미실행 검사", ", ".join(disabled) if disabled else "없음")
         for check in payload.get("checks", []):
             if check.get("status") == "ok":
                 continue
@@ -191,62 +266,75 @@ def _print_human_phase(stage: str, payload: dict, *, evidence: Path | None = Non
             detail = check.get("next_action") or check.get("detail")
             print(f"- {name}: {status}")
             if detail:
-                print(f"  조치: {detail}")
+                _emit("  조치", detail)
         if problems:
-            print("다음 행동   : 차단 항목을 해결한 뒤 같은 Phase를 다시 실행하세요.")
+            _emit("다음 행동", "차단 항목을 해결한 뒤 같은 Phase를 다시 실행하세요.")
         elif disabled:
-            print("다음 행동   : 누락된 사람 입력·증거를 채우면 모든 검사를 실행할 수 있습니다.")
+            _emit("다음 행동", "누락된 사람 입력·증거를 채우면 모든 검사를 실행할 수 있습니다.")
         else:
-            print("다음 행동   : 해당 Phase 검사를 실행하세요.")
+            _emit("다음 행동", "해당 Phase 검사를 실행하세요.")
     elif stage in {"premerge", "postmerge"}:
-        print(f"완료 상태   : {payload.get('phase_status') or '-'}")
-        print(f"검사 범위   : {payload.get('verification_scope') or '-'}")
-        print(f"검사 완료   : {payload.get('checked_over_total') or '-'}")
+        _emit("완료 상태", payload.get("phase_status") or "-")
+        _emit("검사 범위", payload.get("verification_scope") or "-")
+        _emit("검사 완료", payload.get("checked_over_total") or "-")
         counts = payload.get("counts", {})
         if counts:
-            print(
-                "판정 요약   : "
+            _emit(
+                "판정 요약",
                 f"PASS {counts.get('pass', 0)} · "
                 f"APPROVAL {counts.get('approval', 0)} · "
                 f"BLOCK {counts.get('block', 0)} · "
-                f"ERROR {counts.get('analysis_error', 0)}"
+                f"ANALYSIS_ERROR {counts.get('analysis_error', 0)}"
             )
         non_pass = payload.get("non_pass_gates", [])
         if non_pass:
             summary = ", ".join(
                 f"{gate.get('name')}({gate.get('verdict')})" for gate in non_pass
             )
-            print(f"확인할 검사 : {summary}")
-        print(f"결과 digest : {payload.get('result_digest') or '-'}")
+            _emit("확인할 검사", summary)
+        _emit("결과 digest", payload.get("result_digest") or "-")
         manager_path = payload.get("manager_output")
         practitioner_path = payload.get("practitioner_output")
         if manager_path:
-            print(f"관리자 요약 : {manager_path}")
+            _emit("관리자 요약", manager_path)
         if practitioner_path:
-            print(f"실무자 상세 : {practitioner_path}")
-        if payload.get("overall_verdict") == "approval":
-            print("다음 행동   : 실무자 상세의 검토 항목을 확인하고 담당자가 승인하세요.")
+            _emit("실무자 상세", practitioner_path)
+        if stage == "premerge" and payload.get("overall_verdict") in {"pass", "approval"}:
+            _print_premerge_next_steps()
+        elif payload.get("overall_verdict") == "approval":
+            _emit("다음 행동", "실무자 상세의 검토 항목을 확인하고 담당자가 승인하세요.")
         elif payload.get("overall_verdict") == "pass" and stage == "postmerge":
-            print("다음 행동   : source-only이면 artifact 검증 전 운영 배포를 승인하지 마세요.")
-        elif payload.get("overall_verdict") == "pass":
-            print("다음 행동   : 승인 후 별도 branch에서 vendor-merge Candidate를 만드세요.")
+            if payload.get("verification_scope") == "artifact-verified":
+                _emit("다음 행동", "소스와 build artifact 검사가 완료됐습니다. 같은 result digest에 담당자 승인을 결속한 뒤 별도 운영 배포 절차로 진행하세요.")
+            else:
+                _emit("다음 행동", "소스 검사는 통과했습니다. build-artifact 검증 전에는 운영 배포를 승인하지 마세요.")
         else:
-            print("다음 행동   : 차단·분석 오류 원인을 해결한 뒤 전체 Phase를 다시 실행하세요.")
+            _emit("다음 행동", "차단·분석 오류 원인을 해결한 뒤 전체 Phase를 다시 실행하세요.")
     else:
         tier = payload.get("tier_outputs", {})
-        print(f"Canonical   : {'확인됨' if payload.get('verified') else '불일치'}")
-        print(f"관리자 요약 : {'확인됨' if tier.get('manager') else '불일치'}")
-        print(f"실무자 상세 : {'확인됨' if tier.get('practitioner') else '불일치'}")
-        print(f"결과 digest : {payload.get('result_digest') or '-'}")
-        if payload.get("verified"):
-            print("다음 행동   : 판정이 APPROVAL이면 같은 digest에 담당자 승인을 결속하세요.")
+        scope = payload.get("verification_scope") or "기록 없음(구버전)"
+        _emit("검사 범위", scope)
+        if not payload.get("verified"):
+            _emit("Canonical", "확인됨" if payload.get("canonical_verified") else "불일치")
+            _emit("관리자 요약", "확인됨" if tier.get("manager") else "불일치")
+            _emit("실무자 상세", "확인됨" if tier.get("practitioner") else "불일치")
+        if scope == "artifact-verified":
+            _emit("운영 배포", "담당자 승인 결속 전에는 완료로 처리하지 마세요.")
         else:
-            print("다음 행동   : canonical·관리자·실무자 결과의 불일치를 해결한 뒤 다시 확인하세요.")
+            _emit("운영 배포", "build-artifact 검증 전 승인 금지")
+        _emit("결과 digest", payload.get("result_digest") or "-")
+        if payload.get("verified"):
+            if scope == "artifact-verified":
+                _emit("다음 행동", "같은 result digest에 담당자 승인을 결속한 뒤 별도 운영 배포 절차로 진행하세요.")
+            else:
+                _emit("다음 행동", "build-artifact Candidate lock과 Runtime Contract를 준비해 postmerge를 다시 실행하세요.")
+        else:
+            _emit("다음 행동", "canonical·관리자·실무자 결과의 불일치를 해결한 뒤 다시 확인하세요.")
     if evidence is not None:
         if evidence.is_file():
-            print(f"증거 파일   : {evidence}")
+            _emit("증거 파일", evidence)
         else:
-            print(f"증거 경로   : {evidence} (중단되어 생성되지 않음)")
+            _emit("증거 경로", f"{evidence} (중단되어 생성되지 않음)")
 
 
 def run_phase_command(
@@ -310,7 +398,10 @@ def run_to_file(command: list[str], output: Path) -> int:
 
 def add_repo_version(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--repo", required=True, type=Path, help="검사할 OpenMetadata 제품 Git 저장소")
-    parser.add_argument("--version", required=True, help="등록 기준 버전, 예: 1.13.1")
+    parser.add_argument(
+        "--version", "--registration-version", dest="version", required=True,
+        help="등록 묶음 버전, 예: 1.13.1 (1.13.2 Candidate 검사에도 같은 묶음을 사용할 수 있음)",
+    )
 
 
 def add_phase_output_format(parser: argparse.ArgumentParser) -> None:
@@ -461,7 +552,10 @@ def parse_args() -> argparse.Namespace:
         "candidate-select",
         help="승인된 활성 Candidate lock을 명시적으로 선택",
     )
-    phase_candidate.add_argument("--version", required=True, help="등록 기준 버전, 예: 1.13.1")
+    phase_candidate.add_argument(
+        "--version", "--registration-version", dest="version", required=True,
+        help="등록 묶음 버전, 예: 1.13.1",
+    )
     phase_candidate.add_argument("--output", type=Path, help="선택 결과 JSON 경로")
     add_phase_output_format(phase_candidate)
 
@@ -506,7 +600,10 @@ def parse_args() -> argparse.Namespace:
     )
     add_repo_version(premerge)
     premerge.add_argument("--base", required=True, help="공식 이전 버전 전체 commit SHA")
-    premerge.add_argument("--target", required=True, help="공식 새 버전 전체 commit SHA")
+    premerge.add_argument(
+        "--target",
+        help="필수: 공식 새 버전 전체 commit SHA (누락 시 복구 안내와 함께 중단)",
+    )
     premerge.add_argument("--candidate-ref", help="생략하면 활성 Candidate lock의 commit 사용")
     premerge.add_argument(
         "--official-evidence",

@@ -114,3 +114,49 @@ def test_invalid_ref_becomes_structured_git_error(repo):
     _commit(repo, "README", "base\n", "base")
     with pytest.raises(G.GitPrimitiveError, match="failed"):
         G.resolve_commit(str(repo), "--definitely-not-a-ref")
+
+
+def test_merge_tree_reports_add_add_conflict(repo):
+    base = _commit(repo, "README", "base\n", "base")
+    _run(str(repo), "switch", "-qc", "target", base)
+    target = _commit(repo, "shared.json", '{"side":"target"}\n', "target add")
+    _run(str(repo), "switch", "-qc", "custom", base)
+    custom = _commit(repo, "shared.json", '{"side":"custom"}\n', "custom add")
+
+    replay = G.merge_tree_conflicts(str(repo), target, custom)
+
+    assert replay.conflicted_paths == ("shared.json",)
+    assert replay.tree_sha
+    assert replay.output_digest.startswith("sha256:")
+
+
+def test_merge_tree_reports_rename_rename_conflict(repo):
+    base = _commit(repo, "old.txt", "base\n", "base")
+    _run(str(repo), "switch", "-qc", "target", base)
+    (repo / "old.txt").rename(repo / "target.txt")
+    _run(str(repo), "add", "-A")
+    _run(str(repo), "commit", "-m", "target rename")
+    target = G.resolve_commit(str(repo), "HEAD")
+    _run(str(repo), "switch", "-qc", "custom", base)
+    (repo / "old.txt").rename(repo / "custom.txt")
+    _run(str(repo), "add", "-A")
+    _run(str(repo), "commit", "-m", "custom rename")
+    custom = G.resolve_commit(str(repo), "HEAD")
+
+    replay = G.merge_tree_conflicts(str(repo), target, custom)
+
+    assert set(replay.conflicted_paths) == {"old.txt", "custom.txt", "target.txt"}
+
+
+def test_merge_tree_uses_repository_merge_driver_configuration(repo):
+    _run(str(repo), "config", "merge.keep-current.driver", "true")
+    _commit(repo, ".gitattributes", "*.json merge=keep-current\n", "attributes")
+    base = _commit(repo, "config.json", '{"value":"base"}\n', "base")
+    _run(str(repo), "switch", "-qc", "target", base)
+    target = _commit(repo, "config.json", '{"value":"target"}\n', "target edit")
+    _run(str(repo), "switch", "-qc", "custom", base)
+    custom = _commit(repo, "config.json", '{"value":"custom"}\n', "custom edit")
+
+    replay = G.merge_tree_conflicts(str(repo), target, custom)
+
+    assert replay.conflicted_paths == ()

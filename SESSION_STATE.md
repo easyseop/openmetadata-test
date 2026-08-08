@@ -1,5 +1,13 @@
 # 세션 상태 / 인수인계 (SESSION_STATE)
 
+> **2026-08-08 Claude 최종 검토 반영:** 단순 target→candidate 경로 검사를
+> 폐기하고 병합 전 승인 custom head, 이전 기준선 Candidate lock, 실제 merge-base,
+> `git merge-tree` 원시 출력 digest와 충돌 경로를 canonical 결과에 결속했다.
+> conflict-rate는 경로 수로만 계산하며 사람이 생략할 수 있다. 6단계 status와
+> human 출력은 source-only 배포 오인을 차단하고, 구버전·잔존 lock 복구와
+> vendor merge 이후 수작업을 명시한다. LLM G-룰은 참고자료이며 이번 구현
+> 범위가 아니다. 전체 회귀는 560 passed, 38 skipped, 실패 0건이다.
+
 > **2026-08-08 Phase 외부 검토 후속 보완:** artifact digest↔Candidate lock,
 > 공식 tag↔premerge target, conflict evidence↔Candidate SHA, 등록자료↔결과
 > digest를 결속했다. run-id 경로 이탈, 동시 결과 덮어쓰기, 관리자·실무자 파일

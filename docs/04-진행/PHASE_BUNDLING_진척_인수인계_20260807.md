@@ -244,3 +244,19 @@ CI는 `--output-format json`으로 기존 JSON 계약을 사용한다. 출력 �
 harness는 `543 passed, 38 skipped`, 실패 0건이다. 실제 조직 승인
 권한, 1.13.2 vendor-merge Candidate, 실측 conflict evidence, change-intent,
 build-artifact Runtime Contract와 운영 배포는 여전히 외부 입력 대기다.
+
+## 15. 2026-08-08 최종 재검토 반영
+
+conflict-rate 증거를 병합 후 candidate의 net diff로 확인하는 제안은 폐기했다.
+병합 전 `custom_head_sha`를 승인된 이전 기준선 lock, postmerge Candidate ancestry,
+실제 merge-base에 결속하고 `git merge-tree --write-tree` 충돌 목록과 완전
+대조한다. 변경 경로·충돌 경로 중복과 조작 경로는 ANALYSIS_ERROR이며 계산한
+분자·분모·비율과 merge-tree Git 버전·명령·tree·출력 digest·merge-driver 설정
+digest를 결과에 기록한다. rename/rename, add/add, custom merge-driver는 합성 Git
+반례로 고정했다.
+
+6단계 status의 scope·배포 제한, 구버전 재실행 안내, reservation lock 진단,
+명확한 target 누락, 선택적 conflict-rate, 등록 묶음 별칭과 terminal 출력도 함께
+보완했다. 최종 Phase·Git 집중 회귀는 `182 passed, 1 skipped`, 전체 harness는
+`560 passed, 38 skipped`, 실패 0건이다. 실제 제품 merge·조직 승인·Runtime·
+운영 배포는 수행하지 않았다.

@@ -12,6 +12,7 @@ import pytest
 import yaml
 
 from acgh import candidate
+from acgh import candidate_select
 from acgh import phase
 from harness import om_workflow
 from harness import run_phase_bundle
@@ -264,6 +265,35 @@ def test_premerge_rejects_target_not_bound_to_official_evidence(tmp_path):
     assert code == 3
 
 
+def test_premerge_missing_target_has_actionable_error(tmp_path, capsys):
+    repo, registration, base, target = _fixture(tmp_path)
+    official = _official_evidence(tmp_path, repo, target)
+    output = tmp_path / "missing-target.json"
+    code = run_phase_bundle.main([
+        "premerge", "--repo", str(repo), "--registration", str(registration),
+        "--base", base, "--official-evidence", str(official),
+        "--run-id", "missing-target", "--output", str(output),
+    ])
+    assert code == 3
+    assert not output.exists()
+    assert "prep-official 결과의 commit_sha 전체 값" in capsys.readouterr().out
+
+
+def test_preflight_collects_missing_target_instead_of_throwing(tmp_path):
+    repo, registration, _base, target = _fixture(tmp_path)
+    official = _official_evidence(tmp_path, repo, target)
+    output = tmp_path / "preflight.json"
+    code = run_phase_bundle.main([
+        "preflight", "--repo", str(repo), "--registration", str(registration),
+        "--phase", "premerge", "--official-evidence", str(official),
+        "--output", str(output),
+    ])
+    assert code == 3
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    target_check = next(c for c in payload["checks"] if c["name"] == "upstream_target")
+    assert target_check["status"] == "missing"
+
+
 def test_source_tree_lock_rejects_runtime_artifact_digest(tmp_path):
     repo, registration, _base, _target = _fixture(tmp_path)
     output = tmp_path / "result.json"
@@ -285,14 +315,208 @@ def test_conflict_evidence_is_candidate_bound_and_rate_is_derived(tmp_path):
         "upstream_base_sha": base,
         "upstream_target_sha": base,
         "candidate_sha": selection.lock.candidate.commit_sha,
-        "merge_changed_paths": ["svc/a.java", "svc/b.java"],
-        "conflicted_paths": ["svc/a.java"],
-        "conflict_rate": 0.5,
+        "custom_head_sha": selection.lock.candidate.commit_sha,
+        "baseline_candidate_lock_digest": selection.lock_digest,
+        "merge_base_sha": base,
+        "merge_changed_paths": ["svc/a.java"],
+        "conflicted_paths": [],
     }), encoding="utf-8")
-    args = SimpleNamespace(conflict_evidence=evidence, conflict_rate=None)
+    args = SimpleNamespace(
+        conflict_evidence=evidence,
+        conflict_rate=None,
+        registration=registration,
+        repo=repo,
+    )
     digest = run_phase_bundle._bind_conflict_evidence(args, selection.lock)
-    assert args.conflict_rate == 0.5
+    assert args.conflict_rate == 0.0
+    assert args.conflict_measurement["custom_head_sha"] == selection.lock.candidate.commit_sha
+    assert args.conflict_measurement["merge_tree"]["conflicted_paths"] == []
     assert digest.startswith("sha256:")
+
+
+def test_conflict_evidence_rejects_duplicate_paths_and_invented_rate(tmp_path):
+    repo, registration, base, _target = _fixture(tmp_path)
+    selection = run_phase_bundle._selected(registration)
+    evidence = tmp_path / "conflicts.yaml"
+    payload = {
+        "upstream_base_sha": base,
+        "upstream_target_sha": base,
+        "candidate_sha": selection.lock.candidate.commit_sha,
+        "custom_head_sha": selection.lock.candidate.commit_sha,
+        "baseline_candidate_lock_digest": selection.lock_digest,
+        "merge_base_sha": base,
+        "merge_changed_paths": ["svc/a.java", "svc/a.java"],
+        "conflicted_paths": [],
+    }
+    evidence.write_text(yaml.safe_dump(payload), encoding="utf-8")
+    args = SimpleNamespace(
+        conflict_evidence=evidence,
+        conflict_rate=None,
+        registration=registration,
+        repo=repo,
+    )
+    with pytest.raises(run_phase_bundle.PhaseCLIError, match="중복 경로"):
+        run_phase_bundle._bind_conflict_evidence(args, selection.lock)
+
+    payload["merge_changed_paths"] = ["svc/a.java"]
+    payload["conflict_rate"] = 0.1
+    evidence.write_text(yaml.safe_dump(payload), encoding="utf-8")
+    with pytest.raises(run_phase_bundle.PhaseCLIError, match="경로 수 계산"):
+        run_phase_bundle._bind_conflict_evidence(args, selection.lock)
+
+
+def _activate_postmerge_conflict_candidate(
+    repo, registration, base, target, *, resolution="class A { int upstream; int bank; }\n"
+):
+    custom_head = _git(repo, "rev-parse", "custom-baseline")
+    env = {
+        **os.environ,
+        "GIT_AUTHOR_NAME": "test",
+        "GIT_AUTHOR_EMAIL": "test@example.com",
+        "GIT_COMMITTER_NAME": "test",
+        "GIT_COMMITTER_EMAIL": "test@example.com",
+    }
+    _git(repo, "switch", "-qc", "vendor-merge", target)
+    merge = subprocess.run(
+        ["git", "-C", str(repo), "merge", "--no-ff", "custom-baseline", "-m", "merge"],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert merge.returncode == 1
+    (repo / "svc/a.java").write_text(resolution, encoding="utf-8")
+    _git(repo, "add", "svc/a.java", env=env)
+    _git(repo, "commit", "-qm", "resolve vendor merge", env=env)
+    candidate_sha = _git(repo, "rev-parse", "HEAD")
+    lock = candidate.build_candidate_lock(
+        str(repo), candidate_sha,
+        upstream_repository="vendor/product",
+        upstream_base_sha=base,
+        upstream_target_sha=target,
+        candidate_repository="bank/product",
+        artifact_digest="sha256:" + "1" * 64,
+        artifact_kind="source-tree",
+    )
+    lock_path = registration / "candidate-locks/postmerge.yaml"
+    lock_path.write_text(yaml.safe_dump(lock.canonical()), encoding="utf-8")
+    (registration / "candidate-locks/postmerge.approval.yaml").write_text(
+        yaml.safe_dump({
+            "candidate_lock_digest": lock.digest(),
+            "approver": "데이터플랫폼 승인자",
+            "approved_at": "2026-08-08T00:00:00Z",
+            "rationale": "합성 postmerge 승인",
+        }),
+        encoding="utf-8",
+    )
+    (registration / "candidate-locks/active-candidate.yaml").write_text(
+        yaml.safe_dump({"schema_version": 1, "candidate_lock_digest": lock.digest()}),
+        encoding="utf-8",
+    )
+    baseline = candidate_select.select_approved_candidate(
+        registration,
+        candidate.load_candidate_lock(registration / "candidate-locks/baseline.yaml").digest(),
+    )
+    return lock, baseline, custom_head
+
+
+def test_conflict_evidence_replays_exact_conflict_set_and_binds_baseline(tmp_path):
+    repo, registration, base, target = _fixture(tmp_path)
+    lock, baseline, custom_head = _activate_postmerge_conflict_candidate(
+        repo, registration, base, target
+    )
+    evidence = tmp_path / "conflicts.yaml"
+    evidence.write_text(yaml.safe_dump({
+        "upstream_base_sha": base,
+        "upstream_target_sha": target,
+        "candidate_sha": lock.candidate.commit_sha,
+        "custom_head_sha": custom_head,
+        "baseline_candidate_lock_digest": baseline.lock_digest,
+        "merge_base_sha": base,
+        "merge_changed_paths": ["svc/a.java"],
+        "conflicted_paths": ["svc/a.java"],
+    }), encoding="utf-8")
+    args = SimpleNamespace(
+        conflict_evidence=evidence,
+        conflict_rate=None,
+        registration=registration,
+        repo=repo,
+    )
+    run_phase_bundle._bind_conflict_evidence(args, lock)
+    assert args.conflict_rate == 1.0
+    assert args.conflict_measurement["conflicted_path_count"] == 1
+    assert args.conflict_measurement["merge_tree"]["output_digest"].startswith("sha256:")
+
+
+def test_conflict_evidence_rejects_fake_custom_head(tmp_path):
+    repo, registration, base, target = _fixture(tmp_path)
+    lock, baseline, _custom_head = _activate_postmerge_conflict_candidate(
+        repo, registration, base, target
+    )
+    evidence = tmp_path / "conflicts.yaml"
+    evidence.write_text(yaml.safe_dump({
+        "upstream_base_sha": base,
+        "upstream_target_sha": target,
+        "candidate_sha": lock.candidate.commit_sha,
+        "custom_head_sha": target,
+        "baseline_candidate_lock_digest": baseline.lock_digest,
+        "merge_base_sha": base,
+        "merge_changed_paths": ["svc/a.java"],
+        "conflicted_paths": ["svc/a.java"],
+    }), encoding="utf-8")
+    args = SimpleNamespace(
+        conflict_evidence=evidence,
+        conflict_rate=None,
+        registration=registration,
+        repo=repo,
+    )
+    with pytest.raises(run_phase_bundle.PhaseCLIError, match="이전 기준선 Candidate"):
+        run_phase_bundle._bind_conflict_evidence(args, lock)
+
+
+def test_conflict_replay_survives_resolution_back_to_base_content(tmp_path):
+    repo, registration, base, target = _fixture(tmp_path)
+    lock, baseline, custom_head = _activate_postmerge_conflict_candidate(
+        repo, registration, base, target, resolution="class A {}\n"
+    )
+    evidence = tmp_path / "conflicts.yaml"
+    evidence.write_text(yaml.safe_dump({
+        "upstream_base_sha": base,
+        "upstream_target_sha": target,
+        "candidate_sha": lock.candidate.commit_sha,
+        "custom_head_sha": custom_head,
+        "baseline_candidate_lock_digest": baseline.lock_digest,
+        "merge_base_sha": base,
+        "merge_changed_paths": ["svc/a.java"],
+        "conflicted_paths": ["svc/a.java"],
+    }), encoding="utf-8")
+    args = SimpleNamespace(
+        conflict_evidence=evidence, conflict_rate=None,
+        registration=registration, repo=repo,
+    )
+    run_phase_bundle._bind_conflict_evidence(args, lock)
+    assert args.conflict_rate == 1.0
+
+
+def test_conflict_evidence_rejects_path_not_reported_by_merge_tree(tmp_path):
+    repo, registration, base, _target = _fixture(tmp_path)
+    selection = run_phase_bundle._selected(registration)
+    evidence = tmp_path / "conflicts.yaml"
+    evidence.write_text(yaml.safe_dump({
+        "upstream_base_sha": base,
+        "upstream_target_sha": base,
+        "candidate_sha": selection.lock.candidate.commit_sha,
+        "custom_head_sha": selection.lock.candidate.commit_sha,
+        "baseline_candidate_lock_digest": selection.lock_digest,
+        "merge_base_sha": base,
+        "merge_changed_paths": ["svc/a.java"],
+        "conflicted_paths": ["svc/a.java"],
+    }), encoding="utf-8")
+    args = SimpleNamespace(
+        conflict_evidence=evidence, conflict_rate=None,
+        registration=registration, repo=repo,
+    )
+    with pytest.raises(run_phase_bundle.PhaseCLIError, match="merge-tree 재현 결과"):
+        run_phase_bundle._bind_conflict_evidence(args, selection.lock)
 
 
 def test_registration_digest_changes_when_manifest_changes(tmp_path):
@@ -321,6 +545,23 @@ def test_status_rejects_tampered_manager_summary(tmp_path):
     assert run_phase_bundle.main(["status", "--result", str(output)]) == 3
 
 
+def test_status_reports_digest_protected_verification_scope(tmp_path, capsys):
+    repo, registration, base, target = _fixture(tmp_path)
+    official = _official_evidence(tmp_path, repo, target)
+    output = tmp_path / "scope/result.json"
+    assert run_phase_bundle.main([
+        "premerge", "--repo", str(repo), "--registration", str(registration),
+        "--base", base, "--target", target,
+        "--official-evidence", str(official),
+        "--run-id", "scope-status", "--output", str(output),
+    ]) == 2
+    capsys.readouterr()
+    assert run_phase_bundle.main(["status", "--result", str(output)]) == 0
+    payload = json.loads(capsys.readouterr().out.splitlines()[-1])
+    assert payload["verification_scope"] == "source-impact"
+    assert payload["canonical_verified"] is True
+
+
 def test_human_phase_summary_states_next_action(capsys):
     om_workflow._print_human_phase("postmerge", {
         "overall_verdict": "approval",
@@ -344,6 +585,57 @@ def test_human_phase_summary_states_next_action(capsys):
     assert "5/6" in text
     assert "approval(approval)" in text
     assert "다음 행동" in text
+
+
+def test_human_status_blocks_deployment_for_source_only(capsys):
+    om_workflow._print_human_phase("status", {
+        "verified": True,
+        "canonical_verified": True,
+        "overall_verdict": "pass",
+        "verification_scope": "source-only",
+        "tier_outputs": {"manager": True, "practitioner": True},
+        "result_digest": "sha256:" + "2" * 64,
+    })
+    text = capsys.readouterr().out
+    assert "저장된 판정: pass (계속 가능)" in text
+    assert "검사 범위: source-only" in text
+    assert "build-artifact 검증 전 승인 금지" in text
+
+
+def test_human_status_fails_closed_when_scope_is_missing(capsys):
+    om_workflow._print_human_phase("status", {
+        "verified": True,
+        "canonical_verified": True,
+        "overall_verdict": "pass",
+        "tier_outputs": {"manager": True, "practitioner": True},
+    })
+    text = capsys.readouterr().out
+    assert "검사 범위: 기록 없음(구버전)" in text
+    assert "build-artifact 검증 전 승인 금지" in text
+
+
+def test_human_premerge_prints_full_manual_transition(capsys):
+    om_workflow._print_human_phase("premerge", {
+        "overall_verdict": "pass",
+        "phase_status": "complete",
+        "verification_scope": "source-impact",
+    })
+    text = capsys.readouterr().out
+    assert "vendor-merge Candidate" in text
+    assert "새 Candidate lock" in text
+    assert "candidate-select를 다시" in text
+    assert "postmerge-check" in text
+
+
+def test_human_output_wraps_long_reason(capsys):
+    om_workflow._print_human_phase("candidate", {
+        "status": "analysis_error",
+        "reasons": ["입력 파일과 Candidate 결속을 다시 확인해야 합니다 " * 12],
+    })
+    lines = capsys.readouterr().out.splitlines()
+    assert any(line.startswith("  ") for line in lines)
+    assert max(len(line) for line in lines) <= 82
+    assert max(om_workflow._display_width(line) for line in lines) <= 80
 
 
 def test_human_preflight_summary_lists_only_actionable_checks(capsys):

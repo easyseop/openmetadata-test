@@ -1,6 +1,6 @@
 # Phase 번들링 출력 형식 Claude 검토 요청
 
-> 상태: 구현 초안·합성 회귀 테스트 완료, 문구 검토 전
+> 상태: Claude 검토 완료, 최종 안전성·출력 보완 반영 중
 > 작업 branch: `codex/phase-bundling-safety-fix-20260808`
 > 비교 기준: 외부 검토 기준 `295307d6568b5102c065fc5a093dfa7fa1b46ba5`
 > 구현 commit: `cf17ed206de63a8dd4dfb88ca54cee6cd6a081c8`
@@ -61,30 +61,32 @@ Candidate·공식 tag·충돌률·배포 산출물과 검사 결과 사이의 �
 
 ```text
 [1/6] 활성 Candidate 확인
-결과        : 중단 · 분석 오류
-종료 코드   : 3
-사유        : no active-candidate pointer: .../candidate-locks/active-candidate.yaml
-Candidate   : -
-산출물 종류 : -
-Lock digest : -
-다음 행동   : 승인된 Candidate lock과 active-candidate.yaml을 준비한 뒤 다시 실행하세요.
-증거 경로   : .../evidence/phase-candidate-1.13.1.json (중단되어 생성되지 않음)
+결과: 중단 · 분석 오류
+종료 코드: 3
+사유: no active-candidate pointer:
+  .../candidate-locks/active-candidate.yaml
+등록 묶음: om-temp-1.13.1
+Candidate: -
+산출물 종류: -
+Lock digest: -
+다음 행동: 승인된 Candidate lock과 active-candidate.yaml을 준비한 뒤 다시 실행하세요.
+증거 파일: .../phase-candidate-1.13.1.json
 ```
 
 ### 4.2 합성 회귀 테스트로 확인한 5단계 APPROVAL 예시
 
 ```text
 [5/6] 병합 후 Candidate 검사
-결과        : 담당자 검토 필요 (APPROVAL)
-완료 상태   : complete
-검사 범위   : source-only
-검사 완료   : 5/6
-판정 요약   : PASS 5 · APPROVAL 1 · BLOCK 0 · ERROR 0
-확인할 검사 : approval(approval)
-결과 digest : sha256:1111111111111111111111111111111111111111111111111111111111111111
-관리자 요약 : manager-summary.json
-실무자 상세 : practitioner-detail.json
-다음 행동   : 실무자 상세의 검토 항목을 확인하고 담당자가 승인하세요.
+결과: 담당자 검토 필요 (APPROVAL)
+완료 상태: complete
+검사 범위: source-only
+검사 완료: 5/6
+판정 요약: PASS 5 · APPROVAL 1 · BLOCK 0 · ANALYSIS_ERROR 0
+확인할 검사: approval(approval)
+결과 digest: sha256:1111111111111111111111111111111111111111111111111111111111111111
+관리자 요약: manager-summary.json
+실무자 상세: practitioner-detail.json
+다음 행동: 실무자 상세의 검토 항목을 확인하고 담당자가 승인하세요.
 ```
 
 `source-only`는 소스 검사까지만 완료했다는 뜻이다. 이 상태가 PASS여도 배포
@@ -97,12 +99,12 @@ Candidate lock, 일치하는 artifact digest, Runtime Contract 결과가 필요�
 
 ```text
 [3/6] Phase 실행 전 점검
-결과        : 중단 · 입력 보완 필요
-차단 항목   : 1개
-미실행 검사 : approval
+결과: 중단 · 입력 보완 필요
+차단 항목: 1개
+미실행 검사: approval
 - official-evidence: blocked
   조치: prep-official을 먼저 실행하세요.
-다음 행동   : 차단 항목을 해결한 뒤 같은 Phase를 다시 실행하세요.
+다음 행동: 차단 항목을 해결한 뒤 같은 Phase를 다시 실행하세요.
 ```
 
 ### 4.4 자동화용 JSON 예시
@@ -147,6 +149,9 @@ YAML 또는 JSON이다. 자동화가 Candidate lock의 세 SHA와 경로 수를 
 upstream_base_sha: <1.13.1 전체 commit SHA>
 upstream_target_sha: <1.13.2 공식 tag의 전체 commit SHA>
 candidate_sha: <vendor-merge Candidate 전체 commit SHA>
+custom_head_sha: <병합 전 승인된 커스터마이징 전체 commit SHA>
+baseline_candidate_lock_digest: <이전 기준선 Candidate lock digest>
+merge_base_sha: <target과 custom head의 실제 merge-base SHA>
 merge_changed_paths:
   - openmetadata-ui/src/main/resources/ui/src/App.tsx
   - openmetadata-service/src/main/java/example/Example.java
@@ -155,9 +160,15 @@ conflicted_paths:
 conflict_rate: 0.5
 ```
 
-현재 구현은 이 파일의 결속과 계산을 검증하지만 merge 명령의 콘솔 로그에서 파일을
-자동 생성하지는 않는다. 운영자는 실제 merge 결과로 파일을 작성해야 하며, 자동
-수집기가 필요하면 별도 후속 개발 항목으로 다룬다.
+자동화는 custom head가 승인된 이전 기준선 lock과 같고 postmerge Candidate에
+포함되는지, 실제 merge-base가 현재 lock의 base와 같은지 검사한다. 또한
+`git merge-tree --write-tree`를 다시 실행해 충돌 경로가 완전히 같은지 확인한다.
+재현에 사용한 Git 버전·명령·전략·rename 설정과 저장소 merge-driver 설정 digest도
+canonical inputs에 기록한다. `.gitattributes`는 입력 commit tree에 포함되지만 실제
+vendor merge가 다른 merge-driver 설정을 사용하면 결과가 달라질 수 있으므로 같은
+설정으로 실행해야 한다.
+`conflict_rate`는 생략할 수 있으며 판정에는 항상 경로 수에서 계산한 값을 사용한다.
+실제 merge 시도 증거의 자동 수집은 별도 후속 항목이다.
 
 ## 7. 검토자가 확인할 질문
 
@@ -185,16 +196,16 @@ OpenMetadata 1.13.2 공식 tag 준비, vendor-merge Candidate 생성, 실제 충
 
 ```bash
 PYTHONPATH=harness:. .venv/bin/python -m pytest -q \
-  harness/tests/test_phase_cli.py \
-  harness/tests/test_phase_evidence.py \
-  harness/tests/test_phase_rollup.py -o addopts=''
+  harness/tests/test_phase_*.py \
+  harness/tests/test_source_candidate_workflow.py \
+  harness/tests/test_gitprim.py -o addopts=''
 ```
 
-결과는 `53 passed`다. 전체 회귀는 다음과 같다.
+최종 집중 회귀는 `182 passed, 1 skipped`다. 전체 회귀는 다음과 같다.
 
 ```bash
 PYTHONPATH=harness:. .venv/bin/python -m pytest harness/tests -o addopts='' -q
 ```
 
-결과는 `543 passed, 38 skipped`, 실패 0건이다. skip은 실제 제품 ref, 외부 API,
+결과는 `560 passed, 38 skipped`, 실패 0건이다. skip은 실제 제품 ref, 외부 API,
 브라우저 또는 실행 환경이 필요한 기존 항목이며 PASS에 포함하지 않았다.

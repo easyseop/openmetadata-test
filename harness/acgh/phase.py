@@ -706,8 +706,10 @@ def write_phase_result(result: PhaseResult, out_path, *, overwrite: bool = False
     half-written artifact (C93). Reusing a run-id path without ``overwrite`` is a
     hard error so old evidence is never silently overwritten.
     """
+    import datetime
     import json
     import os
+    import socket
     from pathlib import Path
 
     out = Path(out_path)
@@ -721,9 +723,32 @@ def write_phase_result(result: PhaseResult, out_path, *, overwrite: bool = False
                 str(reservation), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644
             )
         except FileExistsError as exc:
+            try:
+                existing = json.loads(reservation.read_text(encoding="utf-8"))
+                detail = ", ".join(
+                    f"{key}={existing.get(key, '-')}"
+                    for key in ("pid", "host", "created_at", "run_id")
+                )
+            except (OSError, json.JSONDecodeError, AttributeError):
+                detail = "lock metadata is unreadable or corrupt"
             raise ApprovalError(
-                f"another writer already reserved this evidence path: {out}"
+                f"another writer already reserved this evidence path: {out}; "
+                f"lock={reservation}; {detail}. If no run is active, verify the "
+                "process and host before removing the lock and rerunning the Phase."
             ) from exc
+        lock_metadata = json.dumps(
+            {
+                "pid": os.getpid(),
+                "host": socket.gethostname(),
+                "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                "run_id": result.run_id,
+                "output": str(out),
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+        ).encode("utf-8")
+        os.write(reservation_fd, lock_metadata)
+        os.fsync(reservation_fd)
         if out.exists():
             os.close(reservation_fd)
             reservation_fd = None

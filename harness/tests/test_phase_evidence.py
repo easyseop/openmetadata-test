@@ -165,6 +165,33 @@ def test_c91_concurrent_writers_only_one_can_publish(tmp_path):
     assert P.verify_phase_result(path) == (True, "consistent")
 
 
+def test_c91_residual_lock_reports_owner_metadata(tmp_path):
+    result = _result([verdict.PASS], inputs={"base_sha": "x"}, run_id="retry-1")
+    path = tmp_path / "result.json"
+    lock = tmp_path / ".result.json.lock"
+    lock.write_text(json.dumps({
+        "pid": 123,
+        "host": "build-host",
+        "created_at": "2026-08-08T00:00:00+00:00",
+        "run_id": "old-run",
+    }), encoding="utf-8")
+    with pytest.raises(P.ApprovalError) as caught:
+        P.write_phase_result(result, path)
+    message = str(caught.value)
+    assert "pid=123" in message
+    assert "host=build-host" in message
+    assert "old-run" in message
+    assert "before removing the lock" in message
+
+
+def test_c91_corrupt_residual_lock_is_safe_error(tmp_path):
+    result = _result([verdict.PASS], inputs={"base_sha": "x"})
+    path = tmp_path / "result.json"
+    (tmp_path / ".result.json.lock").write_text("not json", encoding="utf-8")
+    with pytest.raises(P.ApprovalError, match="unreadable or corrupt"):
+        P.write_phase_result(result, path)
+
+
 # ---- C92 : two concurrent phases -> separate folders, complete results ----
 def test_c92_two_phases_separate_folders(tmp_path):
     pre = _result([verdict.PASS], phase=P.PREMERGE, inputs={"base_sha": "x"})

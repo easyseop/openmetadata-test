@@ -332,3 +332,41 @@ Claude 외부 검토에서 새로 확인한 artifact 결속, 공개 CLI run-id, 
 CODEOWNERS 또는 사내 결재 ID·서명 정책이 필요하다. 실제 1.13.2 vendor-merge,
 실측 conflict evidence, change-intent, build-artifact와 Runtime Contract, 운영 배포도
 외부 입력 대기 상태다.
+
+## 15. 2026-08-08 Claude 최종 검토 후속 묶음
+
+Claude와 Codex의 재검토에서 기존 `net(base, candidate)` 조건이 병합 전 custom
+변경을 증명하지 못한다는 데 합의했다. 최종 구현은 conflict evidence의
+`custom_head_sha`를 승인된 이전 기준선 Candidate lock과 대조하고, custom head가
+postmerge Candidate의 ancestor인지, `merge_base(target, custom_head)`가 현재
+lock의 base인지 검사한다. `merge_changed_paths`는 base 대비 target·custom head
+변경 경로 합집합과 완전 일치해야 하고, `conflicted_paths`는
+`git merge-tree --write-tree` 재현 결과와 완전 일치해야 한다. Git 버전·명령·
+result tree·원시 출력 digest·merge-driver 설정 digest·분자·분모·계산 비율은
+canonical inputs에 포함된다.
+
+추가 반영:
+
+- `phase-status`가 canonical inputs의 `verification_scope`를 표시한다.
+- scope 누락 구버전 증거와 source-only 결과는 운영 배포 금지로 표시한다.
+- preflight는 누락 target을 다른 누락과 함께 수집하고 premerge 실행은 명확히 중단한다.
+- reservation lock에 PID·host·시각·run-id를 기록하며 자동 삭제하지 않는다.
+- conflict-rate는 선택 입력이고 판정에는 항상 경로에서 계산한 값을 사용한다.
+- human 출력은 정렬 공백을 제거하고 긴 설명을 80열 기준으로 줄바꿈한다.
+- premerge 뒤 vendor merge·새 lock 승인·candidate 재선택·postmerge 순서를 출력한다.
+- `--registration-version`을 호환 별칭으로 추가했으며 `--version`은 폐기하지 않았다.
+
+검증 결과:
+
+```text
+Phase·Git 집중: 182 passed, 1 skipped
+전체 harness: 560 passed, 38 skipped
+실패: 0
+```
+
+skip은 실제 제품 ref·외부 API·브라우저·환경 입력이 필요한 기존 항목이며 PASS에
+포함하지 않았다. 구현 commit SHA와 원격 동기화 상태는 commit·push 직후 이 절에
+추가한다. rename/rename, add/add, custom merge-driver와 attributes 동작은 합성
+Git 반례로 고정했다. 실제 vendor merge가 다른 merge-driver 설정을 쓰면 결과가
+달라질 수 있으므로 같은 설정을 사용해야 하며, 실제 merge 로그 자동 수집은 후속
+개발 항목이다. LLM G-룰은 참고자료로만 보관하고 구현하지 않았다.

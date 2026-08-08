@@ -16,6 +16,7 @@ import yaml
 from acgh import candidate
 from acgh import candidate_select
 from acgh import debt
+from acgh import gitprim
 from acgh import layout as layout_module
 from acgh import manifest as manifest_module
 from acgh import phase
@@ -74,6 +75,11 @@ def _registration_digests(registration: Path) -> dict[str, str]:
 def _bind_official_evidence(args) -> str:
     evidence = _load_mapping(args.official_evidence, "공식 버전 준비 증거")
     commit_sha = evidence.get("commit_sha")
+    if not args.target:
+        raise PhaseCLIError(
+            "premerge에는 --target이 필요합니다. prep-official 결과의 "
+            "commit_sha 전체 값을 입력하세요."
+        )
     if commit_sha != args.target:
         raise PhaseCLIError(
             "premerge target이 공식 버전 준비 증거와 다릅니다: "
@@ -110,6 +116,47 @@ def _bind_conflict_evidence(args, lock) -> str | None:
                 f"conflict-rate 증거의 {field}가 Candidate lock과 다릅니다: "
                 f"{evidence.get(field)} != {expected_value}"
             )
+    custom_head = evidence.get("custom_head_sha")
+    baseline_digest = evidence.get("baseline_candidate_lock_digest")
+    recorded_merge_base = evidence.get("merge_base_sha")
+    if not isinstance(custom_head, str) or not custom_head:
+        raise PhaseCLIError("conflict-rate 증거에 custom_head_sha가 필요합니다")
+    if not isinstance(baseline_digest, str) or not baseline_digest:
+        raise PhaseCLIError(
+            "conflict-rate 증거에 baseline_candidate_lock_digest가 필요합니다"
+        )
+    baseline = candidate_select.select_approved_candidate(
+        args.registration, baseline_digest
+    )
+    if baseline.status != candidate_select.SELECTED or baseline.lock is None:
+        raise PhaseCLIError(
+            "conflict-rate 증거의 이전 기준선 lock이 승인되지 않았습니다: "
+            + "; ".join(baseline.reasons)
+        )
+    if baseline.lock.candidate.commit_sha != custom_head:
+        raise PhaseCLIError(
+            "custom_head_sha가 승인된 이전 기준선 Candidate와 다릅니다: "
+            f"{custom_head} != {baseline.lock.candidate.commit_sha}"
+        )
+    if baseline.lock.upstream.target_sha != lock.upstream.base_sha:
+        raise PhaseCLIError(
+            "이전 기준선 lock의 upstream target이 현재 upgrade base와 다릅니다"
+        )
+    if not gitprim.is_ancestor(str(args.repo), custom_head, lock.candidate.commit_sha):
+        raise PhaseCLIError("custom_head_sha가 postmerge Candidate에 포함되지 않았습니다")
+    actual_merge_base = gitprim.merge_base(
+        str(args.repo), lock.upstream.target_sha, custom_head
+    )
+    if actual_merge_base != lock.upstream.base_sha:
+        raise PhaseCLIError(
+            "target과 custom head의 merge-base가 Candidate lock의 base와 다릅니다: "
+            f"{actual_merge_base} != {lock.upstream.base_sha}"
+        )
+    if recorded_merge_base != actual_merge_base:
+        raise PhaseCLIError(
+            "conflict-rate 증거의 merge_base_sha가 실제 merge-base와 다릅니다: "
+            f"{recorded_merge_base} != {actual_merge_base}"
+        )
     changed = evidence.get("merge_changed_paths")
     conflicted = evidence.get("conflicted_paths")
     if not isinstance(changed, list) or not changed or not all(
@@ -122,22 +169,51 @@ def _bind_conflict_evidence(args, lock) -> str | None:
         raise PhaseCLIError("conflict-rate 증거의 conflicted_paths는 경로 목록이어야 합니다")
     changed_set = set(changed)
     conflicted_set = set(conflicted)
+    if len(changed_set) != len(changed):
+        raise PhaseCLIError("conflict-rate 증거의 merge_changed_paths에 중복 경로가 있습니다")
+    if len(conflicted_set) != len(conflicted):
+        raise PhaseCLIError("conflict-rate 증거의 conflicted_paths에 중복 경로가 있습니다")
     outside = sorted(conflicted_set - changed_set)
     if outside:
         raise PhaseCLIError(
             "conflict-rate 증거의 충돌 경로가 merge 변경 경로에 없습니다: "
             + ", ".join(outside)
         )
+    expected_changed = set(gitprim.net_changed_paths(
+        str(args.repo), lock.upstream.base_sha, lock.upstream.target_sha
+    )) | set(gitprim.net_changed_paths(
+        str(args.repo), lock.upstream.base_sha, custom_head
+    ))
+    if changed_set != expected_changed:
+        missing = sorted(expected_changed - changed_set)
+        extra = sorted(changed_set - expected_changed)
+        raise PhaseCLIError(
+            "merge_changed_paths가 base 대비 target·custom head 변경 경로와 다릅니다: "
+            f"missing={missing}, extra={extra}"
+        )
+    replay = gitprim.merge_tree_conflicts(
+        str(args.repo), lock.upstream.target_sha, custom_head
+    )
+    if conflicted_set != set(replay.conflicted_paths):
+        raise PhaseCLIError(
+            "conflicted_paths가 git merge-tree 재현 결과와 다릅니다: "
+            f"recorded={sorted(conflicted_set)}, replayed={list(replay.conflicted_paths)}"
+        )
     measured_rate = len(conflicted_set) / len(changed_set)
     recorded_rate = evidence.get("conflict_rate")
-    if not isinstance(recorded_rate, (int, float)) or isinstance(recorded_rate, bool):
-        raise PhaseCLIError("conflict-rate 증거에 숫자 conflict_rate가 필요합니다")
-    if not math.isfinite(float(recorded_rate)) or not math.isclose(
-        float(recorded_rate), measured_rate, rel_tol=0.0, abs_tol=1e-12
+    if recorded_rate is not None and (
+        not isinstance(recorded_rate, (int, float))
+        or isinstance(recorded_rate, bool)
+        or not math.isfinite(float(recorded_rate))
+        or not math.isclose(
+            float(recorded_rate), measured_rate, rel_tol=0.0, abs_tol=1e-12
+        )
     ):
         raise PhaseCLIError(
             "conflict-rate 증거의 비율이 경로 수 계산과 다릅니다: "
-            f"{recorded_rate} != {len(conflicted_set)}/{len(changed_set)}"
+            f"recorded={recorded_rate}, measured={measured_rate!r} "
+            f"({len(conflicted_set)}/{len(changed_set)}). "
+            "반올림 값을 수정하거나 conflict_rate 필드를 생략하세요."
         )
     if supplied_rate is not None and not math.isclose(
         float(supplied_rate), measured_rate, rel_tol=0.0, abs_tol=1e-12
@@ -146,6 +222,24 @@ def _bind_conflict_evidence(args, lock) -> str | None:
             f"--conflict-rate가 증거에서 계산한 값과 다릅니다: {supplied_rate} != {measured_rate}"
         )
     args.conflict_rate = measured_rate
+    args.conflict_measurement = {
+        "custom_head_sha": custom_head,
+        "baseline_candidate_lock_digest": baseline_digest,
+        "merge_base_sha": actual_merge_base,
+        "changed_path_count": len(changed_set),
+        "conflicted_path_count": len(conflicted_set),
+        "conflict_rate": measured_rate,
+        "merge_tree": {
+            "strategy": "ort (git merge-tree --write-tree default)",
+            "rename_detection": "git default",
+            "git_version": replay.git_version,
+            "command": list(replay.command),
+            "result_tree_sha": replay.tree_sha,
+            "output_digest": replay.output_digest,
+            "merge_driver_config_digest": replay.merge_driver_config_digest,
+            "conflicted_paths": list(replay.conflicted_paths),
+        },
+    }
     return _sha256_file(path)
 
 
@@ -216,9 +310,14 @@ def _preflight(
         lock.upstream.target_sha if phase_name == phase.PREMERGE
         else lock.upstream.base_sha
     )
+    target_ref = (
+        args.target
+        if phase_name == phase.PREMERGE
+        else (args.target or lock.upstream.target_sha)
+    )
     refs = {
         "upstream_base": args.base or default_base,
-        "upstream_target": args.target or lock.upstream.target_sha,
+        "upstream_target": target_ref,
         "candidate": lock.candidate.commit_sha,
     }
     active_sources = [("active-candidate", lock.candidate.commit_sha)]
@@ -308,6 +407,10 @@ def _phase_inputs(
         **(
             {"conflict_rate": args.conflict_rate}
             if hasattr(args, "conflict_rate") else {}
+        ),
+        **(
+            {"conflict_measurement": args.conflict_measurement}
+            if hasattr(args, "conflict_measurement") else {}
         ),
         **(
             {"runtime_artifact_digest": args.artifact_digest}
@@ -521,7 +624,11 @@ def _blocked_phase_result(args, selection, report, phase_name: str, names, polic
 
 def candidate_command(args) -> int:
     selection = candidate_select.select_active_candidate(args.registration)
-    payload = _selection_payload(selection)
+    payload = {
+        **_selection_payload(selection),
+        "registration_bundle": args.registration.name,
+        "registration_path": str(args.registration),
+    }
     _atomic_json(args.output, payload)
     print(json.dumps(payload, ensure_ascii=False, sort_keys=True))
     if selection.status == candidate_select.SELECTED:
@@ -551,12 +658,14 @@ def preflight_command(args) -> int:
         "sensitive_zones": args.registration / "sensitive-zones.yaml",
     }
     optional = {}
+    official_binding_error = None
     if args.phase == phase.PREMERGE:
-        if args.official_evidence is None:
-            raise PhaseCLIError(
-                "premerge preflight에는 prep-official 결과인 --official-evidence가 필요합니다"
-            )
-        _bind_official_evidence(args)
+        required["official_evidence"] = args.official_evidence
+        if args.target is not None and args.official_evidence is not None:
+            try:
+                _bind_official_evidence(args)
+            except PhaseCLIError as exc:
+                official_binding_error = str(exc)
     if args.phase == phase.POSTMERGE:
         _bind_conflict_evidence(args, selection.lock)
         required["debt_thresholds"] = args.debt_policy
@@ -568,6 +677,16 @@ def preflight_command(args) -> int:
         args, selection, phase_name=args.phase,
         required_files=required, optional_inputs=optional,
     )
+    if official_binding_error:
+        report = preflight.PreflightReport(report.checks + (
+            preflight.Check(
+                "official_binding",
+                preflight.INVALID,
+                blocking=True,
+                detail=official_binding_error,
+                next_action="prep-official 결과와 --target 전체 SHA를 다시 확인하세요.",
+            ),
+        ))
     _atomic_json(args.output, report.to_json())
     print(json.dumps(report.to_json(), ensure_ascii=False, sort_keys=True))
     return 0 if report.ready else 3
@@ -730,6 +849,7 @@ def postmerge_command(args) -> int:
 
 def status_command(args) -> int:
     ok, reason = phase.verify_phase_result(args.result)
+    canonical_verified = ok
     data = json.loads(args.result.read_text(encoding="utf-8")) if ok else {}
     tier_status = {"manager": False, "practitioner": False}
     if ok:
@@ -747,15 +867,22 @@ def status_command(args) -> int:
                 break
             if actual != expected[name]:
                 ok = False
-                reason = f"{filename} disagrees with canonical result"
+                reason = (
+                    f"{filename} disagrees with canonical result. 구버전 형식의 "
+                    "증거라면 최신 검사기로 해당 Phase를 다시 실행하세요."
+                )
                 break
             tier_status[name] = True
     payload = {
         "verified": ok,
+        "canonical_verified": canonical_verified,
         "reason": reason,
         "phase": data.get("canonical_payload", {}).get("phase"),
         "phase_status": data.get("canonical_payload", {}).get("phase_status"),
         "overall_verdict": data.get("canonical_payload", {}).get("overall_verdict"),
+        "verification_scope": (
+            data.get("canonical_payload", {}).get("inputs", {}).get("verification_scope")
+        ),
         "result_digest": data.get("result_digest"),
         "tier_outputs": tier_status,
     }
@@ -763,11 +890,16 @@ def status_command(args) -> int:
     return 0 if ok else 3
 
 
-def _common(parser: argparse.ArgumentParser, *, transition_required: bool = False) -> None:
+def _common(
+    parser: argparse.ArgumentParser,
+    *,
+    base_required: bool = False,
+    target_required: bool = False,
+) -> None:
     parser.add_argument("--repo", required=True, type=Path)
     parser.add_argument("--registration", required=True, type=Path)
-    parser.add_argument("--base", required=transition_required)
-    parser.add_argument("--target", required=transition_required)
+    parser.add_argument("--base", required=base_required)
+    parser.add_argument("--target", required=target_required)
     parser.add_argument("--active-source", action="append", default=[])
 
 
@@ -796,7 +928,7 @@ def parse_args(argv=None):
     preflight_parser.add_argument("--output", required=True, type=Path)
 
     premerge_parser = sub.add_parser("premerge")
-    _common(premerge_parser, transition_required=True)
+    _common(premerge_parser, base_required=True)
     premerge_parser.add_argument("--candidate-ref")
     premerge_parser.add_argument("--official-evidence", required=True, type=Path)
     premerge_parser.add_argument("--run-id", required=True)

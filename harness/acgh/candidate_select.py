@@ -151,3 +151,41 @@ def select_active_candidate(registration_dir) -> ActiveCandidateSelection:
     if reasons:
         return ActiveCandidateSelection(BLOCKED, reasons=tuple(reasons), **common)
     return ActiveCandidateSelection(SELECTED, **common)
+
+
+def select_approved_candidate(registration_dir, lock_digest: str) -> ActiveCandidateSelection:
+    """Select one explicitly named approved lock without changing the active pointer."""
+    locks_dir = Path(registration_dir) / "candidate-locks"
+    found, parse_errors = _load_locks(locks_dir)
+    if lock_digest not in found:
+        details = "; ".join(f"{p.name}: {exc}" for p, exc in parse_errors)
+        reason = f"approved baseline lock digest not found: {lock_digest}"
+        if details:
+            reason += f"; corrupt lock(s): {details}"
+        return ActiveCandidateSelection(ANALYSIS_ERROR, reasons=(reason,))
+    lock_path, lock = found[lock_digest]
+    approval_path = lock_path.with_name(lock_path.stem + ".approval.yaml")
+    common = dict(
+        lock=lock,
+        lock_digest=lock_digest,
+        lock_path=str(lock_path),
+        provenance=_provenance(found, lock_digest),
+    )
+    if not approval_path.is_file():
+        return ActiveCandidateSelection(
+            BLOCKED,
+            reasons=(f"approved baseline has no approval file: {approval_path}",),
+            **common,
+        )
+    try:
+        approval = yaml.safe_load(approval_path.read_text(encoding="utf-8")) or {}
+    except (OSError, yaml.YAMLError) as exc:
+        return ActiveCandidateSelection(
+            ANALYSIS_ERROR, reasons=(f"baseline approval unreadable: {exc}",), **common
+        )
+    reasons = list(validate_approval_metadata(approval))
+    if approval.get("candidate_lock_digest") != lock_digest:
+        reasons.append("baseline approval digest does not match its Candidate lock")
+    if reasons:
+        return ActiveCandidateSelection(BLOCKED, reasons=tuple(reasons), **common)
+    return ActiveCandidateSelection(SELECTED, **common)

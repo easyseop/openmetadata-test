@@ -9,6 +9,7 @@ All functions take an explicit repo path so tests can point at temp repos.
 """
 from __future__ import annotations
 
+import hashlib
 import re
 import subprocess
 from dataclasses import dataclass
@@ -49,6 +50,16 @@ class TreeEntry:
     object_type: str
     object_id: str
     path: str
+
+
+@dataclass(frozen=True)
+class MergeTreeResult:
+    tree_sha: str
+    conflicted_paths: tuple[str, ...]
+    git_version: str
+    command: tuple[str, ...]
+    output_digest: str
+    merge_driver_config_digest: str
 
 
 def git(repo: str, *args: str, check: bool = True) -> str:
@@ -236,3 +247,67 @@ def merge_base(repo: str, left: str, right: str) -> str | None:
             f"{proc.stderr.strip() or sha or 'no output'}"
         )
     return sha
+
+
+def merge_tree_conflicts(repo: str, target: str, custom_head: str) -> MergeTreeResult:
+    """Reproduce ort merge conflicts without changing the worktree.
+
+    Git 2.38+ ``merge-tree --write-tree`` returns 0 for a clean merge and 1
+    for a merge with conflicts. Both are valid results; every other exit code
+    is an analysis failure. ``--name-only -z`` keeps path parsing NUL-safe.
+    """
+    command = (
+        "merge-tree", "--write-tree", "--name-only", "-z", target, custom_head
+    )
+    proc = subprocess.run(
+        ["git", "-C", repo, *_STABLE_CONFIG, *command],
+        capture_output=True,
+    )
+    if proc.returncode not in (0, 1):
+        raise GitPrimitiveError(
+            f"git {' '.join(command)} failed ({proc.returncode}): "
+            f"{proc.stderr.decode('utf-8', errors='replace').strip() or 'no stderr'}"
+        )
+    parts = proc.stdout.split(b"\x00")
+    if not parts or not _FULL_SHA.match(parts[0].decode("ascii", errors="ignore")):
+        raise GitPrimitiveError("merge-tree did not return a valid result tree SHA")
+    tree_sha = parts[0].decode("ascii")
+    try:
+        section_end = parts.index(b"", 1)
+    except ValueError:
+        section_end = len(parts)
+    try:
+        paths = tuple(
+            path
+            for path in (raw.decode("utf-8") for raw in parts[1:section_end])
+            if path
+        )
+    except UnicodeDecodeError as exc:
+        raise GitPrimitiveError("merge-tree returned a non-UTF-8 path") from exc
+    if len(paths) != len(set(paths)):
+        raise GitPrimitiveError("merge-tree returned duplicate conflict paths")
+    version_proc = subprocess.run(
+        ["git", "--version"], text=True, capture_output=True, check=True
+    )
+    driver_config = subprocess.run(
+        [
+            "git", "-C", repo, *_STABLE_CONFIG, "config", "--null",
+            "--get-regexp", r"^merge\..*\.(driver|recursive|name)$",
+        ],
+        capture_output=True,
+    )
+    if driver_config.returncode not in (0, 1):
+        raise GitPrimitiveError(
+            "cannot capture merge driver configuration: "
+            + driver_config.stderr.decode("utf-8", errors="replace").strip()
+        )
+    return MergeTreeResult(
+        tree_sha=tree_sha,
+        conflicted_paths=tuple(sorted(paths)),
+        git_version=version_proc.stdout.strip(),
+        command=command,
+        output_digest="sha256:" + hashlib.sha256(proc.stdout).hexdigest(),
+        merge_driver_config_digest=(
+            "sha256:" + hashlib.sha256(driver_config.stdout).hexdigest()
+        ),
+    )
