@@ -19,6 +19,8 @@ from pathlib import Path
 
 import yaml
 
+from acgh import phase as phase_bundle
+
 
 HARNESS = Path(__file__).resolve().parent
 PROJECT = HARNESS.parent
@@ -30,7 +32,7 @@ class WorkflowInputError(RuntimeError):
 
 
 def timestamp() -> str:
-    return datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
+    return datetime.now(UTC).strftime("%Y%m%d-%H%M%S-%fZ")
 
 
 def registration_for(version: str) -> Path:
@@ -105,6 +107,187 @@ def run(command: list[str]) -> int:
     return completed.returncode
 
 
+_PHASE_LABELS = {
+    "candidate": (1, "활성 Candidate 확인"),
+    "official": (2, "공식 버전 준비"),
+    "preflight": (3, "Phase 실행 전 점검"),
+    "premerge": (4, "병합 전 영향 검사"),
+    "postmerge": (5, "병합 후 Candidate 검사"),
+    "status": (6, "Phase 결과 재검증"),
+}
+
+
+def _last_json(stdout: str) -> dict | None:
+    for line in reversed(stdout.splitlines()):
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict):
+            return payload
+    return None
+
+
+def _result_label(payload: dict) -> str:
+    if payload.get("status") == "analysis_error" or payload.get("verified") is False:
+        return "중단 · 분석 오류"
+    if "ready" in payload:
+        if not payload.get("ready"):
+            return "중단 · 입력 보완 필요"
+        if payload.get("disabled_gates"):
+            return "조건부 준비 · 일부 검사 미실행"
+        return "실행 가능"
+    verdict_value = payload.get("overall_verdict")
+    return {
+        "pass": "계속 가능 (PASS)",
+        "approval": "담당자 검토 필요 (APPROVAL)",
+        "block": "중단 (BLOCK)",
+        "analysis_error": "중단 · 분석 오류",
+    }.get(verdict_value, {
+        "selected": "계속 가능",
+        "created": "준비 완료",
+        "already_correct": "이미 정확히 준비됨",
+        "blocked": "중단 · 승인 또는 lock 확인 필요",
+    }.get(payload.get("status"), "확인 필요"))
+
+
+def _print_human_phase(stage: str, payload: dict, *, evidence: Path | None = None) -> None:
+    number, title = _PHASE_LABELS[stage]
+    print(f"\n[{number}/6] {title}")
+    print(f"결과        : {_result_label(payload)}")
+    if payload.get("process_exit_code") is not None:
+        print(f"종료 코드   : {payload['process_exit_code']}")
+    if payload.get("reason"):
+        print(f"사유        : {payload['reason']}")
+    for reason in payload.get("reasons", []):
+        print(f"사유        : {reason}")
+
+    if stage == "candidate":
+        print(f"Candidate   : {payload.get('candidate_commit_sha') or '-'}")
+        print(f"산출물 종류 : {payload.get('candidate_artifact_kind') or '-'}")
+        print(f"Lock digest : {payload.get('candidate_lock_digest') or '-'}")
+        if payload.get("status") == "selected":
+            print("다음 행동   : 공식 새 버전을 prep-official로 고정하세요.")
+        else:
+            print("다음 행동   : 승인된 Candidate lock과 active-candidate.yaml을 준비한 뒤 다시 실행하세요.")
+    elif stage == "official":
+        print(f"공식 tag    : {payload.get('tag_ref') or '-'}")
+        print(f"공식 commit : {payload.get('commit_sha') or '-'}")
+        print(f"로컬 branch : {payload.get('branch') or '-'}")
+        if payload.get("status") == "analysis_error":
+            print("다음 행동   : 공식 tag·branch·commit 결속 오류를 해결한 뒤 다시 실행하세요.")
+        else:
+            print("다음 행동   : 생성된 증거 파일을 premerge-check에 전달하세요.")
+    elif stage == "preflight":
+        problems = payload.get("blocking_problems", [])
+        disabled = payload.get("disabled_gates", [])
+        print(f"차단 항목   : {len(problems)}개")
+        print(f"미실행 검사 : {', '.join(disabled) if disabled else '없음'}")
+        for check in payload.get("checks", []):
+            if check.get("status") == "ok":
+                continue
+            name = check.get("name") or "이름 없는 점검"
+            status = check.get("status") or "확인 필요"
+            detail = check.get("next_action") or check.get("detail")
+            print(f"- {name}: {status}")
+            if detail:
+                print(f"  조치: {detail}")
+        if problems:
+            print("다음 행동   : 차단 항목을 해결한 뒤 같은 Phase를 다시 실행하세요.")
+        elif disabled:
+            print("다음 행동   : 누락된 사람 입력·증거를 채우면 모든 검사를 실행할 수 있습니다.")
+        else:
+            print("다음 행동   : 해당 Phase 검사를 실행하세요.")
+    elif stage in {"premerge", "postmerge"}:
+        print(f"완료 상태   : {payload.get('phase_status') or '-'}")
+        print(f"검사 범위   : {payload.get('verification_scope') or '-'}")
+        print(f"검사 완료   : {payload.get('checked_over_total') or '-'}")
+        counts = payload.get("counts", {})
+        if counts:
+            print(
+                "판정 요약   : "
+                f"PASS {counts.get('pass', 0)} · "
+                f"APPROVAL {counts.get('approval', 0)} · "
+                f"BLOCK {counts.get('block', 0)} · "
+                f"ERROR {counts.get('analysis_error', 0)}"
+            )
+        non_pass = payload.get("non_pass_gates", [])
+        if non_pass:
+            summary = ", ".join(
+                f"{gate.get('name')}({gate.get('verdict')})" for gate in non_pass
+            )
+            print(f"확인할 검사 : {summary}")
+        print(f"결과 digest : {payload.get('result_digest') or '-'}")
+        manager_path = payload.get("manager_output")
+        practitioner_path = payload.get("practitioner_output")
+        if manager_path:
+            print(f"관리자 요약 : {manager_path}")
+        if practitioner_path:
+            print(f"실무자 상세 : {practitioner_path}")
+        if payload.get("overall_verdict") == "approval":
+            print("다음 행동   : 실무자 상세의 검토 항목을 확인하고 담당자가 승인하세요.")
+        elif payload.get("overall_verdict") == "pass" and stage == "postmerge":
+            print("다음 행동   : source-only이면 artifact 검증 전 운영 배포를 승인하지 마세요.")
+        elif payload.get("overall_verdict") == "pass":
+            print("다음 행동   : 승인 후 별도 branch에서 vendor-merge Candidate를 만드세요.")
+        else:
+            print("다음 행동   : 차단·분석 오류 원인을 해결한 뒤 전체 Phase를 다시 실행하세요.")
+    else:
+        tier = payload.get("tier_outputs", {})
+        print(f"Canonical   : {'확인됨' if payload.get('verified') else '불일치'}")
+        print(f"관리자 요약 : {'확인됨' if tier.get('manager') else '불일치'}")
+        print(f"실무자 상세 : {'확인됨' if tier.get('practitioner') else '불일치'}")
+        print(f"결과 digest : {payload.get('result_digest') or '-'}")
+        if payload.get("verified"):
+            print("다음 행동   : 판정이 APPROVAL이면 같은 digest에 담당자 승인을 결속하세요.")
+        else:
+            print("다음 행동   : canonical·관리자·실무자 결과의 불일치를 해결한 뒤 다시 확인하세요.")
+    if evidence is not None:
+        if evidence.is_file():
+            print(f"증거 파일   : {evidence}")
+        else:
+            print(f"증거 경로   : {evidence} (중단되어 생성되지 않음)")
+
+
+def run_phase_command(
+    command: list[str],
+    *,
+    stage: str,
+    output_format: str,
+    evidence: Path | None = None,
+) -> int:
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = str(HARNESS)
+    completed = subprocess.run(
+        command,
+        cwd=PROJECT,
+        env=environment,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    payload = _last_json(completed.stdout)
+    if output_format == "json" or payload is None:
+        if completed.stdout:
+            print(completed.stdout, end="")
+    else:
+        _print_human_phase(
+            stage,
+            {**payload, "process_exit_code": completed.returncode},
+            evidence=evidence,
+        )
+    if completed.stderr:
+        print(completed.stderr, file=sys.stderr, end="")
+    return completed.returncode
+
+
+def safe_phase_output(run_id: str) -> Path:
+    try:
+        return phase_bundle.evidence_path(PROJECT / "evidence", run_id)
+    except phase_bundle.ApprovalError as exc:
+        raise WorkflowInputError(str(exc)) from exc
+
+
 def run_to_file(command: list[str], output: Path) -> int:
     output.parent.mkdir(parents=True, exist_ok=True)
     environment = os.environ.copy()
@@ -126,8 +309,17 @@ def run_to_file(command: list[str], output: Path) -> int:
 
 
 def add_repo_version(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--repo", required=True, type=Path)
-    parser.add_argument("--version", required=True)
+    parser.add_argument("--repo", required=True, type=Path, help="검사할 OpenMetadata 제품 Git 저장소")
+    parser.add_argument("--version", required=True, help="등록 기준 버전, 예: 1.13.1")
+
+
+def add_phase_output_format(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--output-format",
+        choices=("human", "json"),
+        default="human",
+        help="화면에는 human 요약을 표시하고, 자동화는 json을 선택합니다",
+    )
 
 
 def parse_args() -> argparse.Namespace:
@@ -269,17 +461,19 @@ def parse_args() -> argparse.Namespace:
         "candidate-select",
         help="승인된 활성 Candidate lock을 명시적으로 선택",
     )
-    phase_candidate.add_argument("--version", required=True)
-    phase_candidate.add_argument("--output", type=Path)
+    phase_candidate.add_argument("--version", required=True, help="등록 기준 버전, 예: 1.13.1")
+    phase_candidate.add_argument("--output", type=Path, help="선택 결과 JSON 경로")
+    add_phase_output_format(phase_candidate)
 
     prep_official = subparsers.add_parser(
         "prep-official",
         help="공식 tag commit에 고정된 로컬 공식 branch 준비",
     )
-    prep_official.add_argument("--repo", required=True, type=Path)
-    prep_official.add_argument("--tag-ref", required=True)
-    prep_official.add_argument("--branch", required=True)
-    prep_official.add_argument("--output", type=Path)
+    prep_official.add_argument("--repo", required=True, type=Path, help="공식 tag가 있는 제품 Git 저장소")
+    prep_official.add_argument("--tag-ref", required=True, help="공식 release tag, 예: 1.13.2-release")
+    prep_official.add_argument("--branch", required=True, help="tag commit에 고정할 로컬 branch")
+    prep_official.add_argument("--output", type=Path, help="tag·commit 결속 증거 JSON 경로")
+    add_phase_output_format(prep_official)
 
     phase_preflight = subparsers.add_parser(
         "phase-preflight",
@@ -287,47 +481,72 @@ def parse_args() -> argparse.Namespace:
     )
     add_repo_version(phase_preflight)
     phase_preflight.add_argument("--phase", required=True, choices=["premerge", "postmerge"])
-    phase_preflight.add_argument("--base")
-    phase_preflight.add_argument("--target")
-    phase_preflight.add_argument("--change-intent", type=Path)
-    phase_preflight.add_argument("--debt-policy", type=Path)
-    phase_preflight.add_argument("--conflict-rate", type=float)
-    phase_preflight.add_argument("--active-source", action="append", default=[])
-    phase_preflight.add_argument("--output", type=Path)
+    phase_preflight.add_argument("--base", help="공식 이전 버전 전체 commit SHA")
+    phase_preflight.add_argument("--target", help="공식 새 버전 전체 commit SHA")
+    phase_preflight.add_argument(
+        "--official-evidence",
+        type=Path,
+        help="premerge에서 prep-official이 생성한 공식 tag·commit 결속 JSON",
+    )
+    phase_preflight.add_argument("--change-intent", type=Path, help="담당자가 승인한 민감 경로 변경 의도 YAML")
+    phase_preflight.add_argument("--debt-policy", type=Path, help="유지 부담 임계값 정책 YAML")
+    phase_preflight.add_argument("--conflict-rate", type=float, help="증거와 대조할 비율; 단독 입력 불가")
+    phase_preflight.add_argument(
+        "--conflict-evidence",
+        type=Path,
+        help="실제 merge 변경·충돌 경로와 Candidate SHA를 기록한 YAML/JSON",
+    )
+    phase_preflight.add_argument("--active-source", action="append", default=[], help="추가 활성 후보 NAME=SHA; 여러 번 지정 가능")
+    phase_preflight.add_argument("--output", type=Path, help="사전검사 결과 JSON 경로")
+    add_phase_output_format(phase_preflight)
 
     premerge = subparsers.add_parser(
         "premerge-check",
         help="공식 새 버전을 병합하기 전 영향 검사 Phase 실행",
     )
     add_repo_version(premerge)
-    premerge.add_argument("--base", required=True)
-    premerge.add_argument("--target", required=True)
-    premerge.add_argument("--candidate-ref")
-    premerge.add_argument("--active-source", action="append", default=[])
-    premerge.add_argument("--run-id")
-    premerge.add_argument("--output", type=Path)
+    premerge.add_argument("--base", required=True, help="공식 이전 버전 전체 commit SHA")
+    premerge.add_argument("--target", required=True, help="공식 새 버전 전체 commit SHA")
+    premerge.add_argument("--candidate-ref", help="생략하면 활성 Candidate lock의 commit 사용")
+    premerge.add_argument(
+        "--official-evidence",
+        required=True,
+        type=Path,
+        help="prep-official이 생성한 공식 tag·commit 결속 JSON",
+    )
+    premerge.add_argument("--active-source", action="append", default=[], help="추가 활성 후보 NAME=SHA; 여러 번 지정 가능")
+    premerge.add_argument("--run-id", help="증거 폴더 식별자; 생략하면 안전한 시각 기반 ID 생성")
+    premerge.add_argument("--output", type=Path, help="Phase canonical result JSON 경로")
+    add_phase_output_format(premerge)
 
     postmerge = subparsers.add_parser(
         "postmerge-check",
         help="vendor-merge 후보를 만든 뒤 최종 소스 위험 검사 Phase 실행",
     )
     add_repo_version(postmerge)
-    postmerge.add_argument("--base")
-    postmerge.add_argument("--target")
-    postmerge.add_argument("--change-intent", type=Path)
-    postmerge.add_argument("--debt-policy", type=Path)
-    postmerge.add_argument("--conflict-rate", type=float)
-    postmerge.add_argument("--artifact-digest")
-    postmerge.add_argument("--contract-output-dir", type=Path)
-    postmerge.add_argument("--active-source", action="append", default=[])
-    postmerge.add_argument("--run-id")
-    postmerge.add_argument("--output", type=Path)
+    postmerge.add_argument("--base", help="생략하면 활성 Candidate lock의 공식 base SHA 사용")
+    postmerge.add_argument("--target", help="생략하면 활성 Candidate lock의 공식 target SHA 사용")
+    postmerge.add_argument("--change-intent", type=Path, help="담당자가 승인한 민감 경로 변경 의도 YAML")
+    postmerge.add_argument("--debt-policy", type=Path, help="생략하면 기본 유지 부담 정책 사용")
+    postmerge.add_argument("--conflict-rate", type=float, help="증거와 대조할 비율; 단독 입력 불가")
+    postmerge.add_argument(
+        "--conflict-evidence",
+        type=Path,
+        help="실제 merge 변경·충돌 경로와 Candidate SHA를 기록한 YAML/JSON",
+    )
+    postmerge.add_argument("--artifact-digest", help="build-artifact lock과 일치하는 sha256 digest")
+    postmerge.add_argument("--contract-output-dir", type=Path, help="Runtime Contract 상세 증거 폴더")
+    postmerge.add_argument("--active-source", action="append", default=[], help="추가 활성 후보 NAME=SHA; 여러 번 지정 가능")
+    postmerge.add_argument("--run-id", help="증거 폴더 식별자; 생략하면 안전한 시각 기반 ID 생성")
+    postmerge.add_argument("--output", type=Path, help="Phase canonical result JSON 경로")
+    add_phase_output_format(postmerge)
 
     phase_status = subparsers.add_parser(
         "phase-status",
         help="저장된 Phase 결과 digest와 상태 확인",
     )
-    phase_status.add_argument("--result", required=True, type=Path)
+    phase_status.add_argument("--result", required=True, type=Path, help="재검증할 canonical result.json")
+    add_phase_output_format(phase_status)
 
     return parser.parse_args()
 
@@ -370,10 +589,7 @@ def plan_command(args: argparse.Namespace) -> tuple[list[str], dict[str, object]
 def dispatch(args: argparse.Namespace) -> int:
     if args.command == "prep-official":
         output = args.output or PROJECT / "evidence" / f"official-branch-{timestamp()}.json"
-        print_selection(
-            {"제품 저장소": args.repo, "공식 tag": args.tag_ref, "준비할 branch": args.branch, "결과": output}
-        )
-        return run(
+        return run_phase_command(
             python_command(
                 HARNESS / "run_phase_bundle.py",
                 "prep-official",
@@ -381,20 +597,25 @@ def dispatch(args: argparse.Namespace) -> int:
                 "--tag-ref", args.tag_ref,
                 "--branch", args.branch,
                 "--output", output,
-            )
+            ),
+            stage="official",
+            output_format=args.output_format,
+            evidence=output,
         )
 
     if args.command == "candidate-select":
         registration = registration_for(args.version)
         output = args.output or PROJECT / "evidence" / f"phase-candidate-{args.version}.json"
-        print_selection({"등록 폴더": registration, "선택 결과": output})
-        return run(
+        return run_phase_command(
             python_command(
                 HARNESS / "run_phase_bundle.py",
                 "candidate",
                 "--registration", registration,
                 "--output", output,
-            )
+            ),
+            stage="candidate",
+            output_format=args.output_format,
+            evidence=output,
         )
 
     if args.command == "phase-preflight":
@@ -413,21 +634,28 @@ def dispatch(args: argparse.Namespace) -> int:
         )
         for option, value in (
             ("--base", args.base), ("--target", args.target),
+            ("--official-evidence", args.official_evidence),
             ("--change-intent", args.change_intent), ("--debt-policy", debt_policy),
             ("--conflict-rate", args.conflict_rate),
+            ("--conflict-evidence", args.conflict_evidence),
         ):
             if value is not None:
                 command.extend([option, str(value)])
         for source in args.active_source:
             command.extend(["--active-source", source])
-        print_selection({"등록 폴더": registration, "Phase": args.phase, "사전검사 결과": output})
-        return run(command)
+        return run_phase_command(
+            command,
+            stage="preflight",
+            output_format=args.output_format,
+            evidence=output,
+        )
 
     if args.command in {"premerge-check", "postmerge-check"}:
         registration = registration_for(args.version)
         phase_name = "premerge" if args.command == "premerge-check" else "postmerge"
         run_id = args.run_id or f"{phase_name}-{timestamp()}"
-        output = args.output or PROJECT / "evidence" / run_id / "result.json"
+        safe_default_output = safe_phase_output(run_id)
+        output = args.output or safe_default_output
         command = python_command(
             HARNESS / "run_phase_bundle.py",
             phase_name,
@@ -438,7 +666,8 @@ def dispatch(args: argparse.Namespace) -> int:
         )
         for option in (
             "base", "target", "candidate_ref", "change_intent", "debt_policy",
-            "conflict_rate", "artifact_digest", "contract_output_dir",
+            "conflict_rate", "conflict_evidence", "artifact_digest",
+            "contract_output_dir", "official_evidence",
         ):
             value = getattr(args, option, None)
             if value is not None:
@@ -447,17 +676,22 @@ def dispatch(args: argparse.Namespace) -> int:
             command.extend(["--debt-policy", str(HARNESS / "policies" / "debt-thresholds.yaml")])
         for source in args.active_source:
             command.extend(["--active-source", source])
-        print_selection(
-            {"등록 폴더": registration, "Phase": phase_name, "실행 ID": run_id, "결과": output}
+        return run_phase_command(
+            command,
+            stage=phase_name,
+            output_format=args.output_format,
+            evidence=output,
         )
-        return run(command)
 
     if args.command == "phase-status":
         require_file(args.result, "Phase 결과")
-        return run(
+        return run_phase_command(
             python_command(
                 HARNESS / "run_phase_bundle.py", "status", "--result", args.result,
-            )
+            ),
+            stage="status",
+            output_format=args.output_format,
+            evidence=args.result,
         )
 
     if args.command == "plan":

@@ -50,6 +50,18 @@ def test_c95_target_checked_over_total():
     assert m["next_action"]
 
 
+def test_source_only_postmerge_pass_forbids_deployment_and_binds_digest():
+    sysj = _sys(
+        [_ex("g", verdict.PASS)],
+        phase=P.POSTMERGE,
+        inputs={"verification_scope": "source-only"},
+    )
+    manager = RU.manager_summary(sysj)
+    assert manager["result_digest"] == sysj["result_digest"]
+    assert manager["verification_scope"] == "source-only"
+    assert "운영 배포를 승인하지 마세요" in manager["next_action"]
+
+
 # ---- C96 : executed gates pass but a required gate not run -> not shown normal ----
 def test_c96_incomplete_not_shown_as_normal():
     sysj = _sys([

@@ -5,7 +5,10 @@ import json
 import os
 import subprocess
 import sys
+from pathlib import Path
+from types import SimpleNamespace
 
+import pytest
 import yaml
 
 from acgh import candidate
@@ -110,8 +113,22 @@ def _fixture(tmp_path):
     return repo, registration, base, target
 
 
+def _official_evidence(tmp_path, repo, target):
+    _git(repo, "tag", "official-release", target)
+    output = tmp_path / "official.json"
+    assert run_phase_bundle.main([
+        "prep-official",
+        "--repo", str(repo),
+        "--tag-ref", "official-release",
+        "--branch", "official/next",
+        "--output", str(output),
+    ]) == 0
+    return output
+
+
 def test_premerge_cli_writes_verified_phase_artifact(tmp_path):
     repo, registration, base, target = _fixture(tmp_path)
+    official = _official_evidence(tmp_path, repo, target)
     output = tmp_path / "evidence/result.json"
     code = run_phase_bundle.main([
         "premerge",
@@ -119,6 +136,7 @@ def test_premerge_cli_writes_verified_phase_artifact(tmp_path):
         "--registration", str(registration),
         "--base", base,
         "--target", target,
+        "--official-evidence", str(official),
         "--run-id", "premerge-e2e",
         "--output", str(output),
     ])
@@ -147,6 +165,7 @@ def test_om_workflow_exposes_all_phase_commands(monkeypatch):
         "premerge-check": [
             "--repo", "/work/product", "--version", "1.13.1",
             "--base", "base", "--target", "target",
+            "--official-evidence", "/work/official.json",
         ],
         "postmerge-check": ["--repo", "/work/product", "--version", "1.13.1"],
         "phase-status": ["--result", "/work/result.json"],
@@ -210,6 +229,7 @@ def test_existing_runner_adapter_preserves_approval_and_evidence(tmp_path):
 
 def test_premerge_preflight_block_still_writes_incomplete_evidence(tmp_path):
     repo, registration, base, target = _fixture(tmp_path)
+    official = _official_evidence(tmp_path, repo, target)
     (registration / "repository-layout.yaml").unlink()
     output = tmp_path / "blocked/result.json"
     code = run_phase_bundle.main([
@@ -218,6 +238,7 @@ def test_premerge_preflight_block_still_writes_incomplete_evidence(tmp_path):
         "--registration", str(registration),
         "--base", base,
         "--target", target,
+        "--official-evidence", str(official),
         "--run-id", "blocked-preflight",
         "--output", str(output),
     ])
@@ -226,3 +247,149 @@ def test_premerge_preflight_block_still_writes_incomplete_evidence(tmp_path):
     artifact = json.loads(output.read_text(encoding="utf-8"))
     assert artifact["canonical_payload"]["phase_status"] == "incomplete"
     assert artifact["system_json"]["observational_metadata"]["preflight"]["ready"] is False
+
+
+def test_premerge_rejects_target_not_bound_to_official_evidence(tmp_path):
+    repo, registration, base, target = _fixture(tmp_path)
+    official = _official_evidence(tmp_path, repo, target)
+    data = json.loads(official.read_text(encoding="utf-8"))
+    data["commit_sha"] = base
+    official.write_text(json.dumps(data), encoding="utf-8")
+    code = run_phase_bundle.main([
+        "premerge", "--repo", str(repo), "--registration", str(registration),
+        "--base", base, "--target", target,
+        "--official-evidence", str(official),
+        "--run-id", "wrong-official", "--output", str(tmp_path / "result.json"),
+    ])
+    assert code == 3
+
+
+def test_source_tree_lock_rejects_runtime_artifact_digest(tmp_path):
+    repo, registration, _base, _target = _fixture(tmp_path)
+    output = tmp_path / "result.json"
+    code = run_phase_bundle.main([
+        "postmerge", "--repo", str(repo), "--registration", str(registration),
+        "--debt-policy", str(Path(__file__).parents[1] / "policies/debt-thresholds.yaml"),
+        "--artifact-digest", "sha256:" + "0" * 64,
+        "--run-id", "source-with-runtime", "--output", str(output),
+    ])
+    assert code == 3
+    assert not output.exists()
+
+
+def test_conflict_evidence_is_candidate_bound_and_rate_is_derived(tmp_path):
+    repo, registration, base, _target = _fixture(tmp_path)
+    selection = run_phase_bundle._selected(registration)
+    evidence = tmp_path / "conflicts.yaml"
+    evidence.write_text(yaml.safe_dump({
+        "upstream_base_sha": base,
+        "upstream_target_sha": base,
+        "candidate_sha": selection.lock.candidate.commit_sha,
+        "merge_changed_paths": ["svc/a.java", "svc/b.java"],
+        "conflicted_paths": ["svc/a.java"],
+        "conflict_rate": 0.5,
+    }), encoding="utf-8")
+    args = SimpleNamespace(conflict_evidence=evidence, conflict_rate=None)
+    digest = run_phase_bundle._bind_conflict_evidence(args, selection.lock)
+    assert args.conflict_rate == 0.5
+    assert digest.startswith("sha256:")
+
+
+def test_registration_digest_changes_when_manifest_changes(tmp_path):
+    _repo, registration, _base, _target = _fixture(tmp_path)
+    before = run_phase_bundle._registration_digests(registration)
+    manifest = registration / "manifests/BANK-OM-001.yaml"
+    manifest.write_text(manifest.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+    after = run_phase_bundle._registration_digests(registration)
+    assert before != after
+
+
+def test_status_rejects_tampered_manager_summary(tmp_path):
+    repo, registration, base, target = _fixture(tmp_path)
+    official = _official_evidence(tmp_path, repo, target)
+    output = tmp_path / "evidence/result.json"
+    assert run_phase_bundle.main([
+        "premerge", "--repo", str(repo), "--registration", str(registration),
+        "--base", base, "--target", target,
+        "--official-evidence", str(official),
+        "--run-id", "tamper-tier", "--output", str(output),
+    ]) == 2
+    manager = output.with_name("manager-summary.json")
+    data = json.loads(manager.read_text(encoding="utf-8"))
+    data["overall_verdict"] = "pass"
+    manager.write_text(json.dumps(data), encoding="utf-8")
+    assert run_phase_bundle.main(["status", "--result", str(output)]) == 3
+
+
+def test_human_phase_summary_states_next_action(capsys):
+    om_workflow._print_human_phase("postmerge", {
+        "overall_verdict": "approval",
+        "phase_status": "complete",
+        "verification_scope": "source-only",
+        "checked_over_total": "5/6",
+        "counts": {"pass": 5, "approval": 1, "block": 0, "analysis_error": 0},
+        "non_pass_gates": [{
+            "name": "approval",
+            "verdict": "approval",
+            "execution_status": "executed",
+        }],
+        "result_digest": "sha256:" + "1" * 64,
+        "manager_output": "manager-summary.json",
+        "practitioner_output": "practitioner-detail.json",
+    })
+    text = capsys.readouterr().out
+    assert "[5/6]" in text
+    assert "담당자 검토 필요" in text
+    assert "source-only" in text
+    assert "5/6" in text
+    assert "approval(approval)" in text
+    assert "다음 행동" in text
+
+
+def test_human_preflight_summary_lists_only_actionable_checks(capsys):
+    om_workflow._print_human_phase("preflight", {
+        "ready": False,
+        "blocking_problems": ["official evidence missing"],
+        "disabled_gates": ["approval"],
+        "checks": [
+            {"name": "candidate", "status": "ok"},
+            {
+                "name": "official-evidence",
+                "status": "blocked",
+                "next_action": "prep-official을 먼저 실행하세요.",
+            },
+        ],
+    })
+    text = capsys.readouterr().out
+    assert "candidate: ok" not in text
+    assert "official-evidence: blocked" in text
+    assert "prep-official을 먼저 실행" in text
+
+
+def test_safe_phase_output_rejects_public_cli_path_traversal():
+    with pytest.raises(om_workflow.WorkflowInputError):
+        om_workflow.safe_phase_output("../escape")
+
+
+def test_candidate_failure_summary_gives_recovery_action(capsys):
+    om_workflow._print_human_phase("candidate", {
+        "status": "analysis_error",
+        "reasons": ["active-candidate.yaml missing"],
+        "process_exit_code": 3,
+    })
+    text = capsys.readouterr().out
+    assert "중단" in text
+    assert "active-candidate.yaml" in text
+    assert "승인된 Candidate lock" in text
+
+
+def test_failed_human_phase_does_not_claim_missing_evidence_exists(tmp_path, capsys):
+    evidence = tmp_path / "not-created.json"
+    om_workflow._print_human_phase(
+        "candidate",
+        {"status": "analysis_error", "reasons": ["missing"]},
+        evidence=evidence,
+    )
+    text = capsys.readouterr().out
+    assert "중단되어 생성되지 않음" in text
+    assert f"증거 파일   : {evidence}" not in text

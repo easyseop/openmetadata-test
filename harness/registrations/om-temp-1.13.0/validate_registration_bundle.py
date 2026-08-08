@@ -156,12 +156,10 @@ def main() -> int:
     }
     emit_result(output, args.output)
 
-    passed = (
-        source_result.verdict == "pass"
-        and test_result.verdict == "pass"
-        and shared_owner_match
+    combined = verdict.aggregate(
+        [item["verdict"] for item in output["checks"]]
     )
-    return 0 if passed else 1
+    return verdict.to_exit_code(combined)
 
 
 if __name__ == "__main__":

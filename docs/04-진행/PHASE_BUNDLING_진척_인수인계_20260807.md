@@ -225,3 +225,21 @@ API·브라우저 및 기타 외부 환경 입력이 없는 테스트이며 PASS
    제공해 `postmerge-check`를 실행한다.
 7. 결과가 pass/approval이어도 조직 승인과 운영 승격 증거 전에는 배포 완료로
    표시하지 않는다.
+
+## 14. 2026-08-08 Claude 외부 검토 후속 구현
+
+외부 검토에서 확인한 P0 artifact 결속 문제와 코드로 해결 가능한 P1 증거 결속·
+무결성 문제를 수정했다. 공식 tag 증거, 실제 merge 경로 기반 conflict evidence,
+전체 등록자료 digest, 전체 판정 모듈 digest가 canonical 결과에 포함된다. 같은
+result 경로의 동시 기록과 run-id 경로 이탈을 차단하며, `phase-status`는 관리자·
+실무자 파일을 canonical 결과에서 재생성해 JSON 구조와 값을 대조한다.
+
+여섯 공개 명령은 기본적으로 사람용 요약을 출력한다. 각 화면은 단계, 결과, 종료
+코드, 중단 이유, 핵심 SHA·digest 또는 검사 수, 다음 행동, 증거 파일을 보여준다.
+CI는 `--output-format json`으로 기존 JSON 계약을 사용한다. 출력 형식 검토 자료는
+`PHASE_BUNDLING_출력형식_CLAUDE_검토요청_20260808.md`다.
+
+구현 commit은 commit 이후 이 절에 결속한다. 집중 테스트는 `53 passed`, 전체
+harness는 `543 passed, 38 skipped`, 실패 0건이다. 실제 조직 승인
+권한, 1.13.2 vendor-merge Candidate, 실측 conflict evidence, change-intent,
+build-artifact Runtime Contract와 운영 배포는 여전히 외부 입력 대기다.

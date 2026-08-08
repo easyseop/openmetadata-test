@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import subprocess
 import sys
@@ -42,6 +43,112 @@ def _sha256_file(path: Path | None) -> str | None:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _load_mapping(path: Path, label: str) -> dict:
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError) as exc:
+        raise PhaseCLIError(f"{label} 파일을 읽을 수 없습니다: {path}: {exc}") from exc
+    if not isinstance(data, dict):
+        raise PhaseCLIError(f"{label} 파일은 mapping이어야 합니다: {path}")
+    return data
+
+
+def _registration_digests(registration: Path) -> dict[str, str]:
+    """Bind every registration input that can affect a Phase judgment."""
+    names = (
+        "customization-registry.yaml",
+        "contracts.yaml",
+        "shared-code-definitions.yaml",
+        "shared-path-owners.yaml",
+        "commit-inventory.yaml",
+    )
+    paths = [registration / name for name in names]
+    paths.extend(sorted((registration / "manifests").glob("BANK-OM-*.yaml")))
+    return {
+        path.relative_to(registration).as_posix(): _sha256_file(path)
+        for path in paths
+        if path.is_file()
+    }
+
+
+def _bind_official_evidence(args) -> str:
+    evidence = _load_mapping(args.official_evidence, "공식 버전 준비 증거")
+    commit_sha = evidence.get("commit_sha")
+    if commit_sha != args.target:
+        raise PhaseCLIError(
+            "premerge target이 공식 버전 준비 증거와 다릅니다: "
+            f"{args.target} != {commit_sha}"
+        )
+    for label in ("tag_ref", "branch"):
+        ref = evidence.get(label)
+        if not isinstance(ref, str) or not ref:
+            raise PhaseCLIError(f"공식 버전 준비 증거에 {label} 값이 없습니다")
+        phase.assert_target_matches_tag(str(args.repo), ref, commit_sha)
+    return _sha256_file(args.official_evidence)
+
+
+def _bind_conflict_evidence(args, lock) -> str | None:
+    path = getattr(args, "conflict_evidence", None)
+    supplied_rate = getattr(args, "conflict_rate", None)
+    if path is None:
+        if supplied_rate is not None:
+            raise PhaseCLIError(
+                "--conflict-rate만 직접 입력할 수 없습니다. 실제 merge 결과를 담은 "
+                "--conflict-evidence 파일을 제공하세요."
+            )
+        return None
+
+    evidence = _load_mapping(path, "conflict-rate 증거")
+    expected = {
+        "upstream_base_sha": lock.upstream.base_sha,
+        "upstream_target_sha": lock.upstream.target_sha,
+        "candidate_sha": lock.candidate.commit_sha,
+    }
+    for field, expected_value in expected.items():
+        if evidence.get(field) != expected_value:
+            raise PhaseCLIError(
+                f"conflict-rate 증거의 {field}가 Candidate lock과 다릅니다: "
+                f"{evidence.get(field)} != {expected_value}"
+            )
+    changed = evidence.get("merge_changed_paths")
+    conflicted = evidence.get("conflicted_paths")
+    if not isinstance(changed, list) or not changed or not all(
+        isinstance(item, str) and item for item in changed
+    ):
+        raise PhaseCLIError("conflict-rate 증거의 merge_changed_paths는 비어 있지 않은 경로 목록이어야 합니다")
+    if not isinstance(conflicted, list) or not all(
+        isinstance(item, str) and item for item in conflicted
+    ):
+        raise PhaseCLIError("conflict-rate 증거의 conflicted_paths는 경로 목록이어야 합니다")
+    changed_set = set(changed)
+    conflicted_set = set(conflicted)
+    outside = sorted(conflicted_set - changed_set)
+    if outside:
+        raise PhaseCLIError(
+            "conflict-rate 증거의 충돌 경로가 merge 변경 경로에 없습니다: "
+            + ", ".join(outside)
+        )
+    measured_rate = len(conflicted_set) / len(changed_set)
+    recorded_rate = evidence.get("conflict_rate")
+    if not isinstance(recorded_rate, (int, float)) or isinstance(recorded_rate, bool):
+        raise PhaseCLIError("conflict-rate 증거에 숫자 conflict_rate가 필요합니다")
+    if not math.isfinite(float(recorded_rate)) or not math.isclose(
+        float(recorded_rate), measured_rate, rel_tol=0.0, abs_tol=1e-12
+    ):
+        raise PhaseCLIError(
+            "conflict-rate 증거의 비율이 경로 수 계산과 다릅니다: "
+            f"{recorded_rate} != {len(conflicted_set)}/{len(changed_set)}"
+        )
+    if supplied_rate is not None and not math.isclose(
+        float(supplied_rate), measured_rate, rel_tol=0.0, abs_tol=1e-12
+    ):
+        raise PhaseCLIError(
+            f"--conflict-rate가 증거에서 계산한 값과 다릅니다: {supplied_rate} != {measured_rate}"
+        )
+    args.conflict_rate = measured_rate
+    return _sha256_file(path)
+
+
 def _load_manifests(registration: Path, layout) -> dict[str, dict]:
     manifests: dict[str, dict] = {}
     for path in sorted((registration / "manifests").glob("BANK-OM-*.yaml")):
@@ -63,6 +170,12 @@ def _selection_payload(selection) -> dict:
         "candidate_lock_path": selection.lock_path,
         "candidate_commit_sha": (
             selection.lock.candidate.commit_sha if selection.lock is not None else None
+        ),
+        "candidate_artifact_kind": (
+            selection.lock.candidate.artifact_kind if selection.lock is not None else None
+        ),
+        "upstream_target_sha": (
+            selection.lock.upstream.target_sha if selection.lock is not None else None
         ),
         "provenance": list(selection.provenance),
     }
@@ -148,12 +261,10 @@ def _harness_version() -> str:
     harness = Path(__file__).resolve().parent
     files = [
         harness / "run_phase_bundle.py",
-        harness / "acgh" / "phase.py",
-        harness / "acgh" / "preflight.py",
-        harness / "acgh" / "candidate_select.py",
-        harness / "acgh" / "rollup.py",
+        harness / "om_workflow.py",
         harness / "registrations" / "kb-openmetadata" / "run_source_candidate_gates.py",
     ]
+    files.extend(sorted((harness / "acgh").glob("*.py")))
     payload = {path.relative_to(harness).as_posix(): _sha256_file(path) for path in files}
     return verdict.canonical_digest(payload)
 
@@ -178,8 +289,19 @@ def _phase_inputs(
             },
         },
         "candidate_lock_digest": selection.lock_digest,
+        "candidate_artifact_kind": lock.candidate.artifact_kind,
+        "verification_scope": (
+            "source-impact"
+            if getattr(args, "command", None) == "premerge"
+            else (
+                "artifact-verified"
+                if getattr(args, "artifact_digest", None)
+                else "source-only"
+            )
+        ),
         "harness_version": _harness_version(),
         "verifier_catalog_digest": phase.gate_catalog_digest(specs),
+        "registration_digests": _registration_digests(args.registration),
         "policy_digests": {
             name: _sha256_file(path) for name, path in sorted(policy_files.items())
         },
@@ -338,16 +460,34 @@ def _write_result(result, report, output: Path) -> int:
     problems = rollup.check_output_invariants(rendered)
     if problems:
         raise PhaseCLIError("three-tier output mismatch: " + "; ".join(problems))
-    phase.write_phase_result(enriched, output)
     manager_output = output.with_name("manager-summary.json")
     practitioner_output = output.with_name("practitioner-detail.json")
+    stale = [path for path in (manager_output, practitioner_output) if path.exists()]
+    if stale:
+        raise PhaseCLIError(
+            "refusing stale/overwritten tier output: " + ", ".join(map(str, stale))
+        )
+    phase.write_phase_result(enriched, output)
     _atomic_json(manager_output, rendered["manager"])
     _atomic_json(practitioner_output, rendered["practitioner"])
     print(json.dumps({
         "phase": enriched.phase,
         "phase_status": enriched.phase_status,
         "overall_verdict": enriched.overall_verdict,
+        "verification_scope": enriched.inputs.get("verification_scope"),
         "result_digest": enriched.result_digest(),
+        "checked_over_total": rendered["manager"]["checked_over_total"],
+        "counts": rendered["manager"]["counts"],
+        "non_pass_gates": [
+            {
+                "name": gate["name"],
+                "verdict": gate["verdict"],
+                "execution_status": gate["execution_status"],
+            }
+            for gate in rendered["practitioner"]["gates"]
+            if gate["verdict"] != verdict.PASS
+            or gate["execution_status"] != phase.EXECUTED
+        ],
         "output": str(output),
         "manager_output": str(manager_output),
         "practitioner_output": str(practitioner_output),
@@ -393,6 +533,7 @@ def prep_official_command(args) -> int:
     prepared = phase.prepare_official_branch(str(args.repo), args.tag_ref, args.branch)
     payload = {
         "status": "created" if prepared.created else "already_correct",
+        "tag_ref": args.tag_ref,
         "branch": prepared.branch,
         "commit_sha": prepared.commit_sha,
         "tree_sha": prepared.tree_sha,
@@ -410,7 +551,14 @@ def preflight_command(args) -> int:
         "sensitive_zones": args.registration / "sensitive-zones.yaml",
     }
     optional = {}
+    if args.phase == phase.PREMERGE:
+        if args.official_evidence is None:
+            raise PhaseCLIError(
+                "premerge preflight에는 prep-official 결과인 --official-evidence가 필요합니다"
+            )
+        _bind_official_evidence(args)
     if args.phase == phase.POSTMERGE:
+        _bind_conflict_evidence(args, selection.lock)
         required["debt_thresholds"] = args.debt_policy
         optional["change_intent"] = {
             "path": args.change_intent,
@@ -428,6 +576,7 @@ def preflight_command(args) -> int:
 def premerge_command(args) -> int:
     selection = _selected(args.registration)
     _assert_transition_binding(args, selection, phase.PREMERGE)
+    _bind_official_evidence(args)
     layout_path = args.registration / "repository-layout.yaml"
     zones_path = args.registration / "sensitive-zones.yaml"
     report = _preflight(
@@ -438,7 +587,11 @@ def premerge_command(args) -> int:
         return _blocked_phase_result(
             args, selection, report, phase.PREMERGE,
             ("upgrade-watch", "policy-drift", "structdiff", "watch-suggest"),
-            {"repository_layout": layout_path, "sensitive_zones": zones_path},
+            {
+                "repository_layout": layout_path,
+                "sensitive_zones": zones_path,
+                "official_evidence": args.official_evidence,
+            },
         )
     layout = layout_module.load_layout(layout_path)
     manifests = _load_manifests(args.registration, layout)
@@ -452,7 +605,11 @@ def premerge_command(args) -> int:
         preflight_blocked=not report.ready,
         inputs=_phase_inputs(
             args, selection,
-            {"repository_layout": layout_path, "sensitive_zones": zones_path},
+            {
+                "repository_layout": layout_path,
+                "sensitive_zones": zones_path,
+                "official_evidence": args.official_evidence,
+            },
             specs=specs,
         ),
         run_id=args.run_id,
@@ -464,6 +621,7 @@ def postmerge_command(args) -> int:
     selection = _selected(args.registration)
     _assert_transition_binding(args, selection, phase.POSTMERGE)
     lock = selection.lock
+    _bind_conflict_evidence(args, lock)
     layout_path = args.registration / "repository-layout.yaml"
     zones_path = args.registration / "sensitive-zones.yaml"
     optional = {
@@ -483,6 +641,7 @@ def postmerge_command(args) -> int:
         "sensitive_zones": zones_path,
         "change_intent": args.change_intent,
         "debt_thresholds": args.debt_policy,
+        "conflict_evidence": args.conflict_evidence,
     }
     if not report.ready:
         names = [
@@ -494,7 +653,14 @@ def postmerge_command(args) -> int:
         return _blocked_phase_result(
             args, selection, report, phase.POSTMERGE, names, policy_files,
         )
-    candidate.assert_candidate_binding(str(args.repo), lock)
+    if args.artifact_digest and lock.candidate.artifact_kind != candidate.BUILD_ARTIFACT:
+        raise PhaseCLIError(
+            "Runtime Contract를 포함한 postmerge에는 승인된 build-artifact Candidate lock이 "
+            "필요합니다. source-tree lock에 --artifact-digest를 임의로 결합할 수 없습니다."
+        )
+    candidate.assert_candidate_binding(
+        str(args.repo), lock, artifact_digest=args.artifact_digest
+    )
     phase.validate_postmerge_candidate(str(args.repo), lock)
     layout = layout_module.load_layout(layout_path)
     manifests = _load_manifests(args.registration, layout)
@@ -565,6 +731,25 @@ def postmerge_command(args) -> int:
 def status_command(args) -> int:
     ok, reason = phase.verify_phase_result(args.result)
     data = json.loads(args.result.read_text(encoding="utf-8")) if ok else {}
+    tier_status = {"manager": False, "practitioner": False}
+    if ok:
+        expected = rollup.render_all(data["system_json"])
+        for name, filename in (
+            ("manager", "manager-summary.json"),
+            ("practitioner", "practitioner-detail.json"),
+        ):
+            path = args.result.with_name(filename)
+            try:
+                actual = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as exc:
+                ok = False
+                reason = f"{filename} unreadable/corrupt: {exc}"
+                break
+            if actual != expected[name]:
+                ok = False
+                reason = f"{filename} disagrees with canonical result"
+                break
+            tier_status[name] = True
     payload = {
         "verified": ok,
         "reason": reason,
@@ -572,6 +757,7 @@ def status_command(args) -> int:
         "phase_status": data.get("canonical_payload", {}).get("phase_status"),
         "overall_verdict": data.get("canonical_payload", {}).get("overall_verdict"),
         "result_digest": data.get("result_digest"),
+        "tier_outputs": tier_status,
     }
     print(json.dumps(payload, ensure_ascii=False, sort_keys=True))
     return 0 if ok else 3
@@ -605,11 +791,14 @@ def parse_args(argv=None):
     preflight_parser.add_argument("--change-intent", type=Path)
     preflight_parser.add_argument("--debt-policy", type=Path)
     preflight_parser.add_argument("--conflict-rate", type=float, default=...)
+    preflight_parser.add_argument("--conflict-evidence", type=Path)
+    preflight_parser.add_argument("--official-evidence", type=Path)
     preflight_parser.add_argument("--output", required=True, type=Path)
 
     premerge_parser = sub.add_parser("premerge")
     _common(premerge_parser, transition_required=True)
     premerge_parser.add_argument("--candidate-ref")
+    premerge_parser.add_argument("--official-evidence", required=True, type=Path)
     premerge_parser.add_argument("--run-id", required=True)
     premerge_parser.add_argument("--output", required=True, type=Path)
 
@@ -618,6 +807,7 @@ def parse_args(argv=None):
     postmerge_parser.add_argument("--change-intent", type=Path)
     postmerge_parser.add_argument("--debt-policy", required=True, type=Path)
     postmerge_parser.add_argument("--conflict-rate", type=float)
+    postmerge_parser.add_argument("--conflict-evidence", type=Path)
     postmerge_parser.add_argument("--artifact-digest")
     postmerge_parser.add_argument("--contract-output-dir", type=Path)
     postmerge_parser.add_argument("--run-id", required=True)
@@ -631,6 +821,8 @@ def parse_args(argv=None):
 def main(argv=None) -> int:
     try:
         args = parse_args(argv)
+        if args.command in {"premerge", "postmerge"}:
+            phase.evidence_path(Path.cwd(), args.run_id)
         return {
             "candidate": candidate_command,
             "prep-official": prep_official_command,

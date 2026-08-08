@@ -1,5 +1,13 @@
 # 세션 상태 / 인수인계 (SESSION_STATE)
 
+> **2026-08-08 Phase 외부 검토 후속 보완:** artifact digest↔Candidate lock,
+> 공식 tag↔premerge target, conflict evidence↔Candidate SHA, 등록자료↔결과
+> digest를 결속했다. run-id 경로 이탈, 동시 결과 덮어쓰기, 관리자·실무자 파일
+> 변조도 fail-closed로 차단한다. 여섯 공개 명령은 기본적으로 짧은 사람용 결과와
+> 정확한 다음 행동을 출력하며 `--output-format json`으로 기계용 형식을 유지한다.
+> 출력 문구는 Claude 검토 전 초안이다. 실제 조직 승인 권한과 운영 입력은
+> 자동으로 추측하지 않는다.
+
 > **2026-08-08 외부 모델 설계 검토 요청서:** Claude 초기 구현, Codex 독립
 > 검토·안전 보완, OpenMetadata 1.13.1 기준과 1.13.2 목표, 후속 commit·
 > 사람 판단 경계, 미실행 범위, 필수 설계 질문 20개를 하나의 Markdown으로

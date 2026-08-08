@@ -711,24 +711,43 @@ def write_phase_result(result: PhaseResult, out_path, *, overwrite: bool = False
     from pathlib import Path
 
     out = Path(out_path)
-    if out.exists() and not overwrite:
-        raise ApprovalError(f"refusing to overwrite existing evidence: {out}")
     out.parent.mkdir(parents=True, exist_ok=True)
 
-    artifact = build_phase_artifact(result)
-    # self-check before persisting
-    if verdict.canonical_digest(artifact["canonical_payload"]) != artifact["result_digest"]:
-        raise ApprovalError("result_digest self-check failed")
+    reservation = out.with_name(f".{out.name}.lock")
+    reservation_fd = None
+    if not overwrite:
+        try:
+            reservation_fd = os.open(
+                str(reservation), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644
+            )
+        except FileExistsError as exc:
+            raise ApprovalError(
+                f"another writer already reserved this evidence path: {out}"
+            ) from exc
+        if out.exists():
+            os.close(reservation_fd)
+            reservation_fd = None
+            reservation.unlink(missing_ok=True)
+            raise ApprovalError(f"refusing to overwrite existing evidence: {out}")
 
-    blob = json.dumps(artifact, ensure_ascii=False, sort_keys=True, indent=2)
     tmp = out.with_name(f".{out.name}.tmp.{os.getpid()}")
-    fd = os.open(str(tmp), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o644)
     try:
-        os.write(fd, blob.encode("utf-8"))
-        os.fsync(fd)
+        artifact = build_phase_artifact(result)
+        if verdict.canonical_digest(artifact["canonical_payload"]) != artifact["result_digest"]:
+            raise ApprovalError("result_digest self-check failed")
+        blob = json.dumps(artifact, ensure_ascii=False, sort_keys=True, indent=2)
+        fd = os.open(str(tmp), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o644)
+        try:
+            os.write(fd, blob.encode("utf-8"))
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+        os.replace(str(tmp), str(out))  # atomic on POSIX
     finally:
-        os.close(fd)
-    os.replace(str(tmp), str(out))  # atomic on POSIX
+        tmp.unlink(missing_ok=True)
+        if reservation_fd is not None:
+            os.close(reservation_fd)
+            reservation.unlink(missing_ok=True)
     return str(out)
 
 

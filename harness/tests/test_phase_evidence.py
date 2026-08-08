@@ -8,12 +8,22 @@ block/analysis_error into pass.
 from __future__ import annotations
 
 import json
+import multiprocessing
 
 import pytest
 from hypothesis import given, settings, strategies as st
 
 from acgh import phase as P
 from acgh import verdict
+
+
+def _concurrent_writer(result, path, barrier, queue):
+    barrier.wait(timeout=5)
+    try:
+        P.write_phase_result(result, path)
+        queue.put("success")
+    except Exception as exc:  # pragma: no cover - child process diagnostic
+        queue.put(type(exc).__name__)
 
 
 def _result(verdicts, *, inputs=None, phase=P.POSTMERGE, observational=None, run_id="r"):
@@ -131,6 +141,28 @@ def test_c91_run_id_reuse_no_overwrite(tmp_path):
     with pytest.raises(P.ApprovalError):
         P.write_phase_result(r, path)  # same run-id path
     assert P.verify_phase_result(path)[0]
+
+
+def test_c91_concurrent_writers_only_one_can_publish(tmp_path):
+    try:
+        context = multiprocessing.get_context("fork")
+    except ValueError:
+        pytest.skip("fork multiprocessing context is unavailable")
+    result = _result([verdict.PASS], inputs={"base_sha": "x"})
+    path = tmp_path / "same-run" / "result.json"
+    barrier = context.Barrier(2)
+    queue = context.Queue()
+    processes = [
+        context.Process(target=_concurrent_writer, args=(result, path, barrier, queue))
+        for _ in range(2)
+    ]
+    for process in processes:
+        process.start()
+    for process in processes:
+        process.join(timeout=10)
+    outcomes = sorted(queue.get(timeout=2) for _ in range(2))
+    assert outcomes == ["ApprovalError", "success"]
+    assert P.verify_phase_result(path) == (True, "consistent")
 
 
 # ---- C92 : two concurrent phases -> separate folders, complete results ----

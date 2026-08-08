@@ -312,3 +312,23 @@ diff와 코드·test를 직접 대조한다. 코드 수정·push 없이 P0·P1·
 검증: 문서가 참조하는 7개 commit 객체와 주요 설계·코드·test 파일의
 존재를 확인했고, `.venv/bin/python -m pytest harness/tests/test_phase_cli.py -q`
 결과는 `6 passed`이다. `git diff --check`도 통과했다.
+
+## 14. 2026-08-08 외부 검토 후속 안전성·출력 보완
+
+Claude 외부 검토에서 새로 확인한 artifact 결속, 공개 CLI run-id, 동시 기록,
+3단 출력 무결성, 등록자료 digest, 공식 tag, conflict-rate 근거 문제를 보완했다.
+`om_workflow.py`의 여섯 Phase 명령은 기본 `human` 요약을 출력하고 기존 자동화는
+`--output-format json`으로 하위 실행기 JSON을 그대로 받을 수 있다.
+
+현재 branch는 `codex/phase-bundling-safety-fix-20260808`이다. 구현 commit SHA와
+최종 commit SHA는 commit 직후 이 절에 결속한다. 출력 초안·예시·Claude
+검토 질문은 `PHASE_BUNDLING_출력형식_CLAUDE_검토요청_20260808.md`가 정본이다.
+
+최종 집중 테스트는 `53 passed`, 전체 harness는 `543 passed, 38 skipped`, 실패
+0건이다. skip은 실제 제품 ref·API·브라우저·실행 환경 입력이 필요한 기존
+항목이며 PASS 증거로 계산하지 않았다.
+
+조직 승인자의 실권한 확인은 코드 변경으로 완료 처리하지 않았다. 보호 branch,
+CODEOWNERS 또는 사내 결재 ID·서명 정책이 필요하다. 실제 1.13.2 vendor-merge,
+실측 conflict evidence, change-intent, build-artifact와 Runtime Contract, 운영 배포도
+외부 입력 대기 상태다.

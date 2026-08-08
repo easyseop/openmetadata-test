@@ -73,6 +73,15 @@ def manager_summary(system_json: dict) -> dict:
             "필수 검사 미완료. 미실행 검사의 누락 입력을 채운 뒤 다시 실행하세요. "
             "완료 전 통과로 확정 금지."
         )
+    elif (
+        overall == verdict.PASS
+        and system_json.get("phase") == P.POSTMERGE
+        and system_json.get("inputs", {}).get("verification_scope") == "source-only"
+    ):
+        next_action = (
+            "소스 검사는 통과했습니다. 승인된 build-artifact Candidate lock과 "
+            "Runtime Contract 결과가 없으므로 운영 배포를 승인하지 마세요."
+        )
     elif overall == verdict.PASS:
         next_action = "모든 필수 검사 통과. 다음 단계로 진행할 수 있습니다."
     elif overall == verdict.APPROVAL:
@@ -88,6 +97,8 @@ def manager_summary(system_json: dict) -> dict:
         "phase": system_json["phase"],
         "overall_verdict": overall,
         "phase_status": phase_status,
+        "result_digest": system_json.get("result_digest"),
+        "verification_scope": system_json.get("inputs", {}).get("verification_scope"),
         "counts": counts,
         "checked": checked,
         "total": total,
@@ -172,6 +183,8 @@ def check_output_invariants(rendered: dict) -> tuple[str, ...]:
         )
     if not (m["phase_status"] == d["phase_status"] == s["phase_status"]):
         problems.append("phase_status disagreement across tiers")
+    if not (m.get("result_digest") == d.get("result_digest") == s.get("result_digest")):
+        problems.append("result_digest disagreement across tiers")
     # counts must reconcile with the number of gates in the system JSON
     non_advisory = [g for g in s["gates"] if not g.get("advisory")]
     if sum(m["counts"].values()) != len(non_advisory):
