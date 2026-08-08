@@ -15,11 +15,16 @@
 
 필요한 프로그램은 Docker Desktop과 Git입니다. Java·Maven·Python은 설치하지
 않습니다. `curl`이 없는 환경에서는 Docker image로 공식 Compose 파일을 받습니다.
-다른 컴퓨터에서는 작업 폴더를 하나 정한 뒤 검사기 저장소의 다음 branch를 받습니다.
+다른 컴퓨터에서는 먼저 기존 clone이 있는지 확인합니다. 기존 clone 확인부터
+1.13.2 예행연습 재개까지의 전체 절차는
+[다른 노트북 재개 환경 구성 가이드](../../docs/00-사용가이드/예행연습-1.13.1-1.13.2/OM_TEMP_다른노트북_재개_환경구성_20260809.html)를
+따릅니다.
+
+새로 clone해야 할 때는 현재 검사기 작업 branch를 받습니다.
 
 ```bash
 git clone \
-  --branch codex/om-1.13.1-rehearsal-baseline-20260806 \
+  --branch codex/phase-bundling-safety-fix-20260808 \
   --single-branch \
   https://github.com/easyseop/openmetadata-test.git
 ```
@@ -38,11 +43,12 @@ OpenMetadata를 직접 build할 필요는 없습니다.
 검사기 저장소에서 사용하는 branch는 다음 값으로 고정합니다.
 
 ```text
-codex/om-1.13.1-rehearsal-baseline-20260806
+codex/phase-bundling-safety-fix-20260808
 ```
 
-Runtime Contract 실행 코드는 다음 commit으로 고정됩니다. branch에 새 문서나 코드가
-추가되어도 이 예행연습에서 검사하는 코드가 자동으로 바뀌지 않습니다.
+이 branch에 Docker 실행 파일과 최신 가이드가 있습니다. Runtime Contract 실행 코드는
+별도 tag와 commit으로 고정됩니다. 따라서 branch에 새 문서나 Phase 검사기 코드가
+추가되어도 1.13.1 기준환경에서 실행하는 Contract가 자동으로 바뀌지 않습니다.
 
 ```text
 tag: om-1.13.1-rehearsal-runtime-v1

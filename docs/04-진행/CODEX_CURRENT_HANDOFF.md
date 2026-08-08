@@ -1,6 +1,6 @@
 # 현재 작업 인수인계
 
-> 마지막 갱신: 2026-08-08 KST
+> 마지막 갱신: 2026-08-09 KST
 >
 > 현재 작업: Phase 안전 보완 완료, 고객용 버전 업그레이드 가이드는 사용자 요청으로 폐기
 >
@@ -19,7 +19,7 @@ candidate SHA·image digest·검사기 commit이 묶인 증거도 생성했습�
 
 공유 원격은 다음 두 branch입니다.
 
-- 검사기: `easyseop/openmetadata-test`의 `codex/om-1.13.1-rehearsal-baseline-20260806`
+- 검사기: `easyseop/openmetadata-test`의 `codex/phase-bundling-safety-fix-20260808`
 - 제품 코드: `easyseop/OpenMetadata`의 `codex/om-1.13.1-runtime-ready`
 
 제품 코드를 `easyseop/OM_TEMP`에 처음 push했을 때 공식 Git 이력 객체 전송 중
@@ -31,8 +31,8 @@ branch를 사용합니다.
 
 | 역할 | 위치 | 현재 branch·commit |
 |---|---|---|
-| 검사기 저장소 | 이 저장소 `easyseop/openmetadata-test` | 작업 branch `codex/om-1.13.1-rehearsal-baseline-20260806` · Docker workflow 기준 `80a4dd1f9b877bf7fae15515fa185f1f1fd0883d` · Runtime 고정 tag `om-1.13.1-rehearsal-runtime-v1` |
-| OpenMetadata 코드 저장소 | `$HOME/om-work/om-temp-real-1.13.1` | `codex/om-1.13.1-runtime-ready` · `8ac18ad053d9274774e274ba17b35911ac0b9dcb` · `easyseop-fork` 추적 |
+| 검사기 저장소 | 이 저장소 `easyseop/openmetadata-test` | 작업 branch `codex/phase-bundling-safety-fix-20260808` · Runtime 고정 tag `om-1.13.1-rehearsal-runtime-v1` |
+| OpenMetadata 코드 저장소 | 다른 노트북에서 확인한 `easyseop/OpenMetadata` clone | `codex/om-1.13.1-runtime-ready` · `8ac18ad053d9274774e274ba17b35911ac0b9dcb` |
 | 공식 1.13.1 기준 | 같은 코드 저장소 | `upstream-1.13.1-release` · `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9` |
 | 공식 1.13.2 | 같은 코드 저장소 | `official/om-1.13.2` · 공식 `1.13.2-release` commit `2763bf97…` |
 
@@ -535,3 +535,44 @@ Claude 검토 반영 문서 3개다. PPT·검사기 코드·정책 파일은
 이 commit은 PPT 분석·Claude 검토 요청·검토 반영과 이 인수인계만
 포함한다. 검사기 코드·정책·PPT 원본은 바꾸지 않았다. 다음
 commit은 이 이관 상태를 인수인계에 고정하는 문서 전용 commit이다.
+
+## 18. 2026-08-09 다른 노트북 예행연습 재개 환경 구성
+
+사용자는 원격 이관 후 다른 노트북에서 예행연습을 재개할 환경 구성 절차를
+요청했다. 확인 결과 `docker/rehearsal/README.md`가 Docker 실행 파일이 없는 과거
+branch `codex/om-1.13.1-rehearsal-baseline-20260806`을 clone하도록 안내하고 있었다.
+현재 Docker 실행 파일과 최신 가이드가 있는
+`codex/phase-bundling-safety-fix-20260808`로 안내를 수정했다. Runtime Contract
+실행 코드의 고정 tag `om-1.13.1-rehearsal-runtime-v1`과 commit
+`7fdb182c299e51fd94a4a9c7d56473a3e849c019`은 변경하지 않았다.
+
+다른 노트북용 정본 가이드는 다음 파일이다.
+
+```text
+docs/00-사용가이드/예행연습-1.13.1-1.13.2/
+OM_TEMP_다른노트북_재개_환경구성_20260809.md
+OM_TEMP_다른노트북_재개_환경구성_20260809.html
+```
+
+가이드는 기존 clone을 먼저 찾고 작업 상태·원격 주소·branch를 확인한다. 올바른
+검사기 원격은 `easyseop/openmetadata-test`, 제품 원격은
+`easyseop/OpenMetadata`이다. 과거 `easyseop/OM_TEMP` clone은 이번 1.13.2 재개의
+제품 기준선으로 사용하지 않는다.
+
+고정 입력은 다음과 같다.
+
+- 1.13.1 제품 branch: `codex/om-1.13.1-runtime-ready`
+- 1.13.1 제품 commit: `8ac18ad053d9274774e274ba17b35911ac0b9dcb`
+- 공식 tag: `1.13.2-release`
+- 공식 1.13.2 commit: `2763bf97ce265662793a1a38d353147cc6d6c2e3`
+- Docker 확인 완료 조건: `pass 9, fail 0, error 0, skipped 0`
+
+1.13.1의 원본 11단계 중 1~7단계는 완료 상태다. 다른 노트북에서는 Docker
+기준환경 9/9를 재현하고 위 제품·공식 SHA를 확인한 뒤 원본 **8단계 공식 1.13.2
+준비 및 병합 전 영향 검사**부터 재개한다. 원본 11단계 가이드 파일은 변경하지
+않았다. 8단계 검사와 담당자 검토 전에 실제 vendor merge를 실행하지 않는다.
+
+Markdown은 공통 renderer로 HTML을 생성했고 HTML parser와 `git diff --check`를
+통과했다. 인앱 브라우저의 로컬 `file://` 이동은 URL 보안 정책이 차단했으므로
+자동 시각 검수 완료를 주장하지 않는다. HTML은 기존 예행연습 공통 CSS와 renderer를
+그대로 사용한다.

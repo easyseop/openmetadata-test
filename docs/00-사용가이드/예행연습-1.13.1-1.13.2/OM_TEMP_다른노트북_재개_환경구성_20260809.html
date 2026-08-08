@@ -1,0 +1,124 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OM_TEMP 다른 노트북 재개 환경 구성</title><link rel="stylesheet" href="OM_TEMP_예행연습_공통.css"></head><body><div class="wrap"><main><header class="hero"><h1>OM_TEMP 다른 노트북 재개 환경 구성</h1></header>
+<div class="callout note"><strong>목적:</strong> 다른 노트북에서 기존 Git clone을 먼저 찾고, 원격 저장소·branch·commit을<br>확인한 다음 1.13.1 Docker 기준환경을 재현합니다. 기준환경 검사가 9/9 통과하면<br>기존 11단계 예행연습의 <strong>8단계부터</strong> 계속합니다.</div>
+<p>&gt;</p>
+<div class="callout note"><strong>현재 상태:</strong> 1~7단계의 1.13.1 코드 정리·등록·승인·기준 검사는 완료됐습니다.<br>아래 Docker 실행은 완료된 기준선을 새 노트북에서도 재현하는 확인 절차이며,<br>1~7단계를 다시 개발하는 작업이 아닙니다.</div>
+<h2>1. 이번에 사용할 저장소와 고정 값</h2>
+<p>검사기 저장소에는 실행 도구와 가이드가 있습니다. 제품 코드 저장소에는 실제 OpenMetadata 커스터마이징 코드가 있습니다. 두 저장소는 역할이 다르므로 모두 확인합니다.</p>
+<div class="table-wrap"><table><thead><tr><th>구분</th><th>올바른 원격 저장소</th><th>branch 또는 tag</th><th>확인할 commit</th></tr></thead><tbody>
+<tr><td>검사기·가이드</td><td><code>https://github.com/easyseop/openmetadata-test.git</code></td><td><code>codex/phase-bundling-safety-fix-20260808</code></td><td>이 가이드가 있는 최신 원격 HEAD</td></tr>
+<tr><td>1.13.1 제품 기준선</td><td><code>https://github.com/easyseop/OpenMetadata.git</code></td><td><code>codex/om-1.13.1-runtime-ready</code></td><td><code>8ac18ad053d9274774e274ba17b35911ac0b9dcb</code></td></tr>
+<tr><td>공식 1.13.2</td><td><code>https://github.com/open-metadata/OpenMetadata.git</code></td><td>tag <code>1.13.2-release</code></td><td><code>2763bf97ce265662793a1a38d353147cc6d6c2e3</code></td></tr>
+</tbody></table></div>
+<div class="callout warning"><strong>주의:</strong> <code>easyseop/OM_TEMP</code>는 과거 작업 clone입니다. 이번 재개에서 사용할 제품<br>기준선은 <code>easyseop/OpenMetadata</code>의 <code>codex/om-1.13.1-runtime-ready</code>입니다.<br>원격 주소가 다르면 기존 폴더를 억지로 바꾸지 말고 별도 폴더에 올바른 저장소를<br>clone합니다.</div>
+<h2>2. 필요한 프로그램 확인</h2>
+<p>먼저 Docker Desktop을 실행하고 Terminal에서 다음 명령을 실행합니다.</p>
+<div class="command"><pre><code class="language-bash">git --version
+docker version
+docker compose version</code></pre></div>
+<p>세 명령이 모두 버전을 출력해야 합니다. Docker 연결 오류가 나오면 Docker Desktop이 완전히 시작될 때까지 기다린 뒤 다시 실행합니다. 1.13.1 기준환경 확인만 할 때는 Java·Maven·Python을 별도로 설치하지 않습니다.</p>
+<h2>3. 기존 Git clone 찾기</h2>
+<p>아래 명령은 자주 사용하는 두 폴더 아래에서 Git 저장소를 찾습니다. 읽기 전용 확인이며 파일을 변경하지 않습니다.</p>
+<div class="command"><pre><code class="language-bash">find &quot;$HOME/om-work&quot; &quot;$HOME/Documents&quot; \
+  -maxdepth 5 -type d -name .git -print 2&gt;/dev/null \
+  | sed &#x27;s#/.git$##&#x27;</code></pre></div>
+<p>결과에서 <code>openmetadata-test</code>, <code>OpenMetadata</code>, <code>OM_TEMP</code>와 비슷한 이름의 경로를 찾습니다. 후보 폴더마다 <code>&lt;확인할-경로&gt;</code>를 실제 경로로 바꿔 다음 세 명령을 실행합니다.</p>
+<div class="command"><pre><code class="language-bash">git -C &quot;&lt;확인할-경로&gt;&quot; rev-parse --show-toplevel
+git -C &quot;&lt;확인할-경로&gt;&quot; remote -v
+git -C &quot;&lt;확인할-경로&gt;&quot; status --short --branch</code></pre></div>
+<p><code>status</code>에 파일 목록이 표시되면 그 clone에는 아직 commit하지 않은 변경이 있습니다. 이 가이드에서는 해당 clone을 switch·pull하지 않습니다. 변경 내용을 먼저 commit하거나 별도 clone을 사용합니다.</p>
+<h2>4. 검사기·가이드 저장소 준비</h2>
+<h3>4.1 기존 clone이 올바른 경우</h3>
+<p><code>remote -v</code>에 <code>easyseop/openmetadata-test</code>가 있고 작업 상태가 깨끗하면 경로를 변수로 지정합니다. 아래 예시 경로는 실제 clone 위치로 바꿉니다.</p>
+<div class="command"><pre><code class="language-bash">export OM_TEST_REPO=&quot;$HOME/om-work/openmetadata-test&quot;
+git -C &quot;$OM_TEST_REPO&quot; fetch origin
+git -C &quot;$OM_TEST_REPO&quot; switch codex/phase-bundling-safety-fix-20260808</code></pre></div>
+<p>local branch가 아직 없다는 오류가 나오면 원격 branch를 추적하도록 한 번만 생성합니다.</p>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_TEST_REPO&quot; switch --track \
+  origin/codex/phase-bundling-safety-fix-20260808</code></pre></div>
+<p>이미 local branch가 있었다면 원격과의 차이를 확인합니다.</p>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_TEST_REPO&quot; status --short --branch
+git -C &quot;$OM_TEST_REPO&quot; rev-list --left-right --count \
+  HEAD...origin/codex/phase-bundling-safety-fix-20260808</code></pre></div>
+<p>정상 예시는 <code>0 0</code>입니다. 첫 숫자가 0이고 두 번째 숫자만 1 이상이면 local branch가 뒤에 있으므로, 작업 상태가 깨끗한 것을 다시 확인한 뒤 fast-forward만 허용합니다.</p>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_TEST_REPO&quot; merge --ff-only \
+  origin/codex/phase-bundling-safety-fix-20260808</code></pre></div>
+<p>첫 숫자가 1 이상이면 local commit이 원격에 없다는 뜻이므로 자동으로 합치지 말고 중단합니다.</p>
+<h3>4.2 기존 clone이 없는 경우</h3>
+<div class="command"><pre><code class="language-bash">mkdir -p &quot;$HOME/om-work&quot;
+git clone \
+  --branch codex/phase-bundling-safety-fix-20260808 \
+  --single-branch \
+  https://github.com/easyseop/openmetadata-test.git \
+  &quot;$HOME/om-work/openmetadata-test&quot;
+export OM_TEST_REPO=&quot;$HOME/om-work/openmetadata-test&quot;</code></pre></div>
+<h3>4.3 검사기 저장소 최종 확인</h3>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_TEST_REPO&quot; remote get-url origin
+git -C &quot;$OM_TEST_REPO&quot; branch --show-current
+git -C &quot;$OM_TEST_REPO&quot; rev-parse HEAD
+test -x &quot;$OM_TEST_REPO/docker/rehearsal/start.sh&quot; &amp;&amp; echo &quot;Docker 실행 파일 확인 완료&quot;</code></pre></div>
+<p>원격 주소와 branch가 1절의 표와 같고 마지막 명령이 <code>Docker 실행 파일 확인 완료</code>를 출력해야 합니다.</p>
+<h2>5. 1.13.1 Docker 기준환경 재현</h2>
+<p>이 단계는 제품 소스를 build하지 않습니다. 공개 container image로 완료된 1.13.1 기준환경을 시작하고 Runtime Contract 9개를 실행합니다.</p>
+<div class="command"><pre><code class="language-bash">cd &quot;$OM_TEST_REPO&quot;
+bash docker/rehearsal/start.sh</code></pre></div>
+<p>정상 시작 결과에는 다음 문장이 표시됩니다.</p>
+<div class="command"><pre><code class="language-text">[완료] OpenMetadata: http://127.0.0.1:8585</code></pre></div>
+<p>이어서 검사를 실행합니다.</p>
+<div class="command"><pre><code class="language-bash">bash docker/rehearsal/test.sh</code></pre></div>
+<p>완료 조건은 다음과 같습니다.</p>
+<div class="command"><pre><code class="language-text">pass 9, fail 0, error 0, skipped 0</code></pre></div>
+<p><code>fail</code>, <code>error</code>, <code>skipped</code> 중 하나라도 1 이상이면 8단계로 이동하지 않습니다. Terminal의 오류 원문과 <code>var/rehearsal/evidence/</code> 아래에 생성된 결과 폴더를 보존하고 Docker Desktop 상태와 image 다운로드 오류부터 확인합니다.</p>
+<h2>6. 1.13.1 제품 코드와 공식 1.13.2 준비</h2>
+<p>Docker 기준환경 검사만 할 때는 제품 소스가 필요하지 않습니다. 그러나 8단계부터는 공식 1.13.2가 커스터마이징에 미치는 영향을 실제 Git 코드로 비교하므로 제품 코드 저장소가 필요합니다.</p>
+<h3>6.1 기존 제품 clone이 올바른 경우</h3>
+<p>3절에서 찾은 clone의 <code>origin</code>이 <code>easyseop/OpenMetadata</code>이고 작업 상태가 깨끗하면 그 경로를 사용합니다.</p>
+<div class="command"><pre><code class="language-bash">export OM_CODE_REPO=&quot;$HOME/om-work/OpenMetadata&quot;
+git -C &quot;$OM_CODE_REPO&quot; fetch origin
+git -C &quot;$OM_CODE_REPO&quot; switch codex/om-1.13.1-runtime-ready</code></pre></div>
+<p>local branch가 없으면 다음 명령으로 원격 branch를 추적합니다.</p>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; switch --track \
+  origin/codex/om-1.13.1-runtime-ready</code></pre></div>
+<h3>6.2 기존 제품 clone이 없는 경우</h3>
+<div class="command"><pre><code class="language-bash">mkdir -p &quot;$HOME/om-work&quot;
+git clone --filter=blob:none \
+  https://github.com/easyseop/OpenMetadata.git \
+  &quot;$HOME/om-work/OpenMetadata&quot;
+export OM_CODE_REPO=&quot;$HOME/om-work/OpenMetadata&quot;
+git -C &quot;$OM_CODE_REPO&quot; switch --track \
+  origin/codex/om-1.13.1-runtime-ready</code></pre></div>
+<h3>6.3 제품 기준선 commit 확인</h3>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; remote get-url origin
+git -C &quot;$OM_CODE_REPO&quot; rev-parse HEAD
+git -C &quot;$OM_CODE_REPO&quot; status --short --branch</code></pre></div>
+<p><code>rev-parse HEAD</code> 결과는 반드시 다음 값이어야 합니다.</p>
+<div class="command"><pre><code class="language-text">8ac18ad053d9274774e274ba17b35911ac0b9dcb</code></pre></div>
+<p>다른 SHA이거나 작업 파일 목록이 표시되면 중단합니다. 임의로 reset하거나 변경을 삭제하지 않습니다.</p>
+<h3>6.4 공식 OpenMetadata 원격과 1.13.2 tag 확인</h3>
+<p>먼저 <code>upstream</code> 원격이 있는지 확인합니다.</p>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; remote get-url upstream</code></pre></div>
+<p><code>No such remote</code> 오류가 나올 때만 공식 원격을 추가합니다.</p>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; remote add upstream \
+  https://github.com/open-metadata/OpenMetadata.git</code></pre></div>
+<p>공식 1.13.2 tag를 받고 commit을 확인합니다.</p>
+<div class="command"><pre><code class="language-bash">git -C &quot;$OM_CODE_REPO&quot; fetch upstream tag 1.13.2-release
+git -C &quot;$OM_CODE_REPO&quot; rev-parse &#x27;refs/tags/1.13.2-release^{commit}&#x27;</code></pre></div>
+<p>정상 결과는 다음 값입니다.</p>
+<div class="command"><pre><code class="language-text">2763bf97ce265662793a1a38d353147cc6d6c2e3</code></pre></div>
+<p>이 단계에서는 아직 1.13.2를 merge하지 않습니다. 먼저 8단계의 병합 전 영향 검사와 검토를 끝내야 합니다.</p>
+<h2>7. 예행연습 재개 위치</h2>
+<p>다른 노트북에서 실행할 순서는 다음과 같습니다.</p>
+<div class="command"><pre><code class="language-text">기존 clone·원격·작업 상태 확인
+  → 검사기 최신 branch 준비
+  → Docker 1.13.1 Runtime Contract 9/9 확인
+  → 제품 1.13.1 commit과 공식 1.13.2 tag 확인
+  → 원본 11단계 가이드의 8단계부터 재개</code></pre></div>
+<p><strong>다음 페이지:</strong> <a href="./OM_TEMP_1.13.2_공식코드_준비_및_사전영향검사_가이드.html">8단계 — 공식 1.13.2 준비 및 병합 전 영향 검사 →</a></p>
+<p>8단계 검사와 담당자 검토가 완료된 뒤에만 9단계에서 vendor merge를 실행합니다. vendor merge는 완료된 1.13.1 커스터마이징 branch에 공식 1.13.2 변경을 합치는 실제 코드 병합입니다.</p>
+<h2>8. 즉시 중단해야 하는 경우</h2>
+<ul><li>기존 clone에 commit하지 않은 변경이 있음</li><li>검사기 원격이 <code>easyseop/openmetadata-test</code>가 아님</li><li>제품 원격이 <code>easyseop/OpenMetadata</code>가 아니라 과거 <code>easyseop/OM_TEMP</code>임</li><li>제품 기준선 SHA 또는 공식 1.13.2 tag SHA가 이 문서와 다름</li><li>Docker Runtime Contract 결과가 <code>pass 9, fail 0, error 0, skipped 0</code>이 아님</li><li>local branch에 원격에 없는 commit이 있어 fast-forward할 수 없음</li></ul>
+<p>이 경우 임의로 reset·강제 pull·강제 push하지 않습니다. <code>git status --short --branch</code>, <code>git remote -v</code>, <code>git rev-parse HEAD</code> 결과와 Docker 오류 원문을 보존한 뒤 인수인계에 기록합니다.</p>
+<h2>9. 작업을 마칠 때</h2>
+<p>Docker 환경만 종료할 때는 데이터 볼륨을 삭제하지 않는 다음 명령을 사용합니다.</p>
+<div class="command"><pre><code class="language-bash">cd &quot;$OM_TEST_REPO&quot;
+bash docker/rehearsal/stop.sh</code></pre></div>
+<p>검사 증거는 <code>$OM_TEST_REPO/var/rehearsal/evidence/</code>에 남습니다. 다른 작업자에게 넘길 때는 검사기·제품 commit SHA, Runtime Contract 요약, 마지막 완료 단계와 다음 실행할 가이드 경로를 함께 기록합니다.</p></main></div></body></html>
