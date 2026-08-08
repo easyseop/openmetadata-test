@@ -576,3 +576,13 @@ Markdown은 공통 renderer로 HTML을 생성했고 HTML parser와 `git diff --c
 통과했다. 인앱 브라우저의 로컬 `file://` 이동은 URL 보안 정책이 차단했으므로
 자동 시각 검수 완료를 주장하지 않는다. HTML은 기존 예행연습 공통 CSS와 renderer를
 그대로 사용한다.
+
+환경 구성 가이드·HTML·Docker README 수정은 다음 commit에 결속했다.
+
+```text
+9298636 docs: add other laptop rehearsal setup guide
+```
+
+다음 commit은 이 정확한 commit 정보를 기록하는 인수인계 전용 commit이다. 두
+commit을 `origin/codex/phase-bundling-safety-fix-20260808`에 push한 뒤 다른
+노트북에서는 이 branch를 fetch한다.
