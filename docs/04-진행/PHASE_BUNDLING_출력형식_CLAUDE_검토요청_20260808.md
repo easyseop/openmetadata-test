@@ -1,9 +1,10 @@
 # Phase 번들링 출력 형식 Claude 검토 요청
 
-> 상태: Claude 검토 완료, 최종 안전성·출력 보완 반영 중
+> 상태: Claude 검토 완료, 최종 안전성·출력 보완 및 회귀 완료
 > 작업 branch: `codex/phase-bundling-safety-fix-20260808`
 > 비교 기준: 외부 검토 기준 `295307d6568b5102c065fc5a093dfa7fa1b46ba5`
-> 구현 commit: `cf17ed206de63a8dd4dfb88ca54cee6cd6a081c8`
+> 이전 구현 commit: `cf17ed206de63a8dd4dfb88ca54cee6cd6a081c8`
+> 최종 보완 commit: `01a1a49d0f6354fa4a3c491e99543506357fcb4f`
 
 ## 1. 왜 다시 고쳤는가
 

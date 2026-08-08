@@ -8,6 +8,7 @@
 > `--registration-version` 별칭, 80열 human 출력과 4→5단계 수작업 안내도
 > 반영했다. Phase 회귀는 182 passed/1 environment skip, 전체 harness는
 > 560 passed/38 skipped, 실패 0건이다. 실제 1.13.2 병합·승인·배포는 미수행이다.
+> 최종 구현 commit은 `01a1a49d0f6354fa4a3c491e99543506357fcb4f`이다.
 
 > Updated: 2026-08-08 KST — 외부 설계 검토의 신규 P0 1건·P1 7건 중
 > 코드로 해결 가능한 결속·무결성 항목을 보완하고, 여섯 Phase 명령에 기본

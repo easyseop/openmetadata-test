@@ -259,4 +259,5 @@ digest를 결과에 기록한다. rename/rename, add/add, custom merge-driver는
 명확한 target 누락, 선택적 conflict-rate, 등록 묶음 별칭과 terminal 출력도 함께
 보완했다. 최종 Phase·Git 집중 회귀는 `182 passed, 1 skipped`, 전체 harness는
 `560 passed, 38 skipped`, 실패 0건이다. 실제 제품 merge·조직 승인·Runtime·
-운영 배포는 수행하지 않았다.
+운영 배포는 수행하지 않았다. 최종 구현 commit은
+`01a1a49d0f6354fa4a3c491e99543506357fcb4f`이다.

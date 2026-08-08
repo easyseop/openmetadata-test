@@ -365,8 +365,9 @@ Phase·Git 집중: 182 passed, 1 skipped
 ```
 
 skip은 실제 제품 ref·외부 API·브라우저·환경 입력이 필요한 기존 항목이며 PASS에
-포함하지 않았다. 구현 commit SHA와 원격 동기화 상태는 commit·push 직후 이 절에
-추가한다. rename/rename, add/add, custom merge-driver와 attributes 동작은 합성
-Git 반례로 고정했다. 실제 vendor merge가 다른 merge-driver 설정을 쓰면 결과가
+포함하지 않았다. 최종 구현 commit은
+`01a1a49d0f6354fa4a3c491e99543506357fcb4f`이다. rename/rename, add/add,
+custom merge-driver와 attributes 동작은 합성 Git 반례로 고정했다. 실제 vendor
+merge가 다른 merge-driver 설정을 쓰면 결과가
 달라질 수 있으므로 같은 설정을 사용해야 하며, 실제 merge 로그 자동 수집은 후속
 개발 항목이다. LLM G-룰은 참고자료로만 보관하고 구현하지 않았다.

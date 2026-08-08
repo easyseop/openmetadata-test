@@ -4,12 +4,13 @@
 > 저장소: `easyseop/openmetadata-test`
 > branch: `codex/phase-bundling-safety-fix-20260808`
 > 구현 검토 기준: `cf17ed206de63a8dd4dfb88ca54cee6cd6a081c8`
-> 현재 원격 HEAD: `89304be225d8c2f5a4ad5e697ad010cae6680f42`
+> 검토 시작 원격 HEAD: `89304be225d8c2f5a4ad5e697ad010cae6680f42`
+> 최종 보완 commit: `01a1a49d0f6354fa4a3c491e99543506357fcb4f`
 
 > 검토 결과: Claude 최종 검토 완료. S-2의 최초 부분집합 조건은 폐기하고,
 > `custom_head_sha` 3중 결속과 `git merge-tree` 완전 일치 방식으로 합의했다.
-> 구현 상태: 합의한 S-1~S-6과 출력 보완 구현 및 전체 회귀 완료. 구현 commit은
-> commit 직후 이 문서에 결속한다.
+> 구현 상태: 합의한 S-1~S-6과 출력 보완 구현 및 전체 회귀 완료. 구현은
+> `01a1a49d0f6354fa4a3c491e99543506357fcb4f`에 결속했다.
 
 ## 1. 이번 검토의 목적과 범위
 
