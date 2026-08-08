@@ -445,3 +445,81 @@ driver override 미지원 제약, `replay_config_digest`가 머신별로 달라�
 감사용 정보 필드임도 문서화했다. 구현 commit은
 `6079aaff4d1b227df699d3f67262d60a96cd6b07`이며, 이 SHA 기준 집중 회귀는
 `188 passed, 1 skipped`, 전체 harness는 `566 passed, 38 skipped`, 실패 0건이다.
+
+## 17. 2026-08-09 PPT LLM 커스텀 운영과 Phase 검사기 역할 분석
+
+사용자가 제공한 13장 PPT
+`/Users/seop/Downloads/오픈메타데이터럴~.pptx`를 읽기 전용으로
+분석했다. PPT 원본은 수정하지 않았고 저장소에 복사하지도 않았다.
+
+분석·Claude 검토 요청서는 다음 파일이다.
+
+```text
+docs/04-진행/PPT_LLM커스텀운영_PHASE검사기_CLAUDE_검토요청_20260809.md
+```
+
+요청서는 PPT의 branch·commit·Markdown 4종·build·14개 test·버전
+포팅·6개 점검·Claude skill 흐름을 현재 Manifest·Candidate lock·
+premerge·conflict evidence·postmerge·Runtime Contract·phase-status에
+대응시킰다. 각 항목을 현재 구현, 조건부 구현, 실환경 입력
+대기, 사람 전용으로 구분했다. Claude에게는 코드 수정 없이
+사실 대조, P0·P1·P2, 추가 반례 test, 최종 채택 권고만 요청한다.
+
+이 작업 시작 HEAD는
+`e2b445edbd057e611084f0194d8780b6683b0c5e`이다. 요청서 전체를
+저장소의 가독성 스킬로 점검했고 `git diff --check`를 통과했다.
+
+Claude CLI를 `--permission-mode plan`으로 실행했지만 다음 인증
+오류로 응답 생성 전에 중단됐다.
+
+```text
+Not logged in · Please run /login
+```
+
+따라서 Claude 검토 완료를 주장하지 않는다. 다음 정확한 절차는
+이 컴퓨터에서 Claude CLI `/login`을 완료한 뒤, 위 검토 요청서를
+읽기 전용으로 다시 전달하고 응답을 별도 검토 결과 문서로
+보존하는 것이다.
+
+### 17.1 외부 Claude 검토 수신·반영
+
+사용자가 별도 Claude 검토 결과를 전달했다. PPT SHA·13장 전문,
+저장소 HEAD·구현 commit, `188 passed, 1 skipped`·`566 passed,
+38 skipped`를 재현했고 최종 판정은 `수정 후 채택`이다.
+
+반영 결과는 다음 문서가 정본이다.
+
+```text
+docs/04-진행/PPT_LLM커스텀운영_PHASE검사기_CLAUDE_검토반영_20260809.md
+```
+
+요청서에 PPT의 `KB-CUST-*`·`KB-CUSTOM-*` 혼용, 과거
+1.12.8→1.12.13→1.13.1과 현재 1.13.1→1.13.2의 시점 차이,
+patch-replay가 개별 도구만 있고 Phase postmerge에 미연결인 점,
+PPT 14개 test는 Contract·fixture·runner 추가 개발이 필요한 점을
+보정했다. LLM의 정책 자기 수정, run-id 재사용, digest 없는
+Markdown 성공 표시도 금지 목록에 추가했다.
+
+Claude가 P0로 표시한 3건은 검사기 코드 결함이 아니라 PPT 운영
+규칙의 오용 위험이다. 현재 코드에 새 P0는 없다. trailer 없는
+upstream commit은 T30 `CORE_CHANGE_WITHOUT_ID` `BLOCK`으로 이미 검출하며,
+다음 집중 test를 재확인했다.
+
+```text
+./.venv/bin/python -m pytest \
+  harness/tests/test_invariants.py::test_core_change_without_id_blocks_P0_5 -q
+
+1 passed
+```
+
+임의로 적용하지 않은 외부 결정 필요 항목은 다음과 같다.
+
+1. PPT 실행 전략을 vendor-merge로 전환할지 patch-replay Phase를 개발할지
+2. `bootstrap/sql/**`을 `watched`에서 `protected`로 올릴지
+3. 신뢰할 build-success gate의 CI·산출물 계약
+4. PPT 14개의 Contract ID·fixture·runner·환경 owner
+5. 조직 승인·release T91·서명·보존 정책
+
+이 문서 batch의 범위는 이 인수인계서, Claude 검토 요청서,
+Claude 검토 반영 문서 3개다. PPT·검사기 코드·정책 파일은
+수정하지 않았다.
