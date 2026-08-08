@@ -38,6 +38,48 @@ def _atomic_json(path: Path, payload: dict) -> None:
     os.replace(tmp, path)
 
 
+def _write_conflict_evidence(path: Path, payload: dict, validate) -> None:
+    """Write one collector artifact without clobbering or exposing partial data."""
+    import datetime
+    import socket
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    reservation = path.with_name(f".{path.name}.lock")
+    try:
+        reservation_fd = os.open(
+            str(reservation), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644
+        )
+    except FileExistsError as exc:
+        raise PhaseCLIError(
+            f"다른 수집 작업이 증거 경로를 사용 중입니다: {path}; lock={reservation}"
+        ) from exc
+    tmp = path.with_name(f".{path.name}.tmp.{os.getpid()}")
+    try:
+        metadata = json.dumps({
+            "pid": os.getpid(),
+            "host": socket.gethostname(),
+            "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "output": str(path),
+        }, ensure_ascii=False, sort_keys=True).encode("utf-8")
+        os.write(reservation_fd, metadata)
+        os.fsync(reservation_fd)
+        if path.exists():
+            raise PhaseCLIError(f"기존 conflict evidence를 덮어쓰지 않습니다: {path}")
+        blob = yaml.safe_dump(payload, allow_unicode=True, sort_keys=True).encode("utf-8")
+        fd = os.open(str(tmp), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+        try:
+            os.write(fd, blob)
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+        validate(tmp)
+        os.replace(str(tmp), str(path))
+    finally:
+        tmp.unlink(missing_ok=True)
+        os.close(reservation_fd)
+        reservation.unlink(missing_ok=True)
+
+
 def _sha256_file(path: Path | None) -> str | None:
     if path is None or not path.is_file():
         return None
@@ -138,6 +180,11 @@ def _bind_conflict_evidence(args, lock) -> str | None:
             "custom_head_sha가 승인된 이전 기준선 Candidate와 다릅니다: "
             f"{custom_head} != {baseline.lock.candidate.commit_sha}"
         )
+    if custom_head == lock.candidate.commit_sha:
+        raise PhaseCLIError(
+            "활성 lock이 아직 병합 전 기준선입니다. 새 1.13.2 Candidate lock을 "
+            "승인·활성화한 뒤 conflict evidence를 수집하거나 검증하세요."
+        )
     if baseline.lock.upstream.target_sha != lock.upstream.base_sha:
         raise PhaseCLIError(
             "이전 기준선 lock의 upstream target이 현재 upgrade base와 다릅니다"
@@ -231,16 +278,98 @@ def _bind_conflict_evidence(args, lock) -> str | None:
         "conflict_rate": measured_rate,
         "merge_tree": {
             "strategy": "ort (git merge-tree --write-tree default)",
-            "rename_detection": "git default",
+            "rename_detection": replay.rename_detection_policy,
             "git_version": replay.git_version,
             "command": list(replay.command),
             "result_tree_sha": replay.tree_sha,
             "output_digest": replay.output_digest,
             "merge_driver_config_digest": replay.merge_driver_config_digest,
+            "replay_config_digest": replay.replay_config_digest,
             "conflicted_paths": list(replay.conflicted_paths),
         },
     }
     return _sha256_file(path)
+
+
+def collect_conflict_evidence_command(args) -> int:
+    """Generate candidate-bound conflict evidence and self-check it before publish."""
+    selection = _selected(args.registration)
+    lock = selection.lock
+    baseline = candidate_select.select_approved_candidate(
+        args.registration, args.baseline_lock_digest
+    )
+    if baseline.status != candidate_select.SELECTED or baseline.lock is None:
+        raise PhaseCLIError(
+            "이전 기준선 lock이 승인되지 않았습니다: " + "; ".join(baseline.reasons)
+        )
+    if baseline.lock.candidate.commit_sha != args.custom_head:
+        raise PhaseCLIError(
+            "--custom-head가 승인된 이전 기준선 Candidate와 다릅니다: "
+            f"{args.custom_head} != {baseline.lock.candidate.commit_sha}"
+        )
+    if args.custom_head == lock.candidate.commit_sha:
+        raise PhaseCLIError(
+            "활성 lock이 아직 병합 전 기준선입니다. 새 1.13.2 Candidate lock을 "
+            "승인·활성화한 뒤 수집하세요."
+        )
+    base = lock.upstream.base_sha
+    target = lock.upstream.target_sha
+    merge_base_sha = gitprim.merge_base(str(args.repo), target, args.custom_head)
+    changed = sorted(
+        set(gitprim.net_changed_paths(str(args.repo), base, target))
+        | set(gitprim.net_changed_paths(str(args.repo), base, args.custom_head)),
+        key=lambda path: path.encode("utf-8"),
+    )
+    if not changed:
+        raise PhaseCLIError("merge_changed_paths가 비어 있어 conflict-rate를 계산할 수 없습니다")
+    replay = gitprim.merge_tree_conflicts(str(args.repo), target, args.custom_head)
+    conflicted = list(replay.conflicted_paths)
+    if not set(conflicted).issubset(changed):
+        raise PhaseCLIError("merge-tree 충돌 경로가 merge 변경 경로 밖에 있습니다")
+    payload = {
+        "schema_version": 1,
+        "upstream_base_sha": base,
+        "upstream_target_sha": target,
+        "candidate_sha": lock.candidate.commit_sha,
+        "custom_head_sha": args.custom_head,
+        "baseline_candidate_lock_digest": args.baseline_lock_digest,
+        "merge_base_sha": merge_base_sha,
+        "merge_changed_paths": changed,
+        "conflicted_paths": conflicted,
+        "collector_harness_digest": _harness_version(),
+        "merge_tree": {
+            "strategy": "ort (git merge-tree --write-tree default)",
+            "rename_detection": replay.rename_detection_policy,
+            "git_version": replay.git_version,
+            "command": list(replay.command),
+            "result_tree_sha": replay.tree_sha,
+            "output_digest": replay.output_digest,
+            "merge_driver_config_digest": replay.merge_driver_config_digest,
+            "replay_config_digest": replay.replay_config_digest,
+        },
+    }
+
+    def self_check(temp_path: Path) -> None:
+        check_args = argparse.Namespace(
+            conflict_evidence=temp_path,
+            conflict_rate=None,
+            registration=args.registration,
+            repo=args.repo,
+        )
+        _bind_conflict_evidence(check_args, lock)
+
+    _write_conflict_evidence(args.output, payload, self_check)
+    print(json.dumps({
+        "status": "created",
+        "output": str(args.output),
+        "candidate_sha": lock.candidate.commit_sha,
+        "changed_path_count": len(changed),
+        "conflicted_path_count": len(conflicted),
+        "conflict_rate": len(conflicted) / len(changed),
+        "rename_detection": replay.rename_detection_policy,
+        "merge_driver_config_digest": replay.merge_driver_config_digest,
+    }, ensure_ascii=False, sort_keys=True))
+    return 0
 
 
 def _load_manifests(registration: Path, layout) -> dict[str, dict]:
@@ -917,6 +1046,13 @@ def parse_args(argv=None):
     prep_parser.add_argument("--branch", required=True)
     prep_parser.add_argument("--output", required=True, type=Path)
 
+    collect_parser = sub.add_parser("collect-conflict-evidence")
+    collect_parser.add_argument("--repo", required=True, type=Path)
+    collect_parser.add_argument("--registration", required=True, type=Path)
+    collect_parser.add_argument("--baseline-lock-digest", required=True)
+    collect_parser.add_argument("--custom-head", required=True)
+    collect_parser.add_argument("--output", required=True, type=Path)
+
     preflight_parser = sub.add_parser("preflight")
     _common(preflight_parser)
     preflight_parser.add_argument("--phase", required=True, choices=[phase.PREMERGE, phase.POSTMERGE])
@@ -958,12 +1094,16 @@ def main(argv=None) -> int:
         return {
             "candidate": candidate_command,
             "prep-official": prep_official_command,
+            "collect-conflict-evidence": collect_conflict_evidence_command,
             "preflight": preflight_command,
             "premerge": premerge_command,
             "postmerge": postmerge_command,
             "status": status_command,
         }[args.command](args)
-    except (PhaseCLIError, phase.PhaseError, candidate.CandidateLockError, OSError, ValueError) as exc:
+    except (
+        PhaseCLIError, phase.PhaseError, candidate.CandidateLockError,
+        gitprim.GitPrimitiveError, OSError, ValueError,
+    ) as exc:
         print(json.dumps({"status": "analysis_error", "reason": str(exc)}, ensure_ascii=False))
         return verdict.EXIT_CODE[verdict.ANALYSIS_ERROR]
 

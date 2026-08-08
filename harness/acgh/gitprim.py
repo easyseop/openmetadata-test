@@ -23,8 +23,13 @@ _STABLE_CONFIG = [
     "-c", "core.quotepath=false",
     "-c", "i18n.logOutputEncoding=UTF-8",
     "-c", "log.showSignature=false",
+    "-c", "diff.renames=false",
+    "-c", "merge.renames=false",
+    "-c", "merge.directoryRenames=false",
 ]
 _FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
+RENAME_DETECTION_POLICY = "disabled"
+EMPTY_MERGE_DRIVER_CONFIG_DIGEST = "sha256:" + hashlib.sha256(b"").hexdigest()
 
 
 class GitPrimitiveError(RuntimeError):
@@ -60,6 +65,10 @@ class MergeTreeResult:
     command: tuple[str, ...]
     output_digest: str
     merge_driver_config_digest: str
+    # Informational audit digest. Effective behavior is fixed by _STABLE_CONFIG,
+    # while this digest may still differ when user config contains shadowed values.
+    replay_config_digest: str
+    rename_detection_policy: str
 
 
 def git(repo: str, *args: str, check: bool = True) -> str:
@@ -149,7 +158,7 @@ def net_changed_paths(repo: str, base: str, head: str) -> list[str]:
     Distinct from per-commit changed_paths: a file added then removed across the
     range does NOT appear here. Used for the lower-bound (required) drift check.
     """
-    out = git(repo, "diff", "--name-only", "-z", base, head)
+    out = git(repo, "diff", "--no-renames", "--name-only", "-z", base, head)
     return [p for p in out.split("\x00") if p != ""]
 
 
@@ -249,13 +258,46 @@ def merge_base(repo: str, left: str, right: str) -> str | None:
     return sha
 
 
-def merge_tree_conflicts(repo: str, target: str, custom_head: str) -> MergeTreeResult:
+def _captured_config(repo: str, pattern: str) -> bytes:
+    proc = subprocess.run(
+        ["git", "-C", repo, *_STABLE_CONFIG, "config", "--null", "--get-regexp", pattern],
+        capture_output=True,
+    )
+    if proc.returncode not in (0, 1):
+        raise GitPrimitiveError(
+            "cannot capture Git merge configuration: "
+            + proc.stderr.decode("utf-8", errors="replace").strip()
+        )
+    return proc.stdout
+
+
+def merge_tree_conflicts(
+    repo: str,
+    target: str,
+    custom_head: str,
+    *,
+    allowed_merge_driver_config_digest: str = EMPTY_MERGE_DRIVER_CONFIG_DIGEST,
+) -> MergeTreeResult:
     """Reproduce ort merge conflicts without changing the worktree.
 
     Git 2.38+ ``merge-tree --write-tree`` returns 0 for a clean merge and 1
     for a merge with conflicts. Both are valid results; every other exit code
     is an analysis failure. ``--name-only -z`` keeps path parsing NUL-safe.
     """
+    driver_config = _captured_config(
+        repo, r"^merge\..*\.(driver|recursive|name)$"
+    )
+    driver_digest = "sha256:" + hashlib.sha256(driver_config).hexdigest()
+    if driver_digest != allowed_merge_driver_config_digest:
+        raise GitPrimitiveError(
+            "merge driver configuration is not allowed by the deterministic replay "
+            f"policy: actual={driver_digest}, allowed={allowed_merge_driver_config_digest}"
+        )
+    replay_config = _captured_config(
+        repo,
+        r"^(diff\.renames|merge\.renames|merge\.directoryRenames|"
+        r"merge\..*\.(driver|recursive|name))$",
+    )
     command = (
         "merge-tree", "--write-tree", "--name-only", "-z", target, custom_head
     )
@@ -289,25 +331,13 @@ def merge_tree_conflicts(repo: str, target: str, custom_head: str) -> MergeTreeR
     version_proc = subprocess.run(
         ["git", "--version"], text=True, capture_output=True, check=True
     )
-    driver_config = subprocess.run(
-        [
-            "git", "-C", repo, *_STABLE_CONFIG, "config", "--null",
-            "--get-regexp", r"^merge\..*\.(driver|recursive|name)$",
-        ],
-        capture_output=True,
-    )
-    if driver_config.returncode not in (0, 1):
-        raise GitPrimitiveError(
-            "cannot capture merge driver configuration: "
-            + driver_config.stderr.decode("utf-8", errors="replace").strip()
-        )
     return MergeTreeResult(
         tree_sha=tree_sha,
-        conflicted_paths=tuple(sorted(paths)),
+        conflicted_paths=tuple(sorted(paths, key=lambda path: path.encode("utf-8"))),
         git_version=version_proc.stdout.strip(),
         command=command,
         output_digest="sha256:" + hashlib.sha256(proc.stdout).hexdigest(),
-        merge_driver_config_digest=(
-            "sha256:" + hashlib.sha256(driver_config.stdout).hexdigest()
-        ),
+        merge_driver_config_digest=driver_digest,
+        replay_config_digest="sha256:" + hashlib.sha256(replay_config).hexdigest(),
+        rename_detection_policy=RENAME_DETECTION_POLICY,
     )

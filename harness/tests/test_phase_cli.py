@@ -160,6 +160,11 @@ def test_om_workflow_exposes_all_phase_commands(monkeypatch):
             "--branch", "official/om-1.13.2",
         ],
         "candidate-select": ["--version", "1.13.1"],
+        "collect-conflict-evidence": [
+            "--repo", "/work/product", "--version", "1.13.1",
+            "--baseline-lock-digest", "sha256:" + "0" * 64,
+            "--custom-head", "a" * 40, "--output", "/work/conflict.yaml",
+        ],
         "phase-preflight": [
             "--repo", "/work/product", "--version", "1.13.1", "--phase", "premerge",
         ],
@@ -307,7 +312,7 @@ def test_source_tree_lock_rejects_runtime_artifact_digest(tmp_path):
     assert not output.exists()
 
 
-def test_conflict_evidence_is_candidate_bound_and_rate_is_derived(tmp_path):
+def test_conflict_evidence_rejects_still_active_baseline_lock(tmp_path):
     repo, registration, base, _target = _fixture(tmp_path)
     selection = run_phase_bundle._selected(registration)
     evidence = tmp_path / "conflicts.yaml"
@@ -327,23 +332,22 @@ def test_conflict_evidence_is_candidate_bound_and_rate_is_derived(tmp_path):
         registration=registration,
         repo=repo,
     )
-    digest = run_phase_bundle._bind_conflict_evidence(args, selection.lock)
-    assert args.conflict_rate == 0.0
-    assert args.conflict_measurement["custom_head_sha"] == selection.lock.candidate.commit_sha
-    assert args.conflict_measurement["merge_tree"]["conflicted_paths"] == []
-    assert digest.startswith("sha256:")
+    with pytest.raises(run_phase_bundle.PhaseCLIError, match="아직 병합 전 기준선"):
+        run_phase_bundle._bind_conflict_evidence(args, selection.lock)
 
 
 def test_conflict_evidence_rejects_duplicate_paths_and_invented_rate(tmp_path):
-    repo, registration, base, _target = _fixture(tmp_path)
-    selection = run_phase_bundle._selected(registration)
+    repo, registration, base, target = _fixture(tmp_path)
+    lock, baseline, custom_head = _activate_postmerge_conflict_candidate(
+        repo, registration, base, target
+    )
     evidence = tmp_path / "conflicts.yaml"
     payload = {
         "upstream_base_sha": base,
-        "upstream_target_sha": base,
-        "candidate_sha": selection.lock.candidate.commit_sha,
-        "custom_head_sha": selection.lock.candidate.commit_sha,
-        "baseline_candidate_lock_digest": selection.lock_digest,
+        "upstream_target_sha": target,
+        "candidate_sha": lock.candidate.commit_sha,
+        "custom_head_sha": custom_head,
+        "baseline_candidate_lock_digest": baseline.lock_digest,
         "merge_base_sha": base,
         "merge_changed_paths": ["svc/a.java", "svc/a.java"],
         "conflicted_paths": [],
@@ -356,13 +360,14 @@ def test_conflict_evidence_rejects_duplicate_paths_and_invented_rate(tmp_path):
         repo=repo,
     )
     with pytest.raises(run_phase_bundle.PhaseCLIError, match="중복 경로"):
-        run_phase_bundle._bind_conflict_evidence(args, selection.lock)
+        run_phase_bundle._bind_conflict_evidence(args, lock)
 
     payload["merge_changed_paths"] = ["svc/a.java"]
+    payload["conflicted_paths"] = ["svc/a.java"]
     payload["conflict_rate"] = 0.1
     evidence.write_text(yaml.safe_dump(payload), encoding="utf-8")
     with pytest.raises(run_phase_bundle.PhaseCLIError, match="경로 수 계산"):
-        run_phase_bundle._bind_conflict_evidence(args, selection.lock)
+        run_phase_bundle._bind_conflict_evidence(args, lock)
 
 
 def _activate_postmerge_conflict_candidate(
@@ -447,6 +452,102 @@ def test_conflict_evidence_replays_exact_conflict_set_and_binds_baseline(tmp_pat
     assert args.conflict_measurement["merge_tree"]["output_digest"].startswith("sha256:")
 
 
+def test_conflict_collector_round_trip_and_tamper_rejection(tmp_path):
+    repo, registration, base, target = _fixture(tmp_path)
+    lock, baseline, custom_head = _activate_postmerge_conflict_candidate(
+        repo, registration, base, target
+    )
+    evidence = tmp_path / "collected.yaml"
+    assert run_phase_bundle.main([
+        "collect-conflict-evidence",
+        "--repo", str(repo),
+        "--registration", str(registration),
+        "--baseline-lock-digest", baseline.lock_digest,
+        "--custom-head", custom_head,
+        "--output", str(evidence),
+    ]) == 0
+    payload = yaml.safe_load(evidence.read_text(encoding="utf-8"))
+    assert payload["merge_changed_paths"] == ["svc/a.java"]
+    assert payload["conflicted_paths"] == ["svc/a.java"]
+    assert payload["merge_tree"]["rename_detection"] == "disabled"
+
+    bind_args = SimpleNamespace(
+        conflict_evidence=evidence, conflict_rate=None,
+        registration=registration, repo=repo,
+    )
+    run_phase_bundle._bind_conflict_evidence(bind_args, lock)
+    payload["conflicted_paths"] = []
+    evidence.write_text(yaml.safe_dump(payload), encoding="utf-8")
+    with pytest.raises(run_phase_bundle.PhaseCLIError, match="merge-tree 재현 결과"):
+        run_phase_bundle._bind_conflict_evidence(bind_args, lock)
+
+
+def test_conflict_collector_refuses_existing_output(tmp_path):
+    repo, registration, base, target = _fixture(tmp_path)
+    _lock, baseline, custom_head = _activate_postmerge_conflict_candidate(
+        repo, registration, base, target
+    )
+    evidence = tmp_path / "existing.yaml"
+    evidence.write_text("owner: user\n", encoding="utf-8")
+    args = SimpleNamespace(
+        repo=repo, registration=registration,
+        baseline_lock_digest=baseline.lock_digest,
+        custom_head=custom_head, output=evidence,
+    )
+    with pytest.raises(run_phase_bundle.PhaseCLIError, match="덮어쓰지 않습니다"):
+        run_phase_bundle.collect_conflict_evidence_command(args)
+    assert evidence.read_text(encoding="utf-8") == "owner: user\n"
+
+
+def test_conflict_collector_refuses_reserved_output(tmp_path):
+    repo, registration, base, target = _fixture(tmp_path)
+    _lock, baseline, custom_head = _activate_postmerge_conflict_candidate(
+        repo, registration, base, target
+    )
+    evidence = tmp_path / "reserved.yaml"
+    reservation = evidence.with_name(f".{evidence.name}.lock")
+    reservation.write_text('{"pid": 123}', encoding="utf-8")
+    args = SimpleNamespace(
+        repo=repo, registration=registration,
+        baseline_lock_digest=baseline.lock_digest,
+        custom_head=custom_head, output=evidence,
+    )
+    with pytest.raises(run_phase_bundle.PhaseCLIError, match="다른 수집 작업"):
+        run_phase_bundle.collect_conflict_evidence_command(args)
+    assert not evidence.exists()
+
+
+def test_conflict_collector_bad_custom_head_creates_no_file(tmp_path):
+    repo, registration, base, target = _fixture(tmp_path)
+    _lock, baseline, _custom_head = _activate_postmerge_conflict_candidate(
+        repo, registration, base, target
+    )
+    evidence = tmp_path / "must-not-exist.yaml"
+    args = SimpleNamespace(
+        repo=repo, registration=registration,
+        baseline_lock_digest=baseline.lock_digest,
+        custom_head=target, output=evidence,
+    )
+    with pytest.raises(run_phase_bundle.PhaseCLIError, match="이전 기준선 Candidate"):
+        run_phase_bundle.collect_conflict_evidence_command(args)
+    assert not evidence.exists()
+
+
+def test_conflict_collector_rejects_still_active_baseline_lock(tmp_path):
+    repo, registration, base, _target = _fixture(tmp_path)
+    selection = run_phase_bundle._selected(registration)
+    evidence = tmp_path / "degenerate-must-not-exist.yaml"
+    args = SimpleNamespace(
+        repo=repo, registration=registration,
+        baseline_lock_digest=selection.lock_digest,
+        custom_head=selection.lock.candidate.commit_sha,
+        output=evidence,
+    )
+    with pytest.raises(run_phase_bundle.PhaseCLIError, match="아직 병합 전 기준선"):
+        run_phase_bundle.collect_conflict_evidence_command(args)
+    assert not evidence.exists()
+
+
 def test_conflict_evidence_rejects_fake_custom_head(tmp_path):
     repo, registration, base, target = _fixture(tmp_path)
     lock, baseline, _custom_head = _activate_postmerge_conflict_candidate(
@@ -498,25 +599,27 @@ def test_conflict_replay_survives_resolution_back_to_base_content(tmp_path):
 
 
 def test_conflict_evidence_rejects_path_not_reported_by_merge_tree(tmp_path):
-    repo, registration, base, _target = _fixture(tmp_path)
-    selection = run_phase_bundle._selected(registration)
+    repo, registration, base, target = _fixture(tmp_path)
+    lock, baseline, custom_head = _activate_postmerge_conflict_candidate(
+        repo, registration, base, target
+    )
     evidence = tmp_path / "conflicts.yaml"
     evidence.write_text(yaml.safe_dump({
         "upstream_base_sha": base,
-        "upstream_target_sha": base,
-        "candidate_sha": selection.lock.candidate.commit_sha,
-        "custom_head_sha": selection.lock.candidate.commit_sha,
-        "baseline_candidate_lock_digest": selection.lock_digest,
+        "upstream_target_sha": target,
+        "candidate_sha": lock.candidate.commit_sha,
+        "custom_head_sha": custom_head,
+        "baseline_candidate_lock_digest": baseline.lock_digest,
         "merge_base_sha": base,
         "merge_changed_paths": ["svc/a.java"],
-        "conflicted_paths": ["svc/a.java"],
+        "conflicted_paths": [],
     }), encoding="utf-8")
     args = SimpleNamespace(
         conflict_evidence=evidence, conflict_rate=None,
         registration=registration, repo=repo,
     )
     with pytest.raises(run_phase_bundle.PhaseCLIError, match="merge-tree 재현 결과"):
-        run_phase_bundle._bind_conflict_evidence(args, selection.lock)
+        run_phase_bundle._bind_conflict_evidence(args, lock)
 
 
 def test_registration_digest_changes_when_manifest_changes(tmp_path):

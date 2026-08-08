@@ -559,6 +559,22 @@ def parse_args() -> argparse.Namespace:
     phase_candidate.add_argument("--output", type=Path, help="선택 결과 JSON 경로")
     add_phase_output_format(phase_candidate)
 
+    collect_conflict = subparsers.add_parser(
+        "collect-conflict-evidence",
+        help="승인된 병합 입력에서 변경·충돌 경로 증거를 자동 수집",
+    )
+    add_repo_version(collect_conflict)
+    collect_conflict.add_argument(
+        "--baseline-lock-digest", required=True,
+        help="병합 전 승인된 기준선 Candidate lock의 sha256 digest",
+    )
+    collect_conflict.add_argument(
+        "--custom-head", required=True,
+        help="승인된 기준선 Candidate의 전체 commit SHA",
+    )
+    collect_conflict.add_argument("--output", required=True, type=Path)
+    add_phase_output_format(collect_conflict)
+
     prep_official = subparsers.add_parser(
         "prep-official",
         help="공식 tag commit에 고정된 로컬 공식 branch 준비",
@@ -714,6 +730,44 @@ def dispatch(args: argparse.Namespace) -> int:
             output_format=args.output_format,
             evidence=output,
         )
+
+    if args.command == "collect-conflict-evidence":
+        registration = registration_for(args.version)
+        command = python_command(
+            HARNESS / "run_phase_bundle.py",
+            "collect-conflict-evidence",
+            "--repo", args.repo,
+            "--registration", registration,
+            "--baseline-lock-digest", args.baseline_lock_digest,
+            "--custom-head", args.custom_head,
+            "--output", args.output,
+        )
+        environment = os.environ.copy()
+        environment["PYTHONPATH"] = str(HARNESS)
+        completed = subprocess.run(
+            command, cwd=PROJECT, env=environment, check=False,
+            capture_output=True, text=True,
+        )
+        payload = _last_json(completed.stdout)
+        if args.output_format == "json" or payload is None:
+            if completed.stdout:
+                print(completed.stdout, end="")
+        else:
+            print("\n[새 5단계] 충돌 증거 자동 수집")
+            _emit("결과", _result_label(payload))
+            _emit("종료 코드", completed.returncode)
+            if payload.get("reason"):
+                _emit("사유", payload["reason"])
+            else:
+                _emit("변경 경로", f"{payload.get('changed_path_count', 0)}개")
+                _emit("충돌 경로", f"{payload.get('conflicted_path_count', 0)}개")
+                _emit("충돌률", payload.get("conflict_rate"))
+                _emit("rename 탐지", payload.get("rename_detection"))
+                _emit("증거 파일", payload.get("output"))
+                _emit("다음 행동", "증거 파일을 phase-preflight와 postmerge-check에 전달하세요.")
+        if completed.stderr:
+            print(completed.stderr, file=sys.stderr, end="")
+        return completed.returncode
 
     if args.command == "phase-preflight":
         registration = registration_for(args.version)

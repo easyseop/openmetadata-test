@@ -148,7 +148,7 @@ def test_merge_tree_reports_rename_rename_conflict(repo):
     assert set(replay.conflicted_paths) == {"old.txt", "custom.txt", "target.txt"}
 
 
-def test_merge_tree_uses_repository_merge_driver_configuration(repo):
+def test_merge_tree_rejects_unapproved_repository_merge_driver_configuration(repo):
     _run(str(repo), "config", "merge.keep-current.driver", "true")
     _commit(repo, ".gitattributes", "*.json merge=keep-current\n", "attributes")
     base = _commit(repo, "config.json", '{"value":"base"}\n', "base")
@@ -157,6 +157,28 @@ def test_merge_tree_uses_repository_merge_driver_configuration(repo):
     _run(str(repo), "switch", "-qc", "custom", base)
     custom = _commit(repo, "config.json", '{"value":"custom"}\n', "custom edit")
 
-    replay = G.merge_tree_conflicts(str(repo), target, custom)
+    with pytest.raises(G.GitPrimitiveError, match="not allowed"):
+        G.merge_tree_conflicts(str(repo), target, custom)
 
-    assert replay.conflicted_paths == ()
+
+def test_rename_policy_is_stable_across_user_configuration(repo):
+    base = _commit(repo, "old.txt", "same content\n", "base")
+    _run(str(repo), "switch", "-qc", "renamed", base)
+    (repo / "old.txt").rename(repo / "new.txt")
+    _run(str(repo), "add", "-A")
+    _run(str(repo), "commit", "-m", "rename")
+    renamed = G.resolve_commit(str(repo), "HEAD")
+
+    _run(str(repo), "config", "diff.renames", "true")
+    _run(str(repo), "config", "merge.renames", "true")
+    first_paths = G.net_changed_paths(str(repo), base, renamed)
+    first_replay = G.merge_tree_conflicts(str(repo), base, renamed)
+
+    _run(str(repo), "config", "diff.renames", "false")
+    _run(str(repo), "config", "merge.renames", "false")
+    second_paths = G.net_changed_paths(str(repo), base, renamed)
+    second_replay = G.merge_tree_conflicts(str(repo), base, renamed)
+
+    assert first_paths == second_paths == ["new.txt", "old.txt"]
+    assert first_replay.output_digest == second_replay.output_digest
+    assert first_replay.rename_detection_policy == "disabled"
