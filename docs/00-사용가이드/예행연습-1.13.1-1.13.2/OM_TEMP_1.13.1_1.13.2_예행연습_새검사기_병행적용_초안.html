@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OM_TEMP 예행연습 · 새 검사기 통합 적용 7단계 초안</title>
+  <style>
+    :root {
+      --ink:#172033; --muted:#5c687b; --line:#d9e1ec; --bg:#f3f6fa;
+      --panel:#fff; --navy:#142958; --blue:#275fd2; --blue-soft:#edf4ff;
+      --green:#167747; --green-soft:#eaf8f0; --amber:#98520a;
+      --amber-soft:#fff5e9; --purple:#6840c6; --purple-soft:#f3efff;
+      --red:#b42318; --red-soft:#fff0ef; --shadow:0 16px 42px rgba(20,41,88,.09);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;line-height:1.65}
+    a{color:var(--blue)}
+    .wrap{max-width:1180px;margin:auto;padding:28px 20px 72px}
+    .hero{position:relative;overflow:hidden;padding:42px;border-radius:26px;background:linear-gradient(135deg,var(--navy),#285fc8);color:#fff;box-shadow:var(--shadow)}
+    .hero:after{content:"";position:absolute;width:280px;height:280px;right:-90px;top:-110px;border-radius:50%;background:rgba(255,255,255,.09)}
+    .eyebrow{margin:0 0 10px;font-size:14px;font-weight:800;letter-spacing:.05em;color:#dbe8ff}
+    h1{position:relative;margin:0;font-size:clamp(30px,4.2vw,48px);line-height:1.18}
+    .hero p{position:relative;max-width:850px;margin:17px 0 0;color:#eef4ff;font-size:17px}
+    .hero-actions{position:relative;display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+    .button{display:inline-flex;align-items:center;gap:7px;padding:10px 14px;border-radius:10px;background:#fff;color:var(--navy);font-weight:800;text-decoration:none}
+    .button.secondary{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.35);color:#fff}
+    .boundary{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0 0}
+    .boundary article{padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+    .boundary h2{margin:0 0 7px;font-size:18px}
+    .boundary p{margin:0;color:var(--muted)}
+    .boundary .keep{border-left:6px solid var(--green)}
+    .boundary .draft{border-left:6px solid var(--purple)}
+    section{margin-top:22px;padding:28px;border:1px solid var(--line);border-radius:20px;background:var(--panel);box-shadow:0 8px 24px rgba(23,32,51,.04)}
+    section>h2{margin:0 0 8px;font-size:27px;line-height:1.3}
+    .lead{margin:0 0 20px;color:var(--muted)}
+    .legend{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 20px}
+    .pill{display:inline-flex;align-items:center;min-height:28px;padding:4px 9px;border-radius:999px;font-size:13px;font-weight:800}
+    .pill.keep{color:var(--green);background:var(--green-soft)}
+    .pill.auto{color:var(--blue);background:var(--blue-soft)}
+    .pill.human{color:var(--amber);background:var(--amber-soft)}
+    .pill.notrun{color:var(--purple);background:var(--purple-soft)}
+    .timeline{display:grid;gap:12px}
+    .step{display:grid;grid-template-columns:66px minmax(0,1fr) minmax(280px,.86fr);gap:18px;align-items:start;padding:18px;border:1px solid var(--line);border-radius:16px;background:#fbfcfe}
+    .step-number{display:grid;place-items:center;width:50px;height:50px;border-radius:15px;background:var(--navy);color:#fff;font-size:20px;font-weight:900}
+    .step h3{margin:0 0 6px;font-size:19px;line-height:1.35}
+    .step p{margin:0;color:var(--muted)}
+    .checker{padding:13px 14px;border-radius:12px;background:var(--blue-soft);border:1px solid #cfe0ff}
+    .checker.none{background:#f6f7f9;border-color:#e2e6ec}
+    .checker.manual{background:var(--amber-soft);border-color:#f0d8b9}
+    .checker strong{display:block;margin-bottom:4px;color:#233d72}
+    .checker.none strong{color:#4c5768}
+    .checker.manual strong{color:#7b4309}
+    code{padding:.08em .35em;border:1px solid #dbe3ed;border-radius:5px;background:#eef2f7;color:#25324a;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+    .flow{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;margin-top:18px}
+    .phase{position:relative;padding:14px 12px;border:1px solid #cfe0ff;border-radius:13px;background:var(--blue-soft)}
+    .phase:not(:last-child):after{content:"→";position:absolute;right:-9px;top:50%;z-index:1;transform:translate(50%,-50%);font-weight:900;color:var(--blue)}
+    .phase b{display:block;color:#1c4eaa;font-size:13px}
+    .phase span{display:block;margin-top:3px;font-size:14px;font-weight:800}
+    .phase small{display:block;margin-top:5px;color:var(--muted)}
+    .compare{width:100%;border-collapse:collapse;margin-top:16px}
+    .compare th,.compare td{padding:13px;border:1px solid var(--line);vertical-align:top;text-align:left}
+    .compare th{background:#eef3f9;color:#304057}
+    .terminal-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .terminal-card{overflow:hidden;border:1px solid #23324a;border-radius:14px;background:#101828;color:#eaf0fa}
+    .terminal-title{padding:9px 13px;background:#1b2940;color:#bcd0ee;font-size:13px;font-weight:800}
+    pre{margin:0;padding:16px;white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}
+    .mock{margin:0 0 16px;padding:12px 14px;border-left:5px solid var(--purple);background:var(--purple-soft);color:#49398a}
+    details{margin-top:12px;border:1px solid var(--line);border-radius:13px;background:#fbfcfe}
+    summary{cursor:pointer;padding:13px 15px;font-weight:850;color:#263b5c}
+    details>div{padding:0 15px 15px}
+    .states{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:15px}
+    .state{padding:14px;border-radius:12px;border:1px solid var(--line)}
+    .state b{display:block;margin-bottom:5px}
+    .state.pass{background:var(--green-soft);color:#115c38}
+    .state.approval{background:var(--amber-soft);color:#744008}
+    .state.block{background:var(--red-soft);color:#8f1f17}
+    .state.error{background:var(--purple-soft);color:#5131a2}
+    .tests{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .metric{padding:17px;border:1px solid var(--line);border-radius:14px;background:#fbfcfe}
+    .metric strong{display:block;font-size:26px;color:var(--navy)}
+    .metric span{color:var(--muted)}
+    .warning{margin-top:15px;padding:15px 17px;border-left:5px solid var(--amber);background:var(--amber-soft)}
+    .guide-list{display:grid;gap:14px;margin-top:18px}
+    .guide-card{padding:19px;border:1px solid var(--line);border-radius:16px;background:#fbfcfe}
+    .guide-card h3{margin:0 0 7px;font-size:20px}
+    .guide-meta{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+    .guide-card h4{margin:15px 0 5px;color:#294a7d;font-size:15px}
+    .guide-card ul{margin:0;padding-left:22px;color:#354258}
+    .guide-card li+li{margin-top:5px}
+    .footer{margin-top:22px;padding:20px;text-align:center;color:var(--muted)}
+    @media(max-width:900px){.step{grid-template-columns:54px 1fr}.checker{grid-column:2}.flow{grid-template-columns:1fr 1fr}.phase:not(:last-child):after{display:none}.states{grid-template-columns:1fr 1fr}}
+    @media(max-width:680px){.wrap{padding:12px 10px 44px}.hero{padding:28px 20px}.boundary,.terminal-grid,.tests{grid-template-columns:1fr}section{padding:20px 16px}.step{grid-template-columns:46px 1fr;padding:14px;gap:11px}.step-number{width:42px;height:42px}.checker{grid-column:1/-1}.flow,.states{grid-template-columns:1fr}.compare{min-width:760px}.table-scroll{overflow:auto}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">별도 비교 시안 · 기존 예행연습 가이드 변경 없음</p>
+    <h1>새 업그레이드 검사기로 통합하면<br>11단계가 7단계로 정리됩니다</h1>
+    <p>이 페이지는 새 Phase 검사기를 현재 예행연습에 도입하자는 확정안이 아닙니다. 원본 11단계 페이지는 그대로 보존하면서, 나중에 도입을 결정했을 때 반복 준비·확인 작업을 묶은 7단계 실행 화면이 어떻게 보일지 보여주는 비교 초안입니다.</p>
+    <div class="hero-actions">
+      <a class="button" href="./OM_TEMP_1.13.1_1.13.2_예행연습_전체목차.html">원본 11단계 목차 보기</a>
+      <a class="button secondary" href="#draft-flow">통합 적용 모습 보기</a>
+    </div>
+  </header>
+
+  <div class="boundary">
+    <article class="keep">
+      <h2>원본 예행연습</h2>
+      <p>기존 1~11단계 파일, 링크와 완료 기준은 그대로 보존합니다. 현재 진행 중인 예행연습은 계속 원본 가이드를 사용합니다.</p>
+    </article>
+    <article class="draft">
+      <h2>새 검사기 비교 시안</h2>
+      <p>별도 branch에서 개발한 검사기로 반복 작업을 묶으면 7단계로 보인다는 비교 화면입니다. 구현 기준 commit은 <code>6079aaff4d1b227df699d3f67262d60a96cd6b07</code>입니다. 실제 OM_TEMP 예행연습에 적용하거나 승인한 상태가 아닙니다.</p>
+    </article>
+  </div>
+
+  <section id="draft-flow">
+    <h2>1. 원본 11단계를 통합한 7단계 초안</h2>
+    <p class="lead">여러 페이지를 없앤다는 뜻이 아니라, 한 번의 업무 흐름에서 함께 준비·검사할 수 있는 항목을 하나의 실행 단계로 묶은 모습입니다. 각 카드에는 원본 몇 단계가 합쳐졌는지 표시했습니다.</p>
+    <div class="legend">
+      <span class="pill keep">원본 페이지 보존</span>
+      <span class="pill auto">통합 실행·자동 확인</span>
+      <span class="pill human">사람이 판단·실행</span>
+      <span class="pill notrun">실제 적용 안 함</span>
+    </div>
+    <div class="timeline">
+      <article class="step"><div class="step-number">1</div><div><h3>작업환경과 1.13.1 기준 branch 확인</h3><p>원본 1~2단계를 묶습니다. Git·접근 권한·작업 폴더를 준비하고 <code>official/om-1.13.1</code>과 <code>custom/om-1.13.1</code>을 확인합니다.</p></div><div class="checker none"><strong>원본 1~2단계 통합</strong>환경과 branch는 사람이 준비합니다. 검사기가 저장소를 임의로 만들거나 수정하지 않습니다.</div></article>
+      <article class="step"><div class="step-number">2</div><div><h3>BANK-OM 코드와 등록자료 준비</h3><p>원본 3~5단계를 묶습니다. 111개 등록 경로를 BANK-OM ID에 연결하고 ID별 commit과 Manifest·Registry·Contract 초안을 준비합니다.</p></div><div class="checker manual"><strong>원본 3~5단계 통합</strong>Git이 경로·commit 후보를 계산할 수 있지만, 업무 기능·필수 경로·담당자·Contract 기준은 사람이 결정합니다.</div></article>
+      <article class="step"><div class="step-number">3</div><div><h3>1.13.1 기준선 승인과 자동 검증</h3><p>원본 6~7단계를 묶습니다. 판정 의미를 화면에서 바로 안내하고, 등록 승인·apply·기준 검사 뒤 활성 기준선을 선택합니다.</p></div><div class="checker"><strong>통합 실행: candidate-select</strong>승인된 1.13.1 Candidate lock이 활성 기준선과 정확히 같은지 확인합니다. 승인 판단은 자동화하지 않습니다.</div></article>
+      <article class="step"><div class="step-number">4</div><div><h3>공식 1.13.2 준비와 병합 전 검사</h3><p>원본 8단계를 하나의 실행 묶음으로 만듭니다. 공식 tag·commit을 고정하고 BANK-OM 영향과 민감 경로를 검사합니다.</p></div><div class="checker"><strong>통합 실행: prep-official → phase-preflight → premerge-check</strong>누락 입력을 한 번에 보여주고, 공식 코드와 병합 전 검사 결과를 같은 SHA에 결속합니다.</div></article>
+      <article class="step"><div class="step-number">5</div><div><h3>vendor merge와 충돌 해결</h3><p>원본 9단계입니다. 직전 custom 코드와 공식 1.13.2를 병합하고 충돌 코드를 검토·수정합니다.</p></div><div class="checker manual"><strong>독립 단계 유지</strong>검사기가 코드를 병합하거나 충돌 해결안을 승인하지 않습니다. 담당자는 병합 전 custom SHA, 충돌 경로와 해결 commit을 보관합니다.</div></article>
+      <article class="step"><div class="step-number">6</div><div><h3>1.13.2 종합 검사와 승인 판단</h3><p>원본 10단계의 소스·공용 코드·build·Contract test·보고서 확인을 하나의 결과 흐름으로 묶습니다.</p></div><div class="checker"><strong>통합 실행: candidate-select → phase-preflight → postmerge-check → phase-status</strong>병합 입력과 충돌 재현, Candidate SHA, build artifact digest, Runtime 결과와 3단 보고서 무결성을 확인합니다.</div></article>
+      <article class="step"><div class="step-number">7</div><div><h3>검증 tag와 release branch 고정</h3><p>원본 11단계입니다. 승인한 동일 commit을 tag·release branch·release lock으로 고정합니다.</p></div><div class="checker manual"><strong>독립 단계 유지</strong><code>phase-status</code>가 통과해도 tag 생성이나 운영 배포를 자동 실행하지 않습니다. 조직 승인과 원본 완료 조건을 따릅니다.</div></article>
+    </div>
+  </section>
+
+  <section id="guide-outline">
+    <h2>2. 통합 가이드별 구성안</h2>
+    <p class="lead">외부 검토를 받을 수 있도록 각 가이드에 넣을 내용과 첫 화면에서 강조할 내용을 나열했습니다. 아래 구성은 아직 원본 가이드에 반영하지 않은 제안입니다.</p>
+    <div class="guide-list">
+      <article class="guide-card">
+        <h3>가이드 1 · 작업환경과 1.13.1 기준 branch 확인</h3>
+        <div class="guide-meta"><span class="pill keep">원본 1~2 통합</span><span class="pill human">준비는 사람 작업</span></div>
+        <h4>반드시 넣을 내용</h4>
+        <ul><li>검사기 저장소와 제품 코드 저장소의 역할·경로</li><li>필요한 Git 접근 권한, 도구와 환경변수</li><li><code>official/om-1.13.1</code>과 <code>custom/om-1.13.1</code>의 commit SHA 확인 방법</li><li>작업 폴더가 깨끗한지, 예상 branch를 보고 있는지 확인하는 명령과 정상·실패 예시</li></ul>
+        <h4>강조할 부분</h4>
+        <ul><li>이 단계는 코드를 수정하지 않는 읽기·준비 단계입니다.</li><li>저장소·branch·commit이 다르면 뒤 단계를 실행하지 않습니다.</li></ul>
+        <h4>완료 결과와 중단 조건</h4>
+        <ul><li>완료: 사용할 두 저장소 경로와 1.13.1 기준 SHA가 기록됩니다.</li><li>중단: 접근 불가, branch 누락, dirty worktree 또는 예상 SHA 불일치입니다.</li></ul>
+      </article>
+
+      <article class="guide-card">
+        <h3>가이드 2 · BANK-OM 코드와 등록자료 준비</h3>
+        <div class="guide-meta"><span class="pill keep">원본 3~5 통합</span><span class="pill human">업무 기준은 사람 판단</span></div>
+        <h4>반드시 넣을 내용</h4>
+        <ul><li>113개 변경 파일 중 111개 등록 경로와 2개 제외 경로의 근거(<a href="../../04-진행/STRICT_SCOPE_IMPROVEMENT_PROGRESS.md">경로 분류 근거 문서</a>)</li><li>111개 경로를 BANK-OM-001~007에 연결하고 공용 경로를 여러 ID에 연결하는 방법</li><li>같은 ID의 후속 commit, <code>Customization-ID</code> trailer와 commit SHA의 차이</li><li>Manifest·Registry·Contract·공용 코드 정의의 생성 시점과 실제 사용 검사</li><li><code>changed_paths</code>·<code>required_changed_paths</code>·<code>upgrade_watch.paths</code>의 차이</li><li>원본 3·4·5단계 상세 페이지로 바로 이동하는 소제목별 링크</li></ul>
+        <h4>강조할 부분</h4>
+        <ul><li>Git은 경로와 commit 후보를 계산하지만 업무 기능·필수 경로·담당자·Contract 기준은 결정하지 못합니다.</li><li>공용 코드 정의의 빈 assertion을 임의 값으로 채우면 안 됩니다.</li></ul>
+        <h4>완료 결과와 중단 조건</h4>
+        <ul><li>완료: ID별 commit 후보와 검토 가능한 등록자료 초안이 만들어집니다.</li><li>중단: 미등록 경로, 중복 ID 연결, 제외 경로 잔존 또는 업무 입력 누락입니다.</li></ul>
+      </article>
+
+      <article class="guide-card">
+        <h3>가이드 3 · 1.13.1 기준선 승인과 자동 검증</h3>
+        <div class="guide-meta"><span class="pill keep">원본 6~7 통합</span><span class="pill auto">candidate-select</span></div>
+        <h4>반드시 넣을 내용</h4>
+        <ul><li>PASS·APPROVAL·BLOCK·ANALYSIS_ERROR의 의미와 각 결과의 다음 행동</li><li><code>plan → 담당자 검토·승인 → apply</code> 순서와 승인 digest</li><li>등록자료·소스·공용 코드 정의 기준 검사 결과</li><li>Candidate lock과 <code>active-candidate.yaml</code>의 의미</li><li><code>candidate-select</code> 정상 출력과 활성 포인터 누락 실패 예시</li></ul>
+        <h4>강조할 부분</h4>
+        <ul><li>검사기가 승인자를 대신하지 않으며 승인 전에는 <code>apply</code>하지 않습니다.</li><li>검사기는 승인 형식과 digest 결속만 확인하며, 승인자의 실제 조직 권한은 확인하지 못합니다.</li><li>기준선 PASS는 1.13.1 등록·소스 조건 통과이지 1.13.2 업그레이드나 운영 배포 완료가 아닙니다.</li></ul>
+        <h4>완료 결과와 중단 조건</h4>
+        <ul><li>완료: 승인된 1.13.1 Candidate lock과 기준 검사 증거가 같은 SHA에 결속됩니다.</li><li>중단: 승인 누락, stale proposal, active pointer 불일치 또는 필수 검사 미완료입니다.</li></ul>
+      </article>
+
+      <article class="guide-card">
+        <h3>가이드 4 · 공식 1.13.2 준비와 병합 전 검사</h3>
+        <div class="guide-meta"><span class="pill keep">원본 8 유지</span><span class="pill auto">prep-official · preflight · premerge</span></div>
+        <h4>반드시 넣을 내용</h4>
+        <ul><li>공식 1.13.2 tag, commit SHA와 로컬 official branch의 관계</li><li><code>prep-official</code>이 생성하는 공식 버전 증거</li><li><code>phase-preflight</code>의 누락 입력 일괄 목록과 복구 방법</li><li><code>premerge-check</code>의 공식 변경 영향, 민감 경로와 APPROVAL 항목</li><li>병합 진행 여부를 담당자가 판단하는 위치와 기록할 근거</li></ul>
+        <h4>강조할 부분</h4>
+        <ul><li>이 단계는 아직 vendor merge를 실행하지 않습니다.</li><li>T42 영향 경로는 충돌 확정이 아니라 담당자가 다시 확인할 대상입니다.</li></ul>
+        <h4>완료 결과와 중단 조건</h4>
+        <ul><li>완료: 공식 1.13.2 기준 증거와 병합 전 결과가 동일 target SHA에 결속됩니다.</li><li>중단: tag·commit·branch 불일치, target 누락, BLOCK 또는 분석 오류입니다.</li></ul>
+      </article>
+
+      <article class="guide-card">
+        <h3>가이드 5 · vendor merge와 충돌 해결</h3>
+        <div class="guide-meta"><span class="pill keep">원본 9 유지</span><span class="pill human">코드 판단은 사람 작업</span></div>
+        <h4>반드시 넣을 내용</h4>
+        <ul><li>병합 방향: 직전 1.13.1 custom head와 공식 1.13.2 target</li><li><code>custom_head_sha</code>는 승인된 1.13.1 기준선 Candidate commit과 정확히 같아야 합니다. fix commit이 있으면 먼저 새 기준선으로 등록·승인합니다.</li><li>순서 1: vendor merge를 실행하고 충돌 코드를 해결·test한 뒤 해결 commit을 만듭니다.</li><li>순서 2: 최종 1.13.2 Candidate SHA의 새 Candidate lock을 작성·승인·활성화하고 <code>candidate-select</code>를 실행합니다.</li><li>순서 3: <code>python harness/om_workflow.py collect-conflict-evidence --repo &lt;제품저장소&gt; --version 1.13.1 --baseline-lock-digest &lt;digest&gt; --custom-head &lt;SHA&gt; --output &lt;증거.yaml&gt;</code>로 자동 수집합니다.</li><li>순서 4: 생성된 증거를 <code>phase-preflight</code>와 <code>postmerge-check</code>에 전달합니다.</li><li>수집기는 rename 탐지를 비활성화한 결정적 Git 설정으로 <code>merge_changed_paths</code>와 <code>conflicted_paths</code>를 생성합니다.</li><li>충돌 파일·유형, 해결 전후 diff와 담당자 판단 근거는 별도로 보관합니다.</li></ul>
+        <h4>강조할 부분</h4>
+        <ul><li>검사기는 vendor merge를 실행하거나 충돌 해결 내용을 승인하지 않습니다.</li><li>새 1.13.2 Candidate lock이 활성화되지 않은 상태에서 수집하면 “활성 lock이 아직 병합 전 기준선”이라는 오류로 중단합니다.</li><li>경로 목록을 손으로 수정하지 않습니다. 자동 수집기가 생성 즉시 postmerge와 같은 함수로 자기 검증하고 기존 파일·동시 실행을 차단합니다.</li><li>conflict-rate는 실제 대화형 merge 화면의 충돌 수가 아니라 <strong>rename 탐지를 끈 결정적 재현 정책</strong>에서 계산한 지표입니다.</li><li>현재 CLI에는 custom merge driver 허용 override가 없으며, 설정이 있으면 ANALYSIS_ERROR로 중단합니다. commit에 결속된 <code>.gitattributes</code>의 내장 driver는 동일 코드로 재현합니다.</li><li><code>replay_config_digest</code>는 감사용 정보 필드이며, 사용자의 무효화된 설정까지 기록해 머신별로 달라질 수 있습니다.</li><li>Git 충돌 해결 성공과 BANK-OM 기능 정상은 다른 판정입니다.</li></ul>
+        <h4>완료 결과와 중단 조건</h4>
+        <ul><li>완료: 병합 부모와 해결 commit이 있는 하나의 1.13.2 Candidate SHA가 만들어집니다.</li><li>중단: 해결 기준 불명확, 비JSON 충돌 미해결, test 실패 또는 승인되지 않은 코드 선택입니다.</li><li>복구: fix commit 등으로 Candidate SHA가 바뀌면 기존 lock·결과·승인을 재사용하지 않고, 새 lock 승인 후 <code>candidate-select</code>부터 다시 실행합니다.</li></ul>
+      </article>
+
+      <article class="guide-card">
+        <h3>가이드 6 · 1.13.2 종합 검사와 승인 판단</h3>
+        <div class="guide-meta"><span class="pill keep">원본 10 유지</span><span class="pill auto">postmerge · phase-status</span></div>
+        <h4>반드시 넣을 내용</h4>
+        <ul><li>postmerge Candidate 재선택과 필수 입력 preflight</li><li>승인된 custom head·merge-base·Candidate ancestry의 3중 결속</li><li><code>git merge-tree</code> 재현 결과와 기록된 충돌 경로의 완전 일치</li><li>등록·소스·공용 코드·build·Contract test와 Runtime Contract 결과</li><li><code>source-only</code>와 <code>artifact-verified</code>의 차이</li><li>canonical·관리자·실무자 보고서와 <code>phase-status</code> 재검증</li></ul>
+        <h4>강조할 부분</h4>
+        <ul><li><code>source-only</code> PASS는 build artifact와 실행 동작을 확인한 결과가 아닙니다.</li><li>APPROVAL은 자동 진행 허가가 아니며 같은 result digest에 담당자 판단을 결속해야 합니다.</li><li>검사기는 승인 형식·digest 결속을 검사하지만 승인자의 조직 권한은 별도 정책에서 확인해야 합니다.</li></ul>
+        <h4>완료 결과와 중단 조건</h4>
+        <ul><li>완료: 동일 Candidate SHA·artifact digest·검사 결과를 가리키는 종합 증거가 만들어집니다.</li><li>중단: 충돌 증거 불일치, 필수 gate 미실행, build·Runtime 실패, 보고서 변조 또는 조직 승인 누락입니다.</li></ul>
+      </article>
+
+      <article class="guide-card">
+        <h3>가이드 7 · 검증 tag와 release branch 고정</h3>
+        <div class="guide-meta"><span class="pill keep">원본 11 유지</span><span class="pill human">승격은 사람 작업</span></div>
+        <h4>반드시 넣을 내용</h4>
+        <ul><li>검증한 Candidate SHA, image·Helm·결과 digest와 release lock의 관계</li><li>T91이 검사 대상과 승격 대상의 일치를 확인하는 방법</li><li>검증 tag와 release branch 생성 명령, 권한과 담당자 승인</li><li>보관할 증거, 인수인계 항목, 실패 시 rollback·재검사 순서</li><li>실제 운영 배포는 조직의 별도 배포 절차라는 경계</li></ul>
+        <h4>강조할 부분</h4>
+        <ul><li><code>phase-status</code> 통과만으로 tag·release·운영 배포를 자동 실행하지 않습니다.</li><li>검사기는 승인 기록의 형식을 확인할 뿐, tag·release 승인자의 조직 권한은 확인하지 못합니다.</li><li>승인 이후 Candidate나 artifact가 바뀌면 기존 결과를 재사용하지 않습니다.</li></ul>
+        <h4>완료 결과와 중단 조건</h4>
+        <ul><li>완료: 검증한 동일 commit이 tag·release branch·release lock으로 고정됩니다.</li><li>중단: digest 불일치, 승인 권한 미확인, release lock 누락 또는 배포 대상 변경입니다.</li></ul>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <h2>3. 통합된 7단계 안에서 검사기 화면이 열리는 순서</h2>
+    <p class="lead">여섯 검사 화면은 새 3·4·6단계 안에서 실행됩니다. vendor merge와 release는 검사기가 대신할 수 없어 새 5·7단계로 독립 유지합니다.</p>
+    <p class="warning"><strong>재실행 안내:</strong> Candidate 선택[1/6]과 실행 전 점검[3/6]은 병합 전(새 3·4단계)과 병합 후(새 6단계)의 입력이 다르므로 각 맥락에서 다시 실행합니다.</p>
+    <div class="flow">
+      <div class="phase"><b>1/6</b><span>Candidate 선택</span><small>승인 기준선 확인</small></div>
+      <div class="phase"><b>2/6</b><span>공식 버전 준비</span><small>tag·commit 고정</small></div>
+      <div class="phase"><b>3/6</b><span>실행 전 점검</span><small>누락 입력 수집</small></div>
+      <div class="phase"><b>4/6</b><span>병합 전 검사</span><small>영향·민감 경로</small></div>
+      <div class="phase"><b>5/6</b><span>병합 후 검사</span><small>소스·산출물·Runtime</small></div>
+      <div class="phase"><b>6/6</b><span>결과 재검증</span><small>3단 보고서 대조</small></div>
+    </div>
+    <div class="table-scroll">
+      <table class="compare">
+        <thead><tr><th>검사기가 자동으로 확인</th><th>사람이 계속 해야 함</th></tr></thead>
+        <tbody>
+          <tr><td>Candidate·공식 commit·결과 digest가 같은 실행 대상을 가리키는지 확인</td><td>어떤 공식 버전을 사용할지 결정하고 실제 담당자를 지정</td></tr>
+          <tr><td>병합 전 custom head, merge-base와 <code>git merge-tree</code> 충돌 목록 재현</td><td>vendor merge 실행, 충돌 코드 선택·수정, 업무 의미 검토</td></tr>
+          <tr><td>build artifact digest와 승인된 Candidate lock의 일치 확인</td><td>실제 이미지를 build하고 실행 환경·비밀값·fixture 준비</td></tr>
+          <tr><td>PASS·APPROVAL·BLOCK·ANALYSIS_ERROR 집계와 보고서 변조 확인</td><td>APPROVAL 판단, release tag 생성, 운영 배포 승인과 실행</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>4. 화면 출력은 이렇게 짧아집니다</h2>
+    <p class="mock"><strong>중요:</strong> 아래는 구현된 출력 형식을 설명하기 위한 예시입니다. 실제 OM_TEMP 1.13.2 예행연습을 실행해 얻은 결과가 아닙니다.</p>
+    <div class="terminal-grid">
+      <article class="terminal-card">
+        <div class="terminal-title">예시 · 새 4단계(원본 8) · 검사기 화면 [3/6]</div>
+        <pre>[3/6] Phase 실행 전 점검
+결과: 중단 · 입력 보완 필요
+종료 코드: 3
+차단 항목: 1개
+- official-evidence: blocked
+  조치: prep-official을 먼저 실행하세요.
+다음 행동: 차단 항목을 해결한 뒤
+  같은 Phase를 다시 실행하세요.</pre>
+      </article>
+      <article class="terminal-card">
+        <div class="terminal-title">예시 · 새 6단계(원본 10) · 검사기 화면 [5/6]</div>
+        <pre>[5/6] 병합 후 Candidate 검사
+결과: 담당자 검토 필요 (APPROVAL)
+검사 범위: source-only
+판정 요약: PASS 5 · APPROVAL 1 ·
+  BLOCK 0 · ANALYSIS_ERROR 0
+다음 행동: 실무자 상세 결과를 검토하고
+  담당자 승인을 기록하세요.
+제한: build-artifact 검증 전에는
+  운영 배포를 승인하지 마세요.</pre>
+      </article>
+    </div>
+    <div class="states">
+      <div class="state pass"><b>PASS</b>해당 검사가 확인하는 조건은 통과했습니다.</div>
+      <div class="state approval"><b>APPROVAL</b>자동 진행하지 않고 담당자가 판단합니다.</div>
+      <div class="state block"><b>BLOCK</b>원인을 해결하고 해당 Phase를 다시 실행합니다.</div>
+      <div class="state error"><b>ANALYSIS_ERROR</b>입력·환경·검사 오류로 신뢰 가능한 판단을 만들지 못했습니다.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>5. 현재 검사기 검증 수준</h2>
+    <p class="lead">검사기 구현과 합성 Git 저장소 회귀는 완료했습니다. 실제 OM_TEMP 예행연습에 적용했다는 뜻은 아닙니다.</p>
+    <div class="tests">
+      <div class="metric"><strong>188 passed</strong><span>Phase·Git 집중 회귀 · 1 skipped</span></div>
+      <div class="metric"><strong>566 passed</strong><span>전체 harness 회귀</span></div>
+      <div class="metric"><strong>0 failed</strong><span>전체 회귀 실패</span></div>
+    </div>
+    <div class="warning"><strong>환경 의존 38건은 skip입니다.</strong> 실제 제품 ref, API, 브라우저 또는 실행 환경이 필요한 기존 항목이며 PASS로 계산하지 않았습니다.</div>
+    <details>
+      <summary>고정한 주요 차단 반례와 동작 경계 보기</summary>
+      <div>
+        <ul>
+          <li>가짜 <code>custom_head_sha</code>와 승인되지 않은 이전 기준선</li>
+          <li>target만 변경한 경로를 충돌 경로라고 기록한 허위 증거</li>
+          <li>base 내용으로 해결돼 최종 diff에서 사라진 실제 충돌</li>
+          <li>차단 반례: rename/rename, add/add, 중복 경로, 조작한 conflict-rate, merge-tree 결과 누락·초과</li>
+          <li>차단 반례: 허용되지 않은 custom merge-driver 설정</li>
+          <li>동작 경계: commit에 결속된 <code>.gitattributes</code>는 동일 Git 정책으로 재현</li>
+          <li>누락된 target, 변조된 관리자·실무자 결과, 잔존·손상 lock</li>
+          <li>동작 경계: 이전 버전 증거는 범위 표시가 없으므로 최신 검사기로 해당 Phase를 재실행</li>
+        </ul>
+      </div>
+    </details>
+    <details>
+      <summary>188건 집중 회귀의 정확한 실행 범위</summary>
+      <div><pre>PYTHONPATH=harness:. .venv/bin/python -m pytest -q \
+  harness/tests/test_phase_*.py \
+  harness/tests/test_source_candidate_workflow.py \
+  harness/tests/test_gitprim.py -o addopts=''</pre><p>파일 glob을 다르게 선택하면 통과 건수가 달라질 수 있으므로 이 명령과 결과를 함께 기록합니다.</p></div>
+    </details>
+    <details>
+      <summary>아직 검증하지 않은 범위 보기</summary>
+      <div>
+        <ul>
+          <li>실제 OM_TEMP 1.13.2 vendor merge 입력을 사용한 종단 실행</li>
+          <li>실제 담당자와 조직 승인 권한</li>
+          <li>실제 1.13.2 build artifact와 Runtime Contract</li>
+          <li>실제 release tag, release branch와 운영 배포</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>6. 11단계와 7단계의 관계</h2>
+    <p class="lead">원본은 상세 절차서로 보존하고, 7단계 화면은 통합 실행용 시작 페이지로 추가하는 방식입니다. 원본 내용을 삭제하거나 기존 예행연습 중간에 절차를 바꾸지 않습니다.</p>
+    <div class="table-scroll">
+      <table class="compare">
+        <thead><tr><th>새 통합 단계</th><th>묶이는 원본 단계</th><th>통합 이유</th></tr></thead>
+        <tbody>
+          <tr><td>1. 환경·branch 확인</td><td>원본 1~2</td><td>같은 시작 준비이며 결과가 하나의 1.13.1 기준 코드로 이어짐</td></tr>
+          <tr><td>2. BANK-OM 등록 준비</td><td>원본 3~5</td><td>파일–ID 관계, commit, 등록자료가 하나의 승인 입력을 구성함</td></tr>
+          <tr><td>3. 기준선 승인·검증</td><td>원본 6~7</td><td>판정 학습을 실행 화면에 포함하고 같은 기준선에서 즉시 검사함</td></tr>
+          <tr><td>4. 공식 버전·병합 전 검사</td><td>원본 8</td><td>공식 코드 고정과 사전 영향 검사가 같은 입력 SHA를 사용함</td></tr>
+          <tr><td>5. vendor merge·충돌 해결</td><td>원본 9</td><td>사람의 코드 판단이 필요하므로 독립 유지</td></tr>
+          <tr><td>6. 종합 검사·승인 판단</td><td>원본 10</td><td>소스·artifact·Runtime·보고서가 같은 Candidate 결과로 집계됨</td></tr>
+          <tr><td>7. tag·release 고정</td><td>원본 11</td><td>조직 승인 후 실행하는 변경 작업이므로 독립 유지</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>현재 권장:</strong> 이 7단계 초안은 비교용으로만 봅니다. 사용자가 도입을 결정하기 전까지 진행 중인 예행연습은 원본 11단계로 계속합니다.</p>
+  </section>
+
+  <footer class="footer">11단계 → 7단계 통합 비교 시안 · 원본 가이드 변경 없음 · 실제 OM_TEMP 적용 결과 아님</footer>
+</div>
+</body>
+</html>

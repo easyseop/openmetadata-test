@@ -371,3 +371,77 @@ custom merge-driver와 attributes 동작은 합성 Git 반례로 고정했다. �
 merge가 다른 merge-driver 설정을 쓰면 결과가
 달라질 수 있으므로 같은 설정을 사용해야 하며, 실제 merge 로그 자동 수집은 후속
 개발 항목이다. LLM G-룰은 참고자료로만 보관하고 구현하지 않았다.
+
+## 16. 2026-08-08 새 검사기 병행 적용 화면 초안
+
+사용자는 기존 1.13.1→1.13.2 예행연습과 새 Phase 검사기 개발이 별도 작업이며,
+기존 11단계 가이드를 변경하지 않겠다고 다시 확정했다. 이에 원본 Markdown·HTML과
+11개 단계별 페이지는 수정하지 않고 다음 비교 시안 HTML만 새로 만들었다.
+
+```text
+docs/00-사용가이드/예행연습-1.13.1-1.13.2/
+OM_TEMP_1.13.1_1.13.2_예행연습_새검사기_병행적용_초안.html
+```
+
+첫 시안은 원본 11단계 옆에 검사 역할만 표시했으나, 통합 효과가 보이지 않는다는
+사용자 피드백에 따라 비교 화면 안에서는 11단계를 7단계로 묶었다. 원본 1~2는
+환경·branch 확인, 3~5는 BANK-OM 등록 준비, 6~7은 기준선 승인·검증으로 합쳤다.
+원본 8은 공식 버전·병합 전 검사, 10은 종합 검사·승인 판단으로 유지하고, 사람의
+코드·조직 판단이 필요한 원본 9 vendor merge와 11 tag·release는 독립 단계로
+남겼다. 원본 파일과 현재 실행 절차는 수정하지 않았으며 실제 OM_TEMP에 적용한
+결과가 아니라는 경계를 첫 화면과 출력 예시에 반복 표시했다.
+
+검사기 검증 수치는 초안 생성 시점에 Phase·Git `182 passed, 1 skipped`, 전체
+harness `560 passed, 38 skipped`, 실패 0건이었고, 2차 보완 후 HTML은 아래의
+`188 passed, 1 skipped` / `566 passed, 38 skipped`로 갱신했다. 실제 OM_TEMP 1.13.2
+종단 실행, 조직 승인, build artifact·Runtime Contract와 운영 배포는 이 시안의
+완료 결과가 아니다. HTML parser와 `git diff --check`는 통과했다. 인앱 브라우저의
+로컬 `file://` 이동은 URL 보안 정책이 차단했으므로 자동 시각 검수 완료를 주장하지
+않는다. 현재 변경은 사용자 검토 전 초안이며 commit·push하지 않았다.
+
+사용자 요청에 따라 같은 HTML에 7개 가이드별 `반드시 넣을 내용 / 강조할 부분 /
+완료 결과와 중단 조건`을 나열식으로 추가했다. 외부 모델에 그대로 전달할 수 있는
+검토 요청서는 다음 파일이다.
+
+```text
+docs/04-진행/PHASE_7단계_가이드구성_외부검토요청_20260808.md
+```
+
+검토 질문은 통합 범위의 적정성, 사람·자동 경계, 완료·중단 조건, 예시·복구·증거
+누락과 최종 채택 여부다. 두 파일 모두 사용자 피드백 전 초안이며 원본 11단계
+Markdown·HTML은 수정하지 않았다.
+
+1차 외부 검토는 P0 없음, P1 2건, P2 6건, `수정 후 채택`으로 판정했다.
+단계 번호를 `새 n단계(원본 n) · 검사기 [n/6]`로 통일하고, 재실행되는
+candidate-select·preflight, APPROVAL의 실무자 검토, 승인 권한 미검증 경계,
+Candidate 변경 시 재실행, custom head 완전 일치 제약, 잔존 lock·구버전 증거
+예시, 당시 182건 테스트 파일 범위를 초안에 반영했다. 경로 원시 생성 Git
+명령과 손으로 목록을 편집하지 말라는 경계를 표시했다. 이후 2차
+검토를 반영해 공식 자동 수집기를 구현했으며, 현재 HTML은 원시 명령 대신
+공개 수집 명령을 안내한다.
+
+2차 Claude 검토에서 사용자 Git rename 설정에 따라 경로 집합이 달라지고,
+custom merge driver digest를 기록만 하고 차단하지 않는 P1 2건을 확인했다.
+`gitprim` 공통 Git 설정에 `diff.renames=false`, `merge.renames=false`,
+`merge.directoryRenames=false`를 고정하고 net diff에 `--no-renames`를 명시했다.
+허용 merge driver config digest의 기본값은 빈 설정 digest이며, 다른 설정이
+있으면 merge-tree 실행 전 `GitPrimitiveError`로 fail-closed한다.
+
+`om_workflow.py collect-conflict-evidence`를 추가했다. 승인된 이전 기준선
+lock digest와 custom head를 명시하면 현재 활성 postmerge lock에서 base·target·
+Candidate를 결속하고, byte 정렬된 `merge_changed_paths`와 `conflicted_paths`,
+merge-tree·Git·config digest, harness digest를 YAML로 생성한다. 생성 즉시
+`_bind_conflict_evidence`로 self-check하며 O_EXCL reservation, fsync, atomic replace를
+사용하고 기존 출력은 덮어쓰지 않는다. 수정 후 집중 회귀는
+`187 passed, 1 skipped`, 전체 harness는 `565 passed, 38 skipped`, 실패 0건이었다.
+
+3차 Claude 검토에서 새 postmerge lock을 활성화하기 전에 수집기를 실행하면
+`candidate_sha == custom_head_sha`, conflict-rate 0인 퇴화 증거가 남는 P1을 확인했다.
+수집기와 `_bind_conflict_evidence` 모두 `custom_head == active candidate`를 거부하고
+“활성 lock이 아직 병합 전 기준선” 복구 안내를 출력한다. 가이드의 순서는
+`merge → 해결 commit → 새 lock 작성·승인·활성화 → candidate-select → 수집
+→ preflight → postmerge`로 고정했다. rename 비활성 conflict-rate의 의미, custom
+driver override 미지원 제약, `replay_config_digest`가 머신별로 달라질 수 있는
+감사용 정보 필드임도 문서화했다. 구현 commit은
+`6079aaff4d1b227df699d3f67262d60a96cd6b07`이며, 이 SHA 기준 집중 회귀는
+`188 passed, 1 skipped`, 전체 harness는 `566 passed, 38 skipped`, 실패 0건이다.
