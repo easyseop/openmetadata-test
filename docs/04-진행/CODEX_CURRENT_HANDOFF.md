@@ -586,3 +586,27 @@ Markdown은 공통 renderer로 HTML을 생성했고 HTML parser와 `git diff --c
 다음 commit은 이 정확한 commit 정보를 기록하는 인수인계 전용 commit이다. 두
 commit을 `origin/codex/phase-bundling-safety-fix-20260808`에 push한 뒤 다른
 노트북에서는 이 branch를 fetch한다.
+
+## 19. 2026-08-09 Candidate 준비·승인·활성화 UX 후속 요청
+
+다른 노트북에서 원본 8단계를 재개하면서 `candidate-select`를 먼저 실행했으나,
+등록 묶음에 `active-candidate.yaml`이 없어 정상적으로 `analysis_error`가 발생했다.
+현재 구현에는 Candidate lock 준비, 사람 승인 기록, 활성 포인터 생성을 수행하는
+공개 CLI가 없다. 임시 Python heredoc 명령에서 `input()`을 호출한 방식도 stdin이
+코드 전달에 사용되어 `EOFError`로 실패했다. Candidate 자체의 검증 실패는 아니다.
+
+클로드 개발 요청 정본은 다음 파일이다.
+
+```text
+docs/04-진행/PHASE_CANDIDATE_준비승인활성화_CLAUDE_개발요청_20260809.md
+```
+
+요청 범위는 `candidate-prepare`, `candidate-approval-template`,
+`candidate-activate` 공개 CLI, 비대화형 입력, 비덮어쓰기·원자적 기록,
+기존 `select_active_candidate()` self-check, 정상·반례 test와 비개발자 안내다.
+자동 승인, 최신 lock 자동 선택, 조직 권한 확인 완료 주장은 금지한다. 기존 11단계
+예행연습 가이드와 제품 저장소는 수정하지 않는다.
+
+정식 CLI 개발 전 현재 실행은 승인자와 승인 사유를 셸 환경변수로 명시하고 stdin을
+읽지 않는 임시 복구 명령을 사용한다. 활성화 후 같은 `candidate-select`를 다시
+실행하고 `selected`가 아니면 premerge로 진행하지 않는다.
