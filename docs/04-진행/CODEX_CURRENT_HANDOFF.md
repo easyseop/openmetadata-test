@@ -1,8 +1,8 @@
 # 현재 작업 인수인계
 
-> 마지막 갱신: 2026-08-07 16:34 PDT
+> 마지막 갱신: 2026-08-07 20:20 PDT
 >
-> 현재 작업: 1.13.1 Runtime Contract 9개 정식 통과 및 원격 공유 완료
+> 현재 작업: Phase 번들링 L1~L8 구현 검토 완료, P0 보완 전 WIP 원격 공유
 >
 > 이 문서는 다음 세션이 가장 먼저 읽는 현재 상태 정본입니다.
 
@@ -238,3 +238,35 @@ source /private/tmp/om-runtime-contract.env
 
 중단 시 pass로 바꾸지 말고 오류 원문, 마지막 정상 단계, 다음 재시도 명령을 이
 문서에 기록합니다.
+
+## 10. Phase 번들링 격리 작업
+
+현재 worktree branch는 `codex/phase-bundling`입니다. 기존 예행연습 branch와 제품
+코드는 수정하지 않았습니다.
+
+2026-08-07에 기존 개발계획을 검토해 다음 두 문서를 추가했습니다. 두 문서는
+commit `7f7bf1b383`에 포함됐습니다.
+
+- `docs/04-진행/PHASE_BUNDLING_개발설계_수정보완_20260807.md`
+- `docs/04-진행/PHASE_BUNDLING_반례테스트케이스_20260807.md`
+
+주요 보완 내용은 승인된 활성 candidate 포인터, 실행 단위 SHA 고정, 기존
+CandidateLock schema 재사용, premerge·postmerge 분리, 입력 누락과 프로그램 실패
+구분, 결과 digest 기반 승인 결속입니다. 테스트 명세는 C1~C114이며 P0는 C1~C74입니다.
+
+이후 같은 branch에 commit `ae1bdbce4b`(L1)와 `446b5a0e53`(L2~L8)이 추가됐습니다.
+Codex는 구현 코드를 수정하지 않고 독립 검토했습니다.
+
+현재 다음 문서와 로컬 도구가 미반영 상태입니다.
+
+```text
+?? .claude/
+?? docs/04-진행/PHASE_BUNDLING_구현완료_검토요청_20260807.md
+?? docs/04-진행/PHASE_BUNDLING_CODEX_구현검토_20260807.md
+```
+
+`.claude/`는 stage하지 않습니다. 완료보고와 Codex 검토 문서는 원격 인수인계에
+포함합니다. 검토 결론은 phase 테스트 125개 통과와 별개로 P0 문제 6건이 남아 있어
+운영 완료 승인을 할 수 없다는 것입니다. 정확한 문제와 다음 순서는
+`PHASE_BUNDLING_진척_인수인계_20260807.md` 12절과
+`PHASE_BUNDLING_CODEX_구현검토_20260807.md`를 확인합니다.
