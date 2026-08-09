@@ -13,6 +13,7 @@ import yaml
 
 from acgh import candidate
 from acgh import candidate_select
+from acgh import gitprim
 from acgh import phase
 from harness import om_workflow
 from harness import run_phase_bundle
@@ -165,6 +166,22 @@ def test_om_workflow_exposes_all_phase_commands(monkeypatch):
             "--baseline-lock-digest", "sha256:" + "0" * 64,
             "--custom-head", "a" * 40, "--output", "/work/conflict.yaml",
         ],
+        "definition-migration-propose": [
+            "--repo", "/work/product", "--version", "1.13.1",
+            "--target-version", "1.13.2", "--candidate", "a" * 40,
+            "--upstream-target", "b" * 40,
+            "--structural-evidence", "/work/conflict.yaml",
+            "--decisions", "/work/decisions.yaml",
+            "--output", "/work/proposal.yaml",
+        ],
+        "definition-migration-approval-template": [
+            "--proposal", "/work/proposal.yaml", "--output", "/work/approval.yaml",
+        ],
+        "definition-migration-apply": [
+            "--repo", "/work/product", "--version", "1.13.1",
+            "--target-version", "1.13.2", "--proposal", "/work/proposal.yaml",
+            "--approval", "/work/approval.yaml",
+        ],
         "phase-preflight": [
             "--repo", "/work/product", "--version", "1.13.1", "--phase", "premerge",
         ],
@@ -179,6 +196,20 @@ def test_om_workflow_exposes_all_phase_commands(monkeypatch):
     for command, arguments in commands.items():
         monkeypatch.setattr(sys, "argv", ["om_workflow.py", command, *arguments])
         assert om_workflow.parse_args().command == command
+
+
+def test_harness_version_binds_definition_migration_orchestrator(monkeypatch):
+    hashed = []
+
+    def fake_digest(path):
+        hashed.append(Path(path).name)
+        return "sha256:" + "0" * 64
+
+    monkeypatch.setattr(run_phase_bundle, "_sha256_file", fake_digest)
+    digest = run_phase_bundle._harness_version()
+
+    assert digest.startswith("sha256:")
+    assert "manage_shared_code_migration.py" in hashed
 
 
 def test_postmerge_cli_rejects_target_that_contradicts_candidate_lock(tmp_path):
@@ -424,6 +455,104 @@ def _activate_postmerge_conflict_candidate(
     return lock, baseline, custom_head
 
 
+def _split_upgrade_and_merge_base_fixture(tmp_path):
+    """Previous release is on custom ancestry but not target ancestry."""
+    repo, registration, merge_base, initial_target = _fixture(tmp_path)
+    env = {
+        **os.environ,
+        "GIT_AUTHOR_NAME": "test",
+        "GIT_AUTHOR_EMAIL": "test@example.com",
+        "GIT_COMMITTER_NAME": "test",
+        "GIT_COMMITTER_EMAIL": "test@example.com",
+    }
+
+    _git(repo, "switch", "-qc", "upgrade-base", merge_base)
+    (repo / "release.txt").write_text("retained release prep\n", encoding="utf-8")
+    _git(repo, "add", "release.txt", env=env)
+    _git(repo, "commit", "-qm", "official 1.0 release prep", env=env)
+    upgrade_base = _git(repo, "rev-parse", "HEAD")
+
+    _git(repo, "switch", "-qc", "split-custom", upgrade_base)
+    (repo / "svc/a.java").write_text("class A { int bank; }\n", encoding="utf-8")
+    _git(repo, "add", "svc/a.java", env=env)
+    _git(repo, "commit", "-qm", "bank\n\nCustomization-ID: BANK-OM-001", env=env)
+    custom_head = _git(repo, "rev-parse", "HEAD")
+
+    _git(repo, "switch", "-q", "--detach", initial_target)
+    (repo / "release.txt").write_text("retained release prep\n", encoding="utf-8")
+    _git(repo, "add", "release.txt", env=env)
+    _git(repo, "commit", "-qm", "official 1.1 independently retains prep", env=env)
+    target = _git(repo, "rev-parse", "HEAD")
+
+    baseline_lock = candidate.build_candidate_lock(
+        str(repo), custom_head,
+        upstream_repository="vendor/product",
+        upstream_base_sha=upgrade_base,
+        upstream_target_sha=upgrade_base,
+        candidate_repository="bank/product",
+        artifact_digest="sha256:" + "2" * 64,
+        artifact_kind="source-tree",
+    )
+    baseline_path = registration / "candidate-locks/split-baseline.yaml"
+    baseline_path.write_text(yaml.safe_dump(baseline_lock.canonical()), encoding="utf-8")
+    (registration / "candidate-locks/split-baseline.approval.yaml").write_text(
+        yaml.safe_dump({
+            "candidate_lock_digest": baseline_lock.digest(),
+            "approver": "데이터플랫폼 승인자",
+            "approved_at": "2026-08-09T00:00:00Z",
+            "rationale": "분리 base 합성 기준선",
+        }),
+        encoding="utf-8",
+    )
+
+    _git(repo, "switch", "-qc", "split-vendor-merge", target)
+    merge = subprocess.run(
+        ["git", "-C", str(repo), "merge", "--no-ff", "split-custom", "-m", "merge"],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    assert merge.returncode == 1
+    (repo / "svc/a.java").write_text(
+        "class A { int upstream; int bank; }\n", encoding="utf-8"
+    )
+    _git(repo, "add", "svc/a.java", env=env)
+    _git(repo, "commit", "-qm", "resolve split vendor merge", env=env)
+    candidate_sha = _git(repo, "rev-parse", "HEAD")
+    post_lock = candidate.build_candidate_lock(
+        str(repo), candidate_sha,
+        upstream_repository="vendor/product",
+        upstream_base_sha=upgrade_base,
+        upstream_target_sha=target,
+        candidate_repository="bank/product",
+        artifact_digest="sha256:" + "3" * 64,
+        artifact_kind="source-tree",
+    )
+    (registration / "candidate-locks/split-postmerge.yaml").write_text(
+        yaml.safe_dump(post_lock.canonical()), encoding="utf-8"
+    )
+    (registration / "candidate-locks/split-postmerge.approval.yaml").write_text(
+        yaml.safe_dump({
+            "candidate_lock_digest": post_lock.digest(),
+            "approver": "데이터플랫폼 승인자",
+            "approved_at": "2026-08-09T00:05:00Z",
+            "rationale": "분리 base 합성 postmerge",
+        }),
+        encoding="utf-8",
+    )
+    (registration / "candidate-locks/active-candidate.yaml").write_text(
+        yaml.safe_dump({
+            "schema_version": 1,
+            "candidate_lock_digest": post_lock.digest(),
+        }),
+        encoding="utf-8",
+    )
+    return (
+        repo, registration, merge_base, upgrade_base, target,
+        custom_head, post_lock, baseline_lock,
+    )
+
+
 def test_conflict_evidence_replays_exact_conflict_set_and_binds_baseline(tmp_path):
     repo, registration, base, target = _fixture(tmp_path)
     lock, baseline, custom_head = _activate_postmerge_conflict_candidate(
@@ -480,6 +609,107 @@ def test_conflict_collector_round_trip_and_tamper_rejection(tmp_path):
     evidence.write_text(yaml.safe_dump(payload), encoding="utf-8")
     with pytest.raises(run_phase_bundle.PhaseCLIError, match="merge-tree 재현 결과"):
         run_phase_bundle._bind_conflict_evidence(bind_args, lock)
+
+
+def test_conflict_collector_separates_upgrade_base_from_git_merge_base(tmp_path):
+    (
+        repo, registration, merge_base, upgrade_base, target,
+        custom_head, _post_lock, baseline_lock,
+    ) = _split_upgrade_and_merge_base_fixture(tmp_path)
+    evidence = tmp_path / "split-conflicts.yaml"
+
+    code = run_phase_bundle.main([
+        "collect-conflict-evidence",
+        "--repo", str(repo),
+        "--registration", str(registration),
+        "--baseline-lock-digest", baseline_lock.digest(),
+        "--custom-head", custom_head,
+        "--output", str(evidence),
+    ])
+
+    assert code == 0
+    payload = yaml.safe_load(evidence.read_text(encoding="utf-8"))
+    assert payload["upgrade_base_sha"] == upgrade_base
+    assert payload["merge_base_sha"] == merge_base
+    assert upgrade_base != merge_base
+    assert "release.txt" in payload["merge_changed_paths"]
+    assert "release.txt" in payload["review_surface_paths"]
+    assert not gitprim.is_ancestor(str(repo), upgrade_base, target)
+
+
+def test_conflict_collector_rejects_upgrade_base_unrelated_to_custom_head(tmp_path, capsys):
+    (
+        repo, registration, _merge_base, _upgrade_base, target,
+        custom_head, post_lock, _baseline_lock,
+    ) = _split_upgrade_and_merge_base_fixture(tmp_path)
+    env = {
+        **os.environ,
+        "GIT_AUTHOR_NAME": "test",
+        "GIT_AUTHOR_EMAIL": "test@example.com",
+        "GIT_COMMITTER_NAME": "test",
+        "GIT_COMMITTER_EMAIL": "test@example.com",
+    }
+    _git(repo, "switch", "--orphan", "unrelated-base")
+    for path in repo.iterdir():
+        if path.name != ".git" and path.is_file():
+            path.unlink()
+        elif path.name != ".git" and path.is_dir():
+            import shutil
+            shutil.rmtree(path)
+    (repo / "unrelated.txt").write_text("unrelated\n", encoding="utf-8")
+    _git(repo, "add", "unrelated.txt", env=env)
+    _git(repo, "commit", "-qm", "unrelated root", env=env)
+    unrelated = _git(repo, "rev-parse", "HEAD")
+
+    false_baseline = candidate.build_candidate_lock(
+        str(repo), custom_head,
+        upstream_repository="vendor/product",
+        upstream_base_sha=unrelated,
+        upstream_target_sha=unrelated,
+        candidate_repository="bank/product",
+        artifact_digest="sha256:" + "4" * 64,
+        artifact_kind="source-tree",
+    )
+    false_post = candidate.build_candidate_lock(
+        str(repo), post_lock.candidate.commit_sha,
+        upstream_repository="vendor/product",
+        upstream_base_sha=unrelated,
+        upstream_target_sha=target,
+        candidate_repository="bank/product",
+        artifact_digest="sha256:" + "5" * 64,
+        artifact_kind="source-tree",
+    )
+    for name, lock in (("false-baseline", false_baseline), ("false-post", false_post)):
+        (registration / f"candidate-locks/{name}.yaml").write_text(
+            yaml.safe_dump(lock.canonical()), encoding="utf-8"
+        )
+        (registration / f"candidate-locks/{name}.approval.yaml").write_text(
+            yaml.safe_dump({
+                "candidate_lock_digest": lock.digest(),
+                "approver": "데이터플랫폼 승인자",
+                "approved_at": "2026-08-09T01:00:00Z",
+                "rationale": "의도적 반례",
+            }),
+            encoding="utf-8",
+        )
+    (registration / "candidate-locks/active-candidate.yaml").write_text(
+        yaml.safe_dump({
+            "schema_version": 1,
+            "candidate_lock_digest": false_post.digest(),
+        }),
+        encoding="utf-8",
+    )
+
+    code = run_phase_bundle.main([
+        "collect-conflict-evidence",
+        "--repo", str(repo),
+        "--registration", str(registration),
+        "--baseline-lock-digest", false_baseline.digest(),
+        "--custom-head", custom_head,
+        "--output", str(tmp_path / "must-not-exist.yaml"),
+    ])
+    assert code == 3
+    assert "upgrade base가 승인된 custom head의 조상이 아닙니다" in capsys.readouterr().out
 
 
 def test_conflict_collector_refuses_existing_output(tmp_path):

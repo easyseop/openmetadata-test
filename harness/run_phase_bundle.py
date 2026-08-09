@@ -22,12 +22,32 @@ from acgh import manifest as manifest_module
 from acgh import phase
 from acgh import preflight
 from acgh import rollup
+from acgh import shared_code
+from acgh import structural_review
 from acgh import verdict
 from acgh import zones as zones_module
 
 
 class PhaseCLIError(RuntimeError):
     """The requested phase cannot produce trustworthy evidence."""
+
+
+def _relocation_review(registration: Path, repo: str, candidate_sha: str, paths) -> dict:
+    catalog_path = registration / "shared-code-definitions.yaml"
+    if not catalog_path.is_file():
+        return {
+            "schema_version": 1,
+            "applicable": False,
+            "candidate_sha": candidate_sha,
+            "verdict": verdict.PASS,
+            "finding_count": 0,
+            "findings": [],
+            "reason": "registration has no shared-code-definitions catalog",
+        }
+    catalog = shared_code.load_catalog(catalog_path)
+    payload = structural_review.find_relocations(repo, candidate_sha, catalog, paths)
+    payload["applicable"] = True
+    return payload
 
 
 def _atomic_json(path: Path, payload: dict) -> None:
@@ -189,15 +209,18 @@ def _bind_conflict_evidence(args, lock) -> str | None:
         raise PhaseCLIError(
             "이전 기준선 lock의 upstream target이 현재 upgrade base와 다릅니다"
         )
+    if not gitprim.is_ancestor(str(args.repo), lock.upstream.base_sha, custom_head):
+        raise PhaseCLIError(
+            "현재 upgrade base가 승인된 custom head의 조상이 아닙니다"
+        )
     if not gitprim.is_ancestor(str(args.repo), custom_head, lock.candidate.commit_sha):
         raise PhaseCLIError("custom_head_sha가 postmerge Candidate에 포함되지 않았습니다")
     actual_merge_base = gitprim.merge_base(
         str(args.repo), lock.upstream.target_sha, custom_head
     )
-    if actual_merge_base != lock.upstream.base_sha:
+    if actual_merge_base is None:
         raise PhaseCLIError(
-            "target과 custom head의 merge-base가 Candidate lock의 base와 다릅니다: "
-            f"{actual_merge_base} != {lock.upstream.base_sha}"
+            "target과 custom head에 공통 Git merge base가 없습니다"
         )
     if recorded_merge_base != actual_merge_base:
         raise PhaseCLIError(
@@ -227,9 +250,9 @@ def _bind_conflict_evidence(args, lock) -> str | None:
             + ", ".join(outside)
         )
     expected_changed = set(gitprim.net_changed_paths(
-        str(args.repo), lock.upstream.base_sha, lock.upstream.target_sha
+        str(args.repo), actual_merge_base, lock.upstream.target_sha
     )) | set(gitprim.net_changed_paths(
-        str(args.repo), lock.upstream.base_sha, custom_head
+        str(args.repo), actual_merge_base, custom_head
     ))
     if changed_set != expected_changed:
         missing = sorted(expected_changed - changed_set)
@@ -238,6 +261,44 @@ def _bind_conflict_evidence(args, lock) -> str | None:
             "merge_changed_paths가 base 대비 target·custom head 변경 경로와 다릅니다: "
             f"missing={missing}, extra={extra}"
         )
+    if evidence.get("schema_version") == 2:
+        if evidence.get("upgrade_base_sha") != lock.upstream.base_sha:
+            raise PhaseCLIError(
+                "conflict evidence의 upgrade_base_sha가 Candidate lock과 다릅니다"
+            )
+        review_payload = evidence.get("structural_review")
+        relocation_payload = evidence.get("relocation_review")
+        if not isinstance(review_payload, dict) or not isinstance(relocation_payload, dict):
+            raise PhaseCLIError(
+                "schema_version 2 conflict evidence에는 structural_review와 "
+                "relocation_review가 필요합니다"
+            )
+        layout = layout_module.load_layout(args.registration / "repository-layout.yaml")
+        manifests = _load_manifests(args.registration, layout)
+        zones = zones_module.load_zones(args.registration / "sensitive-zones.yaml")
+        try:
+            structural_review.verify_review(
+                str(args.repo), review_payload, manifests, zones=zones
+            )
+        except structural_review.StructuralReviewError as exc:
+            raise PhaseCLIError(str(exc)) from exc
+        expected_review_paths = review_payload.get("review_surface_paths")
+        if evidence.get("review_surface_paths") != expected_review_paths:
+            raise PhaseCLIError(
+                "review_surface_paths가 structural review 정본과 다릅니다"
+            )
+        recomputed_relocations = _relocation_review(
+            args.registration,
+            str(args.repo),
+            lock.candidate.commit_sha,
+            expected_review_paths,
+        )
+        if relocation_payload != recomputed_relocations:
+            raise PhaseCLIError(
+                "relocation review가 Candidate와 공유 코드 정의의 재계산 결과와 다릅니다"
+            )
+        args.structural_review = review_payload
+        args.relocation_review = relocation_payload
     replay = gitprim.merge_tree_conflicts(
         str(args.repo), lock.upstream.target_sha, custom_head
     )
@@ -270,9 +331,19 @@ def _bind_conflict_evidence(args, lock) -> str | None:
         )
     args.conflict_rate = measured_rate
     args.conflict_measurement = {
+        "upgrade_base_sha": lock.upstream.base_sha,
         "custom_head_sha": custom_head,
         "baseline_candidate_lock_digest": baseline_digest,
         "merge_base_sha": actual_merge_base,
+        "review_surface_path_count": len(evidence.get("review_surface_paths", [])),
+        "structural_review_digest": (
+            evidence.get("structural_review", {}).get("review_digest")
+            if isinstance(evidence.get("structural_review"), dict) else None
+        ),
+        "relocation_verdict": (
+            evidence.get("relocation_review", {}).get("verdict")
+            if isinstance(evidence.get("relocation_review"), dict) else None
+        ),
         "changed_path_count": len(changed_set),
         "conflicted_path_count": len(conflicted_set),
         "conflict_rate": measured_rate,
@@ -312,12 +383,26 @@ def collect_conflict_evidence_command(args) -> int:
             "활성 lock이 아직 병합 전 기준선입니다. 새 1.13.2 Candidate lock을 "
             "승인·활성화한 뒤 수집하세요."
         )
-    base = lock.upstream.base_sha
+    upgrade_base = lock.upstream.base_sha
     target = lock.upstream.target_sha
+    if baseline.lock.upstream.target_sha != upgrade_base:
+        raise PhaseCLIError(
+            "이전 기준선 lock의 upstream target이 현재 upgrade base와 다릅니다"
+        )
+    if not gitprim.is_ancestor(str(args.repo), upgrade_base, args.custom_head):
+        raise PhaseCLIError(
+            "현재 upgrade base가 승인된 custom head의 조상이 아닙니다"
+        )
+    if not gitprim.is_ancestor(
+        str(args.repo), args.custom_head, lock.candidate.commit_sha
+    ):
+        raise PhaseCLIError("custom head가 활성 postmerge Candidate에 포함되지 않았습니다")
     merge_base_sha = gitprim.merge_base(str(args.repo), target, args.custom_head)
+    if merge_base_sha is None:
+        raise PhaseCLIError("target과 custom head에 공통 Git merge base가 없습니다")
     changed = sorted(
-        set(gitprim.net_changed_paths(str(args.repo), base, target))
-        | set(gitprim.net_changed_paths(str(args.repo), base, args.custom_head)),
+        set(gitprim.net_changed_paths(str(args.repo), merge_base_sha, target))
+        | set(gitprim.net_changed_paths(str(args.repo), merge_base_sha, args.custom_head)),
         key=lambda path: path.encode("utf-8"),
     )
     if not changed:
@@ -326,16 +411,38 @@ def collect_conflict_evidence_command(args) -> int:
     conflicted = list(replay.conflicted_paths)
     if not set(conflicted).issubset(changed):
         raise PhaseCLIError("merge-tree 충돌 경로가 merge 변경 경로 밖에 있습니다")
+    layout = layout_module.load_layout(args.registration / "repository-layout.yaml")
+    manifests = _load_manifests(args.registration, layout)
+    zones = zones_module.load_zones(args.registration / "sensitive-zones.yaml")
+    review_payload = structural_review.build_review(
+        str(args.repo),
+        merge_base_sha,
+        target,
+        args.custom_head,
+        lock.candidate.commit_sha,
+        manifests,
+        zones=zones,
+    )
+    relocation_payload = _relocation_review(
+        args.registration,
+        str(args.repo),
+        lock.candidate.commit_sha,
+        review_payload["review_surface_paths"],
+    )
     payload = {
-        "schema_version": 1,
-        "upstream_base_sha": base,
+        "schema_version": 2,
+        "upstream_base_sha": upgrade_base,
+        "upgrade_base_sha": upgrade_base,
         "upstream_target_sha": target,
         "candidate_sha": lock.candidate.commit_sha,
         "custom_head_sha": args.custom_head,
         "baseline_candidate_lock_digest": args.baseline_lock_digest,
         "merge_base_sha": merge_base_sha,
         "merge_changed_paths": changed,
+        "review_surface_paths": review_payload["review_surface_paths"],
         "conflicted_paths": conflicted,
+        "structural_review": review_payload,
+        "relocation_review": relocation_payload,
         "collector_harness_digest": _harness_version(),
         "merge_tree": {
             "strategy": "ort (git merge-tree --write-tree default)",
@@ -364,10 +471,12 @@ def collect_conflict_evidence_command(args) -> int:
         "output": str(args.output),
         "candidate_sha": lock.candidate.commit_sha,
         "changed_path_count": len(changed),
+        "review_surface_path_count": len(review_payload["review_surface_paths"]),
         "conflicted_path_count": len(conflicted),
         "conflict_rate": len(conflicted) / len(changed),
         "rename_detection": replay.rename_detection_policy,
         "merge_driver_config_digest": replay.merge_driver_config_digest,
+        "relocation_verdict": relocation_payload["verdict"],
     }, ensure_ascii=False, sort_keys=True))
     return 0
 
@@ -490,6 +599,7 @@ def _harness_version() -> str:
     files = [
         harness / "run_phase_bundle.py",
         harness / "om_workflow.py",
+        harness / "manage_shared_code_migration.py",
         harness / "registrations" / "kb-openmetadata" / "run_source_candidate_gates.py",
     ]
     files.extend(sorted((harness / "acgh").glob("*.py")))
@@ -894,7 +1004,7 @@ def postmerge_command(args) -> int:
     if not report.ready:
         names = [
             "vendor-ancestry", "sensitive-zones", "debt", "exact-scope-history",
-            "validate", "source",
+            "structural-review", "validate", "source",
         ]
         if args.artifact_digest:
             names.append("contract")
@@ -923,6 +1033,25 @@ def postmerge_command(args) -> int:
         upstream_base=args.base,
         upstream_target=args.target,
     )
+    def run_structural_review() -> phase.GateOutcome:
+        review = getattr(args, "structural_review", None)
+        relocation = getattr(args, "relocation_review", None)
+        if review is None or relocation is None:
+            raise phase.MissingInput(
+                "schema_version 2 conflict evidence with structural review not provided"
+            )
+        return phase.GateOutcome(
+            structural_review.to_gate_result(review, relocation),
+            target_count=len(review.get("review_surface_paths", [])),
+            detail=structural_review.gate_detail(review, relocation),
+            evidence=(str(args.conflict_evidence),) if args.conflict_evidence else (),
+        )
+    specs.append(phase.GateSpec(
+        "structural-review",
+        run_structural_review,
+        required=True,
+        timeout=phase.DEFAULT_GATE_TIMEOUT,
+    ))
     gate_dir = args.output.parent / "gates"
     validator = args.registration / "validate_registration_bundle.py"
     if not validator.is_file():

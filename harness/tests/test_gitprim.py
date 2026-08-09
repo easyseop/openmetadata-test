@@ -182,3 +182,39 @@ def test_rename_policy_is_stable_across_user_configuration(repo):
     assert first_paths == second_paths == ["new.txt", "old.txt"]
     assert first_replay.output_digest == second_replay.output_digest
     assert first_replay.rename_detection_policy == "disabled"
+
+
+def test_canonical_statuses_and_diagnostic_renames_are_separate(repo):
+    base = _commit(repo, "old.txt", "same content\n", "base")
+    _run(str(repo), "switch", "-qc", "renamed", base)
+    (repo / "old.txt").rename(repo / "new.txt")
+    _run(str(repo), "add", "-A")
+    _run(str(repo), "commit", "-m", "rename")
+    renamed = G.resolve_commit(str(repo), "HEAD")
+
+    _run(str(repo), "config", "diff.renames", "true")
+    canonical_true = G.net_changes(str(repo), base, renamed)
+    diagnostic_true = G.diagnostic_renames(str(repo), base, renamed)
+    _run(str(repo), "config", "diff.renames", "false")
+    canonical_false = G.net_changes(str(repo), base, renamed)
+    diagnostic_false = G.diagnostic_renames(str(repo), base, renamed)
+
+    assert [(item.status, item.path) for item in canonical_true] == [
+        ("A", "new.txt"), ("D", "old.txt")
+    ]
+    assert canonical_true == canonical_false
+    assert diagnostic_true == diagnostic_false
+    assert [(item.status, item.old_path, item.new_path) for item in diagnostic_true] == [
+        ("R", "old.txt", "new.txt")
+    ]
+
+
+def test_merge_base_returns_none_for_unrelated_histories(repo):
+    first = _commit(repo, "first.txt", "one\n", "first root")
+    _run(str(repo), "switch", "--orphan", "unrelated")
+    for path in repo.iterdir():
+        if path.name != ".git" and path.is_file():
+            path.unlink()
+    second = _commit(repo, "second.txt", "two\n", "second root")
+
+    assert G.merge_base(str(repo), first, second) is None

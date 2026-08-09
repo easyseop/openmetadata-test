@@ -522,7 +522,11 @@ def build_premerge_catalog(
         )
         result = upgrade_watch.to_gate_result(findings)
         count = len(gitprim.net_changed_paths(repo, upstream_base, upstream_target))
-        return GateOutcome(result, target_count=count)
+        return GateOutcome(
+            result,
+            target_count=count,
+            detail=upgrade_watch.review_packet(findings),
+        )
 
     def run_policy_drift() -> GateOutcome:
         if layout is None:

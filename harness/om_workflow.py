@@ -575,6 +575,37 @@ def parse_args() -> argparse.Namespace:
     collect_conflict.add_argument("--output", required=True, type=Path)
     add_phase_output_format(collect_conflict)
 
+    migration_propose = subparsers.add_parser(
+        "definition-migration-propose",
+        help="이동·공식 흡수 근거를 Candidate에 결속한 버전별 정의 이관안 생성",
+    )
+    add_repo_version(migration_propose)
+    migration_propose.add_argument("--target-version", required=True)
+    migration_propose.add_argument("--candidate", required=True)
+    migration_propose.add_argument("--upstream-target", required=True)
+    migration_propose.add_argument("--structural-evidence", required=True, type=Path)
+    migration_propose.add_argument("--decisions", required=True, type=Path)
+    migration_propose.add_argument("--output", required=True, type=Path)
+    add_phase_output_format(migration_propose)
+
+    migration_template = subparsers.add_parser(
+        "definition-migration-approval-template",
+        help="정의 이관안 digest에 결속된 사람 승인 양식 생성",
+    )
+    migration_template.add_argument("--proposal", required=True, type=Path)
+    migration_template.add_argument("--output", required=True, type=Path)
+    add_phase_output_format(migration_template)
+
+    migration_apply = subparsers.add_parser(
+        "definition-migration-apply",
+        help="승인된 정의 이관안으로 새 버전 등록 묶음 생성",
+    )
+    add_repo_version(migration_apply)
+    migration_apply.add_argument("--target-version", required=True)
+    migration_apply.add_argument("--proposal", required=True, type=Path)
+    migration_apply.add_argument("--approval", required=True, type=Path)
+    add_phase_output_format(migration_apply)
+
     prep_official = subparsers.add_parser(
         "prep-official",
         help="공식 tag commit에 고정된 로컬 공식 branch 준비",
@@ -765,6 +796,77 @@ def dispatch(args: argparse.Namespace) -> int:
                 _emit("rename 탐지", payload.get("rename_detection"))
                 _emit("증거 파일", payload.get("output"))
                 _emit("다음 행동", "증거 파일을 phase-preflight와 postmerge-check에 전달하세요.")
+        if completed.stderr:
+            print(completed.stderr, file=sys.stderr, end="")
+        return completed.returncode
+
+    if args.command in {
+        "definition-migration-propose",
+        "definition-migration-approval-template",
+        "definition-migration-apply",
+    }:
+        script = HARNESS / "manage_shared_code_migration.py"
+        if args.command == "definition-migration-propose":
+            command = python_command(
+                script,
+                "propose",
+                "--repo", args.repo,
+                "--source-registration", registration_for(args.version),
+                "--source-version", args.version,
+                "--target-version", args.target_version,
+                "--candidate", args.candidate,
+                "--upstream-target", args.upstream_target,
+                "--structural-evidence", args.structural_evidence,
+                "--decisions", args.decisions,
+                "--output", args.output,
+            )
+        elif args.command == "definition-migration-approval-template":
+            command = python_command(
+                script,
+                "approval-template",
+                "--proposal", args.proposal,
+                "--output", args.output,
+            )
+        else:
+            command = python_command(
+                script,
+                "apply",
+                "--repo", args.repo,
+                "--source-registration", registration_for(args.version),
+                "--target-registration", registration_for(args.target_version),
+                "--proposal", args.proposal,
+                "--approval", args.approval,
+            )
+        environment = os.environ.copy()
+        environment["PYTHONPATH"] = str(HARNESS)
+        completed = subprocess.run(
+            command,
+            cwd=PROJECT,
+            env=environment,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        payload = _last_json(completed.stdout)
+        if args.output_format == "json" or payload is None:
+            if completed.stdout:
+                print(completed.stdout, end="")
+        else:
+            print("\n[정의 이관] 버전별 공유 코드 기준 관리")
+            _emit("결과", _result_label(payload))
+            _emit("종료 코드", completed.returncode)
+            if payload.get("reason"):
+                _emit("사유", payload["reason"])
+            if payload.get("proposal_digest"):
+                _emit("제안 digest", payload["proposal_digest"])
+            if payload.get("output"):
+                _emit("결과 파일", payload["output"])
+            if payload.get("target_registration"):
+                _emit("새 등록 묶음", payload["target_registration"])
+            if payload.get("next_action"):
+                _emit("다음 행동", payload["next_action"])
+            elif payload.get("requires_human_approval"):
+                _emit("다음 행동", "승인 양식을 생성하고 담당자가 기능 근거를 검토하세요.")
         if completed.stderr:
             print(completed.stderr, file=sys.stderr, end="")
         return completed.returncode

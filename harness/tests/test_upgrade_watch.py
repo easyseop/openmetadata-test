@@ -102,3 +102,30 @@ def test_configuration_key_and_dependency_changes_are_detected(tmp_path):
     assert result.verdict == V.APPROVAL
     assert "configuration_keys" in result.reasons[0]
     assert "dependencies" in result.reasons[0]
+
+
+def test_deleted_watch_path_is_explicit_and_non_ancestor_comparison_is_labeled(tmp_path):
+    _git(tmp_path, "init", "-q")
+    _git(tmp_path, "config", "user.name", "t")
+    _git(tmp_path, "config", "user.email", "t@example.com")
+    (tmp_path / "watched.ts").write_text("export const bank = 1;\n")
+    base = _commit(tmp_path, "base")
+
+    _git(tmp_path, "switch", "--orphan", "new-release")
+    for path in tmp_path.iterdir():
+        if path.name != ".git" and path.is_file():
+            path.unlink()
+    (tmp_path / "other.ts").write_text("export const upstream = 2;\n")
+    head = _commit(tmp_path, "unrelated release")
+
+    findings = UW.evaluate_upgrade_watch(
+        str(tmp_path), base, head, _m("BANK-OM-004", ["watched.ts"])
+    )
+    assert findings[0].comparison == "two_tree(non_ancestor)"
+    packet = UW.review_packet(findings)
+    assert packet["deleted_paths"] == ["watched.ts"]
+    assert packet["findings"][0]["changed_watch_paths"] == [
+        {"status": "D", "path": "watched.ts"}
+    ]
+    result = UW.to_gate_result(findings)
+    assert "deleted_paths=['watched.ts']" in result.reasons[0]

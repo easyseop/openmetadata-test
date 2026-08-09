@@ -636,7 +636,7 @@ docs/04-진행/PHASE_CANDIDATE_준비승인활성화_CLAUDE_개발요청_2026080
 |---|---|
 | 이전 BANK 기준선 | `8ac18ad053d9274774e274ba17b35911ac0b9dcb` |
 | 공식 1.13.2 | `2763bf97ce265662793a1a38d353147cc6d6c2e3` |
-| merge base | `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9` |
+| 업그레이드 기준선 | `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9` |
 | 소스 검증 제품 commit | `390c439e77af12b9813121f9e3217cb4095f947d` |
 | WIP 전달 commit | `9587fe8fc7d9e6a18b9c0038b92c5fef24bb8412` |
 | 공통 tree | `22bdc8435b018cdbfe06e32fe02f7d5970a2b363` |
@@ -772,3 +772,56 @@ Claude가 개발한 Candidate CLI·watch-suggest 개선 branch
 `codex/candidate-activation-cli-20260809`는 이번 실행에 merge하지 않는다. 합치면
 premerge와 postmerge의 `harness_version`이 달라지기 때문이다. 예행연습 완료 후
 새 검사기 버전으로 Candidate 선택부터 전체 Phase를 다시 실행할 때 적용한다.
+
+## 21. 2026-08-09 구조가 크게 바뀌는 업그레이드 검사 보완
+
+Claude의 적대적 검토에서 새 P0는 없었고 구현 착수 가능 판정을 받았다. 다만
+업그레이드 기준선과 Git merge-base 분리, 전체 3집합 검토 표면, 부분 손실 처리,
+버전별 공유 정의 이관, 공식 기능 흡수의 양성 증거를 P1 조건으로 반영했다.
+
+예행연습 제품 저장소와 기존 검사기 작업 트리를 보호하기 위해 다음 별도 worktree와
+branch에서만 구현했다.
+
+```text
+worktree: /private/tmp/openmetadata-structural-upgrade-20260809
+branch: codex/structural-upgrade-safety-20260809
+base: 7319481e24063af7d16e9ae1c7bce34d396bbd27
+```
+
+주요 구현은 다음과 같다.
+
+- `gitprim.py`: rename 비활성 정본 diff, 보조 rename 진단, unrelated merge-base 처리
+- `structural_review.py`: target·custom·Candidate 3집합 구조 분류와 손실 의심 탐지
+- `run_phase_bundle.py`: upgrade base와 merge-base 분리, schema v2 충돌 증거, 필수
+  `structural-review` postmerge gate
+- `shared_code_migration.py`: 이전 정의 불변, versioned proposal·사람 승인·새 등록 초안
+- `manage_shared_code_migration.py`, `om_workflow.py`: 공개 정의 이관 CLI 3종
+
+실제 WIP Candidate `9587fe8fc7d9e6a18b9c0038b92c5fef24bb8412`를 읽기
+전용으로 적용했다. 업그레이드 기준선 `afcb2d2c...`와 실제 Git merge-base
+`739ee492...`가 다름을 정상 처리했고, 검토 표면 1,786개와 손실 의심 28개를
+찾았다. 손실 의심은 확인된 손실이 아니라 우선 검토 목록이다.
+
+기존에 후보 0건으로 BLOCK이던 BANK-OM-006·007의
+`DatabaseServiceUtils.tsx` 정의는 두 건 모두
+`DatabaseServicePureUtils.ts`를 가장 강한 부분 일치 후보로 찾았다. 전체 relocation
+판정은 APPROVAL이다. 부분 일치 후보는 새 `proposed_assertions`와 Candidate 기능
+테스트, 사람 승인이 있어야 이관할 수 있다.
+
+전체 harness 620건을 7개 묶음으로 실행했다.
+
+```text
+582 passed, 38 skipped, 0 failed, 0 errors
+```
+
+구체적인 비개발자 설명·명령·남은 사람 책임은 다음 문서가 정본이다.
+
+```text
+docs/04-진행/보완작업_최종검토반영_및_구현결과_20260809.md
+```
+
+이 branch는 현재 예행연습 결과에 바로 merge하지 않는다. 적용하면 harness digest가
+바뀌므로 새 검사기 버전으로 Candidate 선택부터 Phase 전체를 다시 실행해야 한다.
+최종 production bundle, Docker Runtime·화면 검증, 최종 Candidate lock·조직 승인,
+postmerge·운영 release는 여전히 미완료다. Candidate activation/watch-suggest 개선
+branch `codex/candidate-activation-cli-20260809`도 별도로 유지한다.

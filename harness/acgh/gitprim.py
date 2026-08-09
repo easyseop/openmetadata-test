@@ -36,6 +36,13 @@ class GitPrimitiveError(RuntimeError):
     """A deterministic Git query could not produce a trustworthy answer."""
 
 
+def git_version() -> str:
+    proc = subprocess.run(["git", "--version"], text=True, capture_output=True)
+    if proc.returncode != 0 or not proc.stdout.strip():
+        raise GitPrimitiveError("cannot determine Git version for audit evidence")
+    return proc.stdout.strip()
+
+
 @dataclass(frozen=True)
 class Commit:
     sha: str
@@ -55,6 +62,24 @@ class TreeEntry:
     object_type: str
     object_id: str
     path: str
+
+
+@dataclass(frozen=True)
+class NetChange:
+    """One canonical tree-to-tree path change with rename detection disabled."""
+
+    status: str
+    path: str
+
+
+@dataclass(frozen=True)
+class DiagnosticRename:
+    """A non-canonical rename/copy hint produced only for human diagnosis."""
+
+    status: str
+    score: int
+    old_path: str
+    new_path: str
 
 
 @dataclass(frozen=True)
@@ -160,6 +185,108 @@ def net_changed_paths(repo: str, base: str, head: str) -> list[str]:
     """
     out = git(repo, "diff", "--no-renames", "--name-only", "-z", base, head)
     return [p for p in out.split("\x00") if p != ""]
+
+
+def net_changes(repo: str, base: str, head: str) -> tuple[NetChange, ...]:
+    """Return canonical A/M/D-style changes, independent of user rename config.
+
+    Git can also report type changes and unmerged/broken pairs.  They are retained
+    as their one-letter status instead of being silently folded into ``M``.
+    Rename/copy statuses cannot appear because ``--no-renames`` is explicit.
+    """
+    out = git(repo, "diff", "--no-renames", "--name-status", "-z", base, head)
+    fields = [item for item in out.split("\x00") if item]
+    if len(fields) % 2:
+        raise GitPrimitiveError("malformed canonical --name-status output")
+    changes: list[NetChange] = []
+    for index in range(0, len(fields), 2):
+        status, path = fields[index:index + 2]
+        code = status[:1]
+        if code in {"R", "C"}:
+            raise GitPrimitiveError(
+                "canonical change output unexpectedly contains rename/copy status"
+            )
+        changes.append(NetChange(code, path))
+    return tuple(sorted(changes, key=lambda item: item.path.encode("utf-8")))
+
+
+def diagnostic_renames(
+    repo: str,
+    base: str,
+    head: str,
+    *,
+    threshold: int = 50,
+) -> tuple[DiagnosticRename, ...]:
+    """Return explicit ``-M -C`` hints without affecting canonical judgments."""
+    if isinstance(threshold, bool) or not isinstance(threshold, int) or not 0 < threshold <= 100:
+        raise GitPrimitiveError("rename diagnostic threshold must be an integer from 1 to 100")
+    option = f"{threshold}%"
+    out = git(
+        repo,
+        "diff",
+        "--name-status",
+        "-z",
+        f"-M{option}",
+        f"-C{option}",
+        "--find-copies-harder",
+        base,
+        head,
+    )
+    fields = [item for item in out.split("\x00") if item]
+    findings: list[DiagnosticRename] = []
+    index = 0
+    while index < len(fields):
+        status = fields[index]
+        index += 1
+        code = status[:1]
+        if code not in {"R", "C"}:
+            if index >= len(fields):
+                raise GitPrimitiveError("malformed diagnostic --name-status output")
+            index += 1
+            continue
+        if index + 1 >= len(fields):
+            raise GitPrimitiveError("malformed diagnostic rename/copy output")
+        old_path, new_path = fields[index:index + 2]
+        index += 2
+        try:
+            score = int(status[1:])
+        except ValueError as exc:
+            raise GitPrimitiveError(f"malformed diagnostic score: {status!r}") from exc
+        findings.append(DiagnosticRename(code, score, old_path, new_path))
+    return tuple(sorted(
+        findings,
+        key=lambda item: (
+            item.old_path.encode("utf-8"), item.new_path.encode("utf-8"), item.status
+        ),
+    ))
+
+
+def binary_changed_paths(repo: str, base: str, head: str) -> tuple[str, ...]:
+    """Return paths Git reports as binary in one canonical no-rename diff."""
+    proc = subprocess.run(
+        [
+            "git", "-C", repo, *_STABLE_CONFIG,
+            "diff", "--no-renames", "--numstat", "-z", base, head,
+        ],
+        capture_output=True,
+    )
+    if proc.returncode != 0:
+        raise GitPrimitiveError(
+            "binary path diff failed: "
+            + proc.stderr.decode("utf-8", errors="replace").strip()
+        )
+    paths: list[str] = []
+    for record in (item for item in proc.stdout.split(b"\x00") if item):
+        parts = record.split(b"\t", 2)
+        if len(parts) != 3:
+            raise GitPrimitiveError("malformed --numstat output")
+        added, deleted, raw_path = parts
+        if added == b"-" and deleted == b"-":
+            try:
+                paths.append(raw_path.decode("utf-8"))
+            except UnicodeDecodeError as exc:
+                raise GitPrimitiveError("binary diff returned a non-UTF-8 path") from exc
+    return tuple(sorted(paths, key=lambda path: path.encode("utf-8")))
 
 
 def list_tree(repo: str, ref: str, *, dirs_only: bool = False) -> list[str]:
@@ -328,13 +455,10 @@ def merge_tree_conflicts(
         raise GitPrimitiveError("merge-tree returned a non-UTF-8 path") from exc
     if len(paths) != len(set(paths)):
         raise GitPrimitiveError("merge-tree returned duplicate conflict paths")
-    version_proc = subprocess.run(
-        ["git", "--version"], text=True, capture_output=True, check=True
-    )
     return MergeTreeResult(
         tree_sha=tree_sha,
         conflicted_paths=tuple(sorted(paths, key=lambda path: path.encode("utf-8"))),
-        git_version=version_proc.stdout.strip(),
+        git_version=git_version(),
         command=command,
         output_digest="sha256:" + hashlib.sha256(proc.stdout).hexdigest(),
         merge_driver_config_digest=driver_digest,

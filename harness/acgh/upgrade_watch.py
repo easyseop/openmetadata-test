@@ -30,6 +30,8 @@ class WatchFinding:
     changed_watch_paths: tuple[str, ...]
     changed_configuration_keys: tuple[str, ...] = ()
     changed_dependencies: tuple[str, ...] = ()
+    changed_watch_path_statuses: tuple[tuple[str, str], ...] = ()
+    comparison: str = "range(ancestor)"
 
 
 _CONFIG_SUFFIXES = {
@@ -85,8 +87,14 @@ def _dependency_hits(repo, base_ref, head_ref, net, dependencies) -> tuple[str, 
 
 def evaluate_upgrade_watch(repo, base_ref, head_ref, manifests_by_id) -> list[WatchFinding]:
     """Return one finding per customization whose watched paths changed A->B."""
-    net = {L.normalize_path(p)
-           for p in gitprim.net_changed_paths(repo, base_ref, head_ref)}
+    changes = gitprim.net_changes(repo, base_ref, head_ref)
+    net = {L.normalize_path(item.path) for item in changes}
+    status_by_path = {L.normalize_path(item.path): item.status for item in changes}
+    comparison = (
+        "range(ancestor)"
+        if gitprim.is_ancestor(repo, base_ref, head_ref)
+        else "two_tree(non_ancestor)"
+    )
     findings: list[WatchFinding] = []
     for cid in sorted(manifests_by_id):
         watch = manifests_by_id[cid].get("upgrade_watch", {})
@@ -103,9 +111,47 @@ def evaluate_upgrade_watch(repo, base_ref, head_ref, manifests_by_id) -> list[Wa
         )
         if path_hits or config_hits or dependency_hits:
             findings.append(WatchFinding(
-                cid, path_hits, config_hits, dependency_hits
+                cid,
+                path_hits,
+                config_hits,
+                dependency_hits,
+                tuple((status_by_path[path], path) for path in path_hits),
+                comparison,
             ))
     return findings
+
+
+def finding_payload(finding: WatchFinding) -> dict:
+    """Render the full path-level evidence instead of one lossy example."""
+    changes = [
+        {"status": status, "path": path}
+        for status, path in finding.changed_watch_path_statuses
+    ]
+    return {
+        "customization_id": finding.customization_id,
+        "comparison": finding.comparison,
+        "changed_watch_paths": changes,
+        "deleted_paths": [item["path"] for item in changes if item["status"] == "D"],
+        "added_paths": [item["path"] for item in changes if item["status"] == "A"],
+        "modified_paths": [item["path"] for item in changes if item["status"] == "M"],
+        "changed_configuration_keys": list(finding.changed_configuration_keys),
+        "changed_dependencies": list(finding.changed_dependencies),
+    }
+
+
+def review_packet(findings: list[WatchFinding]) -> dict:
+    """Canonical, complete A/M/D detail for Phase evidence and human review."""
+    payloads = [finding_payload(finding) for finding in findings]
+    deleted = sorted({
+        path
+        for payload in payloads
+        for path in payload["deleted_paths"]
+    }, key=lambda path: path.encode("utf-8"))
+    return {
+        "finding_count": len(payloads),
+        "deleted_paths": deleted,
+        "findings": payloads,
+    }
 
 
 def to_gate_result(findings: list[WatchFinding],
@@ -115,10 +161,13 @@ def to_gate_result(findings: list[WatchFinding],
     reasons = []
     for finding in findings:
         parts = []
+        payload = finding_payload(finding)
+        if payload["deleted_paths"]:
+            parts.append(f"deleted_paths={payload['deleted_paths']}")
         if finding.changed_watch_paths:
             parts.append(
                 f"paths={len(finding.changed_watch_paths)} "
-                f"(e.g. {finding.changed_watch_paths[0]})"
+                f"(full A/M/D detail in Phase gate detail)"
             )
         if finding.changed_configuration_keys:
             parts.append(
@@ -127,7 +176,7 @@ def to_gate_result(findings: list[WatchFinding],
         if finding.changed_dependencies:
             parts.append(f"dependencies={list(finding.changed_dependencies)}")
         reasons.append(
-            f"{finding.customization_id}: upstream A->B changed "
+            f"{finding.customization_id}: {finding.comparison} changed "
             + ", ".join(parts)
         )
     return verdict.GateResult(name, verdict.APPROVAL, tuple(reasons))
