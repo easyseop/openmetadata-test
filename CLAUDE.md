@@ -44,6 +44,10 @@ as incomplete rather than guessing that an old status is still current.
 
 Read in this order:
 
+0. [`docs/04-진행/세션전체기록_T61실행_20260810.md`](docs/04-진행/세션전체기록_T61실행_20260810.md)
+   — 2026-08-10 실행 기록. 왜 이 테스트를 했는지(배경·단계 로드맵), 실제 실행
+   순서와 실패·오진 기록, T61 판정 결과, 신규 결함 3건, 재테스트 절차,
+   다음 방향까지 한 문서에 있다. Runtime Contract가 실제로 실행된 첫 배치다.
 1. [`docs/04-진행/CLAUDE_REVIEW_HANDOFF.md`](docs/04-진행/CLAUDE_REVIEW_HANDOFF.md)
 2. [`STATUS.md`](STATUS.md)
 3. [`docs/00-사용가이드/비개발자_사용_가이드.md`](docs/00-사용가이드/비개발자_사용_가이드.md)

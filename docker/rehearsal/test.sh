@@ -8,8 +8,16 @@ require_docker
 prepare_directories
 download_base_compose
 
-echo "[1/3] Contract runner image를 받습니다."
-compose --profile contracts pull runtime-contract-runner
+if [ "${OM_CONTRACT_RUNNER_PULL:-1}" = "1" ]; then
+  echo "[1/3] Contract runner image를 받습니다."
+  compose --profile contracts pull runtime-contract-runner
+else
+  echo "[1/3] Contract runner image pull을 건너뜁니다 (OM_CONTRACT_RUNNER_PULL=0)."
+  if ! docker image inspect "$OM_CONTRACT_RUNNER_IMAGE" >/dev/null 2>&1; then
+    echo "[중단] 로컬에 image가 없습니다: $OM_CONTRACT_RUNNER_IMAGE" >&2
+    exit 2
+  fi
+fi
 
 repo_digest="$(docker image inspect "$OM_SERVER_IMAGE" --format '{{index .RepoDigests 0}}')"
 DEPLOYED_ARTIFACT_DIGEST="${repo_digest##*@}"
