@@ -1,9 +1,9 @@
 # 현재 작업 인수인계
 
-> 마지막 갱신: 2026-08-09 18:17 KST
+> 마지막 갱신: 2026-08-09 18:40 KST
 >
-> 현재 작업: 1.13.2 vendor merge·BANK 커스터마이징 재이식·소스 검증 완료,
-> 원격 Runtime Contract 실행 중
+> 현재 작업: 1.13.2 vendor merge·BANK 커스터마이징 재이식 후
+> **소스 범위 WIP 체크포인트 저장 완료**
 >
 > 이 문서는 다음 세션이 가장 먼저 읽는 현재 상태 정본입니다.
 
@@ -18,9 +18,10 @@
 candidate SHA·image digest·검사기 commit이 묶인 증거도 생성했습니다.
 
 1.13.2 vendor merge와 BANK 커스터마이징 재이식은 제품 commit
-`390c439e77...`로 완료했습니다. 소스 기준 검증은 통과했고, GitHub Actions의
-깨끗한 환경에서 build artifact·Runtime Contract를 확인 중입니다. 이 상태는 아직
-운영 배포 완료가 아닙니다.
+`390c439e77...`에서 소스 범위로 확인했습니다. 같은 tree를 가리키는 명시적 WIP
+체크포인트 `9587fe8fc7...`도 원격에 저장했습니다. 장시간 로컬 검증은 중단했으며
+build artifact·Docker Runtime·최종 Candidate 승인·postmerge는 미완료입니다.
+이 상태를 운영 완료 또는 최종 PASS로 표시하지 않습니다.
 
 공유 원격은 다음 두 branch입니다.
 
@@ -38,7 +39,7 @@ branch를 사용합니다.
 | 역할 | 위치 | 현재 branch·commit |
 |---|---|---|
 | 검사기 저장소 | 이 저장소 `easyseop/openmetadata-test` | 작업 branch `codex/phase-bundling-safety-fix-20260808` · Runtime 고정 tag `om-1.13.1-rehearsal-runtime-v1` |
-| OpenMetadata 코드 저장소 | `easyseop/OpenMetadata` clone | `codex/om-1.13.2-rehearsal-vendor-merge-20260809` · `390c439e77af12b9813121f9e3217cb4095f947d` |
+| OpenMetadata 코드 저장소 | `easyseop/OpenMetadata` clone | `codex/om-1.13.2-rehearsal-vendor-merge-20260809` · WIP `9587fe8fc7d9e6a18b9c0038b92c5fef24bb8412` |
 | 1.13.1 BANK 기준선 | 같은 코드 저장소 | `codex/om-1.13.1-runtime-ready` · `8ac18ad053d9274774e274ba17b35911ac0b9dcb` |
 | 공식 1.13.1 기준 | 같은 코드 저장소 | `upstream-1.13.1-release` · `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9` |
 | 공식 1.13.2 | 같은 코드 저장소 | `official/om-1.13.2` · 공식 `1.13.2-release` commit `2763bf97…` |
@@ -636,7 +637,9 @@ docs/04-진행/PHASE_CANDIDATE_준비승인활성화_CLAUDE_개발요청_2026080
 | 이전 BANK 기준선 | `8ac18ad053d9274774e274ba17b35911ac0b9dcb` |
 | 공식 1.13.2 | `2763bf97ce265662793a1a38d353147cc6d6c2e3` |
 | merge base | `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9` |
-| 새 제품 Candidate | `390c439e77af12b9813121f9e3217cb4095f947d` |
+| 소스 검증 제품 commit | `390c439e77af12b9813121f9e3217cb4095f947d` |
+| WIP 전달 commit | `9587fe8fc7d9e6a18b9c0038b92c5fef24bb8412` |
+| 공통 tree | `22bdc8435b018cdbfe06e32fe02f7d5970a2b363` |
 | 제품 branch | `codex/om-1.13.2-rehearsal-vendor-merge-20260809` |
 | 제품 원격 | `easyseop/OpenMetadata` |
 
@@ -649,8 +652,10 @@ docs/04-진행/PHASE_CANDIDATE_준비승인활성화_CLAUDE_개발요청_2026080
 `DatabaseServicePureUtils.ts`, `ServicePureUtils.ts`, `ServiceIconUtils.ts`에
 재이식했다.
 
-제품 commit에는 `Customization-ID: BANK-OM-001`부터 `BANK-OM-007`까지 trailer를
-기록했다. branch는 원격에 push했다.
+제품 merge commit과 WIP checkpoint commit에는 `Customization-ID: BANK-OM-001`부터
+`BANK-OM-007`까지 trailer를 기록했다. branch는 원격에 push했다. WIP commit은
+소스 변경이 없는 표식 commit이며 부모와 tree가 같다. 최종 Candidate lock은 아직
+만들지 않았다.
 
 ### 20.2 완료한 소스 검증
 
@@ -660,43 +665,108 @@ docs/04-진행/PHASE_CANDIDATE_준비승인활성화_CLAUDE_개발요청_2026080
 - 공식 1.13.2 TypeScript 기준선: 오류 record 254개, 파일·오류코드 key 168개
 - 새 Candidate TypeScript: 오류 record 249개, 파일·오류코드 key 167개
 - 공식 기준선에 없는 새 파일·오류코드 key: 0개
-- Vite production bundle: 14,085 modules, `built in 3m 9s`, 전체 명령
-  `Done in 259.93s`, exit 0
+- 로컬 Vite production bundle은 앞선 작업에서 한 차례 성공했지만 최종
+  clean-machine 번들 증거로 승격하지 않음
 
 TypeScript 전체 검사는 공식 1.13.2 자체 오류를 포함하므로 전체 오류 수를 BANK
 실패로 판정하지 않는다. 공식 tag와 Candidate를 같은 Node 22·4GB 힙 조건으로
 실행하고 파일 경로·TS 오류코드별로 차감했다. 첫 2GB 실행은 Node heap OOM으로
-종료했으며 PASS에 포함하지 않았다. 증분 cache는 `/private/tmp`에 있으므로 재부팅
-후에는 다시 생성해야 한다.
-
-### 20.3 현재 실행 중인 원격 검증
-
-로컬 8GB 장비에서 Maven과 Docker를 다시 동시에 실행하지 않고 기존 공식 workflow에
-새 Candidate SHA와 새 image tag를 전달했다.
+종료했으며 PASS에 포함하지 않았다. 이번 체크포인트에서는 TypeScript·번들을 다시
+실행하지 않고 이미 생성된 로그만 비교·보존했다. 영구 증적은 다음 경로다.
 
 ```text
-GitHub Actions run: 31305508684
-URL: https://github.com/easyseop/openmetadata-test/actions/runs/31305508684
-server image tag: 1.13.2-bank-390c439e77
-Contract runner tag: 1.13.2-runtime-a6c3b105
+evidence/om-1.13.2-source-checkpoint-20260809/
 ```
 
-이 문서 갱신 시점에는 `server`와 `contract-runner` job이 실행 중이다. 아직 Maven
-package, image publish, Docker-only clean-machine Runtime Contract 성공을 주장하지
-않는다. 완료 조건은 workflow 전체 성공과 Runtime Contract `pass 9, fail 0,
-error 0, skipped 0`이다.
+### 20.3 중단한 원격 검증
 
-### 20.4 다음 정확한 순서
+기존 공식 workflow를 두 번 호출했지만 현재 체크포인트 범위에서는 둘 다 최종
+증거로 사용하지 않는다.
 
-1. run `31305508684`의 server build·image publish·docker-only-smoke 결과를 확인한다.
-2. 성공하면 image digest와 Runtime Contract artifact를 보존한다.
-3. 새 Candidate lock·사람 승인·활성 포인터를 준비한다. 조직 승인 권한은 도구가
-   대신 판단하지 않는다.
-4. 고정된 현재 검사기 branch에서 conflict evidence를 수집하고 postmerge-check와
-   phase-status를 실행한다.
-5. 결과와 Candidate SHA·image digest·검사기 commit을 이 문서와 정식 evidence에
-   기록한다.
-6. 그 후에만 예행연습 완료 여부를 판정한다. 운영 배포와 release 승인은 별도다.
+```text
+run 31305508684: 짧은 제품 SHA 입력으로 checkout 실패
+run 31305716406: 범위를 Docker 제외로 바꾸면서 사용자 요청에 따라 취소
+```
+
+두 번째 run은 Contract runner image만 먼저 발행됐고 server Maven build 중
+취소됐다. server image·Docker-only clean-machine Runtime 결과는 없다. 따라서
+어느 run도 build artifact 또는 Runtime PASS 증거로 사용하지 않는다.
+
+### 20.4 미완료 항목
+
+1. 고사양의 깨끗한 환경에서 최종 production bundle 재검증
+2. Docker Runtime 실행과 BANK 화면·클릭 검증 및 스크린샷 보존
+3. 검증할 최종 제품 SHA 확정 후 Candidate lock 준비
+4. 담당자 승인·활성화·candidate-select 재실행
+5. conflict evidence·postmerge-check·phase-status 실행과 결과 보존
+6. 별도 운영 배포·release 승인
+
+### 20.5 다른 고사양 기기에서 이어가기
+
+아래 명령은 제품 WIP branch와 검사기 branch를 별도 clone으로 준비한다.
+
+```bash
+mkdir -p "$HOME/om-final-check"
+cd "$HOME/om-final-check"
+
+git clone https://github.com/easyseop/OpenMetadata.git product
+git -C product fetch origin
+git -C product switch --detach 9587fe8fc7d9e6a18b9c0038b92c5fef24bb8412
+
+git clone https://github.com/easyseop/openmetadata-test.git verifier
+git -C verifier fetch origin
+git -C verifier switch codex/phase-bundling-safety-fix-20260808
+git -C verifier pull --ff-only
+
+git -C product status --short
+git -C verifier status --short
+```
+
+최종 bundle은 Node 22, 8GB 이상 여유 메모리에서 다른 무거운 작업을 중지한 뒤 한
+번만 실행한다. 의존성이 이미 준비된 clone이라면 다음 명령을 사용한다.
+
+```bash
+cd "$HOME/om-final-check/product"
+source "$HOME/.nvm/nvm.sh"
+nvm install 22
+nvm use 22
+corepack enable
+
+cd openmetadata-ui-core-components/src/main/resources/ui
+yarn install --frozen-lockfile
+yarn build
+
+cd ../../../../../openmetadata-ui/src/main/resources/ui
+yarn install --frozen-lockfile
+yarn build-check
+NODE_OPTIONS=--max-old-space-size=6144 yarn build 2>&1 | tee "$HOME/om-final-check/product-bundle.log"
+```
+
+`yarn build-check`가 `antlr4` 명령 누락으로 멈추면 도구를 임의 버전으로 설치하지
+말고 저장소가 고정한 ANTLR 4.9.2를 준비한 뒤 같은 명령부터 재실행한다. 성공
+로그와 `git rev-parse HEAD^{tree}`를 함께 보존하고 실패 시 PASS로 바꾸지 않는다.
+
+GitHub Actions에서 기존 Docker·Runtime workflow를 이어갈 때는 다음처럼 **전체
+40자리 제품 SHA**를 전달한다. 이 실행은 Docker가 허용된 후속 단계에서만 한다.
+
+```bash
+cd "$HOME/om-final-check/verifier"
+
+gh workflow run publish-rehearsal-images.yml \
+  --ref codex/phase-bundling-safety-fix-20260808 \
+  -f product_commit=9587fe8fc7d9e6a18b9c0038b92c5fef24bb8412 \
+  -f server_tag=1.13.2-bank-9587fe8fc7 \
+  -f runner_tag=1.13.2-runtime-$(git rev-parse --short=10 HEAD)
+
+gh run list --workflow publish-rehearsal-images.yml --limit 1
+# 위 출력의 run ID를 확인한 뒤:
+gh run watch RUN_ID --exit-status
+```
+
+workflow 전체 성공, server image digest, Runtime Contract artifact를 확보한 뒤에만
+최종 Candidate lock·사람 승인·postmerge를 진행한다. 승인자의 조직 권한은 CLI가
+대신 확인하지 않는다. 실제 digest·승인자·승인 시각이 없으면 placeholder를
+추측해 작성하지 않는다.
 
 Claude가 개발한 Candidate CLI·watch-suggest 개선 branch
 `codex/candidate-activation-cli-20260809`는 이번 실행에 merge하지 않는다. 합치면

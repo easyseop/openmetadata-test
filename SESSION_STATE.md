@@ -1,5 +1,14 @@
 # 세션 상태 / 인수인계 (SESSION_STATE)
 
+> **2026-08-09 1.13.2 WIP 체크포인트:** 제품 branch
+> `codex/om-1.13.2-rehearsal-vendor-merge-20260809`의 소스 검증 commit
+> `390c439...`과 동일 tree의 WIP 전달 commit `9587fe8...`을 원격에 저장했다.
+> 기존 TypeScript 로그에서 후보 전용 key 0개, BANK 전용 test 88 passed를
+> 기록했다. 이 노트북의 production bundle 반복과 Docker는 중단했다. 다음
+> 세션은 `docs/04-진행/CODEX_CURRENT_HANDOFF.md` 20.4~20.5의 복붙 절차로
+> clean-machine bundle·Docker Runtime을 수행한 뒤 Candidate lock·사람 승인·
+> postmerge를 진행한다. 그전에는 운영 완료·최종 PASS로 표시하지 않는다.
+
 > **2026-08-08 Claude 최종 검토 반영:** 단순 target→candidate 경로 검사를
 > 폐기하고 병합 전 승인 custom head, 이전 기준선 Candidate lock, 실제 merge-base,
 > `git merge-tree` 원시 출력 digest와 충돌 경로를 canonical 결과에 결속했다.

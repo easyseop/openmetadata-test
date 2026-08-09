@@ -1,5 +1,16 @@
 # Current implementation status
 
+> Updated: 2026-08-09 KST — 1.13.2 vendor merge 결과를 장시간 로컬 검증에서
+> 인수인계 가능한 WIP 체크포인트로 전환했다. 소스 검증 commit은
+> `390c439e77af12b9813121f9e3217cb4095f947d`, 같은 tree를 가진 원격 WIP
+> commit은 `9587fe8fc7d9e6a18b9c0038b92c5fef24bb8412`이다. 기존 공식·후보
+> TypeScript 로그 비교에서 후보 전용 파일·오류코드 key는 0개였고 BANK 전용
+> test는 88 passed였다. 이번 batch에서는 TypeScript·production bundle·Docker를
+> 다시 실행하지 않았다. 최종 clean-machine bundle, Docker 화면 검증, Candidate
+> lock·사람 승인·postmerge는 미완료이며 운영 완료·최종 PASS가 아니다. 정본은
+> `docs/04-진행/CODEX_CURRENT_HANDOFF.md` 20절과
+> `evidence/om-1.13.2-source-checkpoint-20260809/`다.
+
 > Updated: 2026-08-08 KST — Claude 최종 검토를 반영해 Phase의 conflict evidence를
 > 승인된 `custom_head_sha`·이전 기준선 lock·실제 merge-base에 결속하고,
 > `git merge-tree --write-tree` 재현 충돌 목록과 완전 일치하도록 강화했다.

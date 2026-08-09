@@ -1,5 +1,20 @@
 # Claude 독립 검토 인수인계
 
+## 2026-08-09 1.13.2 WIP 체크포인트 — 다음 검토 경계
+
+제품 소스 검증 commit은 `390c439e77af12b9813121f9e3217cb4095f947d`, 같은
+tree를 가진 명시적 WIP 전달 commit은
+`9587fe8fc7d9e6a18b9c0038b92c5fef24bb8412`이다. 기존 공식·후보 TypeScript
+로그 비교에서 후보 전용 파일·오류코드 key는 0개였고 BANK 전용 test 88건은
+통과했다. 정본 증적은
+`evidence/om-1.13.2-source-checkpoint-20260809/SOURCE_VALIDATION_CHECKPOINT.md`,
+현재 순서와 복붙 명령은 `docs/04-진행/CODEX_CURRENT_HANDOFF.md` 20절이다.
+
+이번 상태는 소스 범위 WIP다. 최종 production bundle 재검증, Docker Runtime
+화면 검증, 최종 Candidate lock·조직 담당자 승인·postmerge는 수행하지 않았다.
+Claude는 이 입력을 운영 완료나 최종 PASS로 승격하지 말고, 후속 실산출물과 실제
+승인정보가 들어온 뒤에만 최종 검토한다.
+
 ## 2026-08-04 검토 대상 — 113개 경로 분류와 공용 코드 정의 시연 초안
 
 다음 두 파일과 설명 가이드를 먼저 검토한다.
