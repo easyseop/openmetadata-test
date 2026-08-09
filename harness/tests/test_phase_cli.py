@@ -694,6 +694,7 @@ def test_human_status_blocks_deployment_for_source_only(capsys):
     om_workflow._print_human_phase("status", {
         "verified": True,
         "canonical_verified": True,
+        "phase": "postmerge",
         "overall_verdict": "pass",
         "verification_scope": "source-only",
         "tier_outputs": {"manager": True, "practitioner": True},
@@ -703,6 +704,25 @@ def test_human_status_blocks_deployment_for_source_only(capsys):
     assert "저장된 판정: pass (계속 가능)" in text
     assert "검사 범위: source-only" in text
     assert "build-artifact 검증 전 승인 금지" in text
+
+
+def test_human_status_of_a_premerge_result_shows_the_manual_transition(capsys):
+    """A verified premerge result must not be told to 'rerun' postmerge."""
+    om_workflow._print_human_phase("status", {
+        "verified": True,
+        "canonical_verified": True,
+        "phase": "premerge",
+        "overall_verdict": "approval",
+        "verification_scope": "source-impact",
+        "tier_outputs": {"manager": True, "practitioner": True},
+        "result_digest": "sha256:" + "3" * 64,
+    })
+    text = capsys.readouterr().out
+    assert "운영 배포: 해당 없음 · 병합 전 검사 결과입니다." in text
+    assert "vendor-merge Candidate를 만듭니다" in text
+    assert "새 Candidate lock을 작성하고 담당자가 승인합니다" in text
+    assert "candidate-select를 다시 실행합니다" in text
+    assert "postmerge를 다시 실행" not in text
 
 
 def test_human_status_fails_closed_when_scope_is_missing(capsys):

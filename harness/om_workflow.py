@@ -407,23 +407,31 @@ def _print_human_phase(stage: str, payload: dict, *, evidence: Path | None = Non
     else:
         tier = payload.get("tier_outputs", {})
         scope = payload.get("verification_scope") or "기록 없음(구버전)"
+        stored_phase = payload.get("phase")
         _emit("검사 범위", scope)
         if not payload.get("verified"):
             _emit("Canonical", "확인됨" if payload.get("canonical_verified") else "불일치")
             _emit("관리자 요약", "확인됨" if tier.get("manager") else "불일치")
             _emit("실무자 상세", "확인됨" if tier.get("practitioner") else "불일치")
-        if scope == "artifact-verified":
+        if stored_phase == "premerge":
+            # A premerge result is nowhere near a deployment decision; saying
+            # "build-artifact 검증 전 승인 금지" would imply it almost is.
+            _emit("운영 배포", "해당 없음 · 병합 전 검사 결과입니다.")
+        elif scope == "artifact-verified":
             _emit("운영 배포", "담당자 승인 결속 전에는 완료로 처리하지 마세요.")
         else:
             _emit("운영 배포", "build-artifact 검증 전 승인 금지")
         _emit("결과 digest", payload.get("result_digest") or "-")
-        if payload.get("verified"):
-            if scope == "artifact-verified":
-                _emit("다음 행동", "같은 result digest에 담당자 승인을 결속한 뒤 별도 운영 배포 절차로 진행하세요.")
-            else:
-                _emit("다음 행동", "build-artifact Candidate lock과 Runtime Contract를 준비해 postmerge를 다시 실행하세요.")
-        else:
+        if not payload.get("verified"):
             _emit("다음 행동", "canonical·관리자·실무자 결과의 불일치를 해결한 뒤 다시 확인하세요.")
+        elif stored_phase == "premerge":
+            # postmerge has not run yet: the manual steps in between are the
+            # next action, not a rerun of a phase that never happened.
+            _print_premerge_next_steps()
+        elif scope == "artifact-verified":
+            _emit("다음 행동", "같은 result digest에 담당자 승인을 결속한 뒤 별도 운영 배포 절차로 진행하세요.")
+        else:
+            _emit("다음 행동", "build-artifact Candidate lock과 Runtime Contract를 준비해 postmerge를 다시 실행하세요.")
     if evidence is not None:
         if evidence.is_file():
             _emit("증거 파일", evidence)
