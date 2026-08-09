@@ -858,3 +858,12 @@ docs/04-진행/구조보완_CLAUDE_검토04_실제적용과통합판정_20260809
 
 어느 단계에서도 코드·제품 WIP·Candidate lock·예행연습 증거를 수정하지 않는다.
 1~3차 중 P0가 나오면 4차로 넘어가지 않고 구현 수정과 해당 단계 재검토가 먼저다.
+
+### 22.1 검토 요청서 commit
+
+```text
+3bef3cd358dc130ec193f1230956c350efe7e64c
+docs: add staged adversarial review packets
+```
+
+이 인수인계 갱신은 위 commit을 기록하는 문서 전용 후속 commit이다.
