@@ -83,6 +83,18 @@ class DiagnosticRename:
 
 
 @dataclass(frozen=True)
+class DiagnosticRenameReport:
+    """Fail-soft rename/copy hints and any degradation visible to Git."""
+
+    findings: tuple[DiagnosticRename, ...]
+    degraded: bool
+    warnings: tuple[str, ...]
+    threshold: int
+    timeout_seconds: float
+    config: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class MergeTreeResult:
     tree_sha: str
     conflicted_paths: tuple[str, ...]
@@ -210,28 +222,8 @@ def net_changes(repo: str, base: str, head: str) -> tuple[NetChange, ...]:
     return tuple(sorted(changes, key=lambda item: item.path.encode("utf-8")))
 
 
-def diagnostic_renames(
-    repo: str,
-    base: str,
-    head: str,
-    *,
-    threshold: int = 50,
-) -> tuple[DiagnosticRename, ...]:
-    """Return explicit ``-M -C`` hints without affecting canonical judgments."""
-    if isinstance(threshold, bool) or not isinstance(threshold, int) or not 0 < threshold <= 100:
-        raise GitPrimitiveError("rename diagnostic threshold must be an integer from 1 to 100")
-    option = f"{threshold}%"
-    out = git(
-        repo,
-        "diff",
-        "--name-status",
-        "-z",
-        f"-M{option}",
-        f"-C{option}",
-        "--find-copies-harder",
-        base,
-        head,
-    )
+def _parse_diagnostic_renames(out: str) -> tuple[DiagnosticRename, ...]:
+    """Parse one NUL-delimited diagnostic ``--name-status`` stream."""
     fields = [item for item in out.split("\x00") if item]
     findings: list[DiagnosticRename] = []
     index = 0
@@ -259,6 +251,85 @@ def diagnostic_renames(
             item.old_path.encode("utf-8"), item.new_path.encode("utf-8"), item.status
         ),
     ))
+
+
+def diagnostic_rename_report(
+    repo: str,
+    base: str,
+    head: str,
+    *,
+    threshold: int = 50,
+    timeout_seconds: float = 30.0,
+) -> DiagnosticRenameReport:
+    """Return fail-soft ``-M -C`` hints that never affect canonical judgments.
+
+    ``diff.renameLimit`` is explicitly unlimited so a user's Git configuration
+    cannot silently change the diagnostic result.  Timeout and successful-Git
+    stderr are retained as informational degradation evidence rather than being
+    converted into a gate verdict.
+    """
+    if isinstance(threshold, bool) or not isinstance(threshold, int) or not 0 < threshold <= 100:
+        raise GitPrimitiveError("rename diagnostic threshold must be an integer from 1 to 100")
+    if (
+        isinstance(timeout_seconds, bool)
+        or not isinstance(timeout_seconds, (int, float))
+        or timeout_seconds <= 0
+    ):
+        raise GitPrimitiveError("rename diagnostic timeout must be a positive number")
+    option = f"{threshold}%"
+    config = ("diff.renameLimit=0",)
+    command = [
+        "git", "-C", repo, *_STABLE_CONFIG, "-c", config[0],
+        "diff", "--name-status", "-z", f"-M{option}", f"-C{option}",
+        "--find-copies-harder", base, head,
+    ]
+    try:
+        proc = subprocess.run(
+            command,
+            text=True,
+            capture_output=True,
+            timeout=float(timeout_seconds),
+        )
+    except subprocess.TimeoutExpired:
+        return DiagnosticRenameReport(
+            findings=(),
+            degraded=True,
+            warnings=(
+                f"diagnostic rename timed out after {float(timeout_seconds):g}s",
+            ),
+            threshold=threshold,
+            timeout_seconds=float(timeout_seconds),
+            config=config,
+        )
+    if proc.returncode != 0:
+        detail = (proc.stderr or proc.stdout or "no output").strip()
+        raise GitPrimitiveError(
+            f"diagnostic rename failed ({proc.returncode}): {detail}"
+        )
+    warnings = tuple(
+        line.strip() for line in proc.stderr.splitlines() if line.strip()
+    )
+    return DiagnosticRenameReport(
+        findings=_parse_diagnostic_renames(proc.stdout),
+        degraded=bool(warnings),
+        warnings=warnings,
+        threshold=threshold,
+        timeout_seconds=float(timeout_seconds),
+        config=config,
+    )
+
+
+def diagnostic_renames(
+    repo: str,
+    base: str,
+    head: str,
+    *,
+    threshold: int = 50,
+) -> tuple[DiagnosticRename, ...]:
+    """Compatibility wrapper returning only the non-canonical findings."""
+    return diagnostic_rename_report(
+        repo, base, head, threshold=threshold
+    ).findings
 
 
 def binary_changed_paths(repo: str, base: str, head: str) -> tuple[str, ...]:
@@ -368,21 +439,26 @@ def is_ancestor(repo: str, ancestor: str, descendant: str) -> bool:
 
 
 def merge_base(repo: str, left: str, right: str) -> str | None:
-    """Return one common ancestor SHA, or ``None`` for unrelated histories."""
+    """Return the unique best common ancestor, rejecting criss-cross ambiguity."""
     proc = subprocess.run(
-        ["git", "-C", repo, *_STABLE_CONFIG, "merge-base", left, right],
+        ["git", "-C", repo, *_STABLE_CONFIG, "merge-base", "--all", left, right],
         text=True,
         capture_output=True,
     )
     if proc.returncode == 1 and not proc.stdout.strip():
         return None
-    sha = proc.stdout.strip()
-    if proc.returncode != 0 or not _FULL_SHA.match(sha):
+    shas = tuple(line.strip() for line in proc.stdout.splitlines() if line.strip())
+    if proc.returncode != 0 or any(not _FULL_SHA.match(sha) for sha in shas):
         raise GitPrimitiveError(
             f"merge-base failed ({proc.returncode}): "
-            f"{proc.stderr.strip() or sha or 'no output'}"
+            f"{proc.stderr.strip() or proc.stdout.strip() or 'no output'}"
         )
-    return sha
+    if len(shas) != 1:
+        raise GitPrimitiveError(
+            "multiple merge bases found; structural review requires one "
+            f"unambiguous base (count={len(shas)})"
+        )
+    return shas[0]
 
 
 def _captured_config(repo: str, pattern: str) -> bytes:

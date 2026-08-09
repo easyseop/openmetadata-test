@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import os
 import subprocess
+from copy import deepcopy
 
+from acgh import layout
 from acgh import shared_code
 from acgh import structural_review as S
+from acgh import zones as zones_module
 
 
 def _git(repo, *args):
@@ -96,25 +100,93 @@ def test_review_surface_classifies_loss_suspects_without_exclusion(tmp_path):
 
     assert findings["candidate-only.txt"]["change_origin"] == S.NEITHER_PARENT_CHANGED
     assert findings["candidate-only.txt"]["result_relation"] == S.DIFFERS_FROM_BOTH
-    assert "BINARY" in findings["binary.bin"]["risk_flags"]
+    assert "BINARY" in findings["binary.bin"]["diagnostic_flags"]
     assert review["review_surface_paths"] == sorted(
         review["review_surface_paths"], key=lambda path: path.encode("utf-8")
     )
 
 
-def test_rename_diagnostics_do_not_change_canonical_review(tmp_path):
+def test_rename_diagnostics_do_not_change_canonical_review(tmp_path, monkeypatch):
     repo, base, target, custom, candidate = _topology(tmp_path)
-    _git(repo, "config", "diff.renames", "true")
-    first = S.build_review(str(repo), base, target, custom, candidate, {})
-    _git(repo, "config", "diff.renames", "false")
-    second = S.build_review(str(repo), base, target, custom, candidate, {})
+    _git(repo, "config", "diff.renameLimit", "1")
+    monkeypatch.setattr(S.gitprim, "git_version", lambda: "git version first")
+    first = S.build_review(
+        str(repo), base, target, custom, candidate, {}, diagnostic_threshold=50
+    )
+    _git(repo, "config", "diff.renameLimit", "20000")
+    monkeypatch.setattr(S.gitprim, "git_version", lambda: "git version second")
+    second = S.build_review(
+        str(repo), base, target, custom, candidate, {}, diagnostic_threshold=90
+    )
 
-    assert first == second
+    assert first["review_digest"] == second["review_digest"]
+    assert [
+        {key: value for key, value in item.items() if key != "diagnostic_flags"}
+        for item in first["findings"]
+    ] == [
+        {key: value for key, value in item.items() if key != "diagnostic_flags"}
+        for item in second["findings"]
+    ]
+    assert first["rename_diagnostics"] != second["rename_diagnostics"]
+    assert all("POSSIBLE_RENAME" not in item["risk_flags"] for item in first["findings"])
     assert first["canonical_policy"] == "rename_detection=disabled (--no-renames)"
     assert all(
         item["policy"].startswith("diagnostic(-M -C")
         for item in first["rename_diagnostics"]
     )
+    S.verify_review(str(repo), first, {})
+
+
+def test_verify_review_does_not_recompute_diagnostics(tmp_path, monkeypatch):
+    repo, base, target, custom, candidate = _topology(tmp_path)
+    review = S.build_review(str(repo), base, target, custom, candidate, {})
+
+    def fail_if_called(*_args, **_kwargs):
+        raise AssertionError("diagnostic rename must not run during canonical verification")
+
+    monkeypatch.setattr(S.gitprim, "diagnostic_rename_report", fail_if_called)
+    S.verify_review(str(repo), review, {})
+
+
+def test_verify_review_rejects_canonical_and_diagnostic_tampering(tmp_path):
+    repo, base, target, custom, candidate = _topology(tmp_path)
+    review = S.build_review(str(repo), base, target, custom, candidate, {})
+
+    canonical_tamper = deepcopy(review)
+    canonical_tamper["findings"][0]["risk_flags"].append("FORGED")
+    try:
+        S.verify_review(str(repo), canonical_tamper, {})
+    except S.StructuralReviewError as exc:
+        assert "canonical digest mismatch" in str(exc)
+    else:
+        raise AssertionError("canonical evidence tamper must be rejected")
+
+    diagnostic_tamper = deepcopy(review)
+    diagnostic_tamper["findings"][0]["diagnostic_flags"].append("FORGED")
+    try:
+        S.verify_review(str(repo), diagnostic_tamper, {})
+    except S.StructuralReviewError as exc:
+        assert "diagnostics digest mismatch" in str(exc)
+    else:
+        raise AssertionError("diagnostic evidence tamper must be rejected")
+
+
+def test_manifest_watch_and_sensitive_zone_watch_are_distinct(tmp_path):
+    repo, base, target, custom, candidate = _topology(tmp_path)
+    manifests = {
+        "BANK-OM-004": {
+            "upgrade_watch": {"paths": ["both.txt"]},
+        }
+    }
+    zones = zones_module.Zones({
+        zones_module.WATCHED: layout.make_spec(["both.txt"]),
+    })
+    finding = _by_path(S.build_review(
+        str(repo), base, target, custom, candidate, manifests, zones=zones
+    ))["both.txt"]
+
+    assert "MANIFEST_WATCHED" in finding["risk_flags"]
+    assert "WATCHED" in finding["risk_flags"]
 
 
 def test_relocation_is_approval_but_comment_only_and_partial_loss_block(tmp_path):
@@ -196,12 +268,89 @@ def test_differs_from_both_is_not_a_safe_bucket_but_needs_independent_evidence()
         "findings": [],
     }
     result = S.to_gate_result(manual_only, no_shared_failures)
-    assert result.verdict == "pass"
-    assert "DIFFERS_FROM_BOTH" not in result.reasons
+    assert result.verdict == "pass"  # no loss evidence in this synthetic payload
 
     manual_only["findings"][0]["risk_flags"] = [S.CUSTOM_LOSS_SUSPECT]
     result = S.to_gate_result(manual_only, no_shared_failures)
     assert result.verdict == "approval"
+
+
+def test_candidate_reverted_to_merge_base_is_flagged(tmp_path):
+    repo, base, target, custom, _candidate = _topology(tmp_path)
+    review = S.build_review(str(repo), base, target, custom, base, {})
+    finding = _by_path(review)["both.txt"]
+
+    assert finding["change_origin"] == S.BOTH_CHANGED_PARENTS_DIVERGE
+    assert finding["result_relation"] == S.DIFFERS_FROM_BOTH
+    assert set(finding["risk_flags"]) >= {
+        S.CUSTOM_LOSS_SUSPECT,
+        S.OFFICIAL_LOSS_SUSPECT,
+        "REVERTED_TO_MERGE_BASE",
+    }
+    gate = S.to_gate_result(
+        review, {"verdict": "pass", "finding_count": 0, "findings": []}
+    )
+    assert gate.verdict == "approval"
+
+
+def test_deleted_then_recreated_identical_blob_is_flagged(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git(repo, "init", "-q")
+    _git(repo, "config", "user.name", "test")
+    _git(repo, "config", "user.email", "test@example.com")
+    (repo / "shared.txt").write_text("base\n")
+    base = _commit(repo, "base")
+
+    _git(repo, "switch", "-qc", "target", base)
+    (repo / "shared.txt").unlink()
+    target = _commit(repo, "target deletes")
+
+    _git(repo, "switch", "-qc", "custom", base)
+    (repo / "shared.txt").write_text("custom\n")
+    custom = _commit(repo, "custom changes")
+
+    _git(repo, "switch", "-qc", "candidate", target)
+    (repo / "shared.txt").write_text("base\n")
+    candidate = _commit(repo, "candidate recreates base")
+
+    finding = _by_path(
+        S.build_review(str(repo), base, target, custom, candidate, {})
+    )["shared.txt"]
+    assert set(finding["risk_flags"]) >= {
+        S.CUSTOM_LOSS_SUSPECT,
+        S.OFFICIAL_LOSS_SUSPECT,
+        "REVERTED_TO_MERGE_BASE",
+    }
+
+
+def test_type_change_symlink_submodule_and_mode_states_are_preserved(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _git(repo, "init", "-q")
+    _git(repo, "config", "user.name", "test")
+    _git(repo, "config", "user.email", "test@example.com")
+    for name in ("linkish", "subish", "executable.sh"):
+        (repo / name).write_text("base\n")
+    base = _commit(repo, "base")
+
+    (repo / "linkish").unlink()
+    os.symlink("target.txt", repo / "linkish")
+    (repo / "subish").unlink()
+    _git(repo, "add", "linkish")
+    _git(repo, "update-index", "--add", "--cacheinfo", f"160000,{base},subish")
+    os.chmod(repo / "executable.sh", 0o755)
+    _git(repo, "add", "executable.sh")
+    _git(repo, "commit", "-qm", "type and mode changes")
+    target = _git(repo, "rev-parse", "HEAD")
+
+    findings = _by_path(S.build_review(str(repo), base, target, base, target, {}))
+    assert findings["linkish"]["statuses"]["base_to_target"] == "T"
+    assert findings["subish"]["statuses"]["base_to_target"] == "T"
+    assert findings["executable.sh"]["statuses"]["base_to_target"] == "M"
+    assert findings["linkish"]["states"]["target"].startswith("120000:blob:")
+    assert findings["subish"]["states"]["target"].startswith("160000:commit:")
+    assert findings["executable.sh"]["states"]["target"].startswith("100755:blob:")
 
 
 def test_refactored_tsx_to_ts_is_only_a_human_review_candidate(tmp_path):

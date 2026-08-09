@@ -218,3 +218,63 @@ def test_merge_base_returns_none_for_unrelated_histories(repo):
     second = _commit(repo, "second.txt", "two\n", "second root")
 
     assert G.merge_base(str(repo), first, second) is None
+
+
+def test_merge_base_rejects_multiple_best_ancestors(repo):
+    root = _commit(repo, "root.txt", "root\n", "root")
+    _run(str(repo), "switch", "-qc", "left", root)
+    left_parent = _commit(repo, "left.txt", "left\n", "left parent")
+    _run(str(repo), "switch", "-qc", "right", root)
+    right_parent = _commit(repo, "right.txt", "right\n", "right parent")
+
+    _run(str(repo), "switch", "-q", "left")
+    _run(str(repo), "merge", "--no-ff", "-m", "left merge", right_parent)
+    left_tip = G.resolve_commit(str(repo), "HEAD")
+    _run(str(repo), "switch", "-q", "right")
+    _run(str(repo), "merge", "--no-ff", "-m", "right merge", left_parent)
+    right_tip = G.resolve_commit(str(repo), "HEAD")
+
+    assert len(G.git(str(repo), "merge-base", "--all", left_tip, right_tip).splitlines()) == 2
+    with pytest.raises(G.GitPrimitiveError, match="multiple merge bases"):
+        G.merge_base(str(repo), left_tip, right_tip)
+
+
+def test_diagnostic_report_records_degradation_warning(repo, monkeypatch):
+    base = _commit(repo, "old.txt", "same\n", "base")
+    renamed = _commit(repo, "new.txt", "same\n", "candidate")
+    original_run = G.subprocess.run
+
+    def warned_run(command, **kwargs):
+        if "--find-copies-harder" in command:
+            assert "diff.renameLimit=0" in command
+            return subprocess.CompletedProcess(
+                command,
+                0,
+                stdout="R100\x00old.txt\x00new.txt\x00",
+                stderr="warning: rename detection degraded",
+            )
+        return original_run(command, **kwargs)
+
+    monkeypatch.setattr(G.subprocess, "run", warned_run)
+    report = G.diagnostic_rename_report(str(repo), base, renamed)
+
+    assert report.degraded is True
+    assert report.warnings == ("warning: rename detection degraded",)
+    assert report.findings[0].old_path == "old.txt"
+
+
+def test_diagnostic_report_timeout_is_fail_soft(repo, monkeypatch):
+    base = _commit(repo, "old.txt", "same\n", "base")
+    renamed = _commit(repo, "new.txt", "same\n", "candidate")
+
+    def timed_out(command, **kwargs):
+        raise subprocess.TimeoutExpired(command, kwargs["timeout"])
+
+    monkeypatch.setattr(G.subprocess, "run", timed_out)
+    report = G.diagnostic_rename_report(
+        str(repo), base, renamed, timeout_seconds=0.01
+    )
+
+    assert report.degraded is True
+    assert report.findings == ()
+    assert report.warnings == ("diagnostic rename timed out after 0.01s",)

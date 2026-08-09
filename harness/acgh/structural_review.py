@@ -35,6 +35,7 @@ DIFFERS_FROM_BOTH = "DIFFERS_FROM_BOTH"
 
 CUSTOM_LOSS_SUSPECT = "CUSTOM_LOSS_SUSPECT"
 OFFICIAL_LOSS_SUSPECT = "OFFICIAL_LOSS_SUSPECT"
+REVERTED_TO_MERGE_BASE = "REVERTED_TO_MERGE_BASE"
 
 
 class StructuralReviewError(ValueError):
@@ -47,6 +48,7 @@ class PathFinding:
     change_origin: str
     result_relation: str
     risk_flags: tuple[str, ...]
+    diagnostic_flags: tuple[str, ...]
     related_customization_ids: tuple[str, ...]
     statuses: dict[str, str | None]
     states: dict[str, str | None]
@@ -95,14 +97,86 @@ def _manifest_specs(manifests_by_id: dict[str, dict]):
 
 
 def _diagnostic_payload(repo, base, head, label, threshold):
-    findings = gitprim.diagnostic_renames(
-        repo, base, head, threshold=threshold
-    )
+    warnings: list[str] = []
+    try:
+        report = gitprim.diagnostic_rename_report(
+            repo, base, head, threshold=threshold
+        )
+        findings = report.findings
+        warnings.extend(report.warnings)
+        degraded = report.degraded
+        timeout_seconds = report.timeout_seconds
+        config = list(report.config)
+    except gitprim.GitPrimitiveError as exc:
+        findings = ()
+        warnings.append(str(exc))
+        degraded = True
+        timeout_seconds = 30.0
+        config = ["diff.renameLimit=0"]
+    try:
+        version = gitprim.git_version()
+    except gitprim.GitPrimitiveError as exc:
+        version = "unknown"
+        warnings.append(str(exc))
+        degraded = True
+    try:
+        binary_paths = list(gitprim.binary_changed_paths(repo, base, head))
+    except gitprim.GitPrimitiveError as exc:
+        binary_paths = []
+        warnings.append(str(exc))
+        degraded = True
     return {
         "comparison": label,
         "policy": f"diagnostic(-M -C, threshold={threshold}%)",
-        "git_version": gitprim.git_version(),
+        "git_version": version,
+        "degraded": degraded,
+        "warnings": warnings,
+        "timeout_seconds": timeout_seconds,
+        "config": config,
+        "binary_paths": binary_paths,
         "findings": [asdict(item) for item in findings],
+    }
+
+
+def _canonical_projection(payload: dict) -> dict:
+    """Return only decision-bearing fields covered by ``review_digest``."""
+    if payload.get("schema_version") != 2:
+        raise StructuralReviewError("structural review schema_version must be 2")
+    raw_findings = payload.get("findings")
+    if not isinstance(raw_findings, list):
+        raise StructuralReviewError("structural review findings must be a list")
+    canonical_findings = []
+    required = (
+        "path", "change_origin", "result_relation", "risk_flags",
+        "related_customization_ids", "statuses", "states",
+    )
+    for finding in raw_findings:
+        if not isinstance(finding, dict) or any(key not in finding for key in required):
+            raise StructuralReviewError("structural review finding is incomplete")
+        canonical_findings.append({key: finding[key] for key in required})
+    required_top = ("refs", "canonical_policy", "review_surface_paths")
+    if any(key not in payload for key in required_top):
+        raise StructuralReviewError("structural review canonical fields are incomplete")
+    return {
+        "schema_version": 2,
+        "refs": payload["refs"],
+        "canonical_policy": payload["canonical_policy"],
+        "review_surface_paths": payload["review_surface_paths"],
+        "findings": canonical_findings,
+    }
+
+
+def _diagnostic_projection(payload: dict) -> dict:
+    """Bind stored diagnostics to themselves without rerunning them."""
+    return {
+        "rename_diagnostics": payload.get("rename_diagnostics", []),
+        "path_diagnostic_flags": [
+            {
+                "path": finding.get("path"),
+                "diagnostic_flags": finding.get("diagnostic_flags", []),
+            }
+            for finding in payload.get("findings", [])
+        ],
     }
 
 
@@ -116,6 +190,7 @@ def build_review(
     *,
     zones=None,
     diagnostic_threshold: int = 50,
+    include_diagnostics: bool = True,
 ) -> dict:
     """Build the complete three-set review surface and its orthogonal axes."""
     refs = {
@@ -134,11 +209,6 @@ def build_review(
         name: {item.path: item.status for item in changes}
         for name, changes in comparisons.items()
     }
-    binary_paths = {
-        path
-        for ref in (target_sha, custom_head_sha, candidate_sha)
-        for path in gitprim.binary_changed_paths(repo, merge_base_sha, ref)
-    }
     review_paths = sorted(
         {
             item.path
@@ -148,21 +218,30 @@ def build_review(
         key=lambda path: path.encode("utf-8"),
     )
     specs = _manifest_specs(manifests_by_id)
-    diagnostics = [
-        _diagnostic_payload(
-            repo, merge_base_sha, ref, name, diagnostic_threshold
-        )
-        for name, ref in (
-            ("merge_base_to_target", target_sha),
-            ("merge_base_to_custom", custom_head_sha),
-            ("merge_base_to_candidate", candidate_sha),
-        )
-    ]
+    diagnostics = (
+        [
+            _diagnostic_payload(
+                repo, merge_base_sha, ref, name, diagnostic_threshold
+            )
+            for name, ref in (
+                ("merge_base_to_target", target_sha),
+                ("merge_base_to_custom", custom_head_sha),
+                ("merge_base_to_candidate", candidate_sha),
+            )
+        ]
+        if include_diagnostics
+        else []
+    )
     rename_paths = {
         path
         for packet in diagnostics
         for item in packet["findings"]
         for path in (item["old_path"], item["new_path"])
+    }
+    binary_paths = {
+        path
+        for packet in diagnostics
+        for path in packet.get("binary_paths", [])
     }
 
     findings: list[PathFinding] = []
@@ -179,16 +258,17 @@ def build_review(
             if spec.match_file(path)
         ))
         flags: set[str] = set()
+        diagnostic_flags: set[str] = set()
         if base is None and candidate is not None:
             flags.add("PATH_ADDED")
         if base is not None and candidate is None:
             flags.add("PATH_DELETED")
         if path in rename_paths:
-            flags.add("POSSIBLE_RENAME")
+            diagnostic_flags.add("POSSIBLE_RENAME")
         if path in binary_paths:
-            flags.add("BINARY")
+            diagnostic_flags.add("BINARY")
         if related_ids:
-            flags.add("WATCHED")
+            flags.add("MANIFEST_WATCHED")
         if zones is not None:
             zone = zones.zone_of(path)
             if zone is not None:
@@ -197,11 +277,18 @@ def build_review(
             flags.add(CUSTOM_LOSS_SUSPECT)
         if target != base and candidate == custom and target != custom:
             flags.add(OFFICIAL_LOSS_SUSPECT)
+        if target != base and custom != base and candidate == base:
+            flags.update({
+                CUSTOM_LOSS_SUSPECT,
+                OFFICIAL_LOSS_SUSPECT,
+                REVERTED_TO_MERGE_BASE,
+            })
         findings.append(PathFinding(
             path=path,
             change_origin=origin,
             result_relation=relation,
             risk_flags=tuple(sorted(flags)),
+            diagnostic_flags=tuple(sorted(diagnostic_flags)),
             related_customization_ids=related_ids,
             statuses={
                 name: status_maps[name].get(path)
@@ -216,7 +303,7 @@ def build_review(
         ))
 
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
         "refs": refs,
         "canonical_policy": "rename_detection=disabled (--no-renames)",
         "review_surface_paths": review_paths,
@@ -226,6 +313,7 @@ def build_review(
                 "change_origin": item.change_origin,
                 "result_relation": item.result_relation,
                 "risk_flags": list(item.risk_flags),
+                "diagnostic_flags": list(item.diagnostic_flags),
                 "related_customization_ids": list(item.related_customization_ids),
                 "statuses": item.statuses,
                 "states": item.states,
@@ -234,7 +322,12 @@ def build_review(
         ],
         "rename_diagnostics": diagnostics,
     }
-    payload["review_digest"] = verdict.canonical_digest(payload)
+    payload["diagnostics_digest"] = verdict.canonical_digest(
+        _diagnostic_projection(payload)
+    )
+    payload["review_digest"] = verdict.canonical_digest(
+        _canonical_projection(payload)
+    )
     return payload
 
 
@@ -248,6 +341,14 @@ def verify_review(repo: str, payload: dict, manifests_by_id: dict[str, dict], *,
     required = ("merge_base", "target", "custom_head", "candidate")
     if any(not isinstance(refs.get(name), str) for name in required):
         raise StructuralReviewError("structural review evidence has incomplete refs")
+    expected_review_digest = verdict.canonical_digest(_canonical_projection(payload))
+    if payload.get("review_digest") != expected_review_digest:
+        raise StructuralReviewError("structural review canonical digest mismatch")
+    expected_diagnostics_digest = verdict.canonical_digest(
+        _diagnostic_projection(payload)
+    )
+    if payload.get("diagnostics_digest") != expected_diagnostics_digest:
+        raise StructuralReviewError("structural review diagnostics digest mismatch")
     recomputed = build_review(
         repo,
         refs["merge_base"],
@@ -256,10 +357,11 @@ def verify_review(repo: str, payload: dict, manifests_by_id: dict[str, dict], *,
         refs["candidate"],
         manifests_by_id,
         zones=zones,
+        include_diagnostics=False,
     )
-    if payload != recomputed:
+    if _canonical_projection(payload) != _canonical_projection(recomputed):
         raise StructuralReviewError(
-            "structural review evidence differs from deterministic recomputation"
+            "structural review canonical evidence differs from deterministic recomputation"
         )
 
 
