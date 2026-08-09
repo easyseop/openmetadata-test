@@ -50,6 +50,19 @@ INCOMPLETE = "incomplete"
 PREMERGE = "premerge"
 POSTMERGE = "postmerge"
 DEFAULT_GATE_TIMEOUT = 300.0
+MAX_GATE_TIMEOUT = 7200.0
+
+
+def validated_timeout(value) -> float:
+    """Accept an operator-tuned deadline, reject a value that disables the guard."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise PhaseError(f"gate timeout must be a number: {value!r}")
+    seconds = float(value)
+    if not 1.0 <= seconds <= MAX_GATE_TIMEOUT:
+        raise PhaseError(
+            f"gate timeout must be between 1 and {MAX_GATE_TIMEOUT:.0f} seconds: {seconds}"
+        )
+    return seconds
 
 
 class MissingInput(Exception):
@@ -500,9 +513,16 @@ def build_premerge_catalog(
     layout=None,
     watch_patterns=None,
     candidate_ref: str | None = None,
+    gate_timeout: float | None = None,
+    watch_suggest_cache_dir=None,
+    harness_version: str | None = None,
 ) -> list[GateSpec]:
     """Wire the premerge gates (설계 §5.1): T42, T93-policy (required) + T51/T52,
-    watch-suggest (advisory). NEVER wires T41/T43/T93-exact-scope."""
+    watch-suggest (advisory). NEVER wires T41/T43/T93-exact-scope.
+
+    ``gate_timeout`` is part of the gate catalog digest, so raising it for a large
+    repository is recorded in the result rather than being an invisible local
+    setting."""
     from acgh import gitprim
     from acgh import policy_drift
     from acgh import structdiff
@@ -557,26 +577,51 @@ def build_premerge_catalog(
     def run_watch_suggest() -> GateOutcome:
         if candidate_ref is None:
             raise MissingInput("candidate ref for watch-suggest not provided")
-        suggestions = watch_suggest.suggest_watch_paths(
-            repo, upstream_base, upstream_target, candidate_ref, active_manifests
+        # Stop cooperatively just before the hard gate deadline so a slow run
+        # reports which stage it reached instead of dying with a bare TimeoutError.
+        budget = None if timeout is None else max(1.0, float(timeout) - 5.0)
+        report = watch_suggest.analyze(
+            repo, upstream_base, upstream_target, candidate_ref, active_manifests,
+            timeout_seconds=budget,
+            cache_dir=watch_suggest_cache_dir,
+            harness_version=harness_version,
         )
-        packet = watch_suggest.review_packet(suggestions)
+        packet = report.packet()
+        if not report.complete:
+            # A partial run is not "no candidates found".
+            return GateOutcome(
+                verdict.GateResult(
+                    "watch-suggest", verdict.ANALYSIS_ERROR,
+                    (
+                        f"watch-suggest incomplete at stage {report.stage}",
+                        "재실행: om_workflow.py watch-suggest --version <버전> "
+                        "--repo <제품저장소> --base <base> --target <target>",
+                    ),
+                ),
+                target_count=packet["suggestion_count"],
+                detail=packet,
+            )
+        reasons = tuple(
+            f"{item.customization_id}: watch path {item.watch_path} deleted upstream "
+            f"(후보 {len(item.candidates)}건)"
+            for item in report.deleted_watch
+        )
         return GateOutcome(
-            verdict.GateResult("watch-suggest", verdict.PASS, ()),
+            verdict.GateResult("watch-suggest", verdict.PASS, reasons),
             target_count=packet["suggestion_count"],
             detail=packet,
         )
 
+    timeout = DEFAULT_GATE_TIMEOUT if gate_timeout is None else validated_timeout(gate_timeout)
     return [
-        GateSpec("upgrade-watch", run_upgrade_watch, required=True, timeout=DEFAULT_GATE_TIMEOUT),
-        GateSpec("policy-drift", run_policy_drift, required=True, timeout=DEFAULT_GATE_TIMEOUT),
+        GateSpec("upgrade-watch", run_upgrade_watch, required=True, timeout=timeout),
+        GateSpec("policy-drift", run_policy_drift, required=True, timeout=timeout),
         GateSpec(
-            "structdiff", run_structdiff, required=False, advisory=True,
-            timeout=DEFAULT_GATE_TIMEOUT,
+            "structdiff", run_structdiff, required=False, advisory=True, timeout=timeout,
         ),
         GateSpec(
             "watch-suggest", run_watch_suggest, required=False, advisory=True,
-            timeout=DEFAULT_GATE_TIMEOUT,
+            timeout=timeout,
         ),
     ]
 

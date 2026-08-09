@@ -124,6 +124,7 @@ _PREP_LABELS = {
     "candidate-approval-template": ("준비 2/3", "Candidate 승인 양식 생성"),
     "candidate-activate": ("준비 3/3", "Candidate 활성화"),
     "candidate-verify": ("점검", "Candidate 파일 상태 확인"),
+    "watch-suggest": ("watch-suggest", "공식 변경의 커스텀 직접 참조 검사"),
 }
 
 
@@ -159,6 +160,8 @@ def _result_label(payload: dict) -> str:
         "already_correct": "이미 정확히 준비됨",
         "blocked": "중단 · 승인 또는 lock 확인 필요",
         "block": "중단 (BLOCK)",
+        "complete": "완료",
+        "incomplete": "중단 · 제한 시간 초과",
         "prepared": "lock 준비 완료 (승인 아님)",
         "already_prepared": "이미 같은 내용으로 준비됨",
         "template_created": "승인 양식 생성 (승인 아님)",
@@ -277,6 +280,39 @@ def _print_prep_detail(stage: str, payload: dict) -> None:
             _emit("다음 행동", "candidate-select를 실행해 활성 Candidate를 확인하세요.")
         else:
             _emit("다음 행동", "위 사유를 해결한 뒤 candidate-activate를 다시 실행하세요.")
+    elif stage == "watch-suggest":
+        packet = payload.get("packet", {})
+        counts = packet.get("counts", {})
+        excluded = packet.get("excluded", {})
+        telemetry = payload.get("telemetry", {})
+        _emit("공식 변경 경로", counts.get("changed_paths", "-"))
+        _emit("색인한 커스텀 파일", counts.get("indexed_customization_files", "-"))
+        _emit(
+            "구조화 파일 별도 처리",
+            excluded.get("changed_structured", 0) + excluded.get("customization_structured", 0),
+        )
+        _emit("경과 시간", f"{telemetry.get('elapsed_seconds', '-')}초 · cache {telemetry.get('cache', '-')}")
+        for finding in packet.get("deleted_watch_paths", []):
+            _emit(
+                f"- 삭제된 감시 경로 {finding.get('watch_path')}",
+                f"{finding.get('customization_id')} · 후보 {finding.get('candidate_count', 0)}건"
+                + (f" · {', '.join(finding.get('candidates', []))}" if finding.get("candidates") else ""),
+            )
+        for item in packet.get("suggestions", []):
+            _emit(
+                f"- 후보 {item.get('suggested_path')}",
+                f"{item.get('customization_id')} · 근거 {', '.join(item.get('referenced_from', []))}",
+            )
+        if payload.get("complete"):
+            _emit(
+                "다음 행동",
+                "후보별 근거를 확인하고 승인 전에는 Manifest를 수정하지 마세요. "
+                "삭제된 감시 경로는 담당자 검토가 필요합니다.",
+            )
+        else:
+            _emit("마지막 완료 단계", packet.get("stage") or "-")
+            _emit("수동 검토", "부분 결과는 제안으로 사용할 수 없습니다.")
+            _emit("다음 행동", payload.get("rerun_command") or "제한 시간을 늘려 다시 실행하세요.")
     else:  # candidate-verify
         _emit("활성 포인터", payload.get("active_candidate_lock_digest") or "없음")
         _emit("선택 상태", payload.get("selection_status") or "-")
@@ -650,6 +686,19 @@ def parse_args() -> argparse.Namespace:
     )
     resolve_json.add_argument("--repo", required=True, type=Path)
 
+    watch_suggest = subparsers.add_parser(
+        "watch-suggest",
+        help="공식 변경 중 커스텀 코드가 직접 참조하는 파일만 단독으로 다시 검사",
+    )
+    add_repo_version(watch_suggest)
+    watch_suggest.add_argument("--base", required=True, help="공식 이전 버전 전체 commit SHA")
+    watch_suggest.add_argument("--target", required=True, help="공식 새 버전 전체 commit SHA")
+    watch_suggest.add_argument("--candidate-ref", help="생략하면 활성 Candidate lock의 commit 사용")
+    watch_suggest.add_argument("--timeout", type=float, help="초 단위 제한 시간; 기본 300")
+    watch_suggest.add_argument("--cache-dir", type=Path, help="실행 입력에 결속된 선택적 cache 폴더")
+    watch_suggest.add_argument("--output", type=Path, help="결과 JSON 경로")
+    add_phase_output_format(watch_suggest)
+
     candidate_verify = subparsers.add_parser(
         "candidate-verify",
         help="Candidate lock·승인·활성 포인터의 현재 상태를 읽기 전용으로 점검",
@@ -878,6 +927,31 @@ def plan_command(args: argparse.Namespace) -> tuple[list[str], dict[str, object]
 
 
 def dispatch(args: argparse.Namespace) -> int:
+    if args.command == "watch-suggest":
+        registration = registration_for(args.version)
+        command = python_command(
+            HARNESS / "run_phase_bundle.py",
+            "watch-suggest",
+            "--repo", args.repo,
+            "--registration", registration,
+            "--base", args.base,
+            "--target", args.target,
+        )
+        for option, value in (
+            ("--candidate-ref", args.candidate_ref),
+            ("--timeout", args.timeout),
+            ("--cache-dir", args.cache_dir),
+            ("--output", args.output),
+        ):
+            if value is not None:
+                command.extend([option, str(value)])
+        return run_phase_command(
+            command,
+            stage="watch-suggest",
+            output_format=args.output_format,
+            evidence=args.output,
+        )
+
     if args.command == "candidate-verify":
         registration = registration_for(args.version)
         command = python_command(

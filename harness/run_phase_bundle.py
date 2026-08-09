@@ -1351,6 +1351,55 @@ def candidate_verify_command(args) -> int:
     return exit_code
 
 
+def watch_suggest_command(args) -> int:
+    """Run only the advisory watch-suggest gate, without touching Phase evidence.
+
+    The practitioner detail used to say "재실행하세요" with no command behind it.
+    This writes its own result file, so rerunning one advisory check never
+    overwrites a premerge result that other gates already produced.
+    """
+    from acgh import watch_suggest
+
+    selection = _selected(args.registration)
+    layout = layout_module.load_layout(args.registration / "repository-layout.yaml")
+    manifests = _load_manifests(args.registration, layout)
+    candidate_ref = args.candidate_ref or selection.lock.candidate.commit_sha
+    report = watch_suggest.analyze(
+        str(args.repo), args.base, args.target, candidate_ref, manifests,
+        timeout_seconds=(
+            phase.validated_timeout(args.timeout) if args.timeout is not None else None
+        ),
+        cache_dir=args.cache_dir,
+        harness_version=_harness_version(),
+    )
+    packet = report.packet()
+    payload = {
+        "status": "complete" if report.complete else "incomplete",
+        "complete": report.complete,
+        "stage": report.stage,
+        "verdict": verdict.PASS if report.complete else verdict.ANALYSIS_ERROR,
+        "candidate_lock_digest": selection.lock_digest,
+        "candidate_ref": candidate_ref,
+        "packet": packet,
+        # Observational only: never part of a canonical judgment payload.
+        "telemetry": report.telemetry,
+    }
+    if not report.complete:
+        payload["rerun_command"] = (
+            "harness/om_workflow.py watch-suggest --version <버전> --repo <제품저장소> "
+            f"--base {args.base} --target {args.target} --timeout <초>"
+        )
+    if args.output is not None:
+        _write_guarded(
+            Path(args.output),
+            (json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n").encode(),
+            label="watch-suggest 결과",
+        )
+        payload["output"] = str(args.output)
+    print(json.dumps(payload, ensure_ascii=False, sort_keys=True))
+    return 0 if report.complete else verdict.EXIT_CODE[verdict.ANALYSIS_ERROR]
+
+
 def candidate_command(args) -> int:
     selection = candidate_select.select_active_candidate(args.registration)
     payload = {
@@ -1446,6 +1495,9 @@ def premerge_command(args) -> int:
     specs = phase.build_premerge_catalog(
         str(args.repo), args.base, args.target, manifests,
         layout=layout, candidate_ref=args.candidate_ref or selection.lock.candidate.commit_sha,
+        gate_timeout=getattr(args, "gate_timeout", None),
+        watch_suggest_cache_dir=getattr(args, "watch_suggest_cache", None),
+        harness_version=_harness_version(),
     )
     result = phase.run_gates(
         specs,
@@ -1694,8 +1746,20 @@ def parse_args(argv=None):
     _common(premerge_parser, base_required=True)
     premerge_parser.add_argument("--candidate-ref")
     premerge_parser.add_argument("--official-evidence", required=True, type=Path)
+    premerge_parser.add_argument("--gate-timeout", type=float)
+    premerge_parser.add_argument("--watch-suggest-cache", type=Path)
     premerge_parser.add_argument("--run-id", required=True)
     premerge_parser.add_argument("--output", required=True, type=Path)
+
+    watch_parser = sub.add_parser("watch-suggest")
+    watch_parser.add_argument("--repo", required=True, type=Path)
+    watch_parser.add_argument("--registration", required=True, type=Path)
+    watch_parser.add_argument("--base", required=True)
+    watch_parser.add_argument("--target", required=True)
+    watch_parser.add_argument("--candidate-ref")
+    watch_parser.add_argument("--timeout", type=float)
+    watch_parser.add_argument("--cache-dir", type=Path)
+    watch_parser.add_argument("--output", type=Path)
 
     postmerge_parser = sub.add_parser("postmerge")
     _common(postmerge_parser)
@@ -1725,6 +1789,7 @@ def main(argv=None) -> int:
             "candidate-activate": candidate_activate_command,
             "candidate-verify": candidate_verify_command,
             "prep-official": prep_official_command,
+            "watch-suggest": watch_suggest_command,
             "collect-conflict-evidence": collect_conflict_evidence_command,
             "preflight": preflight_command,
             "premerge": premerge_command,

@@ -206,6 +206,56 @@ def blob_bytes(repo: str, ref: str, path: str) -> bytes:
     return proc.stdout
 
 
+def blob_batch(repo: str, ref: str, paths) -> dict[str, bytes]:
+    """Read many blobs with one ``git cat-file --batch`` process.
+
+    One subprocess per file does not scale to the thousand-path ranges a real
+    upgrade produces. ``--batch`` reads one request per line, so a path that
+    literally contains a newline cannot be expressed and falls back to a single
+    read; spaces and non-ASCII bytes are fine. Missing paths are simply absent
+    from the result — an upstream file that the candidate never had is a normal
+    answer here, not an error.
+    """
+    requested = list(dict.fromkeys(paths))
+    result: dict[str, bytes] = {}
+    inline = [path for path in requested if "\n" not in path]
+    if inline:
+        request = "".join(f"{ref}:{path}\n" for path in inline).encode("utf-8")
+        proc = subprocess.run(
+            ["git", "-C", repo, *_STABLE_CONFIG, "cat-file", "--batch"],
+            input=request, capture_output=True,
+        )
+        if proc.returncode != 0:
+            raise GitPrimitiveError(
+                f"git cat-file --batch failed ({proc.returncode}): "
+                f"{proc.stderr.decode('utf-8', errors='replace').strip() or 'no stderr'}"
+            )
+        data = proc.stdout
+        offset = 0
+        for path in inline:
+            end = data.find(b"\n", offset)
+            if end < 0:
+                raise GitPrimitiveError("git cat-file --batch returned a truncated header")
+            header = data[offset:end].decode("utf-8", errors="replace")
+            offset = end + 1
+            if header.endswith((" missing", " ambiguous")):
+                continue
+            fields = header.rsplit(" ", 2)
+            if len(fields) != 3 or not fields[2].isdigit():
+                raise GitPrimitiveError(f"unparsable cat-file header: {header!r}")
+            size = int(fields[2])
+            if fields[1] == "blob":
+                result[path] = data[offset:offset + size]
+            offset += size + 1
+    for path in requested:
+        if "\n" in path:
+            try:
+                result[path] = blob_bytes(repo, ref, path)
+            except GitPrimitiveError:
+                continue
+    return result
+
+
 def object_exists(repo: str, sha: str) -> bool:
     """True if <sha>^{commit} exists and is valid (부칙 A-2.4 preflight)."""
     proc = subprocess.run(
