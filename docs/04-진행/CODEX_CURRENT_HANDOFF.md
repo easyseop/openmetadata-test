@@ -919,10 +919,13 @@ source 후보가 있으면 finding `APPROVAL`, 없으면 `BLOCK`이므로 완전
 아니다. 특히 `symbol_overlap` 후보가 실제 BANK 동작 없이도 이관 가능 후보가 되는
 synthetic test가 존재한다.
 
-잠정 결론은 유사도 후보를 기능 유지 증거나 PASS 근거로 사용하지 않고 검색 보조로
-격하하는 것이다. 최소한 `partial_assertion`·`symbol_overlap`은 gate 판정을
-완화하지 않아야 한다. exact match까지 BLOCK을 유지할지, 사람 검토용 APPROVAL을
-허용할지는 Claude 적대적 검토 후 결정한다. 아직 코드 변경은 하지 않았다.
+추가 논의에서 사용자는 유사도 후보가 판정을 바꾸는 경우뿐 아니라 후보를 보여주는
+것 자체가 사람과 LLM에 잘못된 선입견을 줄 수 있다고 지적했다. 이에 따라 잠정
+권고를 강화했다. `partial_assertion`·`symbol_overlap`은 gate와 일반 출력에서
+제외하고, 기존 정의가 실패하면 사람이 새 경로를 제출할 때까지 BLOCK을 유지하는
+안 D를 Claude 검토 대상으로 추가했다. 검사기는 사람이 제출한 경로·새 assertion·
+기능 test·Candidate SHA·사람 승인을 검증한다. exact match를 별도 참고로 유지할지
+여부도 아직 결정하지 않았다. 코드 변경은 하지 않았다.
 
 검토 요청 정본은 다음 파일이다.
 
