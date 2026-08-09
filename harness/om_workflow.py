@@ -117,6 +117,15 @@ _PHASE_LABELS = {
     "status": (6, "Phase 결과 재검증"),
 }
 
+# Preparation runs before [1/6]: it creates the approved Candidate that
+# candidate-select then reads. Numbered separately so the two are never confused.
+_PREP_LABELS = {
+    "candidate-prepare": ("준비 1/3", "Candidate lock 준비"),
+    "candidate-approval-template": ("준비 2/3", "Candidate 승인 양식 생성"),
+    "candidate-activate": ("준비 3/3", "Candidate 활성화"),
+    "candidate-verify": ("점검", "Candidate 파일 상태 확인"),
+}
+
 
 def _last_json(stdout: str) -> dict | None:
     for line in reversed(stdout.splitlines()):
@@ -149,6 +158,13 @@ def _result_label(payload: dict) -> str:
         "created": "준비 완료",
         "already_correct": "이미 정확히 준비됨",
         "blocked": "중단 · 승인 또는 lock 확인 필요",
+        "block": "중단 (BLOCK)",
+        "prepared": "lock 준비 완료 (승인 아님)",
+        "already_prepared": "이미 같은 내용으로 준비됨",
+        "template_created": "승인 양식 생성 (승인 아님)",
+        "input_required": "중단 · 입력 필요",
+        "activated": "활성화 완료",
+        "consistent": "일치 · 그대로 사용 가능",
     }.get(payload.get("status"), "확인 필요"))
 
 
@@ -216,9 +232,85 @@ def _print_premerge_next_steps() -> None:
     print("  5. postmerge-check를 실행합니다.")
 
 
+def _print_prep_detail(stage: str, payload: dict) -> None:
+    """Detail lines for the three preparation commands and the read-only check."""
+    if stage == "candidate-prepare":
+        _emit("Candidate", payload.get("candidate_commit_sha") or "-")
+        _emit("산출물 종류", payload.get("candidate_artifact_kind") or "-")
+        _emit("Lock digest", payload.get("candidate_lock_digest") or "-")
+        if payload.get("lock_path"):
+            _emit("lock 파일", payload["lock_path"])
+        if payload.get("artifact_kind_notice"):
+            _emit("주의", payload["artifact_kind_notice"])
+        for note in payload.get("notes", []):
+            _emit("참고", note)
+        _emit("사람 판단", "승인자·승인 시각·승인 사유는 이 명령이 채우지 않습니다.")
+        _emit("다음 행동", "candidate-approval-template으로 승인 양식을 만들어 담당자에게 전달하세요.")
+    elif stage == "candidate-approval-template":
+        if payload.get("status") == "input_required":
+            _emit("누락 항목", ", ".join(payload.get("missing_fields", [])) or "-")
+            _emit("사용법", payload.get("usage") or "-")
+            return
+        _emit("양식 파일", payload.get("output") or "-")
+        _emit("Lock digest", payload.get("candidate_lock_digest") or "-")
+        _emit("값 출처", payload.get("values_source") or "-")
+        _emit("승인 여부", "아직 승인 아님")
+        _emit(
+            "다음 행동",
+            "담당자가 승인자·승인 시각·승인 사유를 채우고 approval_confirmed를 true로 "
+            "바꾼 뒤 candidate-activate를 실행하세요.",
+        )
+    elif stage == "candidate-activate":
+        _emit("Candidate", payload.get("candidate_commit_sha") or "-")
+        _emit("Lock digest", payload.get("candidate_lock_digest") or "-")
+        if payload.get("approver"):
+            _emit("승인자", f"{payload['approver']} · {payload.get('approved_at') or '-'}")
+        if payload.get("previous_candidate_lock_digest"):
+            _emit("이전 활성", payload["previous_candidate_lock_digest"])
+        if payload.get("replacement_notice"):
+            _emit("경고", payload["replacement_notice"])
+        for note in payload.get("notes", []):
+            _emit("참고", note)
+        if payload.get("authority_notice"):
+            _emit("권한 경계", payload["authority_notice"])
+        if payload.get("activated"):
+            _emit("다음 행동", "candidate-select를 실행해 활성 Candidate를 확인하세요.")
+        else:
+            _emit("다음 행동", "위 사유를 해결한 뒤 candidate-activate를 다시 실행하세요.")
+    else:  # candidate-verify
+        _emit("활성 포인터", payload.get("active_candidate_lock_digest") or "없음")
+        _emit("선택 상태", payload.get("selection_status") or "-")
+        for lock in payload.get("locks", []):
+            mark = "활성" if lock.get("is_active") else "보관"
+            _emit(f"- {lock.get('name')}", f"{mark} · {lock.get('candidate_lock_digest') or lock.get('error') or '-'}")
+            if lock.get("matches_source_lock") is not None:
+                _emit("  원본 lock 대조", "동일" if lock["matches_source_lock"] else "다름")
+            approval = lock.get("approval")
+            if approval is None:
+                _emit("  승인 파일", "없음")
+            else:
+                _emit(
+                    "  승인 파일",
+                    ("CLI 생성" if approval.get("cli_generated") else "수동 작성")
+                    + (" · digest 일치" if approval.get("digest_matches") else " · digest 불일치"),
+                )
+        for problem in payload.get("problems", []):
+            _emit("문제", problem)
+        for note in payload.get("notes", []):
+            _emit("참고", note)
+        if payload.get("selectable") and not payload.get("problems"):
+            _emit("다음 행동", "현재 파일 그대로 사용할 수 있습니다. Git에 commit해 이력을 남기세요.")
+        else:
+            _emit("다음 행동", "위 문제를 해결한 뒤 다시 확인하세요. 이 명령은 파일을 고치지 않습니다.")
+
+
 def _print_human_phase(stage: str, payload: dict, *, evidence: Path | None = None) -> None:
-    number, title = _PHASE_LABELS[stage]
-    print(f"\n[{number}/6] {title}")
+    if stage in _PREP_LABELS:
+        marker, title = _PREP_LABELS[stage]
+        print(f"\n[{marker}] {title}")
+    else:
+        number, title = _PHASE_LABELS[stage]
+        print(f"\n[{number}/6] {title}")
     if stage == "status":
         _emit("저장된 판정", _verdict_label(payload.get("overall_verdict")))
         _emit(
@@ -236,7 +328,9 @@ def _print_human_phase(stage: str, payload: dict, *, evidence: Path | None = Non
     for reason in payload.get("reasons", []):
         _emit("사유", reason)
 
-    if stage == "candidate":
+    if stage in _PREP_LABELS:
+        _print_prep_detail(stage, payload)
+    elif stage == "candidate":
         _emit("등록 묶음", payload.get("registration_bundle") or "-")
         _emit("Candidate", payload.get("candidate_commit_sha") or "-")
         _emit("산출물 종류", payload.get("candidate_artifact_kind") or "-")
@@ -548,6 +642,82 @@ def parse_args() -> argparse.Namespace:
     )
     resolve_json.add_argument("--repo", required=True, type=Path)
 
+    candidate_verify = subparsers.add_parser(
+        "candidate-verify",
+        help="Candidate lock·승인·활성 포인터의 현재 상태를 읽기 전용으로 점검",
+    )
+    candidate_verify.add_argument(
+        "--version", "--registration-version", dest="version", required=True,
+        help="등록 묶음 버전, 예: 1.13.1",
+    )
+    candidate_verify.add_argument(
+        "--source-lock", type=Path,
+        help="대조할 원본 Candidate lock; 배치된 파일과 같은 내용인지 확인",
+    )
+    add_phase_output_format(candidate_verify)
+
+    candidate_prepare = subparsers.add_parser(
+        "candidate-prepare",
+        help="검증된 Candidate lock을 등록 묶음에 배치 (승인은 하지 않음)",
+    )
+    candidate_prepare.add_argument(
+        "--version", "--registration-version", dest="version", required=True,
+        help="등록 묶음 버전, 예: 1.13.1",
+    )
+    candidate_prepare.add_argument(
+        "--source-lock", required=True, type=Path, help="검증된 Candidate lock 파일",
+    )
+    candidate_prepare.add_argument(
+        "--source-result", required=True, type=Path,
+        help="그 lock을 뒷받침하는 acgh-result.yaml (canonical verdict가 pass여야 함)",
+    )
+    candidate_prepare.add_argument("--name", required=True, help="배치할 lock 이름 (확장자 없이)")
+    candidate_prepare.add_argument(
+        "--allow-repository-mismatch", action="store_true",
+        help="Registry와 lock의 저장소 표기가 다른 것을 담당자가 확인했음을 명시",
+    )
+    add_phase_output_format(candidate_prepare)
+
+    candidate_template = subparsers.add_parser(
+        "candidate-approval-template",
+        help="Candidate lock 승인 양식 생성 (등록 제안 승인용 approval-template과 다름)",
+    )
+    candidate_template.add_argument(
+        "--version", "--registration-version", dest="version", required=True,
+        help="등록 묶음 버전, 예: 1.13.1",
+    )
+    candidate_template.add_argument("--lock-name", required=True, help="승인할 lock 이름")
+    candidate_template.add_argument("--approver", help="담당자 표기; 세 값을 모두 지정해야 함")
+    candidate_template.add_argument("--approved-at", help="RFC3339 승인 시각, 예: 2026-08-09T12:00:00+09:00")
+    candidate_template.add_argument("--rationale", help="구체적 승인 사유")
+    candidate_template.add_argument(
+        "--output", default="-", help="양식 파일 경로; '-'이면 표준출력에 YAML만 출력",
+    )
+    add_phase_output_format(candidate_template)
+
+    candidate_activate = subparsers.add_parser(
+        "candidate-activate",
+        help="담당자가 작성한 승인 파일을 검증하고 활성 Candidate로 지정",
+    )
+    candidate_activate.add_argument(
+        "--version", "--registration-version", dest="version", required=True,
+        help="등록 묶음 버전, 예: 1.13.1",
+    )
+    candidate_activate.add_argument("--lock-name", required=True, help="활성화할 lock 이름")
+    candidate_activate.add_argument(
+        "--approval", required=True, type=Path, help="담당자가 작성한 승인 파일",
+    )
+    candidate_activate.add_argument(
+        "--replace-active", action="store_true",
+        help="다른 Candidate가 이미 활성일 때만 필요; 기존 Phase 결과는 재사용 불가",
+    )
+    candidate_activate.add_argument(
+        "--allow-repository-mismatch", action="store_true",
+        help="Registry와 lock의 저장소 표기가 다른 것을 담당자가 확인했음을 명시",
+    )
+    candidate_activate.add_argument("--record", type=Path, help="활성화 기록 JSON 경로")
+    add_phase_output_format(candidate_activate)
+
     phase_candidate = subparsers.add_parser(
         "candidate-select",
         help="승인된 활성 Candidate lock을 명시적으로 선택",
@@ -700,6 +870,85 @@ def plan_command(args: argparse.Namespace) -> tuple[list[str], dict[str, object]
 
 
 def dispatch(args: argparse.Namespace) -> int:
+    if args.command == "candidate-verify":
+        registration = registration_for(args.version)
+        command = python_command(
+            HARNESS / "run_phase_bundle.py",
+            "candidate-verify",
+            "--registration", registration,
+        )
+        if args.source_lock is not None:
+            command.extend(["--source-lock", str(args.source_lock)])
+        return run_phase_command(
+            command, stage="candidate-verify", output_format=args.output_format,
+        )
+
+    if args.command == "candidate-prepare":
+        registration = registration_for(args.version)
+        require_file(args.source_lock, "Candidate lock")
+        require_file(args.source_result, "Candidate 근거 결과")
+        command = python_command(
+            HARNESS / "run_phase_bundle.py",
+            "candidate-prepare",
+            "--registration", registration,
+            "--source-lock", args.source_lock,
+            "--source-result", args.source_result,
+            "--name", args.name,
+        )
+        if args.allow_repository_mismatch:
+            command.append("--allow-repository-mismatch")
+        return run_phase_command(
+            command,
+            stage="candidate-prepare",
+            output_format=args.output_format,
+            evidence=registration / "candidate-locks" / f"{args.name}.yaml",
+        )
+
+    if args.command == "candidate-approval-template":
+        registration = registration_for(args.version)
+        command = python_command(
+            HARNESS / "run_phase_bundle.py",
+            "candidate-approval-template",
+            "--registration", registration,
+            "--lock-name", args.lock_name,
+            "--output", args.output,
+        )
+        for option, value in (
+            ("--approver", args.approver),
+            ("--approved-at", args.approved_at),
+            ("--rationale", args.rationale),
+        ):
+            if value is not None:
+                command.extend([option, value])
+        return run_phase_command(
+            command,
+            stage="candidate-approval-template",
+            output_format=args.output_format,
+        )
+
+    if args.command == "candidate-activate":
+        registration = registration_for(args.version)
+        require_file(args.approval, "승인 파일")
+        command = python_command(
+            HARNESS / "run_phase_bundle.py",
+            "candidate-activate",
+            "--registration", registration,
+            "--lock-name", args.lock_name,
+            "--approval", args.approval,
+        )
+        if args.replace_active:
+            command.append("--replace-active")
+        if args.allow_repository_mismatch:
+            command.append("--allow-repository-mismatch")
+        if args.record is not None:
+            command.extend(["--record", str(args.record)])
+        return run_phase_command(
+            command,
+            stage="candidate-activate",
+            output_format=args.output_format,
+            evidence=registration / "candidate-locks" / "active-candidate.yaml",
+        )
+
     if args.command == "prep-official":
         output = args.output or PROJECT / "evidence" / f"official-branch-{timestamp()}.json"
         return run_phase_command(

@@ -3,16 +3,21 @@
 from __future__ import annotations
 
 import argparse
+import datetime
+import getpass
 import hashlib
 import json
 import math
 import os
+import re
+import socket
 import subprocess
 import sys
 from pathlib import Path
 
 import yaml
 
+from acgh import approval as approval_module
 from acgh import candidate
 from acgh import candidate_select
 from acgh import debt
@@ -30,6 +35,15 @@ class PhaseCLIError(RuntimeError):
     """The requested phase cannot produce trustworthy evidence."""
 
 
+class CandidatePolicyBlock(PhaseCLIError):
+    """A known-and-invalid Candidate state: report as block, not analysis_error.
+
+    A missing approval, a digest that does not bind, or a lock that belongs to a
+    different registration baseline are *answered* questions with a negative
+    answer. Reporting them as analysis_error would claim the check never ran.
+    """
+
+
 def _atomic_json(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     blob = json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
@@ -38,11 +52,36 @@ def _atomic_json(path: Path, payload: dict) -> None:
     os.replace(tmp, path)
 
 
-def _write_conflict_evidence(path: Path, payload: dict, validate) -> None:
-    """Write one collector artifact without clobbering or exposing partial data."""
-    import datetime
-    import socket
+def _now_rfc3339() -> str:
+    return datetime.datetime.now(datetime.timezone.utc).isoformat()
 
+
+def _actor() -> dict:
+    """Who and where a governance artifact was produced. Recorded, never trusted."""
+    try:
+        user = getpass.getuser()
+    except Exception:  # noqa: BLE001 - a nameless environment must not break a write
+        user = "unknown"
+    return {"user": user, "host": socket.gethostname()}
+
+
+def _write_guarded(
+    path: Path,
+    blob: bytes,
+    *,
+    label: str,
+    validate=None,
+    allow_replace: bool = False,
+) -> None:
+    """Create one governance file without clobbering or exposing partial data.
+
+    A sibling ``.<name>.lock`` is claimed with O_EXCL first, so two concurrent
+    writers cannot both pass an ``exists()`` check and race to ``os.replace``.
+    The payload lands in a temp file that is fsynced and validated before the
+    atomic rename, so a crash never leaves a half-written artifact under the
+    real name. The reservation records pid/host/time to make a stale lock
+    diagnosable by a human instead of auto-deleted by the tool.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     reservation = path.with_name(f".{path.name}.lock")
     try:
@@ -51,33 +90,45 @@ def _write_conflict_evidence(path: Path, payload: dict, validate) -> None:
         )
     except FileExistsError as exc:
         raise PhaseCLIError(
-            f"다른 수집 작업이 증거 경로를 사용 중입니다: {path}; lock={reservation}"
+            f"다른 {label} 실행이 경로를 사용 중입니다: {path}; lock={reservation}. "
+            "동시 실행이 없는데 반복되면 lock 파일의 생성 시각·pid·host를 확인하고, "
+            "실행 중인 프로세스가 없을 때만 제거한 뒤 다시 실행하세요."
         ) from exc
     tmp = path.with_name(f".{path.name}.tmp.{os.getpid()}")
     try:
         metadata = json.dumps({
             "pid": os.getpid(),
-            "host": socket.gethostname(),
-            "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            **_actor(),
+            "created_at": _now_rfc3339(),
             "output": str(path),
         }, ensure_ascii=False, sort_keys=True).encode("utf-8")
         os.write(reservation_fd, metadata)
         os.fsync(reservation_fd)
-        if path.exists():
-            raise PhaseCLIError(f"기존 conflict evidence를 덮어쓰지 않습니다: {path}")
-        blob = yaml.safe_dump(payload, allow_unicode=True, sort_keys=True).encode("utf-8")
+        if path.exists() and not allow_replace:
+            raise PhaseCLIError(f"기존 {label} 파일을 덮어쓰지 않습니다: {path}")
         fd = os.open(str(tmp), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
         try:
             os.write(fd, blob)
             os.fsync(fd)
         finally:
             os.close(fd)
-        validate(tmp)
+        if validate is not None:
+            validate(tmp)
         os.replace(str(tmp), str(path))
     finally:
         tmp.unlink(missing_ok=True)
         os.close(reservation_fd)
         reservation.unlink(missing_ok=True)
+
+
+def _write_conflict_evidence(path: Path, payload: dict, validate) -> None:
+    """Write one collector artifact without clobbering or exposing partial data."""
+    _write_guarded(
+        path,
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=True).encode("utf-8"),
+        label="수집 작업",
+        validate=validate,
+    )
 
 
 def _sha256_file(path: Path | None) -> str | None:
@@ -751,6 +802,555 @@ def _blocked_phase_result(args, selection, report, phase_name: str, names, polic
     return _write_result(result, report, args.output)
 
 
+# --- Candidate lock preparation / approval / activation ---------------------
+# A Candidate lock decides *which* commit every later Phase judges, so the three
+# steps stay separate on purpose: the tool may place and verify a lock, but only
+# a human can approve it, and activation re-verifies rather than trusting the
+# approval it was handed.
+_RESERVED_LOCK_NAMES = frozenset({"active-candidate"})
+_LOCK_NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+_APPROVAL_CONFIRMED = "approval_confirmed"
+_VALUES_FROM_FLAGS = "cli-flags"
+_VALUES_FROM_TEMPLATE = "template-empty"
+
+
+def _validate_lock_name(name) -> str:
+    """Reject any lock name that could escape or shadow a reserved file (C109)."""
+    if not isinstance(name, str) or not name.strip():
+        raise PhaseCLIError("lock 이름이 비어 있습니다")
+    if name != name.strip():
+        raise PhaseCLIError(f"lock 이름의 앞뒤 공백을 제거하세요: {name!r}")
+    if "/" in name or "\\" in name or ".." in name or Path(name).is_absolute():
+        raise PhaseCLIError(f"경로를 포함한 lock 이름은 사용할 수 없습니다: {name!r}")
+    if not _LOCK_NAME_PATTERN.match(name):
+        raise PhaseCLIError(
+            "lock 이름은 영문·숫자로 시작하고 영문·숫자·점·밑줄·하이픈만 쓸 수 있습니다: "
+            f"{name!r}"
+        )
+    if name.endswith((".yaml", ".yml")):
+        raise PhaseCLIError(f"lock 이름에 확장자를 붙이지 마세요: {name!r}")
+    if name.endswith(".approval"):
+        raise PhaseCLIError(f"'.approval'로 끝나는 이름은 예약되어 있습니다: {name!r}")
+    if name in _RESERVED_LOCK_NAMES:
+        raise PhaseCLIError(f"예약된 이름입니다: {name!r}")
+    return name
+
+
+def _candidate_paths(registration: Path, name: str | None = None) -> dict[str, Path]:
+    locks_dir = Path(registration) / "candidate-locks"
+    paths = {"dir": locks_dir, "active": locks_dir / "active-candidate.yaml"}
+    if name is not None:
+        _validate_lock_name(name)
+        paths["lock"] = locks_dir / f"{name}.yaml"
+        paths["approval"] = locks_dir / f"{name}.approval.yaml"
+        base = locks_dir.resolve()
+        for key in ("lock", "approval"):
+            if base not in paths[key].resolve().parents:
+                raise PhaseCLIError(f"lock 경로가 등록 폴더를 벗어납니다: {paths[key]}")
+    return paths
+
+
+def _registry_source(registration: Path) -> dict:
+    path = Path(registration) / "customization-registry.yaml"
+    if not path.is_file():
+        raise PhaseCLIError(f"등록 Registry가 없습니다: {path}")
+    source = _load_mapping(path, "Registry").get("source")
+    if not isinstance(source, dict):
+        raise PhaseCLIError(f"Registry에 source 항목이 없습니다: {path}")
+    return source
+
+
+def _registration_binding(
+    registration: Path, lock, *, allow_repository_mismatch: bool = False
+) -> dict:
+    """Bind a Candidate lock to the registration bundle that will host it.
+
+    ``upstream_base`` must equal the bundle's official baseline: both a baseline
+    lock (base == target == official) and a later upgrade candidate (base ==
+    official, target == next official) satisfy it, while a lock built from a
+    different baseline does not. That is a known-and-invalid state, so it blocks.
+
+    A repository difference is reported instead of blocked: a fork can legitimately
+    move (the 1.13.1 baseline was pushed to easyseop/OpenMetadata after the
+    easyseop/OM_TEMP push failed) without changing what is judged. It still needs
+    an explicit acknowledgement so it is never silent.
+    """
+    source = _registry_source(registration)
+    registry_upstream = source.get("upstream_sha")
+    if not isinstance(registry_upstream, str) or not registry_upstream:
+        raise PhaseCLIError("Registry source.upstream_sha가 없습니다")
+    if lock.upstream.base_sha != registry_upstream:
+        raise CandidatePolicyBlock(
+            "Candidate lock의 upstream base가 등록 묶음의 공식 기준 commit과 다릅니다: "
+            f"{lock.upstream.base_sha} != {registry_upstream}. "
+            "다른 등록 묶음(--version)의 lock인지 확인하세요."
+        )
+    registry_repository = source.get("repository")
+    warnings: list[str] = []
+    if registry_repository and registry_repository != lock.candidate.repository:
+        message = (
+            "Registry source.repository와 Candidate lock의 저장소가 다릅니다: "
+            f"{registry_repository} != {lock.candidate.repository}"
+        )
+        if not allow_repository_mismatch:
+            raise CandidatePolicyBlock(
+                message
+                + ". 저장소 이전이 의도된 것이면 --allow-repository-mismatch를 붙여 "
+                "다시 실행하고, 아니면 Registry를 먼저 정정하세요."
+            )
+        warnings.append(message + " (담당자가 명시적으로 확인함)")
+    return {
+        "registry_upstream_sha": registry_upstream,
+        "registry_repository": registry_repository,
+        "lock_repository": lock.candidate.repository,
+        "warnings": warnings,
+    }
+
+
+def _verify_source_result(lock, result_path: Path) -> dict:
+    """Require the evidence that justifies this lock to name the same candidate."""
+    data = _load_mapping(Path(result_path), "Candidate 근거 결과")
+    canonical = data.get("canonical_payload")
+    if not isinstance(canonical, dict):
+        raise PhaseCLIError(f"근거 결과에 canonical_payload가 없습니다: {result_path}")
+    result_verdict = canonical.get("verdict")
+    if result_verdict != verdict.PASS:
+        raise CandidatePolicyBlock(
+            f"근거 결과의 canonical verdict가 pass가 아닙니다: {result_verdict!r}"
+        )
+    inputs = canonical.get("inputs")
+    if not isinstance(inputs, dict):
+        raise PhaseCLIError("근거 결과에 inputs가 없습니다")
+    repositories = inputs.get("repositories")
+    candidate_block = repositories.get("candidate") if isinstance(repositories, dict) else None
+    if not isinstance(candidate_block, dict):
+        raise PhaseCLIError("근거 결과 inputs.repositories.candidate가 없습니다")
+    compared = {
+        "candidate commit": (candidate_block.get("sha"), lock.candidate.commit_sha),
+        "candidate tree": (candidate_block.get("tree_sha"), lock.candidate.tree_sha),
+        "artifact digest": (inputs.get("artifact_digest"), lock.candidate.artifact_digest),
+        "Candidate lock digest": (inputs.get("candidate_lock_digest"), lock.digest()),
+    }
+    if inputs.get("artifact_kind") is not None and lock.candidate.artifact_kind is not None:
+        compared["artifact kind"] = (inputs["artifact_kind"], lock.candidate.artifact_kind)
+    for label, (actual, expected) in compared.items():
+        if actual != expected:
+            raise CandidatePolicyBlock(
+                f"근거 결과의 {label}가 Candidate lock과 다릅니다: {actual} != {expected}"
+            )
+    return {"result_digest": data.get("result_digest"), "verdict": result_verdict}
+
+
+def _artifact_kind_notice(lock) -> str:
+    """State the downstream consequence of the lock's artifact kind up front."""
+    if lock.candidate.artifact_kind == candidate.BUILD_ARTIFACT:
+        return (
+            "build-artifact lock입니다. postmerge 실행에 --artifact-digest가 항상 필요하며 "
+            "source-only 범위만으로는 실행할 수 없습니다."
+        )
+    return (
+        "source-tree lock입니다. postmerge는 source-only 범위로 실행되며, Runtime Contract를 "
+        "포함하려면 승인된 build-artifact lock이 따로 필요합니다."
+    )
+
+
+def _lock_blob(lock) -> bytes:
+    return yaml.safe_dump(
+        lock.canonical(), allow_unicode=True, sort_keys=True
+    ).encode("utf-8")
+
+
+def candidate_prepare_command(args) -> int:
+    """Place a verified Candidate lock. Preparing is not approving."""
+    source_lock = candidate.load_candidate_lock(args.source_lock)
+    lock_digest = source_lock.digest()
+    result_info = _verify_source_result(source_lock, args.source_result)
+    binding = _registration_binding(
+        args.registration,
+        source_lock,
+        allow_repository_mismatch=args.allow_repository_mismatch,
+    )
+    paths = _candidate_paths(args.registration, args.name)
+    blob = _lock_blob(source_lock)
+
+    notes = list(binding["warnings"])
+    if paths["lock"].exists():
+        existing = candidate.load_candidate_lock(paths["lock"])
+        if existing.digest() != lock_digest:
+            raise CandidatePolicyBlock(
+                f"같은 이름의 다른 Candidate lock이 이미 있습니다: {paths['lock']} "
+                f"(기존 {existing.digest()} != 준비할 {lock_digest}). 덮어쓰지 않습니다. "
+                "다른 --name을 쓰거나, candidate-verify로 확인한 뒤 담당자가 정리하세요."
+            )
+        status = "already_prepared"
+        if paths["lock"].read_bytes() != blob:
+            notes.append(
+                "기존 파일과 판정 내용(digest)은 같지만 YAML 표기가 다릅니다. "
+                "판정에는 영향이 없어 그대로 두었습니다."
+            )
+    else:
+        status = "prepared"
+        _write_guarded(paths["lock"], blob, label="Candidate lock")
+
+    payload = {
+        "status": status,
+        "lock_path": str(paths["lock"]),
+        "candidate_commit_sha": source_lock.candidate.commit_sha,
+        "candidate_tree_sha": source_lock.candidate.tree_sha,
+        "candidate_artifact_kind": source_lock.candidate.artifact_kind,
+        "candidate_artifact_digest": source_lock.candidate.artifact_digest,
+        "candidate_lock_digest": lock_digest,
+        "source_result_digest": result_info["result_digest"],
+        "registration_binding": {
+            k: v for k, v in binding.items() if k != "warnings"
+        },
+        "artifact_kind_notice": _artifact_kind_notice(source_lock),
+        "approved": False,
+        "notes": notes,
+        "next_command": "candidate-approval-template",
+    }
+    print(json.dumps(payload, ensure_ascii=False, sort_keys=True))
+    return 0
+
+
+def candidate_approval_template_command(args) -> int:
+    """Write the form a human fills in. This command never approves anything."""
+    paths = _candidate_paths(args.registration, args.lock_name)
+    if not paths["lock"].is_file():
+        raise PhaseCLIError(
+            f"먼저 candidate-prepare로 Candidate lock을 준비하세요: {paths['lock']}"
+        )
+    lock = candidate.load_candidate_lock(paths["lock"])
+
+    supplied = {
+        "approver": args.approver,
+        "approved_at": args.approved_at,
+        "rationale": args.rationale,
+    }
+    provided = {key: value for key, value in supplied.items() if value is not None}
+    if provided and len(provided) != len(supplied):
+        missing = sorted(set(supplied) - set(provided))
+        print(json.dumps({
+            "status": "input_required",
+            "missing_fields": missing,
+            "reason": "세 값을 모두 지정하거나, 모두 생략해 빈 양식을 만드세요.",
+            "usage": (
+                "candidate-approval-template --version <버전> --lock-name <이름> "
+                "[--approver <표기> --approved-at <RFC3339> --rationale <사유>] "
+                "--output <경로>"
+            ),
+        }, ensure_ascii=False, sort_keys=True))
+        return 2
+
+    template = {
+        "candidate_lock_digest": lock.digest(),
+        "approver": provided.get("approver", ""),
+        "approved_at": provided.get("approved_at", ""),
+        "rationale": provided.get("rationale", ""),
+        # The template never writes True: an activatable approval always
+        # requires an edit this command did not make.
+        _APPROVAL_CONFIRMED: False,
+        "provenance": {
+            "generated_by": "candidate-approval-template",
+            "generated_at": _now_rfc3339(),
+            "values_source": _VALUES_FROM_FLAGS if provided else _VALUES_FROM_TEMPLATE,
+            **_actor(),
+        },
+    }
+    blob = yaml.safe_dump(template, allow_unicode=True, sort_keys=False)
+
+    if str(args.output) == "-":
+        # Pure YAML on stdout so the form can be piped or redirected as-is.
+        print(blob, end="")
+        return 0
+
+    _write_guarded(Path(args.output), blob.encode("utf-8"), label="승인 양식")
+    print(json.dumps({
+        "status": "template_created",
+        "output": str(args.output),
+        "candidate_lock_digest": lock.digest(),
+        "values_source": template["provenance"]["values_source"],
+        "approved": False,
+        "reason": (
+            "승인 양식만 생성했습니다. 담당자가 내용을 검토하고 "
+            f"{_APPROVAL_CONFIRMED}를 true로 바꾸기 전에는 활성화할 수 없습니다."
+        ),
+        "next_command": "candidate-activate",
+    }, ensure_ascii=False, sort_keys=True))
+    return 0
+
+
+def _approval_block(reason: str, **extra) -> int:
+    print(json.dumps(
+        {"status": "blocked", "reason": reason, "activated": False, **extra},
+        ensure_ascii=False, sort_keys=True,
+    ))
+    return verdict.EXIT_CODE[verdict.BLOCK]
+
+
+def candidate_activate_command(args) -> int:
+    """Verify a human-authored approval, then point the bundle at that lock."""
+    paths = _candidate_paths(args.registration, args.lock_name)
+    if not paths["lock"].is_file():
+        raise PhaseCLIError(f"Candidate lock이 없습니다: {paths['lock']}")
+    lock = candidate.load_candidate_lock(paths["lock"])
+    lock_digest = lock.digest()
+    binding = _registration_binding(
+        args.registration, lock, allow_repository_mismatch=args.allow_repository_mismatch
+    )
+
+    approval_path = Path(args.approval)
+    approval = _load_mapping(approval_path, "승인 파일")
+    if approval.get("candidate_lock_digest") != lock_digest:
+        return _approval_block(
+            "승인 파일의 candidate_lock_digest가 실제 lock digest와 다릅니다: "
+            f"{approval.get('candidate_lock_digest')} != {lock_digest}",
+            candidate_lock_digest=lock_digest,
+        )
+    missing = list(approval_module.validate_approval_metadata(approval))
+    if missing:
+        return _approval_block(
+            "승인 정보가 비어 있거나 형식이 맞지 않습니다: " + "; ".join(missing),
+            candidate_lock_digest=lock_digest,
+        )
+
+    provenance = approval.get("provenance") if isinstance(approval.get("provenance"), dict) else {}
+    if approval.get(_APPROVAL_CONFIRMED) is not True:
+        if provenance.get("values_source") == _VALUES_FROM_FLAGS:
+            reason = (
+                "비대화형으로 생성한 승인 값만으로는 활성화할 수 없습니다. 담당자가 파일 내용을 "
+                f"검토한 뒤 {_APPROVAL_CONFIRMED}를 true로 바꾸고 다시 실행하세요."
+            )
+        else:
+            reason = (
+                f"승인 파일의 {_APPROVAL_CONFIRMED}가 true가 아닙니다. 담당자가 직접 확인한 뒤 "
+                "true로 바꾸세요."
+            )
+        return _approval_block(reason, candidate_lock_digest=lock_digest)
+
+    previous_digest = None
+    if paths["active"].is_file():
+        previous_digest = _load_mapping(
+            paths["active"], "활성 Candidate 포인터"
+        ).get("candidate_lock_digest")
+    replaced = False
+    if previous_digest and previous_digest != lock_digest and not args.replace_active:
+        return _approval_block(
+            "다른 Candidate가 이미 활성 상태입니다: "
+            f"현재 {previous_digest} != 활성화할 {lock_digest}. "
+            "교체하려면 --replace-active를 붙이세요.",
+            candidate_lock_digest=lock_digest,
+            active_candidate_lock_digest=previous_digest,
+        )
+    replaced = bool(previous_digest and previous_digest != lock_digest)
+
+    if paths["approval"].exists():
+        if paths["approval"].read_bytes() != approval_path.read_bytes():
+            raise CandidatePolicyBlock(
+                f"다른 내용의 승인 파일이 이미 보관돼 있습니다: {paths['approval']}. "
+                "덮어쓰지 않습니다. candidate-verify로 기존 승인을 확인한 뒤, "
+                "교체가 필요하면 담당자가 기존 파일을 먼저 정리하세요."
+            )
+        approval_status = "already_stored"
+    else:
+        # Stored byte-for-byte: what git reviews must be what the approver wrote.
+        _write_guarded(paths["approval"], approval_path.read_bytes(), label="승인 파일")
+        approval_status = "stored"
+
+    pointer = yaml.safe_dump(
+        {"schema_version": 1, "candidate_lock_digest": lock_digest},
+        allow_unicode=True, sort_keys=True,
+    ).encode("utf-8")
+    if previous_digest == lock_digest:
+        pointer_status = "already_active"
+    else:
+        _write_guarded(
+            paths["active"], pointer, label="활성 Candidate 포인터",
+            allow_replace=bool(previous_digest),
+        )
+        pointer_status = "replaced" if replaced else "activated"
+
+    selection = candidate_select.select_active_candidate(args.registration)
+    if selection.status != candidate_select.SELECTED or selection.lock_digest != lock_digest:
+        raise PhaseCLIError(
+            "활성화 직후 self-check에 실패했습니다: "
+            f"{selection.status}; " + "; ".join(selection.reasons)
+        )
+
+    record = {
+        "status": "activated",
+        "activated": True,
+        "approval_status": approval_status,
+        "pointer_status": pointer_status,
+        "candidate_lock_digest": lock_digest,
+        "candidate_commit_sha": lock.candidate.commit_sha,
+        "candidate_artifact_kind": lock.candidate.artifact_kind,
+        "previous_candidate_lock_digest": previous_digest,
+        "lock_path": str(paths["lock"]),
+        "approval_path": str(paths["approval"]),
+        "active_pointer_path": str(paths["active"]),
+        "approver": approval.get("approver"),
+        "approved_at": approval.get("approved_at"),
+        "approval_values_source": provenance.get("values_source"),
+        "activated_at": _now_rfc3339(),
+        **{f"activated_by_{k}": v for k, v in _actor().items()},
+        "registration_binding": {k: v for k, v in binding.items() if k != "warnings"},
+        "notes": list(binding["warnings"]),
+        "authority_notice": (
+            "이 도구는 승인 형식과 digest 결속만 검증합니다. 승인자의 실제 조직 권한은 "
+            "보호 branch·CODEOWNERS 등 저장소 정책으로 확인해야 합니다."
+        ),
+        "next_command": "candidate-select",
+    }
+    if replaced:
+        record["replacement_notice"] = (
+            "활성 Candidate를 교체했습니다. 이전 Candidate로 만든 Phase 결과와 승인은 "
+            "재사용할 수 없으며 해당 Phase를 처음부터 다시 실행해야 합니다."
+        )
+    if args.record is not None:
+        _atomic_json(Path(args.record), record)
+        record["record_path"] = str(args.record)
+    print(json.dumps(record, ensure_ascii=False, sort_keys=True))
+    return 0
+
+
+def _approval_shape(approval: dict) -> dict:
+    provenance = approval.get("provenance") if isinstance(approval.get("provenance"), dict) else {}
+    return {
+        "has_provenance": bool(provenance),
+        "values_source": provenance.get("values_source"),
+        "approval_confirmed": approval.get(_APPROVAL_CONFIRMED),
+        "cli_generated": provenance.get("generated_by") == "candidate-approval-template",
+    }
+
+
+def candidate_verify_command(args) -> int:
+    """Read-only: report whether placed files match what the CLI would produce.
+
+    Hand-made locks predate these commands, so this reports rather than rewrites:
+    a bundle whose files already bind the right candidate can simply be committed,
+    and only a real difference needs an operator decision.
+    """
+    paths = _candidate_paths(args.registration)
+    report = {
+        "registration_path": str(args.registration),
+        "candidate_locks_dir": str(paths["dir"]),
+        "locks": [],
+        "active_candidate_lock_digest": None,
+        "problems": [],
+        "notes": [],
+    }
+    if not paths["dir"].is_dir():
+        report["problems"].append(f"candidate-locks 폴더가 없습니다: {paths['dir']}")
+        print(json.dumps(report, ensure_ascii=False, sort_keys=True))
+        return verdict.EXIT_CODE[verdict.ANALYSIS_ERROR]
+
+    if paths["active"].is_file():
+        report["active_candidate_lock_digest"] = _load_mapping(
+            paths["active"], "활성 Candidate 포인터"
+        ).get("candidate_lock_digest")
+    else:
+        report["problems"].append(f"활성 포인터가 없습니다: {paths['active']}")
+
+    expected_digest = None
+    if args.source_lock is not None:
+        expected_digest = candidate.load_candidate_lock(args.source_lock).digest()
+        report["source_lock_digest"] = expected_digest
+
+    for lock_path in sorted(paths["dir"].glob("*.yaml")):
+        if lock_path.name == "active-candidate.yaml" or lock_path.name.endswith(
+            ".approval.yaml"
+        ):
+            continue
+        entry = {"lock_path": str(lock_path), "name": lock_path.stem}
+        try:
+            lock = candidate.load_candidate_lock(lock_path)
+        except Exception as exc:  # noqa: BLE001 - a corrupt lock is a finding, not a crash
+            entry["error"] = f"{type(exc).__name__}: {exc}"
+            report["problems"].append(f"{lock_path.name}: 읽을 수 없습니다: {exc}")
+            report["locks"].append(entry)
+            continue
+        digest = lock.digest()
+        entry.update({
+            "candidate_lock_digest": digest,
+            "candidate_commit_sha": lock.candidate.commit_sha,
+            "candidate_artifact_kind": lock.candidate.artifact_kind,
+            "is_active": digest == report["active_candidate_lock_digest"],
+            "matches_cli_output": lock_path.read_bytes() == _lock_blob(lock),
+        })
+        if expected_digest is not None:
+            entry["matches_source_lock"] = digest == expected_digest
+        try:
+            binding = _registration_binding(
+                args.registration, lock, allow_repository_mismatch=True
+            )
+            entry["registration_binding"] = {
+                k: v for k, v in binding.items() if k != "warnings"
+            }
+            entry["registration_warnings"] = binding["warnings"]
+        except PhaseCLIError as exc:
+            entry["registration_binding_error"] = str(exc)
+            report["problems"].append(f"{lock_path.name}: {exc}")
+
+        approval_path = lock_path.with_name(lock_path.stem + ".approval.yaml")
+        entry["approval_path"] = str(approval_path)
+        if not approval_path.is_file():
+            entry["approval"] = None
+            if entry["is_active"]:
+                report["problems"].append(
+                    f"{lock_path.name}: 활성 상태인데 승인 파일이 없습니다"
+                )
+        else:
+            approval = _load_mapping(approval_path, "승인 파일")
+            shape = _approval_shape(approval)
+            shape["digest_matches"] = approval.get("candidate_lock_digest") == digest
+            shape["metadata_problems"] = list(
+                approval_module.validate_approval_metadata(approval)
+            )
+            entry["approval"] = shape
+            if not shape["digest_matches"]:
+                report["problems"].append(f"{approval_path.name}: lock digest와 다릅니다")
+            if shape["metadata_problems"]:
+                report["problems"].append(
+                    f"{approval_path.name}: " + "; ".join(shape["metadata_problems"])
+                )
+            if not shape["has_provenance"]:
+                report["notes"].append(
+                    f"{approval_path.name}: CLI 이전에 수동으로 만든 승인 파일입니다. "
+                    "판정 내용이 맞으면 그대로 commit해 정식화할 수 있고, "
+                    "다시 만들려면 담당자가 기존 파일을 먼저 정리해야 합니다."
+                )
+            elif shape["approval_confirmed"] is not True:
+                report["notes"].append(
+                    f"{approval_path.name}: {_APPROVAL_CONFIRMED}가 true가 아니라 "
+                    "candidate-activate로는 활성화할 수 없습니다."
+                )
+        report["locks"].append(entry)
+
+    if not report["locks"]:
+        report["problems"].append("Candidate lock 파일이 없습니다")
+
+    selection = candidate_select.select_active_candidate(args.registration)
+    report["selection_status"] = selection.status
+    report["selection_reasons"] = list(selection.reasons)
+    selectable = selection.status == candidate_select.SELECTED
+    report["selectable"] = selectable
+    if not selectable:
+        report["problems"].extend(selection.reasons)
+
+    if selectable and not report["problems"]:
+        report["status"] = "consistent"
+        exit_code = 0
+    elif selectable:
+        report["status"] = "blocked"
+        exit_code = verdict.EXIT_CODE[verdict.BLOCK]
+    else:
+        report["status"] = "analysis_error"
+        exit_code = verdict.EXIT_CODE[verdict.ANALYSIS_ERROR]
+    print(json.dumps(report, ensure_ascii=False, sort_keys=True))
+    return exit_code
+
+
 def candidate_command(args) -> int:
     selection = candidate_select.select_active_candidate(args.registration)
     payload = {
@@ -1040,6 +1640,33 @@ def parse_args(argv=None):
     candidate_parser.add_argument("--registration", required=True, type=Path)
     candidate_parser.add_argument("--output", required=True, type=Path)
 
+    prepare_parser = sub.add_parser("candidate-prepare")
+    prepare_parser.add_argument("--registration", required=True, type=Path)
+    prepare_parser.add_argument("--source-lock", required=True, type=Path)
+    prepare_parser.add_argument("--source-result", required=True, type=Path)
+    prepare_parser.add_argument("--name", required=True)
+    prepare_parser.add_argument("--allow-repository-mismatch", action="store_true")
+
+    template_parser = sub.add_parser("candidate-approval-template")
+    template_parser.add_argument("--registration", required=True, type=Path)
+    template_parser.add_argument("--lock-name", required=True)
+    template_parser.add_argument("--approver")
+    template_parser.add_argument("--approved-at")
+    template_parser.add_argument("--rationale")
+    template_parser.add_argument("--output", required=True)
+
+    activate_parser = sub.add_parser("candidate-activate")
+    activate_parser.add_argument("--registration", required=True, type=Path)
+    activate_parser.add_argument("--lock-name", required=True)
+    activate_parser.add_argument("--approval", required=True, type=Path)
+    activate_parser.add_argument("--replace-active", action="store_true")
+    activate_parser.add_argument("--allow-repository-mismatch", action="store_true")
+    activate_parser.add_argument("--record", type=Path)
+
+    verify_parser = sub.add_parser("candidate-verify")
+    verify_parser.add_argument("--registration", required=True, type=Path)
+    verify_parser.add_argument("--source-lock", type=Path)
+
     prep_parser = sub.add_parser("prep-official")
     prep_parser.add_argument("--repo", required=True, type=Path)
     prep_parser.add_argument("--tag-ref", required=True)
@@ -1093,6 +1720,10 @@ def main(argv=None) -> int:
             phase.evidence_path(Path.cwd(), args.run_id)
         return {
             "candidate": candidate_command,
+            "candidate-prepare": candidate_prepare_command,
+            "candidate-approval-template": candidate_approval_template_command,
+            "candidate-activate": candidate_activate_command,
+            "candidate-verify": candidate_verify_command,
             "prep-official": prep_official_command,
             "collect-conflict-evidence": collect_conflict_evidence_command,
             "preflight": preflight_command,
@@ -1100,6 +1731,10 @@ def main(argv=None) -> int:
             "postmerge": postmerge_command,
             "status": status_command,
         }[args.command](args)
+    except CandidatePolicyBlock as exc:
+        # Known-and-invalid, not "could not analyze": report as block (exit 1).
+        print(json.dumps({"status": "block", "reason": str(exc)}, ensure_ascii=False))
+        return verdict.EXIT_CODE[verdict.BLOCK]
     except (
         PhaseCLIError, phase.PhaseError, candidate.CandidateLockError,
         gitprim.GitPrimitiveError, OSError, ValueError,
