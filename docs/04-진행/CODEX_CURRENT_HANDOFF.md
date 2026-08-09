@@ -1,26 +1,32 @@
 # 현재 작업 인수인계
 
-> 마지막 갱신: 2026-08-09 KST
+> 마지막 갱신: 2026-08-09 18:17 KST
 >
-> 현재 작업: Phase 안전 보완 완료, 고객용 버전 업그레이드 가이드는 사용자 요청으로 폐기
+> 현재 작업: 1.13.2 vendor merge·BANK 커스터마이징 재이식·소스 검증 완료,
+> 원격 Runtime Contract 실행 중
 >
 > 이 문서는 다음 세션이 가장 먼저 읽는 현재 상태 정본입니다.
 
 ## 1. 목적과 현재 위치
 
 공식 OpenMetadata 1.13.1에 BANK-OM-001~007을 적용한 코드를 1.13.2로
-업그레이드하기 전에 1.13.1 기능 기준선을 확정하는 작업입니다.
+업그레이드하고, 같은 기능이 유지되는지 소스와 Runtime Contract로 검증하는
+작업입니다.
 
 최초 등록 `plan → 승인 → apply`, 등록자료 검사, 소스 검사는 완료했습니다.
 5-4 Runtime Contract는 깨끗한 검사기 worktree에서 9/9 정식 통과했습니다.
 candidate SHA·image digest·검사기 commit이 묶인 증거도 생성했습니다.
 
-1.13.2 vendor merge와 custom 코드 수정은 아직 실행하지 않습니다.
+1.13.2 vendor merge와 BANK 커스터마이징 재이식은 제품 commit
+`390c439e77...`로 완료했습니다. 소스 기준 검증은 통과했고, GitHub Actions의
+깨끗한 환경에서 build artifact·Runtime Contract를 확인 중입니다. 이 상태는 아직
+운영 배포 완료가 아닙니다.
 
 공유 원격은 다음 두 branch입니다.
 
 - 검사기: `easyseop/openmetadata-test`의 `codex/phase-bundling-safety-fix-20260808`
-- 제품 코드: `easyseop/OpenMetadata`의 `codex/om-1.13.1-runtime-ready`
+- 제품 코드: `easyseop/OpenMetadata`의
+  `codex/om-1.13.2-rehearsal-vendor-merge-20260809`
 
 제품 코드를 `easyseop/OM_TEMP`에 처음 push했을 때 공식 Git 이력 객체 전송 중
 GitHub HTTP 500이 발생했습니다. 공식 1.13.1 tag를 이미 가진 실제 fork
@@ -32,7 +38,8 @@ branch를 사용합니다.
 | 역할 | 위치 | 현재 branch·commit |
 |---|---|---|
 | 검사기 저장소 | 이 저장소 `easyseop/openmetadata-test` | 작업 branch `codex/phase-bundling-safety-fix-20260808` · Runtime 고정 tag `om-1.13.1-rehearsal-runtime-v1` |
-| OpenMetadata 코드 저장소 | 다른 노트북에서 확인한 `easyseop/OpenMetadata` clone | `codex/om-1.13.1-runtime-ready` · `8ac18ad053d9274774e274ba17b35911ac0b9dcb` |
+| OpenMetadata 코드 저장소 | `easyseop/OpenMetadata` clone | `codex/om-1.13.2-rehearsal-vendor-merge-20260809` · `390c439e77af12b9813121f9e3217cb4095f947d` |
+| 1.13.1 BANK 기준선 | 같은 코드 저장소 | `codex/om-1.13.1-runtime-ready` · `8ac18ad053d9274774e274ba17b35911ac0b9dcb` |
 | 공식 1.13.1 기준 | 같은 코드 저장소 | `upstream-1.13.1-release` · `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9` |
 | 공식 1.13.2 | 같은 코드 저장소 | `official/om-1.13.2` · 공식 `1.13.2-release` commit `2763bf97…` |
 
@@ -207,11 +214,11 @@ Runtime Contract 9개 실행까지 검증하는 워크플로도 추가했습니�
 - `docs/00-사용가이드/OM_TEMP_wiki_context_logic_Claude_review_package_20260730/`
 - `evidence/om-1.13.1-initial-bootstrap-20260806-01/`
 
-## 8. 다음 실행 순서
+## 8. 1.13.1 기준선 당시 실행 순서
 
 1. 다른 세션에서는 위 두 원격 branch와 이 문서를 먼저 확인합니다.
 2. 정식 evidence의 candidate·검사기·image digest가 이 문서와 같은지 확인합니다.
-3. 사용자 지시 후 1.13.2 vendor merge 단계로 이동합니다.
+3. 1.13.2 진행 현황과 현재 다음 순서는 20절을 확인합니다.
 
 정식 실행 명령:
 
@@ -241,7 +248,7 @@ source /private/tmp/om-runtime-contract.env
 
 ## 10. Phase 번들링 격리 작업
 
-현재 worktree branch는 `codex/phase-bundling`입니다. 기존 예행연습 branch와 제품
+당시 worktree branch는 `codex/phase-bundling`이었습니다. 기존 예행연습 branch와 제품
 코드는 수정하지 않았습니다.
 
 2026-08-07에 기존 개발계획을 검토해 다음 두 문서를 추가했습니다. 두 문서는
@@ -610,3 +617,88 @@ docs/04-진행/PHASE_CANDIDATE_준비승인활성화_CLAUDE_개발요청_2026080
 정식 CLI 개발 전 현재 실행은 승인자와 승인 사유를 셸 환경변수로 명시하고 stdin을
 읽지 않는 임시 복구 명령을 사용한다. 활성화 후 같은 `candidate-select`를 다시
 실행하고 `selected`가 아니면 premerge로 진행하지 않는다.
+
+## 20. 2026-08-09 공식 1.13.2 vendor merge와 BANK 재이식
+
+### 20.1 제품 후보
+
+재부팅 시 삭제되는 `/private/tmp` worktree를 사용하지 않고 다음 영구 경로에서
+작업했다.
+
+```text
+/Users/seop/om-work/om-1.13.2-rehearsal
+```
+
+고정 입력과 결과는 다음과 같다.
+
+| 항목 | 값 |
+|---|---|
+| 이전 BANK 기준선 | `8ac18ad053d9274774e274ba17b35911ac0b9dcb` |
+| 공식 1.13.2 | `2763bf97ce265662793a1a38d353147cc6d6c2e3` |
+| merge base | `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9` |
+| 새 제품 Candidate | `390c439e77af12b9813121f9e3217cb4095f947d` |
+| 제품 branch | `codex/om-1.13.2-rehearsal-vendor-merge-20260809` |
+| 제품 원격 | `easyseop/OpenMetadata` |
+
+초기 Git 충돌은 48개였다. 버전·POM·Docker·Python package 25개는 공식 1.13.2를
+선택했고, 언어 JSON 19개는 key 단위 3-way 병합으로 양쪽 변경을 보존했다.
+나머지 UI 충돌은 1.13.2의 분리된 PureUtils 구조에 BANK 동작을 옮겼다.
+공식 버전에서 삭제된 `EntityUtils.tsx`를 되살리지 않고 InstanceCode·QueryReport
+링크와 breadcrumb를 `EntityLinkUtils.ts`, `EntityBreadcrumbPureUtils.ts`,
+`EntityNameUtils.ts`에 재이식했다. Sybase·Tibero 동작은
+`DatabaseServicePureUtils.ts`, `ServicePureUtils.ts`, `ServiceIconUtils.ts`에
+재이식했다.
+
+제품 commit에는 `Customization-ID: BANK-OM-001`부터 `BANK-OM-007`까지 trailer를
+기록했다. branch는 원격에 push했다.
+
+### 20.2 완료한 소스 검증
+
+- BANK 전용 Jest: `4 suites`, `88 passed`, 실패 0
+- 19개 언어 JSON: 파싱 성공, InstanceCode·QueryReport 필수 label·message 존재
+- 변경 파일 Prettier: 통과
+- 공식 1.13.2 TypeScript 기준선: 오류 record 254개, 파일·오류코드 key 168개
+- 새 Candidate TypeScript: 오류 record 249개, 파일·오류코드 key 167개
+- 공식 기준선에 없는 새 파일·오류코드 key: 0개
+- Vite production bundle: 14,085 modules, `built in 3m 9s`, 전체 명령
+  `Done in 259.93s`, exit 0
+
+TypeScript 전체 검사는 공식 1.13.2 자체 오류를 포함하므로 전체 오류 수를 BANK
+실패로 판정하지 않는다. 공식 tag와 Candidate를 같은 Node 22·4GB 힙 조건으로
+실행하고 파일 경로·TS 오류코드별로 차감했다. 첫 2GB 실행은 Node heap OOM으로
+종료했으며 PASS에 포함하지 않았다. 증분 cache는 `/private/tmp`에 있으므로 재부팅
+후에는 다시 생성해야 한다.
+
+### 20.3 현재 실행 중인 원격 검증
+
+로컬 8GB 장비에서 Maven과 Docker를 다시 동시에 실행하지 않고 기존 공식 workflow에
+새 Candidate SHA와 새 image tag를 전달했다.
+
+```text
+GitHub Actions run: 31305508684
+URL: https://github.com/easyseop/openmetadata-test/actions/runs/31305508684
+server image tag: 1.13.2-bank-390c439e77
+Contract runner tag: 1.13.2-runtime-a6c3b105
+```
+
+이 문서 갱신 시점에는 `server`와 `contract-runner` job이 실행 중이다. 아직 Maven
+package, image publish, Docker-only clean-machine Runtime Contract 성공을 주장하지
+않는다. 완료 조건은 workflow 전체 성공과 Runtime Contract `pass 9, fail 0,
+error 0, skipped 0`이다.
+
+### 20.4 다음 정확한 순서
+
+1. run `31305508684`의 server build·image publish·docker-only-smoke 결과를 확인한다.
+2. 성공하면 image digest와 Runtime Contract artifact를 보존한다.
+3. 새 Candidate lock·사람 승인·활성 포인터를 준비한다. 조직 승인 권한은 도구가
+   대신 판단하지 않는다.
+4. 고정된 현재 검사기 branch에서 conflict evidence를 수집하고 postmerge-check와
+   phase-status를 실행한다.
+5. 결과와 Candidate SHA·image digest·검사기 commit을 이 문서와 정식 evidence에
+   기록한다.
+6. 그 후에만 예행연습 완료 여부를 판정한다. 운영 배포와 release 승인은 별도다.
+
+Claude가 개발한 Candidate CLI·watch-suggest 개선 branch
+`codex/candidate-activation-cli-20260809`는 이번 실행에 merge하지 않는다. 합치면
+premerge와 postmerge의 `harness_version`이 달라지기 때문이다. 예행연습 완료 후
+새 검사기 버전으로 Candidate 선택부터 전체 Phase를 다시 실행할 때 적용한다.
