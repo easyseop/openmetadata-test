@@ -825,3 +825,15 @@ docs/04-진행/보완작업_최종검토반영_및_구현결과_20260809.md
 최종 production bundle, Docker Runtime·화면 검증, 최종 Candidate lock·조직 승인,
 postmerge·운영 release는 여전히 미완료다. Candidate activation/watch-suggest 개선
 branch `codex/candidate-activation-cli-20260809`도 별도로 유지한다.
+
+### 21.1 구현 commit 결속
+
+구조 검토·정의 이관·회귀 test·비개발자 설명은 다음 commit에 함께 결속했다.
+
+```text
+d5153f284d8808e7856896b106f0539e8fcf2c83
+feat: add structural upgrade review safety
+```
+
+이 인수인계 갱신은 위 commit을 정확히 기록하는 문서 전용 후속 commit이다. 두
+commit을 `origin/codex/structural-upgrade-safety-20260809`에 push한다.
