@@ -867,3 +867,47 @@ docs: add staged adversarial review packets
 ```
 
 이 인수인계 갱신은 위 commit을 기록하는 문서 전용 후속 commit이다.
+
+## 23. 2026-08-09 구조보완 Claude 1차 P0 수정
+
+Claude 1차 검토 결과는 `수정 후 재검토`였다. 확인된 결함은 다음과 같다.
+
+1. rename 진단 결과와 Git version·threshold가 정본 digest와 risk flag에 섞여
+   기기별 허위 BLOCK·분석 오류를 만들 수 있었다.
+2. target과 custom 양쪽이 바뀐 경로를 Candidate가 merge-base 상태로 되돌리면
+   양쪽 변경을 잃고도 PASS할 수 있었다.
+
+다음 구현 commit에서 두 P0와 P1 3건을 수정했다.
+
+```text
+df1eee22f2e8c0c0b7db999a2428f8637696124f
+fix: separate structural diagnostics from verdicts
+```
+
+정본 `review_digest`와 비정본 진단을 분리하고, 진단은 별도 digest로 저장된 내용만
+검증한다. binder는 rename·binary 진단을 재실행하지 않는다. 양쪽 부모 변경을
+merge-base로 되돌린 경로는 양쪽 loss suspect와 `REVERTED_TO_MERGE_BASE`가 되어
+APPROVAL로 올라간다. 여러 best merge-base가 있는 criss-cross history는 임의로
+하나를 고르지 않고 fail-closed한다. manifest와 sensitive-zone의 WATCHED 이름도
+분리했다.
+
+검증 결과는 다음과 같다.
+
+```text
+구조·Git 집중: 28 passed
+영향 통합: 74 passed
+전체 harness: 591 passed, 38 skipped, 실패 0
+compileall: exit 0
+git diff --check: exit 0
+```
+
+Claude 결과 원문과 재검토 요청은 다음 파일이 정본이다.
+
+```text
+docs/04-진행/구조보완_CLAUDE_검토01_결과_20260809.md
+docs/04-진행/구조보완_CLAUDE_검토01_수정및재검토요청_20260809.md
+```
+
+전체 검토 크기·시간 상한과 canonical diff 중복 최적화는 P2로 남아 있다. 실제
+예행연습 제품 WIP, Candidate lock, 기존 증거는 수정하지 않았다. 1차 재검토가
+통과하기 전에는 2차 공유 정의 이관 검토나 4차 통합 판정으로 넘어가지 않는다.
