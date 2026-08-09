@@ -1,5 +1,62 @@
 # Claude 독립 검토 인수인계
 
+## 2026-08-10 Runtime Contract 실행과 T61 순정 대조 — 실행된 증거
+
+이번 batch는 **문서가 아니라 실제 실행 결과**다. 정본은
+`docs/04-진행/실행결과_T61_순정대조_20260810.md`, 증거는
+`evidence/om-1.13.1-runtime-t61-20260810/`다.
+
+실행 명령과 결과:
+
+```
+# 커스텀
+bash docker/rehearsal/start.sh                    → 마이그레이션 exit 0, 목데이터 PASS
+(러너 pull 생략판) docker/rehearsal/test.sh 등가  → pass 9 fail 0 error 0 skipped 0, verdict pass
+
+# 순정 negative control (별도 compose project, 빈 DB)
+OM_SERVER_IMAGE=docker.getcollate.io/openmetadata/server:1.13.1
+                                                  → fail 8 pass 5 error 0 skipped 0, verdict block, exit 1
+```
+
+검토자가 확인할 것:
+
+1. **T61은 3/5이지 5/5가 아니다.** 순정 revision `afcb2d2c…`는 BANK-OM-001의
+   `without_patch_sha`와 일치하므로 001만 계획서 요건을 충족한다. 002·003은
+   계획서가 요구한 per-ID 전임(`a2566fac`·`4108411c`)이 아니라 "패치를 전부 뺀"
+   스택 하나에서 죽은 것이므로 ID 귀속이 성립하지 않는다.
+2. **BANK-OM-006·007이 순정에서 pass한 것은 껍데기가 아니다.** 두 test는
+   `OPENMETADATA_PRODUCT_REPO` 소스 파일을 읽는 계약이라 서버 이미지 교체로는
+   구조적으로 죽지 않는다. 이 둘은 이미 source patch-kill로 입증된 2/5다.
+3. **BANK-OM-005는 실제 결함이다.** `test_korean_ime::test_hangul_composition_roundtrip`이
+   순정 digest `sha256:eaa31858…`에서 `outcome: pass`다. 이 ID의 필수 런타임
+   test는 이것 하나뿐이므로 현재 생존 입증 수단이 없다.
+   반례: `evidence/om-1.13.1-runtime-t61-20260810/t61-vanilla-negative-control/test-run-set.yaml`
+4. **롤백 차단은 새 blocking 항목이다.** BANK 데이터가 있는 DB에 순정을 올리면
+   `SecretsManagerUpdateService.retrieveServices` →
+   `IllegalArgumentException: Sybase`로 마이그레이션이 exit 1이 되고 서버가 기동하지
+   않는다. 같은 이미지가 빈 DB에서는 exit 0이므로 순정 결함이 아니라 비가역성이다.
+   로드맵 14-1의 "롤백 계획 없음"을 "데이터 계층에서 롤백 불가"로 승격해야 한다.
+5. **계획 파일 위치 불일치.** `runtime-patch-kill-plan.yaml`은
+   `harness/registrations/kb-openmetadata/`에만 있고 candidate가 `849ae756…`이다.
+   오늘 배포한 후보는 `8ac18ad0…`이며 그 등록 폴더
+   `harness/registrations/om-temp-1.13.1/`에는 patch-kill 계획이 없다.
+
+미실행으로 남은 것: 1.13.2 Candidate 검증(우리 1.13.2 이미지 없음),
+BANK-OM-002·003 per-ID negative control(전임 이미지 미빌드), T90/T91/T94.
+이 batch를 배포 준비 상태로 승격하지 않는다.
+
+### 실행 환경 주의 (Apple Silicon)
+
+`docker/rehearsal/docker-compose.override.yml`의 contract-runner가
+`linux/amd64` 고정이라 Apple Silicon에서는 에뮬레이션된 Chromium이
+OpenMetadata SPA를 렌더링하지 못한다(`Locator.fill` 30초 초과, `load` 120초 초과,
+CPU 1코어 100%). `prepare_runtime_contract_environment.py:243`의
+`browser_state()`에 우회 수단이 없어 API 전용 계약 6개까지 함께 막힌다.
+이번 batch에서 플랫폼을 `${OM_CONTRACT_RUNNER_PLATFORM:-linux/amd64}`로
+파라미터화했고(기본값 유지, CI 무영향), arm64 네이티브 러너로 실행했다.
+`docker/rehearsal/test.sh`는 러너 이미지를 항상 `pull`하므로 로컬 빌드
+이미지를 쓸 수 없다 — 미해결.
+
 ## 2026-08-09 1.13.2 WIP 체크포인트 — 다음 검토 경계
 
 제품 소스 검증 commit은 `390c439e77af12b9813121f9e3217cb4095f947d`, 같은

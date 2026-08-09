@@ -1,0 +1,4 @@
+candidate_lock_digest: sha256:f722e874dade55f1edb56e1c284edf1d97633138d0a3c1ba38c98a108833419d
+approver: 데이터시스템부
+approved_at: '2026-08-09T03:00:11+09:00'
+rationale: 1.13.1 Runtime Contract 9/9 통과 기준선을 1.13.2 사전검사에 사용 승인

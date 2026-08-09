@@ -1,0 +1,236 @@
+{
+  "status": "PASS",
+  "base_url": "http://openmetadata-server:8585/api/v1",
+  "summary": {
+    "database_services": 5,
+    "databases": 5,
+    "schemas": 5,
+    "tables": 10,
+    "indexed_tables": 10,
+    "data_quality_tests": 10
+  },
+  "services": [
+    {
+      "engine": "Oracle",
+      "serviceType": "Oracle",
+      "service": "bank_mock_oracle",
+      "service_state": "existing",
+      "database": "bank_mock_oracle.oracle_bank",
+      "database_state": "existing",
+      "schema": "bank_mock_oracle.oracle_bank.banking",
+      "schema_state": "existing",
+      "tables": [
+        {
+          "name": "customer",
+          "fullyQualifiedName": "bank_mock_oracle.oracle_bank.banking.customer",
+          "id": "b9a9ef42-3dee-42e1-94d4-b834941e8e9a",
+          "state": "existing",
+          "column_count": 3,
+          "ui": "http://openmetadata-server:8585/table/bank_mock_oracle.oracle_bank.banking.customer",
+          "data_quality_ui": "http://openmetadata-server:8585/table/bank_mock_oracle.oracle_bank.banking.customer/profiler/data-quality"
+        },
+        {
+          "name": "account_transaction",
+          "fullyQualifiedName": "bank_mock_oracle.oracle_bank.banking.account_transaction",
+          "id": "ca925a0e-7120-481b-9812-e31d95e4dc98",
+          "state": "existing",
+          "column_count": 4,
+          "ui": "http://openmetadata-server:8585/table/bank_mock_oracle.oracle_bank.banking.account_transaction",
+          "data_quality_ui": "http://openmetadata-server:8585/table/bank_mock_oracle.oracle_bank.banking.account_transaction/profiler/data-quality"
+        }
+      ],
+      "data_quality_tests": [
+        {
+          "fullyQualifiedName": "bank_mock_oracle.oracle_bank.banking.customer.customer_id.mock_customer_id_not_null_pass",
+          "state": "existing",
+          "result": "Success",
+          "mock": true
+        },
+        {
+          "fullyQualifiedName": "bank_mock_oracle.oracle_bank.banking.account_transaction.transaction_id.mock_transaction_id_not_null_fail",
+          "state": "existing",
+          "result": "Failed",
+          "mock": true
+        }
+      ]
+    },
+    {
+      "engine": "Tibero",
+      "serviceType": "Tibero",
+      "service": "bank_mock_tibero",
+      "service_state": "existing",
+      "database": "bank_mock_tibero.tibero_bank",
+      "database_state": "existing",
+      "schema": "bank_mock_tibero.tibero_bank.banking",
+      "schema_state": "existing",
+      "tables": [
+        {
+          "name": "customer",
+          "fullyQualifiedName": "bank_mock_tibero.tibero_bank.banking.customer",
+          "id": "9a4b7755-7ec6-4e58-ab75-106382e53eda",
+          "state": "existing",
+          "column_count": 3,
+          "ui": "http://openmetadata-server:8585/table/bank_mock_tibero.tibero_bank.banking.customer",
+          "data_quality_ui": "http://openmetadata-server:8585/table/bank_mock_tibero.tibero_bank.banking.customer/profiler/data-quality"
+        },
+        {
+          "name": "account_transaction",
+          "fullyQualifiedName": "bank_mock_tibero.tibero_bank.banking.account_transaction",
+          "id": "68dc685d-b58b-4d89-90f6-1174b953e7ae",
+          "state": "existing",
+          "column_count": 4,
+          "ui": "http://openmetadata-server:8585/table/bank_mock_tibero.tibero_bank.banking.account_transaction",
+          "data_quality_ui": "http://openmetadata-server:8585/table/bank_mock_tibero.tibero_bank.banking.account_transaction/profiler/data-quality"
+        }
+      ],
+      "data_quality_tests": [
+        {
+          "fullyQualifiedName": "bank_mock_tibero.tibero_bank.banking.customer.customer_id.mock_customer_id_not_null_pass",
+          "state": "existing",
+          "result": "Success",
+          "mock": true
+        },
+        {
+          "fullyQualifiedName": "bank_mock_tibero.tibero_bank.banking.account_transaction.transaction_id.mock_transaction_id_not_null_fail",
+          "state": "existing",
+          "result": "Failed",
+          "mock": true
+        }
+      ]
+    },
+    {
+      "engine": "Sybase",
+      "serviceType": "Sybase",
+      "service": "bank_mock_sybase",
+      "service_state": "existing",
+      "database": "bank_mock_sybase.sybase_bank",
+      "database_state": "existing",
+      "schema": "bank_mock_sybase.sybase_bank.banking",
+      "schema_state": "existing",
+      "tables": [
+        {
+          "name": "customer",
+          "fullyQualifiedName": "bank_mock_sybase.sybase_bank.banking.customer",
+          "id": "65c5d2de-59a5-4472-bf4b-7be50582b563",
+          "state": "existing",
+          "column_count": 3,
+          "ui": "http://openmetadata-server:8585/table/bank_mock_sybase.sybase_bank.banking.customer",
+          "data_quality_ui": "http://openmetadata-server:8585/table/bank_mock_sybase.sybase_bank.banking.customer/profiler/data-quality"
+        },
+        {
+          "name": "account_transaction",
+          "fullyQualifiedName": "bank_mock_sybase.sybase_bank.banking.account_transaction",
+          "id": "8001895c-176a-4685-8ca7-b27336014aa2",
+          "state": "existing",
+          "column_count": 4,
+          "ui": "http://openmetadata-server:8585/table/bank_mock_sybase.sybase_bank.banking.account_transaction",
+          "data_quality_ui": "http://openmetadata-server:8585/table/bank_mock_sybase.sybase_bank.banking.account_transaction/profiler/data-quality"
+        }
+      ],
+      "data_quality_tests": [
+        {
+          "fullyQualifiedName": "bank_mock_sybase.sybase_bank.banking.customer.customer_id.mock_customer_id_not_null_pass",
+          "state": "existing",
+          "result": "Success",
+          "mock": true
+        },
+        {
+          "fullyQualifiedName": "bank_mock_sybase.sybase_bank.banking.account_transaction.transaction_id.mock_transaction_id_not_null_fail",
+          "state": "existing",
+          "result": "Failed",
+          "mock": true
+        }
+      ]
+    },
+    {
+      "engine": "DB2",
+      "serviceType": "Db2",
+      "service": "bank_mock_db2",
+      "service_state": "existing",
+      "database": "bank_mock_db2.db2_bank",
+      "database_state": "existing",
+      "schema": "bank_mock_db2.db2_bank.banking",
+      "schema_state": "existing",
+      "tables": [
+        {
+          "name": "customer",
+          "fullyQualifiedName": "bank_mock_db2.db2_bank.banking.customer",
+          "id": "6f331f18-8e10-4bbb-bb49-119599cd6768",
+          "state": "existing",
+          "column_count": 3,
+          "ui": "http://openmetadata-server:8585/table/bank_mock_db2.db2_bank.banking.customer",
+          "data_quality_ui": "http://openmetadata-server:8585/table/bank_mock_db2.db2_bank.banking.customer/profiler/data-quality"
+        },
+        {
+          "name": "account_transaction",
+          "fullyQualifiedName": "bank_mock_db2.db2_bank.banking.account_transaction",
+          "id": "3f998dca-905f-4793-a8e1-0983b48a3c2a",
+          "state": "existing",
+          "column_count": 4,
+          "ui": "http://openmetadata-server:8585/table/bank_mock_db2.db2_bank.banking.account_transaction",
+          "data_quality_ui": "http://openmetadata-server:8585/table/bank_mock_db2.db2_bank.banking.account_transaction/profiler/data-quality"
+        }
+      ],
+      "data_quality_tests": [
+        {
+          "fullyQualifiedName": "bank_mock_db2.db2_bank.banking.customer.customer_id.mock_customer_id_not_null_pass",
+          "state": "existing",
+          "result": "Success",
+          "mock": true
+        },
+        {
+          "fullyQualifiedName": "bank_mock_db2.db2_bank.banking.account_transaction.transaction_id.mock_transaction_id_not_null_fail",
+          "state": "existing",
+          "result": "Failed",
+          "mock": true
+        }
+      ]
+    },
+    {
+      "engine": "PostgreSQL",
+      "serviceType": "Postgres",
+      "service": "bank_mock_postgres",
+      "service_state": "existing",
+      "database": "bank_mock_postgres.postgres_bank",
+      "database_state": "existing",
+      "schema": "bank_mock_postgres.postgres_bank.banking",
+      "schema_state": "existing",
+      "tables": [
+        {
+          "name": "customer",
+          "fullyQualifiedName": "bank_mock_postgres.postgres_bank.banking.customer",
+          "id": "470b557d-a9e6-4914-bc1a-c283fe428b04",
+          "state": "existing",
+          "column_count": 3,
+          "ui": "http://openmetadata-server:8585/table/bank_mock_postgres.postgres_bank.banking.customer",
+          "data_quality_ui": "http://openmetadata-server:8585/table/bank_mock_postgres.postgres_bank.banking.customer/profiler/data-quality"
+        },
+        {
+          "name": "account_transaction",
+          "fullyQualifiedName": "bank_mock_postgres.postgres_bank.banking.account_transaction",
+          "id": "3b3238ce-78dc-4ee5-9a5e-48b27d824ff4",
+          "state": "existing",
+          "column_count": 4,
+          "ui": "http://openmetadata-server:8585/table/bank_mock_postgres.postgres_bank.banking.account_transaction",
+          "data_quality_ui": "http://openmetadata-server:8585/table/bank_mock_postgres.postgres_bank.banking.account_transaction/profiler/data-quality"
+        }
+      ],
+      "data_quality_tests": [
+        {
+          "fullyQualifiedName": "bank_mock_postgres.postgres_bank.banking.customer.customer_id.mock_customer_id_not_null_pass",
+          "state": "existing",
+          "result": "Success",
+          "mock": true
+        },
+        {
+          "fullyQualifiedName": "bank_mock_postgres.postgres_bank.banking.account_transaction.transaction_id.mock_transaction_id_not_null_fail",
+          "state": "existing",
+          "result": "Failed",
+          "mock": true
+        }
+      ]
+    }
+  ],
+  "ui": "http://openmetadata-server:8585/settings/services/databases",
+  "data_quality_ui": "http://openmetadata-server:8585/data-quality/test-cases"
+}

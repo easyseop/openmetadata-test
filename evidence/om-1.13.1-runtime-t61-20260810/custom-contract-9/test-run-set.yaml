@@ -1,0 +1,34 @@
+candidate:
+  artifact_digest: sha256:a28ade3e3b2ab27c9f34ae4d1c745e295dc665df400a29b31a9f753374c58c00
+  commit_sha: 8ac18ad053d9274774e274ba17b35911ac0b9dcb
+harness_version: 7fdb182c299e51fd94a4a9c7d56473a3e849c019
+runs:
+- attempt: 1
+  outcome: pass
+  test_id: tests/bank/contracts/test_bank_columns.py::test_extended_column_projection
+- attempt: 1
+  outcome: pass
+  test_id: tests/bank/contracts/test_bank_columns.py::test_extended_column_rendered_row
+- attempt: 1
+  outcome: pass
+  test_id: tests/bank/contracts/test_data_assertions.py::test_failed_assertion_projection
+- attempt: 1
+  outcome: pass
+  test_id: tests/bank/contracts/test_data_assertions.py::test_failed_assertion_rendered_row
+- attempt: 1
+  outcome: pass
+  test_id: tests/bank/contracts/test_instance_code.py::test_crud_search_roundtrip
+- attempt: 1
+  outcome: pass
+  test_id: tests/bank/contracts/test_korean_ime.py::test_hangul_composition_roundtrip
+- attempt: 1
+  outcome: pass
+  test_id: tests/bank/contracts/test_query_report.py::test_query_usage_roundtrip
+- attempt: 1
+  outcome: pass
+  test_id: tests/bank/contracts/test_sybase.py::test_connection_schema_roundtrip
+- attempt: 1
+  outcome: pass
+  test_id: tests/bank/contracts/test_tibero.py::test_connection_schema_roundtrip
+schema_version: 1
+suite_version: sha256:dee7976eba3c79bf1b60e26f41eeb41f899bf8c6c3a0b36f9846cb67af02b6bd

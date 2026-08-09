@@ -33,7 +33,7 @@ services:
 
   runtime-contract-runner:
     image: ${OM_CONTRACT_RUNNER_IMAGE:-ghcr.io/easyseop/openmetadata-contract-runner:1.13.1-runtime}
-    platform: linux/amd64
+    platform: ${OM_CONTRACT_RUNNER_PLATFORM:-linux/amd64}
     profiles: [contracts]
     depends_on:
       openmetadata-server:

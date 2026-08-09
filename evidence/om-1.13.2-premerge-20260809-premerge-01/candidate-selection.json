@@ -1,0 +1,12 @@
+{
+  "candidate_artifact_kind": "build-artifact",
+  "candidate_commit_sha": "8ac18ad053d9274774e274ba17b35911ac0b9dcb",
+  "candidate_lock_digest": "sha256:f722e874dade55f1edb56e1c284edf1d97633138d0a3c1ba38c98a108833419d",
+  "candidate_lock_path": "/Users/seop/om-work/openmetadata-test/harness/registrations/om-temp-1.13.1/candidate-locks/om-1.13.1-runtime-ready.yaml",
+  "provenance": [],
+  "reasons": [],
+  "registration_bundle": "om-temp-1.13.1",
+  "registration_path": "/Users/seop/om-work/openmetadata-test/harness/registrations/om-temp-1.13.1",
+  "status": "selected",
+  "upstream_target_sha": "afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9"
+}

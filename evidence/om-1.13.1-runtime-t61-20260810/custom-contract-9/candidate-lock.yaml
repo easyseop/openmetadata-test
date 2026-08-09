@@ -1,0 +1,14 @@
+candidate:
+  artifact_digest: sha256:a28ade3e3b2ab27c9f34ae4d1c745e295dc665df400a29b31a9f753374c58c00
+  artifact_kind: build-artifact
+  commit_sha: 8ac18ad053d9274774e274ba17b35911ac0b9dcb
+  repository: easyseop/OpenMetadata
+  tree_sha: e86980f6d71295465fe6e75e5169fab57cebd4c4
+integration_strategy: vendor-merge
+schema_version: 2
+upstream:
+  base_sha: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
+  base_tag: 1.13.1-release
+  repository: open-metadata/OpenMetadata
+  target_sha: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
+  target_tag: 1.13.1-release

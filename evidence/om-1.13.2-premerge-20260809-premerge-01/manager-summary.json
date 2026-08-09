@@ -1,0 +1,29 @@
+{
+  "checked": 2,
+  "checked_over_total": "2/2",
+  "counts": {
+    "blocked": 0,
+    "normal": 0,
+    "not_run": 0,
+    "review": 2
+  },
+  "next_action": "검토 대상이 있습니다. 담당자 승인 후 진행하세요.",
+  "overall_verdict": "approval",
+  "phase": "premerge",
+  "phase_status": "complete",
+  "reason_counts": {
+    "policy-drift": 1,
+    "structdiff": 76,
+    "upgrade-watch": 6,
+    "watch-suggest": 1
+  },
+  "reason_previews": {
+    "policy-drift": "stale_pattern: openmetadata-ui/src/main/resources/ui/src/utils/EntityUtils.tsx matches 0 paths in 2763bf97ce265662793a1a38d353147cc6d6c2e3",
+    "structdiff": "openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json: +5 -14 ~type:0 ~scalar:0 ~list:0",
+    "upgrade-watch": "BANK-OM-001: upstream A->B changed paths=21 (e.g. openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java)",
+    "watch-suggest": "TimeoutError: gate watch-suggest exceeded 300.0s"
+  },
+  "result_digest": "sha256:9e79dfeadb7f97baa754f724d55da281a9776b90e1dd080eafc501c470bddfa7",
+  "total": 2,
+  "verification_scope": "source-impact"
+}

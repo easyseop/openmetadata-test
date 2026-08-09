@@ -1,0 +1,48 @@
+canonical_payload:
+  gates:
+  - name: required-test-implementations
+    reasons:
+    - implemented_required_tests=9
+    verdict: pass
+  - name: test-candidate-binding
+    reasons:
+    - 'required test passed: tests/bank/contracts/test_bank_columns.py::test_extended_column_projection'
+    - 'required test tests/bank/contracts/test_bank_columns.py::test_extended_column_rendered_row:
+      final outcome=fail'
+    - 'required test passed: tests/bank/contracts/test_data_assertions.py::test_failed_assertion_projection'
+    - 'required test tests/bank/contracts/test_data_assertions.py::test_failed_assertion_rendered_row:
+      final outcome=fail'
+    - 'required test tests/bank/contracts/test_instance_code.py::test_crud_search_roundtrip:
+      final outcome=fail'
+    - 'required test passed: tests/bank/contracts/test_korean_ime.py::test_hangul_composition_roundtrip'
+    - 'required test tests/bank/contracts/test_query_report.py::test_query_usage_roundtrip:
+      final outcome=fail'
+    - 'required test passed: tests/bank/contracts/test_sybase.py::test_connection_schema_roundtrip'
+    - 'required test passed: tests/bank/contracts/test_tibero.py::test_connection_schema_roundtrip'
+    - test_run_set_digest=sha256:895ba1cab0f8bcf66355f489e606301e3a8bb89854f1aca54863a0a7f004cb5c
+    verdict: block
+  harness_version: 7fdb182c299e51fd94a4a9c7d56473a3e849c019
+  inputs:
+    artifact_digest: sha256:eaa318584c52d4a492a2c56c95818b5564c6ea28b2e9695ac532c856b2c61bc9
+    artifact_kind: build-artifact
+    candidate_lock_digest: sha256:0764e7a1def3a1cc78553580d34ec96805f9e4a764a3f5d6e594cd63b0fd9dc2
+    integration_strategy: vendor-merge
+    repositories:
+      candidate:
+        repository: easyseop/OpenMetadata
+        sha: 8ac18ad053d9274774e274ba17b35911ac0b9dcb
+        tree_sha: e86980f6d71295465fe6e75e5169fab57cebd4c4
+      upstream_base:
+        repository: open-metadata/OpenMetadata
+        sha: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
+      upstream_target:
+        repository: open-metadata/OpenMetadata
+        sha: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
+    verifier_catalog_digest: sha256:dee7976eba3c79bf1b60e26f41eeb41f899bf8c6c3a0b36f9846cb67af02b6bd
+  verdict: block
+expected_exit_code: 1
+observational_metadata:
+  run_id: om-1.13.1-t61-vanilla-attempt1-20260810-013333
+  test_run_set_digest: sha256:895ba1cab0f8bcf66355f489e606301e3a8bb89854f1aca54863a0a7f004cb5c
+result_digest: sha256:329c42bfd6b1c7745f65dace200be4755b1fdca596567fe21bfb599d2d590561
+schema_version: 1

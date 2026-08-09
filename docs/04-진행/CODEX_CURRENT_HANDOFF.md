@@ -636,7 +636,8 @@ docs/04-진행/PHASE_CANDIDATE_준비승인활성화_CLAUDE_개발요청_2026080
 |---|---|
 | 이전 BANK 기준선 | `8ac18ad053d9274774e274ba17b35911ac0b9dcb` |
 | 공식 1.13.2 | `2763bf97ce265662793a1a38d353147cc6d6c2e3` |
-| merge base | `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9` |
+| 이전 공식 upgrade base | `afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9` |
+| 실제 Git merge base | `739ee49279afe3b35f1e9b7da1df01ff9612425c` |
 | 소스 검증 제품 commit | `390c439e77af12b9813121f9e3217cb4095f947d` |
 | WIP 전달 commit | `9587fe8fc7d9e6a18b9c0038b92c5fef24bb8412` |
 | 공통 tree | `22bdc8435b018cdbfe06e32fe02f7d5970a2b363` |
@@ -772,3 +773,67 @@ Claude가 개발한 Candidate CLI·watch-suggest 개선 branch
 `codex/candidate-activation-cli-20260809`는 이번 실행에 merge하지 않는다. 합치면
 premerge와 postmerge의 `harness_version`이 달라지기 때문이다. 예행연습 완료 후
 새 검사기 버전으로 Candidate 선택부터 전체 Phase를 다시 실행할 때 적용한다.
+
+## 21. 2026-08-09 충돌 검토 한계 보완 최종 설계 요청
+
+1.13.2 병합에서 확인한 경로 삭제 노출 부족, 정상 이동의 거짓 `BLOCK`,
+양쪽 부모와 모두 다른 파일만 보는 축소식 리뷰의 누락 가능성, 공유 코드 정의를
+결과에 맞춰 바꿀 수 있는 위험을 한 문서로 정리했다.
+
+```text
+docs/04-진행/보완작업_재설계_CLAUDE_최종검토요청_20260809.md
+```
+
+이 문서는 이전 요청서의 오래된 “제품 worktree에 `MERGE_HEAD`가 살아 있다”는
+전제를 현재 상태로 고쳤다. 제품 병합은 `390c439...`에 commit됐고 WIP 전달
+commit `9587fe8...`까지 원격에 있으며, 두 commit과 과거 검토용 임시 commit
+`5262244...`는 같은 tree `22bdc843...`를 가리킨다.
+
+이번 최종 검토 범위는 A1 변경 종류 출력, A3 다축 리뷰 분류, A4 이동 후보와 보존
+판정 분리, A5 버전별 정의 이관, A16 canonical·진단 rename 이원화다. Candidate에서만
+새로 생긴 변경도 누락하지 않도록 검토 경로를 `base→target`, `base→custom head`,
+`base→Candidate` 변경 집합의 합집합으로 정의했다. 삭제 0 불변식 A2와 query mapping
+shared 재분류 A17은 기각 근거를 명시했다.
+
+이 batch는 문서 작성만 수행했다. 검사기·제품 코드와 정책 파일은 수정하지 않았고
+새 test도 실행하지 않았다. Markdown 전체 재독, 현재 Git SHA·tree 대조,
+코드 fence 구조 검사, whitespace 검사를 완료했다. 작성 시작 검사기 HEAD는
+`7319481e24063af7d16e9ae1c7bce34d396bbd27`이다.
+
+현재 새 최종 요청서와 이 인수인계 변경은 아직 commit·push하지 않았다. 기존
+사용자 미추적 문서 2개, premerge evidence, 1.13.1 Candidate lock 파일도 그대로
+보존했으며 stage하지 않았다. 다음 순서는 최종 요청서를 Claude에 읽기 전용으로
+전달하고, 새 P0가 없으면 검토 반복을 종료한 뒤 별도 `codex/` branch에서
+A1→A3→A16→A4→A5 순으로 구현하는 것이다.
+
+### 21.1 Claude 1차 결과와 Codex 독립 대조
+
+Claude는 실제 Git merge base가 `739ee492...`임을 정확히 지적하고 A3의 R5 누락,
+A5 proposal digest·검사기 SHA 결속, A16 진단 정책 라벨을 보완했다. Codex가 Git과
+현재 코드를 다시 대조한 결과, Claude가 제안한 “새 Candidate lock base를
+`739ee492...`로 변경”은 그대로 적용할 수 없다.
+
+현재 `run_phase_bundle.py`는 이전 기준선 target과 새 lock base의 일치와 실제
+merge base와 새 lock base의 일치를 동시에 요구한다. 이번 이력에서는 각각
+`afcb2d2...`와 `739ee492...`라서 두 조건을 동시에 만족할 수 없다. Candidate lock의
+`upstream.base_sha`는 이전 공식 upgrade base `afcb2d2...`로 유지하고, conflict
+evidence의 `merge_base_sha`를 실제 Git 공통 조상 `739ee492...`로 분리하는 집중
+재검토 요청서를 추가했다.
+
+```text
+docs/04-진행/보완작업_UPGRADE_BASE_MERGE_BASE_CLAUDE_집중재검토요청_20260809.md
+```
+
+또한 Claude의 R6 예시는 custom 수정과 `TARGET_ONLY` 기대가 모순이어서 custom이
+merge base와 같은 상태인 공식 삭제·Candidate 부활 반례로 정정했다. 후보 0개를
+기존 T92로만 보내는 제안도 BANK-OM 전체 폐기와 정의 한 건의 공식 흡수를 혼동하므로,
+T92 전체 retirement와 definition-level `absorbed_by_upstream`을 분리했다.
+
+이 batch도 문서와 현재 상태 정정만 수행했다. 코드·schema·Candidate lock은 아직
+수정하지 않았고 test도 실행하지 않았다. 집중 재검토에서 새 P0가 없을 때만 별도
+branch에서 A0(base 의미 분리)→A1→A3→A16→A4→A5 구현에 착수한다.
+
+집중 재검토 문서에는 실제 Git·Phase 코드·Candidate schema·기준선 lock·T92·공유
+코드 정의 관련 참고자료의 우선순위와 읽기 전용 확인 명령도 추가했다. 검토자는
+오래된 요청서보다 실제 Git 객체와 현재 branch 코드를 우선하고, production bundle·
+Docker·전체 test는 이 집중 검토에서 재실행하지 않는다.

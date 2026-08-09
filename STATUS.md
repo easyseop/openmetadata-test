@@ -1,5 +1,24 @@
 # Current implementation status
 
+> Updated: 2026-08-10 KST — 1.13.1 커스텀 배포본에서 Runtime Contract 9개를
+> 실제 실행해 `pass 9 / fail 0 / error 0 / skipped 0`, verdict `pass`를 얻었다
+> (image digest `sha256:a28ade3e…`, candidate `8ac18ad0…`). 이어서 공식 순정
+> 1.13.1(`docker.getcollate.io/openmetadata/server:1.13.1`,
+> digest `sha256:eaa31858…`, revision `afcb2d2c…`) negative control에서 같은
+> suite가 `fail 8 / pass 5 / error 0 / skipped 0`, verdict `block`, exit 1로
+> 판정됐다. 순정 revision `afcb2d2c…`는 `runtime-patch-kill-plan.yaml`이
+> BANK-OM-001의 `without_patch_sha`로 지정한 커밋과 일치하므로 **T61은
+> source 2/5에 runtime 1건이 더해져 3/5**다. BANK-OM-002·003은 계획서가
+> 지정한 전임(`a2566fac`·`4108411c`) 이미지가 없어 미완이다.
+> 신규 결함 3건: (1) BANK-OM-005 필수 test가 순정에서도 pass해 생존 미입증,
+> (2) BANK-OM-003·004의 API 계층 test가 판별력 없음,
+> (3) BANK 데이터가 있는 DB에서는 순정 마이그레이션이
+> `IllegalArgumentException: Sybase`로 exit 1이 되어 **데이터 계층 롤백이 불가**하다
+> (같은 이미지가 빈 DB에서는 exit 0으로 정상 기동).
+> 증거는 `evidence/om-1.13.1-runtime-t61-20260810/`, 상세는
+> `docs/04-진행/실행결과_T61_순정대조_20260810.md`다. 1.13.2 Candidate 검증은
+> 여전히 미실행이며 운영 완료·배포 준비 상태가 아니다.
+
 > Updated: 2026-08-09 KST — 1.13.2 vendor merge 결과를 장시간 로컬 검증에서
 > 인수인계 가능한 WIP 체크포인트로 전환했다. 소스 검증 commit은
 > `390c439e77af12b9813121f9e3217cb4095f947d`, 같은 tree를 가진 원격 WIP

@@ -1,0 +1,50 @@
+{
+  "blocking_problems": [],
+  "checks": [
+    {
+      "blocking": true,
+      "name": "upstream_base",
+      "status": "ok",
+      "value": "afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9"
+    },
+    {
+      "blocking": true,
+      "name": "upstream_target",
+      "status": "ok",
+      "value": "2763bf97ce265662793a1a38d353147cc6d6c2e3"
+    },
+    {
+      "blocking": true,
+      "name": "candidate",
+      "status": "ok",
+      "value": "8ac18ad053d9274774e274ba17b35911ac0b9dcb"
+    },
+    {
+      "blocking": true,
+      "name": "repository_layout",
+      "status": "ok",
+      "value": "/Users/seop/om-work/openmetadata-test/harness/registrations/om-temp-1.13.1/repository-layout.yaml"
+    },
+    {
+      "blocking": true,
+      "name": "sensitive_zones",
+      "status": "ok",
+      "value": "/Users/seop/om-work/openmetadata-test/harness/registrations/om-temp-1.13.1/sensitive-zones.yaml"
+    },
+    {
+      "blocking": true,
+      "name": "official_evidence",
+      "status": "ok",
+      "value": "/Users/seop/om-work/openmetadata-test/evidence/om-1.13.2-premerge-20260809-premerge-01/official-target-evidence.json"
+    },
+    {
+      "blocking": true,
+      "detail": "all active sources pin 8ac18ad053d9274774e274ba17b35911ac0b9dcb",
+      "name": "candidate_consistency",
+      "status": "ok",
+      "value": "8ac18ad053d9274774e274ba17b35911ac0b9dcb"
+    }
+  ],
+  "disabled_gates": [],
+  "ready": true
+}
