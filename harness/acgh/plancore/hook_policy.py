@@ -57,6 +57,7 @@ def _workflow_action(command: str) -> str | None:
     for index, token in enumerate(tokens[:-1]):
         if token.endswith("om_workflow.py") and tokens[index + 1] in {
             "plan-preflight",
+            "plan-resume",
             "plan-validate",
         }:
             return tokens[index + 1]
@@ -116,8 +117,8 @@ def decide_pre_tool_use(
         if _contains_git_mutation(command):
             return HookDecision(False, "Git state mutation is blocked")
         action = _workflow_action(command)
-        if run_pair is None and action == "plan-preflight":
-            return HookDecision(True, "trusted preflight establishes the run")
+        if run_pair is None and action in {"plan-preflight", "plan-resume"}:
+            return HookDecision(True, "trusted workflow establishes or resumes the run")
         if run_pair is not None and action == "plan-validate":
             return HookDecision(
                 True,

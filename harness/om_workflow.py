@@ -23,6 +23,8 @@ from acgh.integrations.om import OpenMetadataPlanAdapter
 from acgh.plancore.errors import PlanControlError
 from acgh.plancore.markers import create_session_marker, session_marker_path
 from acgh.plancore.preflight import run_preflight
+from acgh.plancore.resume import resume_proposal_run
+from acgh.plancore.schema import read_data
 from acgh.plancore.validate import run_validation
 from acgh.verdict import to_exit_code
 
@@ -296,6 +298,15 @@ def parse_args() -> argparse.Namespace:
     )
     plan_validate.add_argument("--run-dir", required=True, type=Path)
 
+    plan_resume = subparsers.add_parser(
+        "plan-resume",
+        help="proposal 검증 block run을 사실 변경 없이 다시 연결",
+    )
+    plan_resume.add_argument("--run-dir", required=True, type=Path)
+    plan_resume.add_argument("--state-root", required=True, type=Path)
+    plan_resume.add_argument("--session-id", required=True)
+    plan_resume.add_argument("--project-root", type=Path, default=PROJECT)
+
     return parser.parse_args()
 
 
@@ -363,6 +374,26 @@ def dispatch(args: argparse.Namespace) -> int:
         result = run_validation(args.run_dir, OpenMetadataPlanAdapter())
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return to_exit_code(result["verdict"])
+
+    if args.command == "plan-resume":
+        marker = session_marker_path(
+            args.state_root,
+            args.project_root,
+            args.session_id,
+        )
+
+        def verify_documents(run_dir: Path) -> None:
+            source = run_dir / "official-doc-sources.yaml"
+            if source.is_file():
+                OpenMetadataPlanAdapter().verify_documents(run_dir, read_data(source))
+
+        result = resume_proposal_run(
+            args.run_dir,
+            marker,
+            verify_external_inputs=verify_documents,
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0
 
     if args.command == "plan":
         command, selected = plan_command(args)

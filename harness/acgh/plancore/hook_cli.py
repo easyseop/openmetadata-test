@@ -55,7 +55,9 @@ def handle_event(payload: dict, state_root: str | Path) -> dict | None:
 
     if event == "UserPromptSubmit":
         prompt = payload.get("prompt")
-        if not isinstance(prompt, str) or not prompt.lstrip().startswith("/om-plan"):
+        if not isinstance(prompt, str) or not prompt.lstrip().startswith(
+            ("/om-plan", "/om-resume")
+        ):
             return None
         if marker.exists():
             return _deny(event, "this session already has an active planning run")

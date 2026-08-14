@@ -21,6 +21,7 @@ from acgh.plancore.markers import (
 from acgh.plancore.preflight import run_preflight
 from acgh.plancore.preflight import collect_state
 from acgh.plancore.rerun import retry_decision
+from acgh.plancore.resume import resume_proposal_run
 from acgh.plancore.schema import read_data, validate
 from acgh.plancore.validate import run_validation
 
@@ -815,13 +816,14 @@ def test_r03_facts_cannot_change_between_proposal_attempts(tmp_path: Path):
     )
     assert run_validation(run_dir, OpenMetadataPlanAdapter())["verdict"] == "block"
     marker = create_session_marker(state_root, checker, "session-b")
-    bind_run(marker, run_dir)
     facts_path = run_dir / "discovered-facts.json"
     facts = read_data(facts_path)
     facts["canonical_payload"]["items"][0]["value"] = "changed"
     facts_path.write_text(json.dumps(facts), encoding="utf-8")
-    _proposal_from_first_fact(run_dir)
-    assert run_validation(run_dir, OpenMetadataPlanAdapter())["verdict"] == "analysis_error"
+    with pytest.raises(PlanControlError) as caught:
+        resume_proposal_run(run_dir, marker)
+    assert caught.value.code == "RESUME_FACTS_CHANGED"
+    assert not marker.exists()
 
 
 def test_r06_same_url_with_changed_bytes_cannot_reuse_snapshot(tmp_path: Path):
@@ -927,7 +929,8 @@ def test_r04_validation_attempts_are_append_only_for_proposal_fix(tmp_path: Path
     first_attempt = (run_dir / first["attempts"][0]).read_bytes()
 
     marker = create_session_marker(state_root, checker, "session-b")
-    bind_run(marker, run_dir)
+    resumed = resume_proposal_run(run_dir, marker)
+    assert resumed["status"] == "proposal_revision_allowed"
     _proposal_from_first_fact(run_dir)
     second = run_validation(run_dir, OpenMetadataPlanAdapter())
     assert second["verdict"] == "approval"
@@ -940,10 +943,10 @@ def test_r07_completed_run_cannot_be_revalidated(tmp_path: Path):
     _proposal_from_first_fact(run_dir)
     assert run_validation(run_dir, OpenMetadataPlanAdapter())["verdict"] == "approval"
     marker = create_session_marker(state_root, checker, "session-b")
-    bind_run(marker, run_dir)
     with pytest.raises(PlanControlError) as caught:
-        run_validation(run_dir, OpenMetadataPlanAdapter())
-    assert caught.value.code == "COMPLETED_RUN_READ_ONLY"
+        resume_proposal_run(run_dir, marker)
+    assert caught.value.code == "RUN_NOT_PROPOSAL_REVISABLE"
+    assert not marker.exists()
 
 
 def test_c41_concurrent_cleanup_does_not_remove_other_session(tmp_path: Path):
@@ -1206,7 +1209,7 @@ def test_r05_revalidation_appends_and_never_overwrites_attempt(tmp_path: Path):
     first_path = run_dir / first["attempts"][0]
     first_bytes = first_path.read_bytes()
     marker = create_session_marker(state_root, checker, "second")
-    bind_run(marker, run_dir)
+    resume_proposal_run(run_dir, marker)
     _proposal_from_first_fact(run_dir)
     second = run_validation(run_dir, OpenMetadataPlanAdapter())
     assert second["attempts"] == [

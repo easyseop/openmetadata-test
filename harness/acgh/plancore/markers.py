@@ -170,3 +170,17 @@ def cleanup_pair(pair: MarkerPair) -> None:
                 "refusing to clean another session's marker",
             )
         pair.session_marker.unlink()
+
+
+def cleanup_unbound_session(marker: str | Path) -> None:
+    """Remove only an unbound marker owned by the marker's recorded session."""
+    source = Path(marker).resolve()
+    if not source.exists():
+        return
+    session = load_session_marker(source)
+    if session.get("run_dir") is not None:
+        raise PlanControlError(
+            "SESSION_ALREADY_BOUND",
+            "refusing to clean a session marker that is bound to a run",
+        )
+    source.unlink()
