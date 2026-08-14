@@ -128,3 +128,27 @@ def test_bootstrap_input_template_cli_accepts_any_product_version(
     assert args.command == "bootstrap-input-template"
     assert args.version == "42.7"
     assert args.output == Path("/work/inputs/initial-registration-input.yaml")
+
+
+def test_plan_validate_accepts_trusted_expected_digest(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    expected = "sha256:" + "a" * 64
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "om_workflow.py",
+            "plan-validate",
+            "--run-dir",
+            "/work/run",
+            "--expected-input-lock-digest",
+            expected,
+        ],
+    )
+
+    args = om_workflow.parse_args()
+
+    assert args.command == "plan-validate"
+    assert args.run_dir == Path("/work/run")
+    assert args.expected_input_lock_digest == expected

@@ -297,6 +297,13 @@ def parse_args() -> argparse.Namespace:
         help="/om-plan 사실 재계산과 proposal 검증",
     )
     plan_validate.add_argument("--run-dir", required=True, type=Path)
+    plan_validate.add_argument(
+        "--expected-input-lock-digest",
+        help=(
+            "사람 또는 보호된 CI가 preflight 직후 보관한 input-lock digest; "
+            "누락·형식 오류·불일치는 analysis_error"
+        ),
+    )
 
     plan_resume = subparsers.add_parser(
         "plan-resume",
@@ -371,7 +378,11 @@ def dispatch(args: argparse.Namespace) -> int:
         return 0
 
     if args.command == "plan-validate":
-        result = run_validation(args.run_dir, OpenMetadataPlanAdapter())
+        result = run_validation(
+            args.run_dir,
+            OpenMetadataPlanAdapter(),
+            expected_input_lock_digest=args.expected_input_lock_digest,
+        )
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return to_exit_code(result["verdict"])
 

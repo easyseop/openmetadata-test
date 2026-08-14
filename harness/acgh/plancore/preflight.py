@@ -73,6 +73,29 @@ def _request_payload(request: dict, repository_ids: dict[str, str]) -> dict:
     return payload
 
 
+def _intent_summary(request: dict, locked_refs: dict[str, str]) -> dict:
+    """Return the small request summary a human must confirm before planning."""
+    return {
+        "mode": request["mode"],
+        "run_id": request["run_id"],
+        "refs": {
+            role: {
+                "requested": request["refs"][role],
+                "pinned_commit_sha": locked_refs[role],
+            }
+            for role in sorted(request.get("refs") or {})
+        },
+        "versions": request.get("versions") or {},
+        "deployment_method": request.get("deployment_method"),
+        "official_documents": request.get("official_documents") or [],
+        "customization_id": request.get("customization_id"),
+        "requirement": request.get("requirement"),
+        "change_path": request.get("change_path"),
+        "hop_policy": request.get("hop_policy"),
+        "owner": request.get("owner"),
+    }
+
+
 def _build_facts(mode: str, facts: list[dict]) -> dict:
     normalized = []
     for index, item in enumerate(facts):
@@ -171,6 +194,15 @@ def collect_state(
     registration_digest = directory_digest(registration_path, allow_absent=True) if registration_path else canonical_digest({"state": "absent"})
     request_digest = canonical_digest(_request_payload(request, repository_ids))
     version_relation = adapter_state.get("version_relation", "not_applicable")
+    if collect_documents:
+        document_sources = adapter.collect_documents(request, run_dir)
+    else:
+        source_path = run_dir / "official-doc-sources.yaml"
+        document_sources = (
+            read_data(source_path)
+            if source_path.is_file()
+            else {"schema_version": 1, "documents": []}
+        )
     canonical_payload = {
         "run_id": request["run_id"],
         "mode": request["mode"],
@@ -196,6 +228,10 @@ def collect_state(
         ),
         "version_relation": version_relation,
     }
+    if request["mode"] == "upgrade":
+        canonical_payload["official_doc_sources_digest"] = canonical_digest(
+            document_sources
+        )
     if request.get("change_path"):
         canonical_payload["change_path"] = request["change_path"]
     if request.get("deployment_method"):
@@ -215,11 +251,6 @@ def collect_state(
     }
     validate("input-lock", input_lock)
 
-    if collect_documents:
-        document_sources = adapter.collect_documents(request, run_dir)
-    else:
-        source_path = run_dir / "official-doc-sources.yaml"
-        document_sources = read_data(source_path) if source_path.is_file() else {"schema_version": 1, "documents": []}
     facts = _build_facts(
         request["mode"],
         adapter.collect_facts(
@@ -280,7 +311,19 @@ def run_preflight(
             "status": "ready_for_proposal",
             "run_dir": str(destination),
             "input_lock_digest": input_lock["input_lock_digest"],
+            "request_digest": input_lock["canonical_payload"]["request_digest"],
             "discovered_facts_digest": facts["discovered_facts_digest"],
+            "intent_review_required": True,
+            "intent_summary": _intent_summary(
+                request,
+                input_lock["canonical_payload"]["repositories"]["product"][
+                    "commit_shas"
+                ],
+            ),
+            "operator_action": (
+                "위 요청 내용과 고정된 commit SHA를 사람이 확인한 뒤 "
+                "input_lock_digest를 LLM이 수정할 수 없는 곳에 보관하세요."
+            ),
             "session_id": pair.session_id,
         }
     except Exception as exc:

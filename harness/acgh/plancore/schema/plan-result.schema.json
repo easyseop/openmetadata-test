@@ -4,7 +4,7 @@
   "title": "Plan validation summary",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "run_id", "latest_attempt", "attempts", "verdict", "plan_binding", "next_action"],
+  "required": ["schema_version", "run_id", "latest_attempt", "attempts", "verdict", "review_state", "plan_binding", "trusted_input_binding", "next_action"],
   "properties": {
     "schema_version": {"const": 1},
     "run_id": {"type": "string"},
@@ -15,6 +15,7 @@
       "minItems": 1
     },
     "verdict": {"enum": ["pass", "approval", "block", "analysis_error"]},
+    "review_state": {"enum": ["review_ready", "not_ready"]},
     "plan_binding": {
       "type": "object",
       "additionalProperties": false,
@@ -26,8 +27,36 @@
         "plan_digest": {"$ref": "#/$defs/digest"}
       }
     },
+    "trusted_input_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expected_input_lock_digest", "verified"],
+      "properties": {
+        "expected_input_lock_digest": {
+          "type": ["string", "null"],
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "verified": {"type": "boolean"}
+      }
+    },
     "next_action": {"type": "string", "minLength": 1}
   },
+  "allOf": [
+    {
+      "if": {"properties": {"verdict": {"const": "approval"}}},
+      "then": {
+        "properties": {
+          "review_state": {"const": "review_ready"},
+          "trusted_input_binding": {
+            "properties": {"verified": {"const": true}}
+          }
+        }
+      },
+      "else": {
+        "properties": {"review_state": {"const": "not_ready"}}
+      }
+    }
+  ],
   "$defs": {
     "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
   }

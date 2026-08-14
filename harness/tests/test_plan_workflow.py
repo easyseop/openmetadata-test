@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 from pathlib import Path
@@ -24,7 +25,8 @@ from acgh.plancore.preflight import collect_state
 from acgh.plancore.rerun import retry_decision
 from acgh.plancore.resume import resume_proposal_run
 from acgh.plancore.schema import read_data, validate
-from acgh.plancore.validate import run_validation
+from acgh.plancore.validate import run_validation as _run_validation
+from acgh.verdict import canonical_digest
 
 
 def _git(repo: Path, *args: str) -> str:
@@ -290,6 +292,40 @@ def _proposal_from_first_fact(run_dir: Path, *, owner_unresolved: bool = False) 
         yaml.safe_dump(proposal, allow_unicode=True, sort_keys=False),
         encoding="utf-8",
     )
+
+
+def run_validation(run_dir: Path, adapter: OpenMetadataPlanAdapter) -> dict:
+    """Call the final gate with the digest retained by the trusted test operator."""
+    expected = read_data(run_dir / "input-lock.yaml")["input_lock_digest"]
+    return _run_validation(
+        run_dir,
+        adapter,
+        expected_input_lock_digest=expected,
+    )
+
+
+def _rewrite_run_for_new_custom_head(run_dir: Path, new_custom: str) -> str:
+    """Reproduce the three-file P1-A rewrite while retaining an external old digest."""
+    request_path = run_dir / "run-request.yaml"
+    request = read_data(request_path)
+    request["refs"]["current_custom"] = new_custom
+    request_path.write_text(
+        yaml.safe_dump(request, sort_keys=False), encoding="utf-8"
+    )
+    lock, facts, _ = collect_state(
+        request,
+        OpenMetadataPlanAdapter(),
+        run_dir=run_dir,
+        collect_documents=False,
+    )
+    (run_dir / "input-lock.yaml").write_text(
+        yaml.safe_dump(lock, sort_keys=False), encoding="utf-8"
+    )
+    (run_dir / "discovered-facts.json").write_text(
+        json.dumps(facts, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return lock["input_lock_digest"]
 
 
 def test_c01_unknown_mode_is_rejected():
@@ -1297,3 +1333,186 @@ def test_r05_revalidation_appends_and_never_overwrites_attempt(tmp_path: Path):
         "validation-attempts/attempt-0002.json",
     ]
     assert first_path.read_bytes() == first_bytes
+
+
+def test_e01_preflight_exposes_request_intent_for_human_confirmation(tmp_path: Path):
+    product, _, request_path, _, _, _, result = _preflight(tmp_path)
+    request = read_data(request_path)
+    assert result["intent_review_required"] is True
+    assert result["request_digest"].startswith("sha256:")
+    assert result["intent_summary"] == {
+        "mode": "initial",
+        "run_id": "initial-01",
+        "refs": {
+            "current_custom": {
+                "requested": request["refs"]["current_custom"],
+                "pinned_commit_sha": _git(
+                    product, "rev-parse", request["refs"]["current_custom"]
+                ),
+            },
+            "official": {
+                "requested": request["refs"]["official"],
+                "pinned_commit_sha": _git(
+                    product, "rev-parse", request["refs"]["official"]
+                ),
+            },
+        },
+        "versions": {},
+        "deployment_method": None,
+        "official_documents": [],
+        "customization_id": None,
+        "requirement": None,
+        "change_path": None,
+        "hop_policy": None,
+        "owner": "data-team",
+    }
+
+
+def test_e02_missing_expected_digest_is_analysis_error(tmp_path: Path):
+    *_, run_dir, _ = _preflight(tmp_path)
+    _proposal_from_first_fact(run_dir)
+    result = _run_validation(
+        run_dir,
+        OpenMetadataPlanAdapter(),
+        expected_input_lock_digest=None,
+    )
+    assert result["verdict"] == "analysis_error"
+    assert result["review_state"] == "not_ready"
+    attempt = read_data(run_dir / result["attempts"][-1])
+    assert "trusted expected input-lock digest is required" in attempt["reasons"]
+
+
+def test_e03_malformed_expected_digest_is_analysis_error(tmp_path: Path):
+    *_, run_dir, _ = _preflight(tmp_path)
+    _proposal_from_first_fact(run_dir)
+    result = _run_validation(
+        run_dir,
+        OpenMetadataPlanAdapter(),
+        expected_input_lock_digest="not-a-digest",
+    )
+    assert result["verdict"] == "analysis_error"
+    attempt = read_data(run_dir / result["attempts"][-1])
+    assert "trusted expected input-lock digest has an invalid format" in attempt["reasons"]
+
+
+def test_e04_wrong_expected_digest_is_analysis_error(tmp_path: Path):
+    *_, run_dir, _ = _preflight(tmp_path)
+    _proposal_from_first_fact(run_dir)
+    result = _run_validation(
+        run_dir,
+        OpenMetadataPlanAdapter(),
+        expected_input_lock_digest="sha256:" + "0" * 64,
+    )
+    assert result["verdict"] == "analysis_error"
+    attempt = read_data(run_dir / result["attempts"][-1])
+    assert "stored input-lock digest does not match the trusted expected digest" in attempt["reasons"]
+
+
+def test_e05_three_file_rewrite_cannot_replace_human_pinned_input(tmp_path: Path):
+    product, _, _, _, _, run_dir, preflight = _preflight(tmp_path)
+    expected = preflight["input_lock_digest"]
+    new_custom = _add_commit(product, "replacement.txt", "replacement\n", "BANK-OM-002")
+    rewritten = _rewrite_run_for_new_custom_head(run_dir, new_custom)
+    assert rewritten != expected
+    _proposal_from_first_fact(run_dir)
+    result = _run_validation(
+        run_dir,
+        OpenMetadataPlanAdapter(),
+        expected_input_lock_digest=expected,
+    )
+    assert result["verdict"] == "analysis_error"
+    attempt = read_data(run_dir / result["attempts"][-1])
+    assert "stored input-lock digest does not match the trusted expected digest" in attempt["reasons"]
+
+
+def test_e06_upgrade_document_sources_are_bound_into_input_lock(tmp_path: Path):
+    _, checker, request_path, _ = _upgrade_request(tmp_path)
+    _, _, run_dir, preflight = _run_requested_preflight(tmp_path, checker, request_path)
+    lock = read_data(run_dir / "input-lock.yaml")
+    assert lock["canonical_payload"]["official_doc_sources_digest"].startswith("sha256:")
+
+    sources_path = run_dir / "official-doc-sources.yaml"
+    sources = read_data(sources_path)
+    snapshot = run_dir / sources["documents"][0]["snapshot_path"]
+    raw = b"malicious but version-matching release 1.0.1 container"
+    snapshot.write_bytes(raw)
+    sources["documents"][0]["byte_digest"] = "sha256:" + hashlib.sha256(raw).hexdigest()
+    sources_path.write_text(
+        yaml.safe_dump(sources, sort_keys=False), encoding="utf-8"
+    )
+
+    facts_path = run_dir / "discovered-facts.json"
+    facts = read_data(facts_path)
+    document_fact = next(
+        item
+        for item in facts["canonical_payload"]["items"]
+        if item["fact_id"] == "official-documents"
+    )
+    document_fact["value"] = sources["documents"]
+    facts["item_digests"] = {
+        item["fact_id"]: canonical_digest(item)
+        for item in facts["canonical_payload"]["items"]
+    }
+    facts["discovered_facts_digest"] = canonical_digest(facts["canonical_payload"])
+    facts_path.write_text(
+        json.dumps(facts, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    _proposal_from_first_fact(run_dir)
+    result = _run_validation(
+        run_dir,
+        OpenMetadataPlanAdapter(),
+        expected_input_lock_digest=preflight["input_lock_digest"],
+    )
+    assert result["verdict"] == "analysis_error"
+    attempt = read_data(run_dir / result["attempts"][-1])
+    assert "recomputed input lock does not match the stored lock" in attempt["reasons"]
+
+
+def test_e07_note_only_proposal_is_blocked(tmp_path: Path):
+    *_, run_dir, _ = _preflight(tmp_path)
+    (run_dir / "proposal" / "plan.yaml").write_text(
+        yaml.safe_dump({"note": "ok"}), encoding="utf-8"
+    )
+    result = run_validation(run_dir, OpenMetadataPlanAdapter())
+    assert result["verdict"] == "block"
+    attempt = read_data(run_dir / result["attempts"][-1])
+    assert "proposal must contain a decision, finding, or explicit no_change" in attempt["reasons"]
+
+
+def test_e08_no_change_without_machine_evidence_is_blocked(tmp_path: Path):
+    *_, run_dir, _ = _preflight(tmp_path)
+    proposal = {
+        "no_change": True,
+        "rationale": "No implementation delta is required.",
+        "evidence_refs": [],
+        "affected_customization_ids": ["BANK-OM-001"],
+    }
+    (run_dir / "proposal" / "plan.yaml").write_text(
+        yaml.safe_dump(proposal, sort_keys=False), encoding="utf-8"
+    )
+    result = run_validation(run_dir, OpenMetadataPlanAdapter())
+    assert result["verdict"] == "block"
+    attempt = read_data(run_dir / result["attempts"][-1])
+    assert "no_change requires at least one machine evidence ref with an expected value" in attempt["reasons"]
+
+
+def test_e09_evidenced_no_change_reaches_review_ready(tmp_path: Path):
+    *_, run_dir, _ = _preflight(tmp_path)
+    facts = read_data(run_dir / "discovered-facts.json")
+    item = facts["canonical_payload"]["items"][0]
+    proposal = {
+        "no_change": True,
+        "rationale": "The recalculated fact shows no additional plan action.",
+        "evidence_refs": [
+            {"ref": item["evidence_ref"], "expected": item["value"]}
+        ],
+        "affected_customization_ids": ["BANK-OM-001"],
+    }
+    (run_dir / "proposal" / "plan.yaml").write_text(
+        yaml.safe_dump(proposal, sort_keys=False), encoding="utf-8"
+    )
+    result = run_validation(run_dir, OpenMetadataPlanAdapter())
+    assert result["verdict"] == "approval"
+    assert result["review_state"] == "review_ready"
+    assert "구현·배포 승인은 별도" in result["next_action"]

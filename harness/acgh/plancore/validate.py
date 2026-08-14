@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Protocol
@@ -22,6 +23,9 @@ from acgh.plancore.schema import (
 )
 
 
+_DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
+
+
 class ValidationAdapter(Protocol):
     name: str
 
@@ -36,6 +40,31 @@ class ValidationAdapter(Protocol):
 
 def _utc_now() -> str:
     return datetime.now(UTC).isoformat()
+
+
+def _trusted_input_binding(
+    stored_input_lock_digest: str,
+    expected_input_lock_digest: str | None,
+) -> tuple[dict, list[str]]:
+    issues: list[str] = []
+    valid_expected = (
+        expected_input_lock_digest
+        if isinstance(expected_input_lock_digest, str)
+        and _DIGEST.fullmatch(expected_input_lock_digest)
+        else None
+    )
+    if expected_input_lock_digest is None:
+        issues.append("trusted expected input-lock digest is required")
+    elif valid_expected is None:
+        issues.append("trusted expected input-lock digest has an invalid format")
+    elif valid_expected != stored_input_lock_digest:
+        issues.append(
+            "stored input-lock digest does not match the trusted expected digest"
+        )
+    return {
+        "expected_input_lock_digest": valid_expected,
+        "verified": not issues,
+    }, issues
 
 
 def _load_proposal_documents(proposal_dir: Path) -> list[tuple[Path, dict]]:
@@ -203,6 +232,59 @@ def _validate_required_decision_fields(documents: list[tuple[Path, dict]]) -> li
     return issues
 
 
+def _validate_proposal_floor(documents: list[tuple[Path, dict]]) -> list[str]:
+    """Reject empty prose and require evidence for an explicit no-change plan."""
+    issues: list[str] = []
+    decision_count = 0
+    finding_count = 0
+    no_change_documents: list[tuple[Path, dict]] = []
+    for path, document in documents:
+        decisions = document.get("decisions")
+        if isinstance(decisions, list):
+            decision_count += len(decisions)
+        findings = document.get("findings")
+        if isinstance(findings, list):
+            finding_count += len(findings)
+        if "no_change" in document:
+            no_change_documents.append((path, document))
+
+    if not decision_count and not finding_count and not no_change_documents:
+        issues.append(
+            "proposal must contain a decision, finding, or explicit no_change"
+        )
+        return issues
+    if no_change_documents and (decision_count or finding_count):
+        issues.append("no_change cannot be combined with decisions or findings")
+
+    for path, document in no_change_documents:
+        prefix = f"{path.name}: no_change"
+        if document.get("no_change") is not True:
+            issues.append(f"{prefix} must be true")
+        rationale = document.get("rationale")
+        if not isinstance(rationale, str) or not rationale.strip():
+            issues.append(f"{prefix} requires a non-empty rationale")
+        if not isinstance(document.get("affected_customization_ids"), list):
+            issues.append(f"{prefix} requires affected_customization_ids")
+        evidence_refs = document.get("evidence_refs")
+        if not isinstance(evidence_refs, list) or not evidence_refs:
+            issues.append(
+                "no_change requires at least one machine evidence ref with an expected value"
+            )
+            continue
+        for item in evidence_refs:
+            if (
+                not isinstance(item, dict)
+                or not isinstance(item.get("ref"), str)
+                or not item["ref"].startswith("discovered-facts.json#")
+                or "expected" not in item
+            ):
+                issues.append(
+                    "no_change requires at least one machine evidence ref with an expected value"
+                )
+                break
+    return issues
+
+
 def _verify_self_digests(input_lock: dict, facts: dict) -> list[str]:
     issues: list[str] = []
     if canonical_payload_digest(input_lock) != input_lock.get("input_lock_digest"):
@@ -268,6 +350,7 @@ def _write_attempt_and_summary(
     reasons: list[str],
     registration_stale: bool,
     binding: dict,
+    trusted_input_binding: dict,
     evidence_ref_errors: list[str],
     dirty_paths: dict[str, list[str]],
 ) -> dict:
@@ -282,6 +365,7 @@ def _write_attempt_and_summary(
         "reasons": reasons,
         "registration_stale": registration_stale,
         "plan_binding": binding,
+        "trusted_input_binding": trusted_input_binding,
         "evidence_ref_errors": evidence_ref_errors,
         "dirty_paths": dirty_paths,
         "observational_metadata": {"validated_at": _utc_now()},
@@ -292,19 +376,27 @@ def _write_attempt_and_summary(
         f"validation-attempts/{path.name}"
         for path in sorted(attempt_dir.glob("attempt-*.json"))
     ]
+    review_state = "review_ready" if verdict == APPROVAL else "not_ready"
     if verdict == APPROVAL:
-        next_action = "review the proposal; implementation remains a separate decision"
+        next_action = (
+            "검토 준비: 사람이 계획 내용을 검토하세요. 구현·배포 승인은 별도입니다."
+        )
         if not request.get("owner"):
-            next_action = "assign the unresolved owner before implementation"
+            next_action = (
+                "검토 준비: 담당자(owner)를 지정한 뒤 계획 내용을 검토하세요. "
+                "구현·배포 승인은 별도입니다."
+            )
     else:
-        next_action = "fix the reported proposal issue or start a new run as required"
+        next_action = "보고된 문제를 해결하거나 필요한 경우 새 run을 시작하세요."
     result = {
         "schema_version": 1,
         "run_id": request["run_id"],
         "latest_attempt": attempt_id,
         "attempts": attempts,
         "verdict": verdict,
+        "review_state": review_state,
         "plan_binding": binding,
+        "trusted_input_binding": trusted_input_binding,
         "next_action": next_action,
     }
     validate("result", result)
@@ -312,7 +404,12 @@ def _write_attempt_and_summary(
     return result
 
 
-def _run_validation_active(run_dir: str | Path, adapter: ValidationAdapter) -> dict:
+def _run_validation_active(
+    run_dir: str | Path,
+    adapter: ValidationAdapter,
+    *,
+    expected_input_lock_digest: str | None,
+) -> dict:
     root = Path(run_dir).resolve()
     existing_result = root / "validation-result.json"
     if existing_result.is_file():
@@ -332,6 +429,10 @@ def _run_validation_active(run_dir: str | Path, adapter: ValidationAdapter) -> d
     documents = _load_proposal_documents(root / "proposal")
     proposal_digest = directory_digest(root / "proposal")
     input_lock_digest = stored_lock["input_lock_digest"]
+    trusted_binding, trusted_issues = _trusted_input_binding(
+        input_lock_digest,
+        expected_input_lock_digest,
+    )
     facts_digest = stored_facts["discovered_facts_digest"]
     binding = {
         "proposal_digest": proposal_digest,
@@ -345,9 +446,10 @@ def _run_validation_active(run_dir: str | Path, adapter: ValidationAdapter) -> d
             }
         ),
     }
-    reasons = _verify_self_digests(stored_lock, stored_facts)
+    reasons = trusted_issues + _verify_self_digests(stored_lock, stored_facts)
     evidence_errors = _validate_refs(root, documents)
-    decision_issues = _validate_required_decision_fields(documents)
+    decision_issues = _validate_proposal_floor(documents)
+    decision_issues.extend(_validate_required_decision_fields(documents))
     proposal_values = [document for _, document in documents]
     policy_issues = adapter.validate_proposal(
         request,
@@ -400,6 +502,7 @@ def _run_validation_active(run_dir: str | Path, adapter: ValidationAdapter) -> d
         reasons=reasons,
         registration_stale=registration_stale,
         binding=binding,
+        trusted_input_binding=trusted_binding,
         evidence_ref_errors=evidence_errors,
         dirty_paths=dirty,
     )
@@ -442,24 +545,38 @@ def _failure_binding(root: Path) -> tuple[dict, dict]:
     return request, binding
 
 
-def run_validation(run_dir: str | Path, adapter: ValidationAdapter) -> dict:
+def run_validation(
+    run_dir: str | Path,
+    adapter: ValidationAdapter,
+    *,
+    expected_input_lock_digest: str | None = None,
+) -> dict:
     """Validate and always close the current marker pair on a completed attempt."""
     root = Path(run_dir).resolve()
     pair = pair_from_run(root)
     try:
-        return _run_validation_active(root, adapter)
+        return _run_validation_active(
+            root,
+            adapter,
+            expected_input_lock_digest=expected_input_lock_digest,
+        )
     except PlanControlError as exc:
         if exc.code == "COMPLETED_RUN_READ_ONLY":
             cleanup_pair(pair)
             raise
         request, binding = _failure_binding(root)
+        trusted_binding, trusted_issues = _trusted_input_binding(
+            binding["input_lock_digest"],
+            expected_input_lock_digest,
+        )
         result = _write_attempt_and_summary(
             root,
             request,
             verdict=ANALYSIS_ERROR,
-            reasons=[f"{exc.code}: {exc.message}"],
+            reasons=trusted_issues + [f"{exc.code}: {exc.message}"],
             registration_stale=False,
             binding=binding,
+            trusted_input_binding=trusted_binding,
             evidence_ref_errors=[],
             dirty_paths={},
         )

@@ -4,7 +4,7 @@
   "title": "Plan validation attempt",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "attempt_id", "ordinal", "verdict", "reasons", "registration_stale", "plan_binding", "observational_metadata"],
+  "required": ["schema_version", "attempt_id", "ordinal", "verdict", "reasons", "registration_stale", "plan_binding", "trusted_input_binding", "observational_metadata"],
   "properties": {
     "schema_version": {"const": 1},
     "attempt_id": {"type": "string", "pattern": "^attempt-[0-9]{4}$"},
@@ -13,6 +13,18 @@
     "reasons": {"type": "array", "items": {"type": "string"}},
     "registration_stale": {"type": "boolean"},
     "plan_binding": {"$ref": "#/$defs/binding"},
+    "trusted_input_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expected_input_lock_digest", "verified"],
+      "properties": {
+        "expected_input_lock_digest": {
+          "type": ["string", "null"],
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "verified": {"type": "boolean"}
+      }
+    },
     "evidence_ref_errors": {"type": "array", "items": {"type": "string"}},
     "dirty_paths": {
       "type": "object",
@@ -20,6 +32,18 @@
     },
     "observational_metadata": {"type": "object", "additionalProperties": true}
   },
+  "allOf": [
+    {
+      "if": {"properties": {"verdict": {"const": "approval"}}},
+      "then": {
+        "properties": {
+          "trusted_input_binding": {
+            "properties": {"verified": {"const": true}}
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
     "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
     "binding": {
