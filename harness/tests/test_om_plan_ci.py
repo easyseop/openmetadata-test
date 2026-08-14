@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -387,15 +388,20 @@ def test_workflow_does_not_dirty_checker_with_editable_install():
         )
 
 
-def test_cross_runner_fresh_validation_uses_ci_digest_and_recomputed_sources(
-    tmp_path: Path,
-):
+def _write_checker_cache(checker: Path, payload: bytes) -> None:
+    cache = checker / "harness" / "acgh" / "plancore" / "__pycache__"
+    cache.mkdir(exist_ok=True)
+    (cache / "validate.cpython-311.pyc").write_bytes(payload)
+
+
+def _prepare_cross_runner_validation(tmp_path: Path) -> tuple[Path, Path, str]:
     product, official, custom = _product_repo(tmp_path / "product-a")
     checker = tmp_path / "checker-a"
     subprocess.run(
         ["git", "clone", "-q", "--no-hardlinks", str(ROOT), str(checker)],
         check=True,
     )
+    _write_checker_cache(checker, b"preflight runner cache")
     request = tmp_path / "request.yaml"
     request.write_text(
         yaml.safe_dump(
@@ -469,6 +475,7 @@ def test_cross_runner_fresh_validation_uses_ci_digest_and_recomputed_sources(
         ["git", "clone", "-q", "--no-hardlinks", str(checker), str(checker_b)],
         check=True,
     )
+    _write_checker_cache(checker_b, b"validation runner cache")
     CI.rebind_run_request(relocated, product_b, checker_b)
     CI.restore_run(
         relocated,
@@ -477,15 +484,64 @@ def test_cross_runner_fresh_validation_uses_ci_digest_and_recomputed_sources(
         "ci-validate",
     )
 
+    return checker_b, relocated, preflight["input_lock_digest"]
+
+
+def test_cross_runner_fresh_validation_uses_ci_digest_and_recomputed_sources(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.delenv("PYTHONDONTWRITEBYTECODE", raising=False)
+    checker_b, relocated, expected_digest = _prepare_cross_runner_validation(
+        tmp_path
+    )
+
     exit_code = CI.run_fresh_validation(
         checker_b,
         relocated,
-        preflight["input_lock_digest"],
+        expected_digest,
         tmp_path / "fresh.json",
         tmp_path / "summary",
     )
 
+    assert "PYTHONDONTWRITEBYTECODE" not in os.environ
     assert exit_code == 2
     assert json.loads((tmp_path / "fresh.json").read_text(encoding="utf-8"))[
         "review_state"
     ] == "review_ready"
+
+
+def test_cross_runner_fresh_validation_rejects_checker_source_tamper(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.delenv("PYTHONDONTWRITEBYTECODE", raising=False)
+    checker_b, relocated, expected_digest = _prepare_cross_runner_validation(
+        tmp_path
+    )
+    source = checker_b / "harness" / "acgh" / "plancore" / "validate.py"
+    source.write_text(
+        source.read_text(encoding="utf-8") + "\nTAMPERED_DURING_RUN = True\n",
+        encoding="utf-8",
+    )
+
+    exit_code = CI.run_fresh_validation(
+        checker_b,
+        relocated,
+        expected_digest,
+        tmp_path / "tampered-fresh.json",
+        tmp_path / "tampered-summary",
+    )
+    result = json.loads(
+        (tmp_path / "tampered-fresh.json").read_text(encoding="utf-8")
+    )
+    attempt = json.loads(
+        (relocated / result["attempts"][-1]).read_text(encoding="utf-8")
+    )
+
+    assert "PYTHONDONTWRITEBYTECODE" not in os.environ
+    assert exit_code == 3
+    assert result["verdict"] == "analysis_error"
+    assert "recomputed input lock does not match the stored lock" in attempt[
+        "reasons"
+    ]

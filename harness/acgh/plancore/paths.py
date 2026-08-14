@@ -54,10 +54,13 @@ def directory_digest(path: str | Path, *, allow_absent: bool = False) -> str:
                 f"symlink is not allowed in digested directory: {child}",
                 details={"path": str(child)},
             )
+        relative = child.relative_to(root)
+        if "__pycache__" in relative.parts or child.suffix in {".pyc", ".pyo"}:
+            continue
         if child.is_file():
             entries.append(
                 {
-                    "path": child.relative_to(root).as_posix(),
+                    "path": relative.as_posix(),
                     "digest": file_digest(child),
                 }
             )
