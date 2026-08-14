@@ -1,0 +1,295 @@
+spec:
+  inputs:
+    request-ref:
+      description: "run request와 공식 문서가 있는 정확한 40자 commit SHA"
+      default: "0000000000000000000000000000000000000000"
+      regex: "^[0-9a-f]{40}$"
+    request-path:
+      description: "request-ref 안의 repository-relative run-request YAML 경로"
+      default: "request.yaml"
+      regex: "^[A-Za-z0-9._/-]+$"
+    product-project:
+      description: "같은 GitLab instance의 product project 경로(group/project)"
+      default: "group/product"
+      regex: "^[A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)+$"
+    proposal-ref:
+      description: "LLM proposal data가 있는 정확한 40자 commit SHA"
+      default: "0000000000000000000000000000000000000000"
+      regex: "^[0-9a-f]{40}$"
+    proposal-path:
+      description: "proposal-ref 안의 repository-relative proposal directory"
+      default: "proposal"
+      regex: "^[A-Za-z0-9._/-]+$"
+---
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: always
+    - when: never
+
+stages:
+  - guard
+  - preflight
+  - intent_review
+  - proposal
+  - validate
+
+variables:
+  GIT_STRATEGY: "clone"
+  GIT_DEPTH: "0"
+  GIT_SUBMODULE_STRATEGY: "none"
+  PYTHONDONTWRITEBYTECODE: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  OM_PLAN_RUNTIME_ROOT: "$CI_BUILDS_DIR/om-plan-runtime-$CI_PROJECT_ID-$CI_PIPELINE_ID-$CI_JOB_ID"
+
+default:
+  interruptible: false
+
+.om-plan-protected-job:
+  tags:
+    - om-plan-protected
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
+      when: on_success
+    - when: never
+  before_script:
+    - sh harness/ci/prepare_trusted_checker.sh "$CI_PROJECT_DIR"
+    - test "${GIT_STRATEGY:-}" = "clone"
+    - export PYTHONDONTWRITEBYTECODE=1
+    - test ! -e "$OM_PLAN_RUNTIME_ROOT"
+    - mkdir -p "$OM_PLAN_RUNTIME_ROOT"
+
+.om-plan-python-job:
+  extends: .om-plan-protected-job
+  before_script:
+    - sh harness/ci/prepare_trusted_checker.sh "$CI_PROJECT_DIR"
+    - test "${GIT_STRATEGY:-}" = "clone"
+    - export PYTHONDONTWRITEBYTECODE=1
+    - test ! -e "$OM_PLAN_RUNTIME_ROOT"
+    - mkdir -p "$OM_PLAN_RUNTIME_ROOT"
+    - python3 -m venv "$OM_PLAN_RUNTIME_ROOT/venv"
+    - >-
+      "$OM_PLAN_RUNTIME_ROOT/venv/bin/python" -m pip install
+      "PyYAML>=6.0" "jsonschema>=4.18" "pathspec>=0.11"
+
+reject_untrusted_context:
+  stage: guard
+  dependencies: []
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "web" && ($CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_PROTECTED != "true")'
+      when: on_success
+    - when: never
+  script:
+    - echo "om-plan은 protected default branch의 수동 web pipeline에서만 실행할 수 있습니다." >&2
+    - exit 3
+
+om_plan_preflight:
+  extends: .om-plan-python-job
+  stage: preflight
+  dependencies: []
+  variables:
+    OM_PLAN_REQUEST_REF: "$[[ inputs.request-ref ]]"
+    OM_PLAN_REQUEST_PATH: "$[[ inputs.request-path ]]"
+    OM_PLAN_PRODUCT_PROJECT: "$[[ inputs.product-project ]]"
+    OM_PLAN_PROPOSAL_REF: "$[[ inputs.proposal-ref ]]"
+  script:
+    - |
+      set -eu
+      python="$OM_PLAN_RUNTIME_ROOT/venv/bin/python"
+      export PYTHONPATH="$CI_PROJECT_DIR/harness"
+
+      "$python" - <<'PY'
+      import os
+      import re
+
+      oid = re.compile(r"[0-9a-f]{40}")
+      project = re.compile(r"[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)+")
+      for name in ("OM_PLAN_REQUEST_REF", "OM_PLAN_PROPOSAL_REF", "CI_COMMIT_SHA"):
+          if not oid.fullmatch(os.environ[name]):
+              raise SystemExit(f"{name} must be an exact lowercase commit SHA")
+      product_project = os.environ["OM_PLAN_PRODUCT_PROJECT"]
+      if not project.fullmatch(product_project) or any(
+          part in {".", ".."} for part in product_project.split("/")
+      ):
+          raise SystemExit("OM_PLAN_PRODUCT_PROJECT must use group/project form")
+      PY
+
+      git clone --filter=blob:none --no-checkout \
+        "$CI_REPOSITORY_URL" "$OM_PLAN_RUNTIME_ROOT/request-source"
+      git -C "$OM_PLAN_RUNTIME_ROOT/request-source" fetch --no-tags \
+        origin "$OM_PLAN_REQUEST_REF"
+      git -C "$OM_PLAN_RUNTIME_ROOT/request-source" checkout --detach \
+        "$OM_PLAN_REQUEST_REF"
+      test "$(git -C "$OM_PLAN_RUNTIME_ROOT/request-source" rev-parse HEAD)" = \
+        "$OM_PLAN_REQUEST_REF"
+
+      product_url="${CI_SERVER_PROTOCOL}://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_FQDN}/${OM_PLAN_PRODUCT_PROJECT}.git"
+      git clone --filter=blob:none "$product_url" "$OM_PLAN_RUNTIME_ROOT/product"
+      unset product_url CI_JOB_TOKEN CI_REPOSITORY_URL
+
+      "$python" harness/ci/om_plan_ci.py prepare-request \
+        --source "$OM_PLAN_RUNTIME_ROOT/request-source/$OM_PLAN_REQUEST_PATH" \
+        --request-root "$OM_PLAN_RUNTIME_ROOT/request-source" \
+        --output "$OM_PLAN_RUNTIME_ROOT/run-request.yaml" \
+        --product-repo "$OM_PLAN_RUNTIME_ROOT/product" \
+        --checker-repo "$CI_PROJECT_DIR"
+
+      "$python" harness/om_workflow.py plan-session-start \
+        --state-root "$OM_PLAN_RUNTIME_ROOT/om-plan-state" \
+        --session-id "gitlab-${CI_PIPELINE_ID}-${CI_JOB_ID}" \
+        --project-root "$CI_PROJECT_DIR"
+
+      "$python" harness/om_workflow.py plan-preflight \
+        --request "$OM_PLAN_RUNTIME_ROOT/run-request.yaml" \
+        --run-dir "$OM_PLAN_RUNTIME_ROOT/trusted-run" \
+        --state-root "$OM_PLAN_RUNTIME_ROOT/om-plan-state" \
+        --session-id "gitlab-${CI_PIPELINE_ID}-${CI_JOB_ID}" \
+        --project-root "$CI_PROJECT_DIR" \
+        > "$OM_PLAN_RUNTIME_ROOT/preflight-result.json"
+
+      "$python" harness/ci/om_plan_ci.py capture-preflight \
+        --source "$OM_PLAN_RUNTIME_ROOT/preflight-result.json" \
+        --github-output "$OM_PLAN_RUNTIME_ROOT/input-lock-output.env" \
+        --step-summary "$OM_PLAN_RUNTIME_ROOT/intent-summary.md" \
+        --receipt "$OM_PLAN_RUNTIME_ROOT/trusted-receipt/expected-input-lock-digest.txt"
+
+      mkdir -p "$CI_PROJECT_DIR/.om-plan-artifacts/trusted-receipt"
+      cp -R "$OM_PLAN_RUNTIME_ROOT/trusted-run" \
+        "$CI_PROJECT_DIR/.om-plan-artifacts/trusted-run"
+      cp "$OM_PLAN_RUNTIME_ROOT/trusted-receipt/expected-input-lock-digest.txt" \
+        "$CI_PROJECT_DIR/.om-plan-artifacts/trusted-receipt/expected-input-lock-digest.txt"
+      cp "$OM_PLAN_RUNTIME_ROOT/intent-summary.md" \
+        "$CI_PROJECT_DIR/.om-plan-artifacts/intent-summary.md"
+      cp "$OM_PLAN_RUNTIME_ROOT/preflight-result.json" \
+        "$CI_PROJECT_DIR/.om-plan-artifacts/preflight-result.json"
+  artifacts:
+    when: on_success
+    paths:
+      - .om-plan-artifacts/trusted-run/
+      - .om-plan-artifacts/trusted-receipt/expected-input-lock-digest.txt
+      - .om-plan-artifacts/intent-summary.md
+      - .om-plan-artifacts/preflight-result.json
+
+om_plan_intent_review:
+  extends: .om-plan-protected-job
+  stage: intent_review
+  dependencies:
+    - om_plan_preflight
+  environment:
+    name: om-plan-intent-review
+    action: start
+  when: manual
+  allow_failure: false
+  manual_confirmation: "preflight artifact의 intent-summary.md를 확인한 뒤 승인했습니까?"
+  script:
+    - test "${OM_PLAN_INTENT_REVIEW_ENFORCED:-}" = "protected"
+    - test -s "$CI_PROJECT_DIR/.om-plan-artifacts/intent-summary.md"
+    - cat "$CI_PROJECT_DIR/.om-plan-artifacts/intent-summary.md"
+
+om_plan_package_proposal:
+  extends: .om-plan-python-job
+  stage: proposal
+  dependencies: []
+  variables:
+    OM_PLAN_PROPOSAL_REF: "$[[ inputs.proposal-ref ]]"
+    OM_PLAN_PROPOSAL_PATH: "$[[ inputs.proposal-path ]]"
+  script:
+    - |
+      set -eu
+      python="$OM_PLAN_RUNTIME_ROOT/venv/bin/python"
+      export PYTHONPATH="$CI_PROJECT_DIR/harness"
+
+      git clone --filter=blob:none --no-checkout \
+        "$CI_REPOSITORY_URL" "$OM_PLAN_RUNTIME_ROOT/proposal-source"
+      git -C "$OM_PLAN_RUNTIME_ROOT/proposal-source" fetch --no-tags \
+        origin "$OM_PLAN_PROPOSAL_REF"
+      git -C "$OM_PLAN_RUNTIME_ROOT/proposal-source" checkout --detach \
+        "$OM_PLAN_PROPOSAL_REF"
+      test "$(git -C "$OM_PLAN_RUNTIME_ROOT/proposal-source" rev-parse HEAD)" = \
+        "$OM_PLAN_PROPOSAL_REF"
+      unset CI_JOB_TOKEN CI_REPOSITORY_URL
+
+      "$python" harness/ci/om_plan_ci.py package-proposal \
+        --source "$OM_PLAN_RUNTIME_ROOT/proposal-source/$OM_PLAN_PROPOSAL_PATH" \
+        --source-root "$OM_PLAN_RUNTIME_ROOT/proposal-source" \
+        --output "$OM_PLAN_RUNTIME_ROOT/untrusted-proposal"
+
+      mkdir -p "$CI_PROJECT_DIR/.om-plan-artifacts"
+      cp -R "$OM_PLAN_RUNTIME_ROOT/untrusted-proposal" \
+        "$CI_PROJECT_DIR/.om-plan-artifacts/untrusted-proposal"
+  artifacts:
+    when: on_success
+    paths:
+      - .om-plan-artifacts/untrusted-proposal/
+
+om_plan_validate:
+  extends: .om-plan-python-job
+  stage: validate
+  allow_failure: false
+  variables:
+    OM_PLAN_PRODUCT_PROJECT: "$[[ inputs.product-project ]]"
+  needs:
+    - job: om_plan_preflight
+      artifacts: true
+    - job: om_plan_intent_review
+      artifacts: false
+    - job: om_plan_package_proposal
+      artifacts: true
+  script:
+    - |
+      set -eu
+      python="$OM_PLAN_RUNTIME_ROOT/venv/bin/python"
+      export PYTHONPATH="$CI_PROJECT_DIR/harness"
+
+      test -d "$CI_PROJECT_DIR/.om-plan-artifacts/trusted-run"
+      test -d "$CI_PROJECT_DIR/.om-plan-artifacts/untrusted-proposal"
+      test -s "$CI_PROJECT_DIR/.om-plan-artifacts/trusted-receipt/expected-input-lock-digest.txt"
+      mv "$CI_PROJECT_DIR/.om-plan-artifacts/trusted-run" \
+        "$OM_PLAN_RUNTIME_ROOT/trusted-run"
+      mv "$CI_PROJECT_DIR/.om-plan-artifacts/untrusted-proposal" \
+        "$OM_PLAN_RUNTIME_ROOT/untrusted-proposal"
+      mv "$CI_PROJECT_DIR/.om-plan-artifacts/trusted-receipt/expected-input-lock-digest.txt" \
+        "$OM_PLAN_RUNTIME_ROOT/expected-input-lock-digest.txt"
+      rm -rf "$CI_PROJECT_DIR/.om-plan-artifacts"
+
+      product_url="${CI_SERVER_PROTOCOL}://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_FQDN}/${OM_PLAN_PRODUCT_PROJECT}.git"
+      git clone --filter=blob:none "$product_url" "$OM_PLAN_RUNTIME_ROOT/product"
+      unset product_url CI_JOB_TOKEN CI_REPOSITORY_URL
+
+      "$python" harness/ci/om_plan_ci.py package-proposal \
+        --source "$OM_PLAN_RUNTIME_ROOT/untrusted-proposal" \
+        --source-root "$OM_PLAN_RUNTIME_ROOT/untrusted-proposal" \
+        --output "$OM_PLAN_RUNTIME_ROOT/trusted-run/proposal"
+
+      "$python" harness/ci/om_plan_ci.py rebind-run-request \
+        --run-dir "$OM_PLAN_RUNTIME_ROOT/trusted-run" \
+        --product-repo "$OM_PLAN_RUNTIME_ROOT/product" \
+        --checker-repo "$CI_PROJECT_DIR"
+
+      "$python" harness/ci/om_plan_ci.py restore-run \
+        --run-dir "$OM_PLAN_RUNTIME_ROOT/trusted-run" \
+        --state-root "$OM_PLAN_RUNTIME_ROOT/om-plan-state" \
+        --project-root "$CI_PROJECT_DIR" \
+        --session-id "gitlab-validate-${CI_PIPELINE_ID}-${CI_JOB_ID}"
+
+      expected_input_lock_digest=$(tr -d '\r\n' \
+        < "$OM_PLAN_RUNTIME_ROOT/expected-input-lock-digest.txt")
+      "$python" harness/ci/om_plan_ci.py validate \
+        --checker-root "$CI_PROJECT_DIR" \
+        --run-dir "$OM_PLAN_RUNTIME_ROOT/trusted-run" \
+        --expected-input-lock-digest "$expected_input_lock_digest" \
+        --captured-output "$CI_PROJECT_DIR/.om-plan-artifacts/fresh-validation/stdout.json" \
+        --step-summary "$CI_PROJECT_DIR/.om-plan-artifacts/fresh-validation/summary.md"
+  after_script:
+    - >-
+      test ! -f "$CI_PROJECT_DIR/.om-plan-artifacts/fresh-validation/summary.md" ||
+      cat "$CI_PROJECT_DIR/.om-plan-artifacts/fresh-validation/summary.md"
+    - >-
+      test ! -f "$CI_PROJECT_DIR/.om-plan-artifacts/fresh-validation/stdout.json" ||
+      cat "$CI_PROJECT_DIR/.om-plan-artifacts/fresh-validation/stdout.json"
+  artifacts:
+    when: always
+    paths:
+      - .om-plan-artifacts/fresh-validation/stdout.json
+      - .om-plan-artifacts/fresh-validation/summary.md
