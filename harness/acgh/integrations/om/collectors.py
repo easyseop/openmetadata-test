@@ -112,8 +112,7 @@ def _materialized_objects(
 ) -> list[dict[str, str]]:
     left_entries = gitprim.tree_entries(repo, left)
     right_entries = gitprim.tree_entries(repo, right)
-    records: list[dict[str, str]] = []
-    missing: list[dict[str, str]] = []
+    candidates: list[dict[str, str]] = []
     environment = os.environ.copy()
     environment["GIT_NO_LAZY_FETCH"] = "1"
     for path in sorted(paths):
@@ -121,17 +120,30 @@ def _materialized_objects(
             entry = entries.get(path)
             if entry is None or entry.object_type != "blob":
                 continue
-            probe = subprocess.run(
-                ["git", "-C", repo, "cat-file", "-e", entry.object_id],
-                env=environment,
-                capture_output=True,
-                check=False,
+            candidates.append(
+                {"path": path, "side": side, "object_id": entry.object_id}
             )
-            item = {"path": path, "side": side, "object_id": entry.object_id}
-            if probe.returncode:
-                missing.append(item)
-            else:
-                records.append(item)
+    object_ids = list(dict.fromkeys(item["object_id"] for item in candidates))
+    probe = subprocess.run(
+        ["git", "-C", repo, "cat-file", "--batch-check"],
+        env=environment,
+        input="".join(f"{object_id}\n" for object_id in object_ids),
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if probe.returncode:
+        raise PlanControlError(
+            "SOURCE_BLOB_CHECK_FAILED",
+            "Git could not check required source blobs",
+            details={"error": probe.stderr.strip() or "git cat-file failed"},
+        )
+    availability: dict[str, bool] = {}
+    for object_id, line in zip(object_ids, probe.stdout.splitlines(), strict=True):
+        fields = line.split()
+        availability[object_id] = len(fields) >= 2 and fields[1] == "blob"
+    records = [item for item in candidates if availability.get(item["object_id"], False)]
+    missing = [item for item in candidates if not availability.get(item["object_id"], False)]
     if missing:
         raise PlanControlError(
             "SOURCE_BLOBS_UNAVAILABLE",

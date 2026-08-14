@@ -8,6 +8,7 @@ import pytest
 import yaml
 
 from acgh.integrations.om import OpenMetadataPlanAdapter
+from acgh.integrations.om import collectors as om_collectors
 from acgh.integrations.om.doc_sources import collect_document_snapshots, verify_document_snapshots
 from acgh.plancore.errors import PlanControlError
 from acgh.plancore.hook_policy import decide_pre_tool_use
@@ -348,6 +349,39 @@ def test_c04_missing_source_blob_reports_exact_path_and_object(tmp_path: Path):
         item["path"] == "feature.txt" and item["object_id"] == object_id
         for item in caught.value.details["missing_objects"]
     )
+
+
+def test_c04_source_blob_check_is_batched_for_large_path_sets(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    product = _init_repo(tmp_path / "product", {"base.txt": "base\n"})
+    base = _git(product, "rev-parse", "HEAD")
+    paths = []
+    for index in range(75):
+        path = f"src/item-{index:03d}.txt"
+        target = product / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(f"value {index}\n", encoding="utf-8")
+        paths.append(path)
+    _git(product, "add", "-A")
+    _git(product, "commit", "-q", "-m", "many source objects")
+    target = _git(product, "rev-parse", "HEAD")
+    calls = 0
+    real_run = om_collectors.subprocess.run
+
+    def counted_run(*args, **kwargs):
+        nonlocal calls
+        if args and "--batch-check" in args[0]:
+            calls += 1
+        return real_run(*args, **kwargs)
+
+    monkeypatch.setattr(om_collectors.subprocess, "run", counted_run)
+    records = om_collectors._materialized_objects(
+        str(product), base, target, paths
+    )
+
+    assert calls == 1
+    assert len(records) == len(paths)
 
 
 @pytest.mark.parametrize("run_id", ["../escape", "a/b", "x\nnext", ""])
