@@ -591,6 +591,18 @@ def test_c11_shared_path_requires_every_registered_owner(tmp_path: Path):
     assert any("shared path owners" in reason for reason in attempt["reasons"])
 
 
+def test_observed_decision_with_machine_evidence_is_allowed(tmp_path: Path):
+    *_, run_dir, _ = _preflight(tmp_path)
+    _proposal_from_first_fact(run_dir)
+    proposal_path = run_dir / "proposal" / "plan.yaml"
+    proposal = read_data(proposal_path)
+    proposal["decisions"][0]["decision_source"] = "observed"
+    proposal_path.write_text(
+        yaml.safe_dump(proposal, sort_keys=False), encoding="utf-8"
+    )
+    assert run_validation(run_dir, OpenMetadataPlanAdapter())["verdict"] == "approval"
+
+
 def test_c20_historical_provenance_sha_is_not_an_active_lock(tmp_path: Path):
     product, checker, official, baseline = _repos(tmp_path)
     registration = _install_registration(checker, snapshot_sha=official)

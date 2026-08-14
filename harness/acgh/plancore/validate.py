@@ -192,7 +192,11 @@ def _validate_required_decision_fields(documents: list[tuple[Path, dict]]) -> li
                 issues.append(
                     f"{path.name}: decisions[{index}] missing {', '.join(missing)}"
                 )
-            if decision.get("decision_source") not in {"proposed", "human_input"}:
+            if decision.get("decision_source") not in {
+                "proposed",
+                "human_input",
+                "observed",
+            }:
                 issues.append(
                     f"{path.name}: decisions[{index}].decision_source is invalid"
                 )
