@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "plan-run-request.schema.json",
+  "title": "Plan run request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "run_id", "mode", "repositories", "refs"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "mode": {"enum": ["initial", "feature", "change", "upgrade"]},
+    "change_path": {"enum": ["pre_plan", "post_change_reconcile"]},
+    "hop_policy": {"const": "adjacent_only"},
+    "repositories": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["product", "checker"],
+      "properties": {
+        "product": {"type": "string", "minLength": 1},
+        "checker": {"type": "string", "minLength": 1}
+      }
+    },
+    "repository_ids": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "product": {"type": "string", "minLength": 1},
+        "checker": {"type": "string", "minLength": 1}
+      }
+    },
+    "refs": {
+      "type": "object",
+      "additionalProperties": {"type": "string", "minLength": 1}
+    },
+    "versions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "base": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "target": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"}
+      }
+    },
+    "deployment_method": {"type": "string", "minLength": 1},
+    "product_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "registration_path": {"type": "string", "minLength": 1},
+    "customization_id": {"type": "string", "minLength": 1},
+    "owner": {"type": ["string", "null"]},
+    "requirement": {"type": "string", "minLength": 1},
+    "official_documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "version_token"],
+        "properties": {
+          "source": {"type": "string", "minLength": 1},
+          "version_token": {"type": "string", "minLength": 1},
+          "deployment_methods": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1},
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"mode": {"const": "initial"}}, "required": ["mode"]},
+      "then": {
+        "properties": {
+          "refs": {"required": ["official", "current_custom"]}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"mode": {"const": "feature"}}, "required": ["mode"]},
+      "then": {
+        "required": ["requirement"],
+        "properties": {"refs": {"required": ["custom_baseline"]}}
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": {"const": "change"},
+          "change_path": {"const": "pre_plan"}
+        },
+        "required": ["mode", "change_path"]
+      },
+      "then": {
+        "required": ["customization_id", "requirement"],
+        "properties": {
+          "refs": {
+            "required": ["custom_baseline"],
+            "not": {"required": ["candidate"]}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": {"const": "change"},
+          "change_path": {"const": "post_change_reconcile"}
+        },
+        "required": ["mode", "change_path"]
+      },
+      "then": {
+        "required": ["customization_id", "requirement"],
+        "properties": {"refs": {"required": ["custom_baseline", "candidate"]}}
+      }
+    },
+    {
+      "if": {"properties": {"mode": {"const": "change"}}, "required": ["mode"]},
+      "then": {"required": ["change_path"]}
+    },
+    {
+      "if": {"properties": {"mode": {"const": "upgrade"}}, "required": ["mode"]},
+      "then": {
+        "required": ["hop_policy", "versions", "deployment_method", "official_documents"],
+        "properties": {
+          "refs": {"required": ["official_base", "official_target", "custom_baseline"]},
+          "versions": {"required": ["base", "target"]},
+          "official_documents": {"minItems": 1}
+        }
+      }
+    }
+  ]
+}

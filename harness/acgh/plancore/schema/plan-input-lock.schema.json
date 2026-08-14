@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "plan-input-lock.schema.json",
+  "title": "Plan input lock",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "canonical_payload", "observational_metadata", "input_lock_digest"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "canonical_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "mode", "request_digest", "repositories", "registration", "checker_catalog_digest"],
+      "properties": {
+        "run_id": {"type": "string"},
+        "mode": {"enum": ["initial", "feature", "change", "upgrade"]},
+        "change_path": {"enum": ["pre_plan", "post_change_reconcile"]},
+        "deployment_method": {"type": "string"},
+        "version_relation": {"enum": ["adjacent", "non_adjacent", "equal", "reversed", "not_applicable"]},
+        "request_digest": {"$ref": "#/$defs/digest"},
+        "repositories": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["repository_id", "commit_shas", "tree_shas"],
+            "properties": {
+              "repository_id": {"type": "string", "minLength": 1},
+              "commit_shas": {
+                "type": "object",
+                "additionalProperties": {"$ref": "#/$defs/sha"}
+              },
+              "tree_shas": {
+                "type": "object",
+                "additionalProperties": {"$ref": "#/$defs/sha"}
+              }
+            }
+          }
+        },
+        "registration": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["exists", "state_digest"],
+          "properties": {
+            "exists": {"type": "boolean"},
+            "state_digest": {"$ref": "#/$defs/digest"}
+          }
+        },
+        "checker_catalog_digest": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "observational_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository_paths", "collected_at"],
+      "properties": {
+        "repository_paths": {
+          "type": "object",
+          "additionalProperties": {"type": "string"}
+        },
+        "registration_path": {"type": ["string", "null"]},
+        "collected_at": {"type": "string"}
+      }
+    },
+    "input_lock_digest": {"$ref": "#/$defs/digest"}
+  },
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  }
+}

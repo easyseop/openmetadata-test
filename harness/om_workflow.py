@@ -19,6 +19,13 @@ from pathlib import Path
 
 import yaml
 
+from acgh.integrations.om import OpenMetadataPlanAdapter
+from acgh.plancore.errors import PlanControlError
+from acgh.plancore.markers import create_session_marker, session_marker_path
+from acgh.plancore.preflight import run_preflight
+from acgh.plancore.validate import run_validation
+from acgh.verdict import to_exit_code
+
 
 HARNESS = Path(__file__).resolve().parent
 PROJECT = HARNESS.parent
@@ -265,6 +272,30 @@ def parse_args() -> argparse.Namespace:
     )
     resolve_json.add_argument("--repo", required=True, type=Path)
 
+    plan_session = subparsers.add_parser(
+        "plan-session-start",
+        help="Hook에서 /om-plan 세션 보호 marker 생성",
+    )
+    plan_session.add_argument("--state-root", required=True, type=Path)
+    plan_session.add_argument("--session-id", required=True)
+    plan_session.add_argument("--project-root", type=Path, default=PROJECT)
+
+    plan_preflight = subparsers.add_parser(
+        "plan-preflight",
+        help="/om-plan 입력 고정과 기계 사실 수집",
+    )
+    plan_preflight.add_argument("--request", required=True, type=Path)
+    plan_preflight.add_argument("--run-dir", required=True, type=Path)
+    plan_preflight.add_argument("--state-root", required=True, type=Path)
+    plan_preflight.add_argument("--session-id", required=True)
+    plan_preflight.add_argument("--project-root", type=Path, default=PROJECT)
+
+    plan_validate = subparsers.add_parser(
+        "plan-validate",
+        help="/om-plan 사실 재계산과 proposal 검증",
+    )
+    plan_validate.add_argument("--run-dir", required=True, type=Path)
+
     return parser.parse_args()
 
 
@@ -304,6 +335,35 @@ def plan_command(args: argparse.Namespace) -> tuple[list[str], dict[str, object]
 
 
 def dispatch(args: argparse.Namespace) -> int:
+    if args.command == "plan-session-start":
+        marker = create_session_marker(
+            args.state_root,
+            args.project_root,
+            args.session_id,
+        )
+        print(json.dumps({"status": "protected", "session_marker": str(marker)}, ensure_ascii=False, indent=2))
+        return 0
+
+    if args.command == "plan-preflight":
+        marker = session_marker_path(
+            args.state_root,
+            args.project_root,
+            args.session_id,
+        )
+        result = run_preflight(
+            args.request,
+            args.run_dir,
+            OpenMetadataPlanAdapter(),
+            session_marker=marker,
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0
+
+    if args.command == "plan-validate":
+        result = run_validation(args.run_dir, OpenMetadataPlanAdapter())
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return to_exit_code(result["verdict"])
+
     if args.command == "plan":
         command, selected = plan_command(args)
         print_selection(selected)
@@ -755,6 +815,16 @@ def main() -> int:
     except subprocess.CalledProcessError as exc:
         print(f"Git 명령을 실행하지 못했습니다: {exc}", file=sys.stderr)
         return 2
+    except PlanControlError as exc:
+        print(
+            json.dumps(
+                {"status": "analysis_error", **exc.as_dict()},
+                ensure_ascii=False,
+                indent=2,
+            ),
+            file=sys.stderr,
+        )
+        return 3
 
 
 if __name__ == "__main__":

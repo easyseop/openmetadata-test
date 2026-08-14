@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "plan-result.schema.json",
+  "title": "Plan validation summary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "run_id", "latest_attempt", "attempts", "verdict", "plan_binding", "next_action"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "run_id": {"type": "string"},
+    "latest_attempt": {"type": "string", "pattern": "^attempt-[0-9]{4}$"},
+    "attempts": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^validation-attempts/attempt-[0-9]{4}\\.json$"},
+      "minItems": 1
+    },
+    "verdict": {"enum": ["pass", "approval", "block", "analysis_error"]},
+    "plan_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["proposal_digest", "input_lock_digest", "discovered_facts_digest", "plan_digest"],
+      "properties": {
+        "proposal_digest": {"$ref": "#/$defs/digest"},
+        "input_lock_digest": {"$ref": "#/$defs/digest"},
+        "discovered_facts_digest": {"$ref": "#/$defs/digest"},
+        "plan_digest": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "next_action": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  }
+}
