@@ -1,105 +1,128 @@
-# 현재 작업 인수인계 — `/om-plan` 보호 CI 배선
+# 현재 작업 인수인계 — `/om-plan` 보호 CI와 P2-1 수정
 
-> 마지막 갱신: 2026-08-15 00:30 KST
-> 현재 작업: E-hardening의 expected digest를 보호 CI가 보관·전달하도록 배선
-> 상태: 코드·로컬 반례 검증 완료, Claude 재검토와 실제 GitHub Actions 실행 대기
+> 마지막 갱신: 2026-08-15 01:40 KST
+> 현재 작업: checker 지문에 Python bytecode cache가 섞이는 P2-1 수정
+> 상태: 구현 commit·로컬 회귀 검증 완료, Claude 재검토 대기
 
-## 1. 목적과 결론
+## 1. 이번 결론
 
-E-hardening은 사람이 보관한 `input_lock_digest`가 있어야 preflight 이후의 세 파일
-동시 재작성 공격을 차단합니다. 이번 작업은 수동 복사를 없애고 보호된 GitHub Actions가
-그 지문을 final validation까지 전달하도록 만들었습니다.
+서로 다른 runner에서 생긴 `__pycache__`·`.pyc` 내용이 checker catalog 지문에
+포함되어, 소스가 같아도 final validation이 `analysis_error`로 끝나는 문제가
+재현됐습니다.
 
-구현된 경계는 다음 세 가지입니다.
+`directory_digest()`가 다음 Python bytecode 산출물만 지문에서 제외하도록
+수정했습니다.
 
-1. 지문은 repo 파일이 아니라 preflight job output과 별도 receipt artifact에 둡니다.
-2. 비신뢰 proposal job에는 preflight dependency·지문·expected 값을 주지 않습니다.
-3. 마지막 판정은 이 job에서 방금 실행한 `plan-validate` stdout과 종료 코드만 사용합니다.
+- 경로 구성요소가 `__pycache__`인 파일
+- 확장자가 `.pyc` 또는 `.pyo`인 파일
 
-공식 문서 bytes는 기존 E-hardening의 `official_doc_sources_digest`를 통해 단일
-`input_lock_digest`에 포함됩니다.
+symlink 거부 검사는 제외 판단보다 먼저 실행합니다. 따라서 symlink 보안 경계는
+그대로이고, `.py` 등 실제 checker 소스 변경도 계속 지문 불일치로 차단됩니다.
+`_checker_catalog_digest()`는 기존처럼 `directory_digest()`를 호출하므로 별도
+예외 로직 없이 같은 규칙을 사용합니다.
 
 ## 2. 저장소·branch·commit
 
 | 항목 | 값 |
 |---|---|
 | 저장소 | `easyseop/openmetadata-test` |
-| 로컬 경로 | `/Users/seop/Documents/Codex/om-plan-claude-review-20260814/openmetadata-test` |
+| 기준 로컬 경로 | `/Users/seop/Documents/Codex/om-plan-claude-review-20260814/openmetadata-test` |
+| 검증 작업 경로 | `/Users/seop/Documents/Codex/2026-07-25/sites-plugin-sites-openai-bundled/work/om-plan-pyc-fix` |
 | branch | `codex/om-plan-ci-wiring-20260815` |
-| E-hardening 구현 | `1f02e1d3a0c77b9d62f5763835d91cbadc1d5804` |
-| E-hardening 인수인계 기준 | `0af1a5989434222656f458b9c88fa69cc9896a75` |
+| P2-1 수정 기준 | `649454a403b08ecb7b98316a77b1cf3e471da1d4` |
 | CI 배선 구현 | `9bc4cd2c3dca064d2d181b4e500415e18c336e9c` |
-| CI 배선 tree | `ff83a8492ccbd4abc0e5448945d2bf6c614cb6ab` |
+| P2-1 구현 | `7aaa18f53e47a0a98185cfcb27f22966a637c025` |
 
-## 3. 변경 파일
+최종 전달 시 `git status --short` 출력은 없으며 working tree는 clean입니다.
 
-- `.github/workflows/om-plan-ci.yml`
-  - preflight → intent review → untrusted proposal data → fresh validate
-- `harness/ci/om_plan_ci.py`
-  - CI-local request 준비, 지문 capture, proposal data-only packaging,
-    새 runner 경로·marker 재결속, fresh stdout/exit 검증
-- `harness/ci/__init__.py`
+## 3. 변경 내용
+
+- `harness/acgh/plancore/paths.py`
+  - bytecode cache만 directory 지문에서 제외
+  - symlink 거부와 일반 소스 지문 계산은 유지
+- `harness/tests/test_plan_paths.py`
+  - `__pycache__`, `.pyc`, `.pyo` 추가로 지문이 바뀌지 않는지 확인
+  - 실제 `.py` 소스 변경으로 지문이 바뀌는지 함께 확인
 - `harness/tests/test_om_plan_ci.py`
-  - CI 구조 반례와 실제 두 runner 이동 종단 test 16건
-- `docs/04-진행/OM_PLAN_CI_WIRING_OPERATIONS_20260815.md`
-  - 설정·실행·신뢰 경계·미완료 항목
-- `docs/04-진행/OM_PLAN_CI_WIRING_CLAUDE_REVIEW_REQUEST_20260815.md`
-  - 구현 적대 재검토 요청
+  - 서로 다른 runner cache가 있어도 fresh validation이 종료 코드 2와
+    `review_ready`에 도달하는 종단 회귀 test
+  - checker 소스를 변조하면 종료 코드 3과 `analysis_error`가 유지되는 종단 test
 
-## 4. 로컬 검증
+이번 범위에서는 verdict enum, 종료 코드 정책, 제품 코드, registration, workflow,
+default branch 설정을 변경하지 않았습니다.
 
-### CI 경계 test
+## 4. 재현과 검증 결과
 
-- 16 passed
-- proposal job에 지문 미전달, path escape·symlink 차단, exit/verdict 교차 대조,
-  저장 결과 미사용, cross-runner fresh validation을 포함합니다.
+모든 수정 후 검증은 `PYTHONDONTWRITEBYTECODE`를 설정하지 않은 상태에서
+실행했습니다.
+
+### 수정 전 재현
+
+- 기존 cross-runner test가 종료 코드 2 대신 3을 반환
+- 사유: `recomputed input lock does not match the stored lock`
+
+### 수용 기준 전용 test
+
+- 3 passed, failure 0, error 0, skip 0
+- cache 산출물 무시, cross-runner 성공, 실제 checker 소스 변조 차단을 확인
 
 ### 집중 회귀
 
-- 108 tests
-- failure 0, error 0, skip 0
-- JUnit: `/private/tmp/om-plan-ci-focused-20260815.xml`
+- 109 tests, failure 0, error 0, skip 0
+- JUnit: `/private/tmp/om-plan-pyc-focused-20260815.xml`
 
 ### 전체 harness
 
-- 527 tests
-- failure 0, error 0, 37 skipped
-- JUnit: `/private/tmp/om-plan-ci-harness-20260815.xml`
-- skip은 기존 OM mirror·Runtime 등 환경 의존 항목입니다.
+- 529 tests, failure 0, error 0, 37 skipped
+- JUnit: `/private/tmp/om-plan-pyc-harness-20260815.xml`
+- 37 skip은 기존 OM mirror·Runtime 등 환경 의존 항목입니다.
 
 `git diff --check`도 통과했습니다.
 
-## 5. 아직 완료하지 않은 것
+## 5. 수용 기준 판정
 
+| 기준 | 결과 | 근거 |
+|---|---|---|
+| cache 억제 없이 cross-runner 통과 | 충족 | 종료 코드 2, `review_ready` |
+| 회귀 test 추가 | 충족 | unit 1건, cross-runner 종단 2건 |
+| 실제 소스 위조 탐지 유지 | 충족 | 종료 코드 3, `analysis_error`와 지문 불일치 사유 |
+| 기존 보안 경계 유지 | 충족 | symlink 검사를 먼저 수행하고 전체 harness 통과 |
+
+## 6. 의도적으로 결정하지 않은 것
+
+- P2-2 green/red 표시 반전
+- Q3, Q6, Q7, Q8, Q9
+- GitHub environment와 required reviewer 설정
 - 실제 GitHub Actions 실행
-- default branch merge
-- `om-plan-intent-review` environment와 required reviewers 설정
-- 특정 LLM provider 호출 자동화
-- 실제 제품 request/proposal 종단 판정
-- 종료 코드 2의 최종 사람 승인 routing(Q9)
-- merge, release, deploy
+- default branch merge, release, deploy
 
-현재 workflow의 `untrusted-proposal` job은 exact commit의 LLM proposal을 데이터로
-격리·전달합니다. LLM API를 직접 호출하지는 않습니다. provider와 secret 권한 모델을
-추측하지 않기 위해 이 경계를 명시적으로 남겼습니다.
+P2-2는 GitHub 설정과 Q9 결정이 필요한 별도 작업입니다. 이번 patch에 포함하지
+않았습니다.
 
-## 6. 다음 실행 순서
+## 7. 다음 실행 순서
 
-1. `OM_PLAN_CI_WIRING_CLAUDE_REVIEW_REQUEST_20260815.md`로 commit `9bc4cd2c...`를
-   읽기 전용 적대 검토합니다.
-2. 재현 가능한 P0/P1이 있으면 반례 test를 먼저 추가하고 수정합니다.
-3. P0/P1이 없으면 branch를 원격에 보관합니다.
-4. 저장소 owner가 default branch 보호와 `om-plan-intent-review` 환경을 설정합니다.
-5. fixture로 실제 GitHub Actions 종단 실행 후 receipt·fresh stdout을 보관합니다.
-6. 그 뒤에만 실제 제품 계획을 대상으로 사용할지 결정합니다.
+1. 기준 로컬 경로의 같은 feature branch에 P2-1 commit을 동기화합니다.
+2. Claude가 구현 commit `7aaa18f53e47a0a98185cfcb27f22966a637c025`를
+   읽기 전용으로 재검토합니다.
+3. 재검토 핵심은 “cache 억제 없이 통과하면서 실제 소스 위조는 여전히
+   `analysis_error`로 잡히는가”입니다.
+4. P0/P1이 없을 때만 사용자가 원격 push나 실제 Actions 실행 여부를 결정합니다.
 
-## 7. 중단 조건
+현재 정확한 다음 명령:
 
-- proposal job이 preflight output 또는 expected digest를 읽음
-- proposal checkout의 코드나 workflow를 실행함
-- expected digest를 proposal artifact나 저장소 파일에서 유도함
-- 저장된 `validation-result.json`을 CI 판정 입력으로 읽음
-- fresh stdout verdict와 process exit 불일치를 허용함
+```bash
+git show --stat --oneline 7aaa18f53e47a0a98185cfcb27f22966a637c025
+git diff 649454a403b08ecb7b98316a77b1cf3e471da1d4..7aaa18f53e47a0a98185cfcb27f22966a637c025 -- \
+  harness/acgh/plancore/paths.py \
+  harness/tests/test_plan_paths.py \
+  harness/tests/test_om_plan_ci.py
+```
+
+## 8. 중단 조건
+
+- cache 외의 일반 소스나 정책 파일까지 지문에서 제외함
+- symlink 거부를 우회함
+- 실제 checker 소스 변경이 `analysis_error`가 아닌 성공으로 끝남
 - 종료 코드 2를 자동 성공 0으로 바꿈
-- 보호 environment가 없는데 사람 intent review가 강제됐다고 표시함
+- P2-2 또는 미결정 Q 항목을 이번 수정에 섞음
 - 실제 workflow 미실행 상태를 운영 완료 또는 최종 PASS로 표시함
