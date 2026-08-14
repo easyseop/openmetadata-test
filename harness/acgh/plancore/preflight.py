@@ -10,7 +10,12 @@ from typing import Protocol
 from acgh import binding, gitprim
 from acgh.verdict import canonical_digest
 from acgh.plancore.errors import PlanControlError
-from acgh.plancore.markers import bind_run, cleanup_pair, load_session_marker
+from acgh.plancore.markers import (
+    bind_run,
+    cleanup_pair,
+    cleanup_unbound_session,
+    load_session_marker,
+)
 from acgh.plancore.paths import directory_digest, list_dirty_paths
 from acgh.plancore.schema import atomic_write, read_data, validate
 
@@ -232,17 +237,18 @@ def run_preflight(
     *,
     session_marker: str | Path,
 ) -> dict:
-    request = read_data(request_path)
-    validate("run-request", request)
     destination = Path(run_dir).resolve()
-    if destination.exists():
-        raise PlanControlError(
-            "RUN_DIRECTORY_EXISTS",
-            "preflight requires a new run directory",
-            details={"run_dir": str(destination)},
-        )
-    session = load_session_marker(session_marker)
+    session: dict | None = None
     try:
+        request = read_data(request_path)
+        validate("run-request", request)
+        if destination.exists():
+            raise PlanControlError(
+                "RUN_DIRECTORY_EXISTS",
+                "preflight requires a new run directory",
+                details={"run_dir": str(destination)},
+            )
+        session = load_session_marker(session_marker)
         dirty = {
             name: list_dirty_paths(path)
             for name, path in request["repositories"].items()
@@ -283,16 +289,29 @@ def run_preflight(
             if isinstance(exc, PlanControlError)
             else PlanControlError("PREFLIGHT_FAILED", str(exc))
         )
-        destination.mkdir(parents=True, exist_ok=True)
-        atomic_write(
-            destination / "preflight-result.json",
-            {"status": "analysis_error", **failure.as_dict()},
-        )
-        pair = type("FailedPair", (), {
-            "session_marker": Path(session_marker).resolve(),
-            "run_marker": destination / ".plan-active",
-            "session_id": session["session_id"],
-            "project_key": session["project_key"],
-        })()
-        cleanup_pair(pair)
+        # Never write into a pre-existing run. It may be valid evidence owned
+        # by a different or completed session.
+        if failure.code != "RUN_DIRECTORY_EXISTS":
+            destination.mkdir(parents=True, exist_ok=True)
+            atomic_write(
+                destination / "preflight-result.json",
+                {"status": "analysis_error", **failure.as_dict()},
+            )
+        if session is None:
+            try:
+                session = load_session_marker(session_marker)
+            except PlanControlError:
+                session = None
+        if session is not None:
+            bound_run = session.get("run_dir")
+            if bound_run is None:
+                cleanup_unbound_session(session_marker)
+            elif Path(bound_run).resolve() == destination:
+                pair = type("FailedPair", (), {
+                    "session_marker": Path(session_marker).resolve(),
+                    "run_marker": destination / ".plan-active",
+                    "session_id": session["session_id"],
+                    "project_key": session["project_key"],
+                })()
+                cleanup_pair(pair)
         raise failure from exc

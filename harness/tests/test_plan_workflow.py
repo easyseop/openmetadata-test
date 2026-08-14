@@ -373,6 +373,52 @@ def test_c39_preflight_creates_run_marker_only_after_machine_files(tmp_path: Pat
     assert marker.is_file()
 
 
+def test_c39_schema_failure_cleans_unbound_session_marker(tmp_path: Path):
+    product, checker, official, custom = _repos(tmp_path)
+    request = _initial_request(tmp_path, product, checker, official, custom)
+    loaded = yaml.safe_load(request.read_text(encoding="utf-8"))
+    loaded["official_documents"] = [{"source": "unused", "version_token": 1.13}]
+    request.write_text(yaml.safe_dump(loaded, sort_keys=False), encoding="utf-8")
+    marker = create_session_marker(tmp_path / "state", checker, "schema-error")
+    run_dir = checker / "evidence" / "schema-error"
+
+    with pytest.raises(PlanControlError) as caught:
+        run_preflight(
+            request,
+            run_dir,
+            OpenMetadataPlanAdapter(),
+            session_marker=marker,
+        )
+
+    assert caught.value.code == "SCHEMA_INVALID"
+    assert not marker.exists()
+    assert not (run_dir / ".plan-active").exists()
+    error = json.loads((run_dir / "preflight-result.json").read_text())
+    assert error["status"] == "analysis_error"
+
+
+def test_c39_existing_run_is_not_modified_and_new_session_is_cleaned(tmp_path: Path):
+    _, checker, _, state, _, run_dir, _ = _preflight(tmp_path)
+    sentinel = run_dir / "sentinel.txt"
+    sentinel.write_text("keep\n", encoding="utf-8")
+    before = sentinel.read_bytes()
+    marker = create_session_marker(state, checker, "second")
+    request = run_dir / "run-request.yaml"
+
+    with pytest.raises(PlanControlError) as caught:
+        run_preflight(
+            request,
+            run_dir,
+            OpenMetadataPlanAdapter(),
+            session_marker=marker,
+        )
+
+    assert caught.value.code == "RUN_DIRECTORY_EXISTS"
+    assert not marker.exists()
+    assert sentinel.read_bytes() == before
+    assert not (run_dir / "preflight-result.json").exists()
+
+
 def test_c05_dirty_worktree_fails_without_cleaning_and_cleans_session(tmp_path: Path):
     product, checker, official, custom = _repos(tmp_path)
     (product / "untracked.txt").write_text("keep me", encoding="utf-8")
