@@ -125,7 +125,7 @@ om_plan_preflight:
         "$OM_PLAN_REQUEST_REF"
 
       product_url="${CI_SERVER_PROTOCOL}://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_FQDN}/${OM_PLAN_PRODUCT_PROJECT}.git"
-      git clone --filter=blob:none "$product_url" "$OM_PLAN_RUNTIME_ROOT/product"
+      git clone "$product_url" "$OM_PLAN_RUNTIME_ROOT/product"
       unset product_url CI_JOB_TOKEN CI_REPOSITORY_URL
 
       "$python" harness/ci/om_plan_ci.py prepare-request \
@@ -254,7 +254,7 @@ om_plan_validate:
       rm -rf "$CI_PROJECT_DIR/.om-plan-artifacts"
 
       product_url="${CI_SERVER_PROTOCOL}://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_FQDN}/${OM_PLAN_PRODUCT_PROJECT}.git"
-      git clone --filter=blob:none "$product_url" "$OM_PLAN_RUNTIME_ROOT/product"
+      git clone "$product_url" "$OM_PLAN_RUNTIME_ROOT/product"
       unset product_url CI_JOB_TOKEN CI_REPOSITORY_URL
 
       "$python" harness/ci/om_plan_ci.py package-proposal \

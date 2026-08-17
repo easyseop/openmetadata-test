@@ -10,7 +10,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 import yaml
+
+from acgh.integrations.om import collectors as om_collectors
+from acgh.plancore.errors import PlanControlError
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -141,6 +145,97 @@ def test_gitlab_jobs_clean_bytecode_before_starting_python():
         "om_plan_validate",
     ):
         assert pipeline[job_name]["extends"] == ".om-plan-python-job"
+
+
+def test_gitlab_product_clones_materialize_blobs_but_data_clones_stay_partial():
+    _, pipeline = _pipeline()
+    preflight_script = pipeline["om_plan_preflight"]["script"][0]
+    proposal_script = pipeline["om_plan_package_proposal"]["script"][0]
+    validate_script = pipeline["om_plan_validate"]["script"][0]
+
+    assert 'git clone "$product_url" "$OM_PLAN_RUNTIME_ROOT/product"' in (
+        preflight_script
+    )
+    assert 'git clone "$product_url" "$OM_PLAN_RUNTIME_ROOT/product"' in (
+        validate_script
+    )
+    assert 'git clone --filter=blob:none "$product_url"' not in preflight_script
+    assert 'git clone --filter=blob:none "$product_url"' not in validate_script
+
+    assert "git clone --filter=blob:none --no-checkout" in preflight_script
+    assert '"$OM_PLAN_RUNTIME_ROOT/request-source"' in preflight_script
+    assert "git clone --filter=blob:none --no-checkout" in proposal_script
+    assert '"$OM_PLAN_RUNTIME_ROOT/proposal-source"' in proposal_script
+
+
+def test_blobless_product_fails_closed_and_full_clone_materializes_source_blobs(
+    tmp_path: Path,
+):
+    source = tmp_path / "source"
+    source.mkdir()
+    _git(source, "init", "-q")
+    _git(source, "config", "user.email", "test@example.com")
+    _git(source, "config", "user.name", "Test")
+    base = source / "README.md"
+    base.write_text("official\n", encoding="utf-8")
+    _git(source, "add", "README.md")
+    _git(source, "commit", "-q", "-m", "official")
+    official = _git(source, "rev-parse", "HEAD")
+    default_branch = _git(source, "symbolic-ref", "--short", "HEAD")
+    _git(source, "switch", "-q", "-c", "custom")
+    tracked = source / "src" / "custom-feature.txt"
+    tracked.parent.mkdir()
+    tracked.write_text("custom-only-feature\n", encoding="utf-8")
+    _git(source, "add", "src/custom-feature.txt")
+    _git(source, "commit", "-q", "-m", "custom")
+    custom = _git(source, "rev-parse", "HEAD")
+    _git(source, "switch", "-q", default_branch)
+
+    origin = tmp_path / "origin.git"
+    subprocess.run(
+        ["git", "clone", "-q", "--bare", str(source), str(origin)],
+        check=True,
+    )
+    _git(origin, "config", "uploadpack.allowFilter", "true")
+    remote = origin.resolve().as_uri()
+
+    partial = tmp_path / "partial"
+    subprocess.run(
+        [
+            "git",
+            "clone",
+            "-q",
+            "--filter=blob:none",
+            "--no-checkout",
+            remote,
+            str(partial),
+        ],
+        check=True,
+    )
+    assert _git(partial, "config", "--get", "remote.origin.promisor") == "true"
+    # Apple Git 2.39 does not honor GIT_NO_LAZY_FETCH. Removing only the
+    # promisor settings makes this already-blobless clone deterministic under
+    # the same no-lazy-fetch boundary used by the collector.
+    _git(partial, "config", "--unset", "remote.origin.promisor")
+    _git(partial, "config", "--unset", "remote.origin.partialclonefilter")
+    with pytest.raises(PlanControlError) as caught:
+        om_collectors._materialized_objects(
+            str(partial), official, custom, ["README.md"]
+        )
+    assert caught.value.code == "SOURCE_BLOBS_UNAVAILABLE"
+
+    complete = tmp_path / "complete"
+    subprocess.run(
+        ["git", "clone", "-q", remote, str(complete)],
+        check=True,
+    )
+    records = om_collectors._materialized_objects(
+        str(complete), official, custom, ["README.md"]
+    )
+    assert {(item["side"], item["path"]) for item in records} == {
+        ("base", "README.md"),
+        ("target", "README.md"),
+    }
 
 
 def test_cache_cleaner_neutralizes_timestamp_valid_crafted_pyc(tmp_path: Path):
