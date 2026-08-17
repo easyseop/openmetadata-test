@@ -16,6 +16,23 @@ GitLab Runner는 작업 directory를 재사용할 수 있습니다. 따라서 �
 `PYTHONDONTWRITEBYTECODE=1`을 강제로 export해 job 안에서 cache가 다시 생기지 않게
 합니다.
 
+### 1.1 제품과 요청·제안 clone 정책이 다른 이유
+
+preflight와 validate의 OpenMetadata **제품 저장소는 전체 clone**합니다.
+검사기는 고정된 base·target commit의 실제 파일 내용(blob)을
+`GIT_NO_LAZY_FETCH=1`로 읽으므로, 제품을 `--filter=blob:none`으로 clone하면
+`SOURCE_BLOBS_UNAVAILABLE`로 fail-closed합니다. lazy fetch를 허용하지 않고
+필요 blob을 clone 시점에 물리적으로 확보합니다.
+
+반면 request·proposal source는 고정 SHA와 허용된 YAML·JSON data만
+선택하며 제품 소스 blob을 검사하지 않습니다. 이 두 clone은 기존
+`--filter=blob:none --no-checkout`을 유지합니다.
+
+전체 제품 clone은 네트워크·디스크·시간 비용이 늘어날 수 있습니다.
+현재는 명확한 fail-closed 성립을 성능보다 우선했습니다. 실제 GitLab
+측정 후 최적화가 필요하더라도, 핀된 ref의 blob을 먼저 materialize한 후
+현재 fail-closed 회귀를 그대로 통과하는 방식으로만 변경해야 합니다.
+
 ## 2. 코드가 구현한 경계
 
 | 필요한 성질 | GitLab 기능과 코드 | 보증하는 것 | 보증하지 않는 것 |
@@ -183,6 +200,7 @@ Q9를 결정하기 전에는 `fresh-validation/summary.md`와 `stdout.json`을 �
 | `reject_untrusted_context` 실패 | 비보호 branch 또는 default branch가 아님 | protected default branch의 New pipeline에서 다시 실행 |
 | intent review job에서 marker 실패 | protected/environment-scoped variable 누락 | §3.4 설정 후 새 pipeline 실행 |
 | product clone 403 | product project job token allowlist 누락 | §3.5 설정 후 새 pipeline 실행 |
+| `SOURCE_BLOBS_UNAVAILABLE` | 제품 clone이 blobless이거나 핀된 ref의 blob이 로컬에 없음 | 제품 clone 명령의 `--filter=blob:none` 재도입 여부를 확인하고, lazy fetch 허용 없이 새 pipeline 실행 |
 | cache cleanup이 tracked 변경 감지 | checker가 bytecode를 tracked file로 포함하거나 checkout 오염 | 해당 file을 검토된 commit으로 제거하고 pipeline 재실행 |
 | validate exit 2로 pipeline 빨강 | `review_ready`의 기존 종료 코드 의미 | 실패로 오해해 코드를 바꾸지 말고 artifact 확인; Q9는 별도 결정 |
 | artifact가 없음 | 이전 job 실패 또는 다운로드 경계 오류 | 최초 실패 job부터 로그 확인; stored result를 임의 작성하지 않음 |
