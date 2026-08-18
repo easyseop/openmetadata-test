@@ -1,0 +1,188 @@
+name: Publish OM rehearsal images
+
+on:
+  workflow_dispatch:
+    inputs:
+      product_commit:
+        description: Exact OpenMetadata candidate commit
+        required: true
+        default: 8ac18ad053d9274774e274ba17b35911ac0b9dcb
+      server_tag:
+        description: GHCR server image tag
+        required: true
+        default: 1.13.1-bank-8ac18ad0
+      runner_tag:
+        description: GHCR Contract runner image tag
+        required: true
+        default: 1.13.1-runtime
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: publish-om-rehearsal-images-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out exact OpenMetadata candidate
+        uses: actions/checkout@v4
+        with:
+          repository: easyseop/OpenMetadata
+          ref: ${{ inputs.product_commit }}
+
+      - name: Set up JDK 21 and Maven cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Install build prerequisites
+        run: |
+          sudo make install_antlr_cli
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Use canonical Maven Central endpoint
+        run: >-
+          sed --in-place
+          's#https://repo1.maven.org/maven2/#https://repo.maven.apache.org/maven2/#g'
+          pom.xml
+
+      - name: Build OpenMetadata distribution
+        run: |
+          for attempt in 1 2 3; do
+            echo "[Maven 시도] $attempt/3"
+            if timeout --kill-after=30s 20m mvn \
+              --batch-mode \
+              --no-transfer-progress \
+              -DskipTests=true \
+              -Dmaven.test.skip=true \
+              -Dmaven.resolver.transport=wagon \
+              -Dmaven.wagon.http.pool=false \
+              -Dmaven.wagon.rto=60000 \
+              -Dmaven.wagon.http.retryHandler.count=5 \
+              --projects openmetadata-dist \
+              --also-make \
+              clean package; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "[중단] Maven build가 3회 모두 실패했습니다." >&2
+              exit 1
+            fi
+            echo "[재시도] 내려받은 의존성은 보존하고 Maven build를 다시 시작합니다."
+          done
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Sign in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish multi-architecture server image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/development/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/easyseop/openmetadata-bank:${{ inputs.server_tag }}
+          labels: |
+            org.opencontainers.image.revision=${{ inputs.product_commit }}
+            org.opencontainers.image.source=https://github.com/easyseop/OpenMetadata
+          cache-from: type=gha,scope=openmetadata-bank-server
+          cache-to: type=gha,mode=max,scope=openmetadata-bank-server
+
+  contract-runner:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out 검사기 저장소
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Sign in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish Contract runner image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/rehearsal/Dockerfile.contract-runner
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/easyseop/openmetadata-contract-runner:${{ inputs.runner_tag }}
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=https://github.com/easyseop/openmetadata-test
+          cache-from: type=gha,scope=openmetadata-contract-runner
+          cache-to: type=gha,mode=max,scope=openmetadata-contract-runner
+
+  docker-only-smoke:
+    name: Docker-only clean-machine rehearsal
+    needs:
+      - server
+      - contract-runner
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out 검사기 저장소
+        uses: actions/checkout@v4
+
+      - name: Sign in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start OpenMetadata and load mock metadata
+        env:
+          OM_SERVER_IMAGE: ghcr.io/easyseop/openmetadata-bank:${{ inputs.server_tag }}
+          OM_CONTRACT_RUNNER_IMAGE: ghcr.io/easyseop/openmetadata-contract-runner:${{ inputs.runner_tag }}
+        run: bash docker/rehearsal/start.sh
+
+      - name: Run nine Runtime Contracts
+        env:
+          OM_SERVER_IMAGE: ghcr.io/easyseop/openmetadata-bank:${{ inputs.server_tag }}
+          OM_CONTRACT_RUNNER_IMAGE: ghcr.io/easyseop/openmetadata-contract-runner:${{ inputs.runner_tag }}
+          RUNTIME_RUN_ID: github-clean-machine
+        run: bash docker/rehearsal/test.sh
+
+      - name: Upload clean-machine evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-only-rehearsal-evidence
+          path: var/rehearsal/evidence/
+          if-no-files-found: warn
+
+      - name: Show service logs after failure
+        if: failure()
+        run: |
+          source docker/rehearsal/common.sh
+          download_base_compose
+          compose ps
+          compose logs --no-color --tail 200 openmetadata-server
+
+      - name: Stop clean-machine environment
+        if: always()
+        run: bash docker/rehearsal/stop.sh

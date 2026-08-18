@@ -1,0 +1,111 @@
+schema_version: 2
+customization_id: BANK-OM-002
+status: active
+kind: core-patch
+title: 쿼리 리포트(QueryReport)
+implementation:
+  changed_paths:
+  - bootstrap/sql/migrations/native/1.13.1/mysql/schemaChanges.sql
+  - bootstrap/sql/migrations/native/1.13.1/postgres/schemaChanges.sql
+  - openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
+  - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java
+  - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/QueryReportRepository.java
+  - openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/QueryReportMapper.java
+  - openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/QueryReportResource.java
+  - openmetadata-service/src/main/java/org/openmetadata/service/search/SearchIndexFactory.java
+  - openmetadata-service/src/main/java/org/openmetadata/service/search/indexes/QueryReportIndex.java
+  - openmetadata-spec/src/main/resources/elasticsearch/en/query_index_mapping.json
+  - openmetadata-spec/src/main/resources/elasticsearch/en/query_report_index_mapping.json
+  - openmetadata-spec/src/main/resources/elasticsearch/indexMapping.json
+  - openmetadata-spec/src/main/resources/elasticsearch/jp/query_index_mapping.json
+  - openmetadata-spec/src/main/resources/elasticsearch/jp/query_report_index_mapping.json
+  - openmetadata-spec/src/main/resources/elasticsearch/ru/query_index_mapping.json
+  - openmetadata-spec/src/main/resources/elasticsearch/ru/query_report_index_mapping.json
+  - openmetadata-spec/src/main/resources/elasticsearch/zh/query_index_mapping.json
+  - openmetadata-spec/src/main/resources/elasticsearch/zh/query_report_index_mapping.json
+  - openmetadata-spec/src/main/resources/json/schema/api/data/createQueryReport.json
+  - openmetadata-spec/src/main/resources/json/schema/entity/data/queryReport.json
+  - openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+  - openmetadata-ui/src/main/resources/ui/src/components/QueryReport/QueryReportListPage.tsx
+  - openmetadata-ui/src/main/resources/ui/src/components/QueryReport/QueryReportQueryEditor/QueryReportQueryEditor.component.tsx
+  - openmetadata-ui/src/main/resources/ui/src/constants/constants.ts
+  - openmetadata-ui/src/main/resources/ui/src/context/PermissionProvider/PermissionProvider.interface.ts
+  - openmetadata-ui/src/main/resources/ui/src/enums/Explore.enum.ts
+  - openmetadata-ui/src/main/resources/ui/src/enums/entity.enum.ts
+  - openmetadata-ui/src/main/resources/ui/src/enums/search.enum.ts
+  - openmetadata-ui/src/main/resources/ui/src/generated/api/data/createQueryReport.ts
+  - openmetadata-ui/src/main/resources/ui/src/generated/entity/data/queryReport.ts
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json
+  - openmetadata-ui/src/main/resources/ui/src/pages/QueryReportDetailsPage/QueryReportDetailsPage.tsx
+  - openmetadata-ui/src/main/resources/ui/src/pages/QueryReportYearDetailsPage/QueryReportYearDetailsPage.tsx
+  - openmetadata-ui/src/main/resources/ui/src/rest/queryAPI.ts
+  - openmetadata-ui/src/main/resources/ui/src/rest/queryReportAPI.ts
+  - openmetadata-ui/src/main/resources/ui/src/utils/QueryReportUtils.ts
+  - openmetadata-ui/src/main/resources/ui/src/utils/RouterUtils.ts
+  required_changed_paths:
+  - openmetadata-service/src/main/java/org/openmetadata/service/resources/queryreport/QueryReportResource.java
+  - openmetadata-spec/src/main/resources/json/schema/entity/data/queryReport.json
+upgrade_watch:
+  paths:
+  - bootstrap/sql/migrations/native/1.13.1/mysql/schemaChanges.sql
+  - bootstrap/sql/migrations/native/1.13.1/postgres/schemaChanges.sql
+  - openmetadata-service/src/main/java/org/openmetadata/service/Entity.java
+  - openmetadata-service/src/main/java/org/openmetadata/service/jdbi3/CollectionDAO.java
+  - openmetadata-service/src/main/java/org/openmetadata/service/search/SearchIndexFactory.java
+  - openmetadata-spec/src/main/resources/elasticsearch/en/query_index_mapping.json
+  - openmetadata-spec/src/main/resources/elasticsearch/indexMapping.json
+  - openmetadata-spec/src/main/resources/elasticsearch/jp/query_index_mapping.json
+  - openmetadata-spec/src/main/resources/elasticsearch/ru/query_index_mapping.json
+  - openmetadata-spec/src/main/resources/elasticsearch/zh/query_index_mapping.json
+  - openmetadata-ui/src/main/resources/ui/src/components/AppRouter/AuthenticatedAppRouter.tsx
+  - openmetadata-ui/src/main/resources/ui/src/constants/constants.ts
+  - openmetadata-ui/src/main/resources/ui/src/context/PermissionProvider/PermissionProvider.interface.ts
+  - openmetadata-ui/src/main/resources/ui/src/enums/Explore.enum.ts
+  - openmetadata-ui/src/main/resources/ui/src/enums/entity.enum.ts
+  - openmetadata-ui/src/main/resources/ui/src/enums/search.enum.ts
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/ar-sa.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/de-de.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/en-us.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/es-es.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/fr-fr.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/gl-es.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/he-he.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/ja-jp.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/ko-kr.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/mr-in.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/nl-nl.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/pr-pr.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-br.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/pt-pt.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/ru-ru.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/th-th.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/tr-tr.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-cn.json
+  - openmetadata-ui/src/main/resources/ui/src/locale/languages/zh-tw.json
+  - openmetadata-ui/src/main/resources/ui/src/rest/queryAPI.ts
+  - openmetadata-ui/src/main/resources/ui/src/utils/RouterUtils.ts
+assurance:
+  contracts:
+  - CONTRACT-QUERY-REPORT
+  direct_tests: []
+series:
+  allowed: false
+  depends_on: []

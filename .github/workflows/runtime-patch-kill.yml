@@ -1,0 +1,174 @@
+name: Runtime patch-kill
+
+on:
+  workflow_dispatch:
+    inputs:
+      customization_id:
+        description: High-priority customization to remove and test
+        required: true
+        type: choice
+        options:
+          - BANK-OM-001
+          - BANK-OM-002
+          - BANK-OM-003
+      counterfactual_artifact_digest:
+        description: Deployed without-patch image/package digest (sha256:...)
+        required: true
+        type: string
+      deployment_evidence_digest:
+        description: Digest of the source-to-artifact deployment and fixture record
+        required: true
+        type: string
+      target_environment:
+        description: Non-secret identifier for the isolated counterfactual stack
+        required: true
+        type: string
+      base_url:
+        description: Counterfactual OpenMetadata API base URL
+        required: true
+        type: string
+      data_assertions_url:
+        description: BANK-OM-003 counterfactual Data Assertions page URL
+        required: false
+        type: string
+      ui_health_url:
+        description: BANK-OM-003 separate authenticated healthy page URL
+        required: false
+        type: string
+      ui_health_test_id:
+        description: BANK-OM-003 stable data-testid on the healthy page
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: runtime-patch-kill-${{ inputs.target_environment }}
+  cancel-in-progress: false
+
+env:
+  PRODUCT_REPOSITORY: easyseop/OpenMetadata
+  PRODUCT_BRANCH: codex/bank-vendor-1.13.1-rebuild
+  PRODUCT_SHA: 849ae756cd238f218b5e3a6c795a392305cb32ee
+
+jobs:
+  negative-control:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    environment: openmetadata-runtime-patch-kill
+    env:
+      CUSTOMIZATION_ID: ${{ inputs.customization_id }}
+      COUNTERFACTUAL_ARTIFACT_DIGEST: ${{ inputs.counterfactual_artifact_digest }}
+      DEPLOYMENT_EVIDENCE_DIGEST: ${{ inputs.deployment_evidence_digest }}
+      TARGET_ENVIRONMENT: ${{ inputs.target_environment }}
+      OPENMETADATA_BASE_URL: ${{ inputs.base_url }}
+      OPENMETADATA_AUTH_TOKEN: ${{ secrets.OPENMETADATA_AUTH_TOKEN }}
+      BANK_CONTRACT_QUERY_ID: ${{ vars.BANK_CONTRACT_QUERY_ID }}
+      BANK_FAILED_ASSERTION_FQN: ${{ vars.BANK_FAILED_ASSERTION_FQN }}
+      BANK_DATA_ASSERTIONS_URL: ${{ inputs.data_assertions_url }}
+      BANK_RUNTIME_UI_HEALTH_URL: ${{ inputs.ui_health_url }}
+      BANK_RUNTIME_UI_HEALTH_TEST_ID: ${{ inputs.ui_health_test_id }}
+      BANK_BROWSER_STORAGE_STATE_B64: ${{ secrets.BANK_BROWSER_STORAGE_STATE_B64 }}
+
+    steps:
+      - name: Check out governance repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: harness/pyproject.toml
+
+      - name: Install runtime harness and Chromium
+        run: |
+          python -m pip install --disable-pip-version-check -e "harness[dev,runtime]"
+          python -m playwright install --with-deps chromium
+
+      - name: Materialize locked candidate history
+        run: |
+          git init --bare -q "$RUNNER_TEMP/product.git"
+          git -C "$RUNNER_TEMP/product.git" remote add origin \
+            "https://github.com/${PRODUCT_REPOSITORY}.git"
+          git -C "$RUNNER_TEMP/product.git" config remote.origin.promisor true
+          git -C "$RUNNER_TEMP/product.git" config \
+            remote.origin.partialclonefilter blob:none
+          git -C "$RUNNER_TEMP/product.git" fetch \
+            --depth=16 --filter=blob:none --no-tags origin \
+            "refs/heads/${PRODUCT_BRANCH}:refs/heads/candidate"
+          git -C "$RUNNER_TEMP/product.git" symbolic-ref HEAD refs/heads/candidate
+          test "$(git -C "$RUNNER_TEMP/product.git" rev-parse HEAD)" = \
+            "${PRODUCT_SHA}"
+
+      - name: Execute deployed counterfactual experiment
+        id: execute
+        run: |
+          set +e
+          python harness/registrations/kb-openmetadata/run_runtime_patch_kill.py \
+            --repo "$RUNNER_TEMP/product.git" \
+            --harness harness \
+            --registration harness/registrations/kb-openmetadata \
+            --customization-id "$CUSTOMIZATION_ID" \
+            --artifact-digest "$COUNTERFACTUAL_ARTIFACT_DIGEST" \
+            --deployment-evidence-digest "$DEPLOYMENT_EVIDENCE_DIGEST" \
+            --target-environment "$TARGET_ENVIRONMENT" \
+            --output "$RUNNER_TEMP/runtime-patch-kill/acgh-result.yaml" \
+            --run-id "${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          actual_exit=$?
+          echo "actual_exit=$actual_exit" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Publish non-secret evidence summary
+        if: always()
+        run: |
+          if test -f "$RUNNER_TEMP/runtime-patch-kill/acgh-result.yaml"; then
+            echo "### Runtime patch-kill result" >> "$GITHUB_STEP_SUMMARY"
+            echo '```yaml' >> "$GITHUB_STEP_SUMMARY"
+            sed -n '1,400p' \
+              "$RUNNER_TEMP/runtime-patch-kill/acgh-result.yaml" \
+              >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Preserve runtime patch-kill evidence
+        id: evidence-upload
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: runtime-patch-kill-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/runtime-patch-kill/acgh-result.yaml
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0
+          overwrite: false
+          include-hidden-files: false
+
+      - name: Publish evidence artifact identity
+        if: always() && steps.evidence-upload.outcome == 'success'
+        env:
+          EVIDENCE_ARTIFACT_ID: ${{ steps.evidence-upload.outputs.artifact-id }}
+          EVIDENCE_ARTIFACT_DIGEST: ${{ steps.evidence-upload.outputs.artifact-digest }}
+          EVIDENCE_ARTIFACT_URL: ${{ steps.evidence-upload.outputs.artifact-url }}
+        run: |
+          echo "### Preserved runtime patch-kill evidence" >> "$GITHUB_STEP_SUMMARY"
+          echo "- artifact id: $EVIDENCE_ARTIFACT_ID" >> "$GITHUB_STEP_SUMMARY"
+          echo "- artifact digest: $EVIDENCE_ARTIFACT_DIGEST" >> "$GITHUB_STEP_SUMMARY"
+          echo "- artifact URL: $EVIDENCE_ARTIFACT_URL" >> "$GITHUB_STEP_SUMMARY"
+          echo "- retention: 90 days" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Enforce result and exit consistency
+        if: always()
+        run: |
+          python \
+            harness/registrations/kb-openmetadata/interpret_runtime_patch_kill_result.py \
+            --repo "$RUNNER_TEMP/product.git" \
+            --harness harness \
+            --registration harness/registrations/kb-openmetadata \
+            --customization-id "$CUSTOMIZATION_ID" \
+            --artifact-digest "$COUNTERFACTUAL_ARTIFACT_DIGEST" \
+            --deployment-evidence-digest "$DEPLOYMENT_EVIDENCE_DIGEST" \
+            --target-environment "$TARGET_ENVIRONMENT" \
+            --result "$RUNNER_TEMP/runtime-patch-kill/acgh-result.yaml" \
+            --actual-exit "${{ steps.execute.outputs.actual_exit || '3' }}"

@@ -1,0 +1,33 @@
+schema_version: 1
+upstream_base_sha: afcb2d2cd7e7c28f1d0ce60538c60a96f4eb9dc9
+path_grammar:
+  name: gitignore-pathspec
+  version: 1
+  root_relative: true
+  separator: /
+  case_sensitive: true
+  unicode_normalization: NFC
+  negation_allowed: false
+  symlink_policy: reject
+  submodule_policy: reject
+  lfs_policy: reject
+upstream_owned_roots:
+- openmetadata-service/**
+- openmetadata-spec/**
+- openmetadata-ui/**
+- openmetadata-ui-core-components/**
+- openmetadata-clients/**
+- openmetadata-sdk/**
+- openmetadata-airflow-apis/**
+- ingestion/**
+- bootstrap/**
+- conf/**
+- common/**
+- docker/**
+bank_governance_roots:
+- .bank/**
+- docs/bank/**
+- tests/bank/**
+platform_extension_roots:
+- bank-extensions/**
+unknown_path_policy: analysis_error

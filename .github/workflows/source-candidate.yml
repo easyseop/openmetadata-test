@@ -1,0 +1,110 @@
+name: Source candidate
+
+on:
+  push:
+    branches:
+      - claude/markdown-file-feedback-26933w
+      - codex/strict-manifest-gates
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: source-candidate-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PRODUCT_REPOSITORY: easyseop/OpenMetadata
+  PRODUCT_BRANCH: codex/bank-vendor-1.13.1-rebuild
+  PRODUCT_SHA: 849ae756cd238f218b5e3a6c795a392305cb32ee
+
+jobs:
+  governance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out governance repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: harness/pyproject.toml
+
+      - name: Install governance harness
+        run: python -m pip install --disable-pip-version-check -e "harness[dev]"
+
+      - name: Fetch fixed upstream mirror
+        run: bash harness/fixtures/fetch_upstream.sh "$RUNNER_TEMP/om-mirror"
+
+      - name: Materialize locked product source
+        run: |
+          git init -q product
+          git -C product remote add origin "https://github.com/${PRODUCT_REPOSITORY}.git"
+          git -C product config remote.origin.promisor true
+          git -C product config remote.origin.partialclonefilter blob:none
+          git -C product fetch --depth=16 --filter=blob:none --no-tags origin \
+            "refs/heads/${PRODUCT_BRANCH}:refs/remotes/origin/${PRODUCT_BRANCH}"
+          git -C product sparse-checkout init --no-cone
+          git -C product sparse-checkout set --no-cone \
+            "/openmetadata-spec/src/main/resources/json/schema/entity/services/" \
+            "/openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-sybase.svg" \
+            "/openmetadata-ui/src/main/resources/ui/src/assets/svg/service-icon-tibero.svg" \
+            "/openmetadata-ui/src/main/resources/ui/src/components/Database/SchemaEditor/SchemaEditor.tsx" \
+            "/openmetadata-ui/src/main/resources/ui/src/components/DataProduct/hooks/useDataProductListingData.tsx" \
+            "/openmetadata-ui/src/main/resources/ui/src/components/common/atoms/compositions/useListingData.test.tsx" \
+            "/openmetadata-ui/src/main/resources/ui/src/components/common/atoms/compositions/useListingData.tsx" \
+            "/openmetadata-ui/src/main/resources/ui/src/components/common/atoms/data/useDataFetching.test.tsx" \
+            "/openmetadata-ui/src/main/resources/ui/src/components/common/atoms/data/useDataFetching.tsx" \
+            "/openmetadata-ui/src/main/resources/ui/src/components/common/atoms/domain/compositions/useDomainListing.tsx" \
+            "/openmetadata-ui/src/main/resources/ui/src/generated/api/services/createDatabaseService.ts" \
+            "/openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/sybaseConnection.ts" \
+            "/openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/database/tiberoConnection.ts" \
+            "/openmetadata-ui/src/main/resources/ui/src/generated/entity/services/connections/serviceConnection.ts" \
+            "/openmetadata-ui/src/main/resources/ui/src/generated/entity/services/databaseService.ts" \
+            "/openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.test.tsx" \
+            "/openmetadata-ui/src/main/resources/ui/src/utils/DatabaseServiceUtils.tsx" \
+            "/openmetadata-ui/src/main/resources/ui/src/utils/ServiceIconUtils.ts"
+          git -C product checkout --detach "origin/${PRODUCT_BRANCH}"
+          test "$(git -C product rev-parse HEAD)" = "${PRODUCT_SHA}"
+
+      - name: Run harness and source-capable contracts
+        env:
+          OM_MIRROR_PATH: ${{ runner.temp }}/om-mirror
+          OPENMETADATA_PRODUCT_REPO: ${{ github.workspace }}/product
+        run: python -m pytest harness/tests tests/bank/contracts -ra
+
+      - name: Run locked source-candidate gates
+        run: |
+          python harness/registrations/kb-openmetadata/run_source_candidate_gates.py \
+            --repo product \
+            --harness harness \
+            --registration harness/registrations/kb-openmetadata \
+            --layout harness/policies/repository-layout.yaml \
+            --sensitive-zones harness/policies/sensitive-zones.yaml
+
+      - name: Run source-capable patch-kill experiments
+        run: |
+          python harness/registrations/kb-openmetadata/run_source_patch_kills.py \
+            --repo product \
+            --harness harness \
+            --registration harness/registrations/kb-openmetadata \
+            --output "$RUNNER_TEMP/source-patch-kill/acgh-result.yaml" \
+            --run-id "${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+
+      - name: Preserve source patch-kill evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: source-patch-kill-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/source-patch-kill/acgh-result.yaml
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0
+          overwrite: false
+          include-hidden-files: false

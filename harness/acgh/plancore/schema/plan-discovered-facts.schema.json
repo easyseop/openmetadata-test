@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "plan-discovered-facts.schema.json",
+  "title": "Plan discovered facts",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "canonical_payload", "observational_metadata", "item_digests", "discovered_facts_digest"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "canonical_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "items"],
+      "properties": {
+        "mode": {"enum": ["initial", "feature", "change", "upgrade"]},
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["fact_id", "kind", "value", "evidence_ref"],
+            "properties": {
+              "fact_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+              "kind": {"type": "string", "minLength": 1},
+              "value": {},
+              "evidence_ref": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
+    },
+    "observational_metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "item_digests": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/digest"}
+    },
+    "discovered_facts_digest": {"$ref": "#/$defs/digest"}
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  }
+}

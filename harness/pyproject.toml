@@ -1,0 +1,25 @@
+[project]
+name = "acgh"
+version = "0.0.1"
+description = "OpenMetadata vendor integration and customization governance harness"
+requires-python = ">=3.11"
+dependencies = ["PyYAML>=6.0", "jsonschema>=4.18", "pathspec>=0.11"]
+
+[project.scripts]
+acgh-vendor-rebuild = "acgh.vendor_rebuild:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+runtime = ["playwright>=1.40,<2"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["acgh*"]
