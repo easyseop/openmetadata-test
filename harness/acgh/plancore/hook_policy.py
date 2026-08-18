@@ -55,12 +55,56 @@ def _workflow_action(command: str) -> str | None:
     except ValueError:
         return None
     for index, token in enumerate(tokens[:-1]):
-        if token.endswith("om_workflow.py") and tokens[index + 1] in {
+        if not token.endswith("om_workflow.py"):
+            continue
+        if tokens[index + 1] in {
             "plan-preflight",
             "plan-resume",
             "plan-validate",
         }:
             return tokens[index + 1]
+        if (
+            tokens[index + 1] == "plan"
+            and index + 2 < len(tokens)
+            and tokens[index + 2] in {"start", "check"}
+        ):
+            return f"plan-{tokens[index + 2]}"
+    return None
+
+
+def _plan_check_run_dir(command: str) -> str | None:
+    """Return an explicit simplified check run, ignoring known option values."""
+    try:
+        tokens = shlex.split(command)
+    except ValueError:
+        return None
+    value_options = {
+        "--state-root",
+        "--project-root",
+        "--expected-input-lock-digest",
+    }
+    for index, token in enumerate(tokens[:-2]):
+        if not token.endswith("om_workflow.py"):
+            continue
+        if tokens[index + 1 : index + 3] != ["plan", "check"]:
+            continue
+        tail = tokens[index + 3 :]
+        cursor = 0
+        while cursor < len(tail):
+            value = tail[cursor]
+            if value == "--":
+                return tail[cursor + 1] if cursor + 1 < len(tail) else None
+            if any(value.startswith(f"{option}=") for option in value_options):
+                cursor += 1
+                continue
+            if value in value_options:
+                cursor += 2
+                continue
+            if value.startswith("-"):
+                cursor += 1
+                continue
+            return value
+        return None
     return None
 
 
@@ -117,8 +161,29 @@ def decide_pre_tool_use(
         if _contains_git_mutation(command):
             return HookDecision(False, "Git state mutation is blocked")
         action = _workflow_action(command)
-        if run_pair is None and action in {"plan-preflight", "plan-resume"}:
+        if run_pair is None and action in {
+            "plan-preflight",
+            "plan-resume",
+            "plan-start",
+        }:
             return HookDecision(True, "trusted workflow establishes or resumes the run")
+        if run_pair is not None and action == "plan-check":
+            requested_run = _plan_check_run_dir(command)
+            if requested_run is not None:
+                candidate = Path(requested_run)
+                if not candidate.is_absolute():
+                    candidate = Path.cwd() / candidate
+                if candidate.resolve(strict=False) != Path(run_dir_value).resolve():
+                    return HookDecision(
+                        False,
+                        "plan check may validate only the current session run",
+                        str(proposal_dir),
+                    )
+            return HookDecision(
+                True,
+                "trusted validation may append results and clean markers",
+                str(proposal_dir),
+            )
         if run_pair is not None and action == "plan-validate":
             return HookDecision(
                 True,

@@ -13,6 +13,7 @@ from acgh.plancore.errors import PlanControlError
 from acgh.plancore.schema import atomic_write
 
 _SESSION_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+_SHA256_DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
 
 
 @dataclass(frozen=True)
@@ -83,6 +84,50 @@ def load_session_marker(marker: str | Path) -> dict:
             details={"marker": str(source)},
         )
     return data
+
+
+def record_trusted_input_lock_digest(
+    marker: str | Path,
+    digest: str,
+) -> None:
+    """Store the preflight digest beside the protected session state."""
+    if not _SHA256_DIGEST.fullmatch(digest):
+        raise PlanControlError(
+            "INPUT_LOCK_DIGEST_INVALID",
+            "trusted input lock digest must be a sha256 digest",
+            details={"digest": digest},
+        )
+    source = Path(marker).resolve()
+    session = load_session_marker(source)
+    if session.get("run_dir") is None:
+        raise PlanControlError(
+            "SESSION_NOT_BOUND",
+            "cannot retain a trusted digest before the session is bound",
+            details={"marker": str(source)},
+        )
+    recorded = session.get("trusted_input_lock_digest")
+    if recorded not in (None, digest):
+        raise PlanControlError(
+            "TRUSTED_INPUT_LOCK_DIGEST_MISMATCH",
+            "session marker already contains a different trusted digest",
+            details={"recorded": recorded, "supplied": digest},
+        )
+    session["trusted_input_lock_digest"] = digest
+    atomic_write(source, session)
+
+
+def trusted_input_lock_digest(marker: str | Path) -> str:
+    """Read the digest retained outside the proposal and run evidence files."""
+    source = Path(marker).resolve()
+    session = load_session_marker(source)
+    digest = session.get("trusted_input_lock_digest")
+    if not isinstance(digest, str) or not _SHA256_DIGEST.fullmatch(digest):
+        raise PlanControlError(
+            "TRUSTED_INPUT_LOCK_DIGEST_MISSING",
+            "session marker does not contain a trusted input lock digest",
+            details={"marker": str(source)},
+        )
+    return digest
 
 
 def bind_run(marker: str | Path, run_dir: str | Path) -> MarkerPair:

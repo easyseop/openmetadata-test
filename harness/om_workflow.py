@@ -12,8 +12,10 @@ import argparse
 import hashlib
 import json
 import os
+import shlex
 import subprocess
 import sys
+import uuid
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -22,9 +24,16 @@ import yaml
 from acgh.integrations.om import OpenMetadataPlanAdapter
 from acgh.plancore.errors import PlanControlError
 from acgh.plancore.markers import create_session_marker, session_marker_path
+from acgh.plancore.markers import (
+    load_session_marker,
+    pair_from_run,
+    project_key,
+    record_trusted_input_lock_digest,
+    trusted_input_lock_digest,
+)
 from acgh.plancore.preflight import run_preflight
 from acgh.plancore.resume import resume_proposal_run
-from acgh.plancore.schema import read_data
+from acgh.plancore.schema import read_data, validate as validate_schema
 from acgh.plancore.validate import run_validation
 from acgh.verdict import to_exit_code
 
@@ -40,6 +49,256 @@ class WorkflowInputError(RuntimeError):
 
 def timestamp() -> str:
     return datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
+
+
+def plan_timestamp() -> str:
+    """Return a UTC timestamp precise enough for local run allocation."""
+    return datetime.now(UTC).strftime("%Y%m%dT%H%M%S.%fZ")
+
+
+def _new_plan_session_id() -> str:
+    return f"local-{uuid.uuid4().hex}"
+
+
+def default_plan_state_root(project_root: str | Path) -> Path:
+    """Keep local plan state in Git metadata so it never dirties the checker."""
+    configured = os.environ.get("OM_PLAN_HOOK_STATE_ROOT")
+    if configured:
+        return Path(configured).expanduser().resolve()
+    project = Path(project_root).resolve()
+    completed = subprocess.run(
+        ["git", "-C", str(project), "rev-parse", "--git-path", "om-plan-state"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0 or not completed.stdout.strip():
+        raise WorkflowInputError(
+            "기본 plan state 경로를 찾지 못했습니다. "
+            "Git 저장소에서 실행하거나 --state-root를 지정하세요."
+        )
+    candidate = Path(completed.stdout.strip())
+    if not candidate.is_absolute():
+        candidate = project / candidate
+    return candidate.resolve()
+
+
+def default_plan_evidence_root(project_root: str | Path) -> Path:
+    """Keep generated runs in Git metadata so repeated starts stay clean."""
+    project = Path(project_root).resolve()
+    completed = subprocess.run(
+        ["git", "-C", str(project), "rev-parse", "--git-path", "om-plan-evidence"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0 or not completed.stdout.strip():
+        raise WorkflowInputError(
+            "기본 plan evidence 경로를 찾지 못했습니다. "
+            "Git 저장소에서 실행하거나 --evidence-root를 지정하세요."
+        )
+    candidate = Path(completed.stdout.strip())
+    if not candidate.is_absolute():
+        candidate = project / candidate
+    return candidate.resolve()
+
+
+def allocate_plan_run_dir(
+    evidence_root: str | Path,
+    mode: str,
+    *,
+    timestamp_value: str | None = None,
+) -> Path:
+    """Select a new path without ever reusing an existing run directory."""
+    stamp = timestamp_value or plan_timestamp()
+    base = Path(evidence_root).resolve() / f"om-plan-{mode}-{stamp}"
+    candidate = base
+    suffix = 1
+    while candidate.exists():
+        candidate = base.with_name(f"{base.name}-{suffix:02d}")
+        suffix += 1
+    return candidate
+
+
+def _create_or_reuse_session_marker(
+    state_root: str | Path,
+    project_root: str | Path,
+    session_id: str | None,
+) -> tuple[str, Path]:
+    if session_id:
+        marker = session_marker_path(state_root, project_root, session_id)
+        if marker.exists():
+            session = load_session_marker(marker)
+            if session.get("run_dir") is not None:
+                raise PlanControlError(
+                    "SESSION_ALREADY_BOUND",
+                    "the requested session is already bound to a plan run",
+                    details={"run_dir": session.get("run_dir")},
+                )
+            return session_id, marker
+        return session_id, create_session_marker(
+            state_root,
+            project_root,
+            session_id,
+        )
+
+    for _ in range(32):
+        generated = _new_plan_session_id()
+        try:
+            marker = create_session_marker(state_root, project_root, generated)
+        except PlanControlError as exc:
+            if exc.code == "SESSION_ALREADY_ACTIVE":
+                continue
+            raise
+        return generated, marker
+    raise PlanControlError(
+        "SESSION_ID_ALLOCATION_FAILED",
+        "could not allocate a unique automatic session id",
+    )
+
+
+def select_plan_session_id(
+    explicit_session_id: str | None,
+) -> str | None:
+    """Prefer an explicit identity, then one supplied by a trusted adapter."""
+    if explicit_session_id:
+        return explicit_session_id
+    return os.environ.get("OM_PLAN_SESSION_ID") or None
+
+
+def incomplete_plan_runs(
+    state_root: str | Path,
+    project_root: str | Path,
+) -> list[dict[str, str]]:
+    """Return marker-verified active runs for the requested checker project."""
+    directory = Path(state_root).resolve() / project_key(project_root)
+    if not directory.is_dir():
+        return []
+    active: list[dict[str, str]] = []
+    for marker in sorted(directory.glob("*.active")):
+        session = load_session_marker(marker)
+        run_dir = session.get("run_dir")
+        if run_dir is None:
+            continue
+        pair = pair_from_run(run_dir)
+        if pair.session_marker != marker.resolve():
+            raise PlanControlError(
+                "MARKER_OWNERSHIP_MISMATCH",
+                "run marker points to a different session marker",
+                details={"marker": str(marker), "run_dir": str(run_dir)},
+            )
+        active.append(
+            {
+                "run_dir": str(Path(run_dir).resolve()),
+                "session_id": pair.session_id,
+            }
+        )
+    return active
+
+
+def select_incomplete_plan_run(
+    state_root: str | Path,
+    project_root: str | Path,
+) -> Path:
+    active = incomplete_plan_runs(state_root, project_root)
+    if not active:
+        raise PlanControlError(
+            "PLAN_RUN_NOT_FOUND",
+            "no incomplete plan run was found",
+            details={"state_root": str(Path(state_root).resolve())},
+        )
+    if len(active) != 1:
+        raise PlanControlError(
+            "PLAN_RUN_AMBIGUOUS",
+            "multiple incomplete plan runs require an explicit run directory",
+            details={"runs": active},
+        )
+    return Path(active[0]["run_dir"])
+
+
+def start_plan_run(args: argparse.Namespace) -> dict:
+    request = read_data(args.request)
+    validate_schema("run-request", request)
+    project_root = Path(args.project_root).resolve()
+    state_root = (
+        Path(args.state_root).resolve()
+        if args.state_root is not None
+        else default_plan_state_root(project_root)
+    )
+    if args.run_dir is not None:
+        run_dir = Path(args.run_dir).resolve()
+    else:
+        evidence_root = (
+            Path(args.evidence_root).resolve()
+            if args.evidence_root is not None
+            else default_plan_evidence_root(project_root)
+        )
+        run_dir = allocate_plan_run_dir(evidence_root, request["mode"])
+    session_id_hint = select_plan_session_id(
+        args.session_id,
+    )
+    session_id, marker = _create_or_reuse_session_marker(
+        state_root,
+        project_root,
+        session_id_hint,
+    )
+    result = run_preflight(
+        args.request,
+        run_dir,
+        OpenMetadataPlanAdapter(),
+        session_marker=marker,
+    )
+    record_trusted_input_lock_digest(marker, result["input_lock_digest"])
+    command = " ".join(
+        shlex.quote(value)
+        for value in (
+            sys.executable,
+            str(Path(__file__).resolve()),
+            "plan",
+            "check",
+            str(run_dir),
+        )
+    )
+    return {
+        **result,
+        "run_dir": str(run_dir),
+        "state_root": str(state_root),
+        "session_id": session_id,
+        "next_command": command,
+    }
+
+
+def check_plan_run(args: argparse.Namespace) -> dict:
+    project_root = Path(args.project_root).resolve()
+    if args.run_dir is not None:
+        run_dir = Path(args.run_dir).resolve()
+    else:
+        state_root = (
+            Path(args.state_root).resolve()
+            if args.state_root is not None
+            else default_plan_state_root(project_root)
+        )
+        run_dir = select_incomplete_plan_run(state_root, project_root)
+    pair = pair_from_run(run_dir)
+    supplied_digest = args.expected_input_lock_digest
+    try:
+        recorded_digest = trusted_input_lock_digest(pair.session_marker)
+    except PlanControlError as exc:
+        if exc.code != "TRUSTED_INPUT_LOCK_DIGEST_MISSING" or supplied_digest is None:
+            raise
+        recorded_digest = supplied_digest
+    if supplied_digest is not None:
+        if supplied_digest != recorded_digest:
+            raise PlanControlError(
+                "TRUSTED_INPUT_LOCK_DIGEST_MISMATCH",
+                "the supplied digest differs from the digest retained at plan start",
+                details={"recorded": recorded_digest, "supplied": supplied_digest},
+            )
+    return run_validation(
+        run_dir,
+        OpenMetadataPlanAdapter(),
+        expected_input_lock_digest=supplied_digest or recorded_digest,
+    )
 
 
 def registration_for(version: str) -> Path:
@@ -148,8 +407,31 @@ def parse_args() -> argparse.Namespace:
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    plan = subparsers.add_parser("plan", help="승인 전 등록 변경안 생성")
-    add_repo_version(plan)
+    plan = subparsers.add_parser("plan", help="계획 실행 또는 기존 등록 변경안 생성")
+    plan_actions = plan.add_subparsers(dest="plan_action")
+    plan_start = plan_actions.add_parser(
+        "start",
+        help="요청 파일로 새 /om-plan run 시작",
+    )
+    plan_start.add_argument("request", type=Path)
+    run_location = plan_start.add_mutually_exclusive_group()
+    run_location.add_argument("--run-dir", type=Path)
+    run_location.add_argument("--evidence-root", type=Path)
+    plan_start.add_argument("--state-root", type=Path)
+    plan_start.add_argument("--session-id")
+    plan_start.add_argument("--project-root", type=Path, default=PROJECT)
+
+    plan_check = plan_actions.add_parser(
+        "check",
+        help="현재 또는 지정한 /om-plan run 검증",
+    )
+    plan_check.add_argument("run_dir", nargs="?", type=Path)
+    plan_check.add_argument("--state-root", type=Path)
+    plan_check.add_argument("--project-root", type=Path, default=PROJECT)
+    plan_check.add_argument("--expected-input-lock-digest")
+
+    plan.add_argument("--repo", type=Path)
+    plan.add_argument("--version")
     plan.add_argument("--fork-ref")
     plan.add_argument("--custom-ref")
     plan.add_argument("--new-id-input", type=Path)
@@ -318,6 +600,11 @@ def parse_args() -> argparse.Namespace:
 
 
 def plan_command(args: argparse.Namespace) -> tuple[list[str], dict[str, object]]:
+    if args.repo is None or not args.version:
+        raise WorkflowInputError(
+            "기존 등록 변경안 생성에는 --repo와 --version이 필요합니다. "
+            "새 /om-plan 실행은 'plan start <요청.yaml>'을 사용하세요."
+        )
     paths = common_paths(args.version)
     output = args.output or (
         HARNESS
@@ -353,6 +640,16 @@ def plan_command(args: argparse.Namespace) -> tuple[list[str], dict[str, object]
 
 
 def dispatch(args: argparse.Namespace) -> int:
+    if args.command == "plan" and args.plan_action == "start":
+        result = start_plan_run(args)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0
+
+    if args.command == "plan" and args.plan_action == "check":
+        result = check_plan_run(args)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return to_exit_code(result["verdict"])
+
     if args.command == "plan-session-start":
         marker = create_session_marker(
             args.state_root,

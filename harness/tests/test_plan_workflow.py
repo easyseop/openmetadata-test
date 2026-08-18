@@ -4,6 +4,7 @@ import hashlib
 import json
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -27,6 +28,7 @@ from acgh.plancore.resume import resume_proposal_run
 from acgh.plancore.schema import read_data, validate
 from acgh.plancore.validate import run_validation as _run_validation
 from acgh.verdict import canonical_digest
+from harness import om_workflow
 
 
 def _git(repo: Path, *args: str) -> str:
@@ -302,6 +304,90 @@ def run_validation(run_dir: Path, adapter: OpenMetadataPlanAdapter) -> dict:
         adapter,
         expected_input_lock_digest=expected,
     )
+
+
+def test_simplified_cli_runs_existing_preflight_and_validate_end_to_end(
+    tmp_path: Path,
+) -> None:
+    product, checker, official, custom = _repos(tmp_path)
+    request = _initial_request(tmp_path, product, checker, official, custom)
+    state = tmp_path / "state"
+    run_dir = checker / "evidence" / "om-plan-cli-e2e"
+    start = om_workflow.start_plan_run(
+        SimpleNamespace(
+            request=request,
+            run_dir=run_dir,
+            evidence_root=None,
+            state_root=state,
+            session_id="cli-e2e",
+            project_root=checker,
+        )
+    )
+
+    assert start["status"] == "ready_for_proposal"
+    assert start["input_lock_digest"] == read_data(run_dir / "input-lock.yaml")[
+        "input_lock_digest"
+    ]
+    assert " plan check " in start["next_command"]
+    _proposal_from_first_fact(run_dir)
+
+    result = om_workflow.check_plan_run(
+        SimpleNamespace(
+            run_dir=None,
+            state_root=state,
+            project_root=checker,
+            expected_input_lock_digest=None,
+        )
+    )
+
+    assert result["verdict"] == "approval"
+    assert result["trusted_input_binding"]["verified"] is True
+    assert not (run_dir / ".plan-active").exists()
+
+
+def test_default_plan_paths_support_two_complete_runs_without_dirtying_checker(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    product, checker, official, custom = _repos(tmp_path)
+    request = _initial_request(tmp_path, product, checker, official, custom)
+    monkeypatch.delenv("OM_PLAN_HOOK_STATE_ROOT", raising=False)
+    monkeypatch.delenv("OM_PLAN_SESSION_ID", raising=False)
+    run_dirs: list[Path] = []
+
+    for _ in range(2):
+        start = om_workflow.start_plan_run(
+            SimpleNamespace(
+                request=request,
+                run_dir=None,
+                evidence_root=None,
+                state_root=None,
+                session_id=None,
+                project_root=checker,
+            )
+        )
+        run_dir = Path(start["run_dir"])
+        run_dirs.append(run_dir)
+        expected_root = Path(
+            _git(checker, "rev-parse", "--git-path", "om-plan-evidence")
+        )
+        if not expected_root.is_absolute():
+            expected_root = checker / expected_root
+        assert run_dir.parent == expected_root.resolve()
+        _proposal_from_first_fact(run_dir)
+        result = om_workflow.check_plan_run(
+            SimpleNamespace(
+                run_dir=None,
+                state_root=None,
+                project_root=checker,
+                expected_input_lock_digest=None,
+            )
+        )
+        assert result["verdict"] == "approval"
+        assert _git(checker, "status", "--short") == ""
+
+    assert run_dirs[0] != run_dirs[1]
+    assert all(run_dir.is_dir() for run_dir in run_dirs)
 
 
 def _rewrite_run_for_new_custom_head(run_dir: Path, new_custom: str) -> str:
@@ -1127,6 +1213,65 @@ def test_c42_hook_allows_only_current_proposal_directory(tmp_path: Path):
     )
     assert allowed.allowed
     assert not denied.allowed
+
+
+def test_simplified_plan_commands_preserve_hook_boundaries(tmp_path: Path):
+    project = tmp_path / "project"
+    project.mkdir()
+    marker = create_session_marker(tmp_path / "state", project, "a")
+    start = decide_pre_tool_use(
+        session_marker=marker,
+        tool_name="Bash",
+        command="python harness/om_workflow.py plan start request.yaml",
+    )
+    assert start.allowed
+
+    run = tmp_path / "run"
+    run.mkdir()
+    (run / "proposal").mkdir()
+    bind_run(marker, run)
+    check = decide_pre_tool_use(
+        session_marker=marker,
+        tool_name="Bash",
+        command="python harness/om_workflow.py plan check",
+    )
+    second_start = decide_pre_tool_use(
+        session_marker=marker,
+        tool_name="Bash",
+        command="python harness/om_workflow.py plan start other.yaml",
+    )
+    assert check.allowed
+    assert not second_start.allowed
+
+
+def test_hook_blocks_plan_check_for_another_sessions_run(tmp_path: Path):
+    project = tmp_path / "project"
+    project.mkdir()
+    state = tmp_path / "state"
+    marker_a = create_session_marker(state, project, "a")
+    marker_b = create_session_marker(state, project, "b")
+    run_a = tmp_path / "run-a"
+    run_b = tmp_path / "run-b"
+    for run in (run_a, run_b):
+        run.mkdir()
+        (run / "proposal").mkdir()
+    bind_run(marker_a, run_a)
+    bind_run(marker_b, run_b)
+
+    own = decide_pre_tool_use(
+        session_marker=marker_a,
+        tool_name="Bash",
+        command=f"python harness/om_workflow.py plan check {run_a}",
+    )
+    other = decide_pre_tool_use(
+        session_marker=marker_a,
+        tool_name="Bash",
+        command=f"python harness/om_workflow.py plan check {run_b}",
+    )
+
+    assert own.allowed
+    assert not other.allowed
+    assert "current session run" in other.reason
 
 
 def test_hook_adapter_uses_event_session_and_cwd_for_markers(tmp_path: Path):
