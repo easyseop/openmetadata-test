@@ -321,16 +321,23 @@ def run_fresh_validation(
             "fresh validation review_state does not match its stdout verdict"
         )
 
+    ci_exit_code = 0 if verdict in {"pass", "approval"} else completed.returncode
+    ci_status = "success-review-ready" if verdict == "approval" else (
+        "success" if verdict == "pass" else "failed"
+    )
     _append_text(
         step_summary,
         "## /om-plan fresh validation\n\n"
         f"- verdict: `{verdict}`\n"
         f"- review_state: `{result['review_state']}`\n"
-        f"- exit code: `{completed.returncode}`\n"
+        f"- CLI exit code: `{completed.returncode}`\n"
+        f"- CI status: `{ci_status}`\n"
+        f"- CI exit code: `{ci_exit_code}`\n"
+        "- `approval`은 배포 승인이 아니라 계획 검토 준비 상태\n"
         "- 판정 근거: 이 job에서 방금 실행한 CLI stdout과 종료 코드\n"
         "- 주의: 저장된 결과 파일 바이트는 CI 판정 입력으로 사용하지 않음\n",
     )
-    return completed.returncode
+    return ci_exit_code
 
 
 def _parser() -> argparse.ArgumentParser:

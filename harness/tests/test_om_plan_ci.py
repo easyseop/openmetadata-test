@@ -299,20 +299,21 @@ def test_rebind_run_request_changes_only_excluded_runtime_paths(tmp_path: Path):
 
 
 @pytest.mark.parametrize(
-    ("verdict", "review_state", "exit_code"),
+    ("verdict", "review_state", "cli_exit_code", "ci_exit_code"),
     [
-        ("pass", "not_ready", 0),
-        ("block", "not_ready", 1),
-        ("approval", "review_ready", 2),
-        ("analysis_error", "not_ready", 3),
+        ("pass", "not_ready", 0, 0),
+        ("block", "not_ready", 1, 1),
+        ("approval", "review_ready", 2, 0),
+        ("analysis_error", "not_ready", 3, 3),
     ],
 )
-def test_fresh_validate_returns_exact_cli_exit_and_records_stdout(
+def test_fresh_validate_maps_review_ready_to_ci_success_and_records_stdout(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     verdict: str,
     review_state: str,
-    exit_code: int,
+    cli_exit_code: int,
+    ci_exit_code: int,
 ):
     checker = tmp_path / "checker"
     run_dir = tmp_path / "run"
@@ -328,7 +329,7 @@ def test_fresh_validate_returns_exact_cli_exit_and_records_stdout(
         assert kwargs["cwd"] == checker.resolve()
         return subprocess.CompletedProcess(
             command,
-            exit_code,
+            cli_exit_code,
             stdout=json.dumps(result),
             stderr="",
         )
@@ -336,9 +337,14 @@ def test_fresh_validate_returns_exact_cli_exit_and_records_stdout(
     monkeypatch.setattr(CI.subprocess, "run", fake_run)
     actual = CI.run_fresh_validation(checker, run_dir, DIGEST, captured, summary)
 
-    assert actual == exit_code
+    assert actual == ci_exit_code
     assert json.loads(captured.read_text(encoding="utf-8")) == result
-    assert verdict in summary.read_text(encoding="utf-8")
+    summary_text = summary.read_text(encoding="utf-8")
+    assert verdict in summary_text
+    assert f"CLI exit code: `{cli_exit_code}`" in summary_text
+    if verdict == "approval":
+        assert "success-review-ready" in summary_text
+        assert "배포 승인이 아니라 계획 검토 준비 상태" in summary_text
 
 
 def test_fresh_validate_fails_closed_on_exit_result_mismatch(
@@ -401,6 +407,15 @@ def _prepare_cross_runner_validation(tmp_path: Path) -> tuple[Path, Path, str]:
         ["git", "clone", "-q", "--no-hardlinks", str(ROOT), str(checker)],
         check=True,
     )
+    # The source repository may contain the uncommitted implementation under
+    # test.  Fresh-validation runners must execute the same collector revision
+    # that created the facts, so materialize and commit that module in the
+    # throwaway checker clone.
+    collector_relative = Path("harness/acgh/integrations/om/collectors.py")
+    shutil.copy2(ROOT / collector_relative, checker / collector_relative)
+    if _git(checker, "status", "--porcelain", "--", str(collector_relative)):
+        _git(checker, "add", str(collector_relative))
+        _git(checker, "commit", "-q", "-m", "test collector revision")
     _write_checker_cache(checker, b"preflight runner cache")
     request = tmp_path / "request.yaml"
     request.write_text(
@@ -505,7 +520,7 @@ def test_cross_runner_fresh_validation_uses_ci_digest_and_recomputed_sources(
     )
 
     assert "PYTHONDONTWRITEBYTECODE" not in os.environ
-    assert exit_code == 2
+    assert exit_code == 0
     assert json.loads((tmp_path / "fresh.json").read_text(encoding="utf-8"))[
         "review_state"
     ] == "review_ready"

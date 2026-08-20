@@ -60,6 +60,41 @@ def test_plan_start_cli_accepts_simple_and_override_inputs(
     assert args.session_id == "operator-a"
 
 
+@pytest.mark.parametrize(
+    "removed_command",
+    [
+        "apply",
+        "bootstrap",
+        "risk",
+        "runtime",
+        "source",
+        "watch",
+        "patch-kill",
+        "typecheck",
+        "resolve-json",
+    ],
+)
+def test_clean_export_rejects_removed_dangling_commands(
+    monkeypatch: pytest.MonkeyPatch,
+    removed_command: str,
+) -> None:
+    monkeypatch.setattr(sys, "argv", ["om_workflow.py", removed_command])
+
+    with pytest.raises(SystemExit) as caught:
+        om_workflow.parse_args()
+
+    assert caught.value.code == 2
+
+
+def test_plan_requires_an_executable_subcommand(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(sys, "argv", ["om_workflow.py", "plan"])
+
+    with pytest.raises(SystemExit) as caught:
+        om_workflow.parse_args()
+
+    assert caught.value.code == 2
+
+
 def test_start_allocator_never_reuses_existing_run(tmp_path: Path) -> None:
     existing = tmp_path / "om-plan-initial-fixed"
     existing.mkdir()

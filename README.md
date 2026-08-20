@@ -12,6 +12,14 @@ OpenMetadata(데이터카탈로그) 커스터마이징 버전업 검증 검사�
 - `harness/tests/` — 검사기 자체 반례 테스트
 - `.github/workflows/` — 폐기된 GitHub CI (참조 보존, GitLab이 정본)
 
+이 clean export가 노출하는 실행 명령은 자족 가능한 `/om-plan` 계열로
+한정한다: `plan start`, `plan check`, `plan-session-start`, `plan-preflight`,
+`plan-validate`, `plan-resume`.
+
+민감 경로 `watch`·`risk` 게이트는 필요한 worker와 의존 모듈이 있는 완전본
+게이트 환경에서 실행한다. 따라서 이 export에서는 해당 명령과 데드
+`sensitive-zones.yaml`을 제공하지 않는다.
+
 ## 출처 (clean export)
 
 개발 작업장 `github.com/easyseop/openmetadata-test`
