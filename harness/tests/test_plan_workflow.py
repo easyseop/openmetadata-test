@@ -1245,6 +1245,7 @@ def test_c41_concurrent_cleanup_does_not_remove_other_session(tmp_path: Path):
     "command",
     [
         "git commit -m x",
+        "/usr/bin/git push origin main",
         "git -C /tmp/repo reset --hard",
         "git worktree add /tmp/x branch",
         "git fetch origin",
@@ -1374,6 +1375,136 @@ def test_hook_adapter_uses_event_session_and_cwd_for_markers(tmp_path: Path):
         state,
     )
     assert denied["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+
+def test_direct_slash_expansion_requires_the_prompt_session_marker(tmp_path: Path):
+    project = tmp_path / "project"
+    project.mkdir()
+    state = tmp_path / "state"
+
+    denied = handle_event(
+        {
+            "session_id": "direct-slash",
+            "cwd": str(project),
+            "hook_event_name": "UserPromptExpansion",
+            "command_name": "om-plan",
+            "command_args": "upgrade",
+        },
+        state,
+    )
+    assert denied["decision"] == "block"
+
+    assert handle_event(
+        {
+            "session_id": "direct-slash",
+            "cwd": str(project),
+            "hook_event_name": "UserPromptSubmit",
+            "prompt": "/om-plan upgrade",
+        },
+        state,
+    ) is None
+    assert handle_event(
+        {
+            "session_id": "direct-slash",
+            "cwd": str(project),
+            "hook_event_name": "UserPromptExpansion",
+            "command_name": "om-plan",
+            "command_args": "upgrade",
+        },
+        state,
+    ) is None
+
+    assert session_marker_path(state, project, "direct-slash").is_file()
+
+
+def test_skill_tool_route_establishes_a_marker_before_workflow_tools(tmp_path: Path):
+    project = tmp_path / "project"
+    project.mkdir()
+    state = tmp_path / "state"
+
+    assert handle_event(
+        {
+            "session_id": "skill-route",
+            "cwd": str(project),
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Skill",
+            "tool_input": {"skill": "om-plan", "args": "feature"},
+        },
+        state,
+    ) is None
+
+    assert session_marker_path(state, project, "skill-route").is_file()
+
+
+def test_plan_command_without_marker_is_denied(tmp_path: Path):
+    project = tmp_path / "project"
+    project.mkdir()
+    result = handle_event(
+        {
+            "session_id": "missing-marker",
+            "cwd": str(project),
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Bash",
+            "tool_input": {
+                "command": "python harness/om_workflow.py plan check /tmp/run"
+            },
+        },
+        tmp_path / "state",
+    )
+
+    assert result["hookSpecificOutput"]["permissionDecision"] == "deny"
+    assert "session marker" in result["hookSpecificOutput"]["permissionDecisionReason"]
+
+
+def test_trusted_workflow_command_receives_hook_session_environment(tmp_path: Path):
+    project = tmp_path / "project"
+    project.mkdir()
+    state = tmp_path / "state"
+    create_session_marker(state, project, "bound-session")
+
+    result = handle_event(
+        {
+            "session_id": "bound-session",
+            "cwd": str(project),
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Bash",
+            "tool_input": {
+                "command": "python harness/om_workflow.py plan start request.yaml",
+                "timeout": 1000,
+            },
+        },
+        state,
+    )
+
+    output = result["hookSpecificOutput"]
+    assert output["permissionDecision"] == "allow"
+    assert "OM_PLAN_SESSION_ID=bound-session" in output["updatedInput"]["command"]
+    assert "OM_PLAN_HOOK_STATE_ROOT=" in output["updatedInput"]["command"]
+    assert output["updatedInput"]["timeout"] == 1000
+
+
+def test_only_the_independent_document_reviewer_agent_is_allowed(tmp_path: Path):
+    project = tmp_path / "project"
+    project.mkdir()
+    marker = create_session_marker(tmp_path / "state", project, "agent-session")
+    run = tmp_path / "run"
+    run.mkdir()
+    (run / "proposal").mkdir()
+    bind_run(marker, run)
+
+    allowed = decide_pre_tool_use(
+        session_marker=marker,
+        tool_name="Agent",
+        agent_type="om-plan-official-doc-reviewer",
+    )
+    denied = decide_pre_tool_use(
+        session_marker=marker,
+        tool_name="Agent",
+        agent_type="general-purpose",
+    )
+
+    assert allowed.allowed
+    assert not denied.allowed
 
 
 def test_stop_hook_does_not_turn_recursive_block_into_pass(tmp_path: Path):

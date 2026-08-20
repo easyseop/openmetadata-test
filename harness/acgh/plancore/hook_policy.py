@@ -72,6 +72,11 @@ def _workflow_action(command: str) -> str | None:
     return None
 
 
+def workflow_action(command: str) -> str | None:
+    """Return the trusted planning action represented by a simple command."""
+    return _workflow_action(command)
+
+
 def _plan_check_run_dir(command: str) -> str | None:
     """Return an explicit simplified check run, ignoring known option values."""
     try:
@@ -114,7 +119,7 @@ def _contains_git_mutation(command: str) -> bool:
     except ValueError:
         return True
     for index, token in enumerate(tokens):
-        if token != "git":
+        if Path(token).name != "git":
             continue
         remaining = tokens[index + 1 :]
         cursor = 0
@@ -140,6 +145,7 @@ def decide_pre_tool_use(
     tool_name: str,
     target_path: str | Path | None = None,
     command: str | None = None,
+    agent_type: str | None = None,
 ) -> HookDecision:
     session = load_session_marker(session_marker)
     run_dir_value = session.get("run_dir")
@@ -156,6 +162,19 @@ def decide_pre_tool_use(
 
     if tool_name in {"Read", "Glob", "Grep"}:
         return HookDecision(True, "read-only tool")
+
+    if tool_name == "Agent":
+        if run_pair is not None and agent_type == "om-plan-official-doc-reviewer":
+            return HookDecision(
+                True,
+                "independent official-document review agent",
+                str(proposal_dir),
+            )
+        return HookDecision(
+            False,
+            "only the independent official-document review agent is allowed while protected",
+            str(proposal_dir) if proposal_dir else None,
+        )
 
     if command is not None:
         if _contains_git_mutation(command):

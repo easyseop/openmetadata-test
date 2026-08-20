@@ -1,0 +1,58 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR}/.claude/hooks/run_om_plan_hook.sh\""
+          }
+        ]
+      }
+    ],
+    "UserPromptExpansion": [
+      {
+        "matcher": "^(om-plan|om-resume)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR}/.claude/hooks/run_om_plan_hook.sh\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR}/.claude/hooks/run_om_plan_hook.sh\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR}/.claude/hooks/run_om_plan_hook.sh\""
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "deny": [
+      "Bash(*om_workflow.py apply*)",
+      "Bash(*om_workflow.py bootstrap*)",
+      "Bash(*prepare_registration.py apply*)",
+      "Bash(*git push *)",
+      "Bash(*git tag *)",
+      "Bash(*docker push*)",
+      "Bash(*kubectl apply*)",
+      "Bash(*helm upgrade*)"
+    ]
+  }
+}

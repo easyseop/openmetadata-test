@@ -9,11 +9,16 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
 import sys
 from pathlib import Path
 
 from acgh.plancore.errors import PlanControlError
-from acgh.plancore.hook_policy import decide_pre_tool_use, stop_is_allowed
+from acgh.plancore.hook_policy import (
+    decide_pre_tool_use,
+    stop_is_allowed,
+    workflow_action,
+)
 from acgh.plancore.markers import create_session_marker, session_marker_path
 
 
@@ -48,6 +53,31 @@ def _deny(event: str, reason: str) -> dict:
     return {"decision": "block", "reason": reason}
 
 
+def _skill_command(tool_input: dict) -> str | None:
+    for key in ("skill", "name", "command"):
+        value = tool_input.get(key)
+        if isinstance(value, str):
+            return value.lstrip("/").split(maxsplit=1)[0]
+    return None
+
+
+def _updated_command(payload: dict, state_root: str | Path, command: str) -> dict:
+    tool_input = dict(payload["tool_input"])
+    prefix = (
+        f"OM_PLAN_SESSION_ID={shlex.quote(_required(payload, 'session_id'))} "
+        f"OM_PLAN_HOOK_STATE_ROOT={shlex.quote(str(Path(state_root).resolve()))} "
+    )
+    tool_input["command"] = prefix + command
+    return {
+        "hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "permissionDecision": "allow",
+            "permissionDecisionReason": "trusted planning command bound to this hook session",
+            "updatedInput": tool_input,
+        }
+    }
+
+
 def handle_event(payload: dict, state_root: str | Path) -> dict | None:
     """Return the hook protocol decision, or ``None`` for no decision."""
     event = _required(payload, "hook_event_name")
@@ -68,7 +98,21 @@ def handle_event(payload: dict, state_root: str | Path) -> dict | None:
         )
         return None
 
-    if not marker.exists():
+    if event == "UserPromptExpansion":
+        command_name = payload.get("command_name")
+        if not isinstance(command_name, str) or command_name.lstrip("/") not in {
+            "om-plan",
+            "om-resume",
+        }:
+            return None
+        # Direct slash expansion must follow the marker-establishing prompt
+        # event.  Missing state is a bypass attempt, not a reason to mint a new
+        # marker without the duplicate-run check in UserPromptSubmit.
+        if not marker.exists():
+            return _deny(
+                event,
+                "direct slash expansion requires a session marker from UserPromptSubmit",
+            )
         return None
 
     if event == "PreToolUse":
@@ -76,15 +120,39 @@ def handle_event(payload: dict, state_root: str | Path) -> dict | None:
         tool_input = payload.get("tool_input")
         if not isinstance(tool_input, dict):
             return _deny(event, "tool_input is missing or invalid")
-        target = tool_input.get("file_path")
+        if tool_name == "Skill" and _skill_command(tool_input) in {
+            "om-plan",
+            "om-resume",
+        }:
+            if not marker.exists():
+                create_session_marker(
+                    state_root,
+                    _required(payload, "cwd"),
+                    _required(payload, "session_id"),
+                )
+            return None
         command = tool_input.get("command")
+        if not marker.exists():
+            if isinstance(command, str) and workflow_action(command) is not None:
+                return _deny(event, "planning command requires an active session marker")
+            return None
+
+    if not marker.exists():
+        return None
+
+    if event == "PreToolUse":
+        target = tool_input.get("file_path")
+        agent_type = tool_input.get("subagent_type") or tool_input.get("agent_type")
         decision = decide_pre_tool_use(
             session_marker=marker,
             tool_name=tool_name,
             target_path=target if isinstance(target, str) else None,
             command=command if isinstance(command, str) else None,
+            agent_type=agent_type if isinstance(agent_type, str) else None,
         )
         if decision.allowed:
+            if isinstance(command, str) and workflow_action(command) is not None:
+                return _updated_command(payload, state_root, command)
             return None
         return _deny(event, decision.reason)
 
