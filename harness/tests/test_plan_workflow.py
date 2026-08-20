@@ -254,7 +254,7 @@ def _upgrade_request(tmp_path: Path) -> tuple[Path, Path, Path, Path]:
             "harness/acgh/integrations/om/catalog.txt": "adapter\n",
         },
     )
-    registration = _install_registration(checker)
+    registration = _install_registration(checker, manifest_paths=["official.txt"])
     document = tmp_path / "release-1.0.1.html"
     document.write_text("official release 1.0.1 container", encoding="utf-8")
     request = {
@@ -309,6 +309,60 @@ def _proposal_from_first_fact(run_dir: Path, *, owner_unresolved: bool = False) 
         proposal["questions"] = ["담당 owner를 지정하세요"]
         proposal["next_step_blocked"] = True
     (run_dir / "proposal" / "plan.yaml").write_text(
+        yaml.safe_dump(proposal, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+
+
+def _complete_upgrade_proposal(
+    run_dir: Path,
+    *,
+    remap_paths: list[str] | None = None,
+    link_finding: bool = True,
+    omit_output: str | None = None,
+    missing_requirements: list[dict] | None = None,
+) -> None:
+    _proposal_from_first_fact(run_dir)
+    proposal_path = run_dir / "proposal" / "plan.yaml"
+    proposal = read_data(proposal_path)
+    facts = read_data(run_dir / "discovered-facts.json")
+    values = {
+        item["fact_id"]: item["value"]
+        for item in facts["canonical_payload"]["items"]
+    }
+    proposal.update(
+        {
+            "findings": [
+                {"id": "DOC-1", "category": "release_requirement", "statement": "review"}
+            ],
+            "crosschecks": [
+                {
+                    "finding_id": "DOC-1" if link_finding else "OTHER",
+                    "relation": "documented_and_observed",
+                }
+            ],
+            "upgrade_plan": [{"action": "reapply customization"}],
+            "path_remap": [
+                {"from": path, "to": path}
+                for path in (remap_paths if remap_paths is not None else ["official.txt"])
+            ],
+            "manifest_deltas": [{"customization_id": "BANK-OM-001"}],
+            "shared_code_definitions_delta": {"not_applicable": True, "reason": "no move"},
+            "required_tests": [{"id": "tests/contracts.py::test_one"}],
+            "operations": {"not_applicable": True, "reason": "no operation"},
+            "unresolved_questions": {"not_applicable": True, "reason": "none"},
+            "independent_document_review": {
+                "review_context": "independent_agent",
+                "snapshot_digests": [
+                    item["byte_digest"] for item in values["official-documents"]
+                ],
+                "missing_requirements": missing_requirements or [],
+            },
+        }
+    )
+    if omit_output is not None:
+        proposal.pop(omit_output)
+    proposal_path.write_text(
         yaml.safe_dump(proposal, allow_unicode=True, sort_keys=False),
         encoding="utf-8",
     )
@@ -1630,6 +1684,70 @@ def test_e06_upgrade_document_sources_are_bound_into_input_lock(tmp_path: Path):
     assert result["verdict"] == "analysis_error"
     attempt = read_data(run_dir / result["attempts"][-1])
     assert "recomputed input lock does not match the stored lock" in attempt["reasons"]
+
+
+def test_upgrade_complete_three_layer_proposal_reaches_review_ready(tmp_path: Path):
+    _, checker, request_path, _ = _upgrade_request(tmp_path)
+    _, _, run_dir, _ = _run_requested_preflight(tmp_path, checker, request_path)
+    _complete_upgrade_proposal(run_dir)
+
+    result = run_validation(run_dir, OpenMetadataPlanAdapter())
+
+    assert result["verdict"] == "approval"
+
+
+def test_upgrade_path_remap_missing_affected_registered_path_blocks(tmp_path: Path):
+    _, checker, request_path, _ = _upgrade_request(tmp_path)
+    _, _, run_dir, _ = _run_requested_preflight(tmp_path, checker, request_path)
+    _complete_upgrade_proposal(run_dir, remap_paths=["unrelated.txt"])
+
+    result = run_validation(run_dir, OpenMetadataPlanAdapter())
+    attempt = read_data(run_dir / result["attempts"][-1])
+
+    assert result["verdict"] == "block"
+    assert any("path-remap does not cover" in reason for reason in attempt["reasons"])
+
+
+def test_upgrade_unlinked_official_document_finding_blocks(tmp_path: Path):
+    _, checker, request_path, _ = _upgrade_request(tmp_path)
+    _, _, run_dir, _ = _run_requested_preflight(tmp_path, checker, request_path)
+    _complete_upgrade_proposal(run_dir, link_finding=False)
+
+    result = run_validation(run_dir, OpenMetadataPlanAdapter())
+    attempt = read_data(run_dir / result["attempts"][-1])
+
+    assert result["verdict"] == "block"
+    assert any("not linked from crosschecks" in reason for reason in attempt["reasons"])
+
+
+def test_upgrade_missing_judgment_output_blocks(tmp_path: Path):
+    _, checker, request_path, _ = _upgrade_request(tmp_path)
+    _, _, run_dir, _ = _run_requested_preflight(tmp_path, checker, request_path)
+    _complete_upgrade_proposal(run_dir, omit_output="manifest_deltas")
+
+    result = run_validation(run_dir, OpenMetadataPlanAdapter())
+    attempt = read_data(run_dir / result["attempts"][-1])
+
+    assert result["verdict"] == "block"
+    assert "upgrade output is missing or empty: manifest-deltas" in attempt["reasons"]
+
+
+def test_upgrade_independent_review_missing_requirement_blocks(tmp_path: Path):
+    _, checker, request_path, _ = _upgrade_request(tmp_path)
+    _, _, run_dir, _ = _run_requested_preflight(tmp_path, checker, request_path)
+    _complete_upgrade_proposal(
+        run_dir,
+        missing_requirements=[{"id": "SECOND-READ-1", "statement": "run migration"}],
+    )
+
+    result = run_validation(run_dir, OpenMetadataPlanAdapter())
+    attempt = read_data(run_dir / result["attempts"][-1])
+
+    assert result["verdict"] == "block"
+    assert (
+        "independent document review found requirements missing from the proposal"
+        in attempt["reasons"]
+    )
 
 
 def test_e07_note_only_proposal_is_blocked(tmp_path: Path):

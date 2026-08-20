@@ -642,8 +642,18 @@ class OpenMetadataPlanAdapter:
         crosscheck_relations: list[str] = []
         pointer_movement = False
         has_shared_delta = False
+        path_remaps: list[object] = []
+        crosscheck_finding_refs: set[str] = set()
+        upgrade_outputs: dict[str, object] = {}
+        independent_reviews: list[dict] = []
         for document in proposal_documents:
-            for finding in document.get("findings") or []:
+            document_findings = (
+                document.get("official-doc-findings")
+                or document.get("official_doc_findings")
+                or document.get("findings")
+                or []
+            )
+            for finding in document_findings:
                 if isinstance(finding, dict):
                     findings.append(finding)
             for item in document.get("operations") or document.get("checklist") or []:
@@ -651,11 +661,62 @@ class OpenMetadataPlanAdapter:
                     reference = item.get("finding_id") or item.get("source_finding")
                     if isinstance(reference, str):
                         checklist_refs.add(reference)
-            for item in document.get("crosschecks") or []:
-                if isinstance(item, dict) and isinstance(item.get("relation"), str):
-                    crosscheck_relations.append(item["relation"])
+            document_crosschecks = (
+                document.get("doc-code-crosscheck")
+                or document.get("doc_code_crosscheck")
+                or document.get("crosschecks")
+                or []
+            )
+            for item in document_crosschecks:
+                if isinstance(item, dict):
+                    if isinstance(item.get("relation"), str):
+                        crosscheck_relations.append(item["relation"])
+                    references = (
+                        item.get("finding_ids")
+                        or [item.get("finding_id") or item.get("source_finding")]
+                    )
+                    if isinstance(references, list):
+                        crosscheck_finding_refs.update(
+                            value for value in references if isinstance(value, str)
+                        )
             pointer_movement = pointer_movement or bool(document.get("pointer_movements"))
-            has_shared_delta = has_shared_delta or "shared_code_definitions_delta" in document
+            has_shared_delta = has_shared_delta or any(
+                key in document
+                for key in (
+                    "shared-code-definitions-delta",
+                    "shared_code_definitions_delta",
+                )
+            )
+            for key, aliases in {
+                "official-doc-findings": ("official-doc-findings", "official_doc_findings", "findings"),
+                "doc-code-crosscheck": ("doc-code-crosscheck", "doc_code_crosscheck", "crosschecks"),
+                "upgrade-plan": ("upgrade-plan", "upgrade_plan"),
+                "path-remap": ("path-remap", "path_remap"),
+                "manifest-deltas": ("manifest-deltas", "manifest_deltas"),
+                "shared-code-definitions-delta": (
+                    "shared-code-definitions-delta",
+                    "shared_code_definitions_delta",
+                ),
+                "contracts-to-run": ("contracts-to-run", "contracts_to_run", "required_tests"),
+                "operations": ("operations",),
+                "unresolved-questions": ("unresolved-questions", "unresolved_questions", "questions"),
+            }.items():
+                for alias in aliases:
+                    if alias in document:
+                        upgrade_outputs.setdefault(key, document[alias])
+                        break
+            remaps = document.get("path-remap", document.get("path_remap"))
+            if isinstance(remaps, list):
+                path_remaps.extend(remaps)
+            review = document.get("independent_document_review")
+            if isinstance(review, dict):
+                independent_reviews.append(review)
+            for decision in document.get("decisions") or []:
+                if not isinstance(decision, dict):
+                    continue
+                nested_tests = decision.get("required_tests")
+                if nested_tests and "contracts-to-run" not in upgrade_outputs:
+                    upgrade_outputs["contracts-to-run"] = nested_tests
         for finding in findings:
             if finding.get("category") in {"db_migration", "reindex", "configuration"}:
                 if finding.get("id") not in checklist_refs:
@@ -676,4 +737,103 @@ class OpenMetadataPlanAdapter:
             issues.append(
                 "pointer movement requires a shared code definition delta instead of a feature-loss claim"
             )
+        if request.get("mode") == "upgrade":
+            def meaningful(value: object) -> bool:
+                if isinstance(value, str):
+                    return bool(value.strip())
+                if isinstance(value, list):
+                    return bool(value)
+                if isinstance(value, dict):
+                    if value.get("not_applicable") is True:
+                        return isinstance(value.get("reason"), str) and bool(
+                            value["reason"].strip()
+                        )
+                    return bool(value)
+                return value is not None
+
+            for output_name in (
+                "official-doc-findings",
+                "doc-code-crosscheck",
+                "upgrade-plan",
+                "path-remap",
+                "manifest-deltas",
+                "shared-code-definitions-delta",
+                "contracts-to-run",
+                "operations",
+                "unresolved-questions",
+            ):
+                if output_name not in upgrade_outputs or not meaningful(
+                    upgrade_outputs[output_name]
+                ):
+                    issues.append(
+                        f"upgrade output is missing or empty: {output_name}"
+                    )
+
+            expected_paths = set(
+                fact_values.get("official-upgrade-paths") or []
+            ) & set(fact_values.get("registered-customization-paths") or [])
+            covered_paths: set[str] = set()
+            for remap in path_remaps:
+                if not isinstance(remap, dict):
+                    continue
+                source_path = (
+                    remap.get("path")
+                    or remap.get("from")
+                    or remap.get("source_path")
+                    or remap.get("old_path")
+                )
+                if isinstance(source_path, str):
+                    covered_paths.add(source_path)
+            missing_paths = sorted(expected_paths - covered_paths)
+            if missing_paths:
+                issues.append(
+                    "path-remap does not cover affected registered customization paths: "
+                    + ", ".join(missing_paths)
+                )
+
+            finding_ids = {
+                finding["id"]
+                for finding in findings
+                if isinstance(finding.get("id"), str)
+            }
+            missing_crosschecks = sorted(finding_ids - crosscheck_finding_refs)
+            if missing_crosschecks:
+                issues.append(
+                    "official document findings are not linked from crosschecks: "
+                    + ", ".join(missing_crosschecks)
+                )
+
+            if len(independent_reviews) != 1:
+                issues.append(
+                    "upgrade requires exactly one independent_document_review from a separate LLM context"
+                )
+            else:
+                review = independent_reviews[0]
+                recorded_digests = {
+                    item.get("byte_digest")
+                    for item in fact_values.get("official-documents") or []
+                    if isinstance(item, dict) and isinstance(item.get("byte_digest"), str)
+                }
+                reviewed_digests = {
+                    value
+                    for value in review.get("snapshot_digests") or []
+                    if isinstance(value, str)
+                }
+                if reviewed_digests != recorded_digests:
+                    issues.append(
+                        "independent document review does not cover the exact official snapshots"
+                    )
+                if review.get("review_context") != "independent_agent":
+                    issues.append(
+                        "independent document review must declare review_context=independent_agent"
+                    )
+                missing_requirements = review.get("missing_requirements")
+                if not isinstance(missing_requirements, list):
+                    issues.append(
+                        "independent document review must include missing_requirements as a list"
+                    )
+                elif missing_requirements:
+                    issues.append(
+                        "independent document review found requirements missing from the proposal"
+                    )
         return issues
