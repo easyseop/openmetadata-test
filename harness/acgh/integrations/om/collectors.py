@@ -17,6 +17,26 @@ from acgh.plancore.errors import PlanControlError
 _VERSION = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 
 
+def _sorted_strings(values: object) -> list[str]:
+    if not isinstance(values, list):
+        return []
+    return sorted({value for value in values if isinstance(value, str)})
+
+
+def _empty_registration_metadata() -> dict:
+    return {
+        "ids": [],
+        "contract_ids": [],
+        "test_ids": [],
+        "shared_owners": {},
+        "customization_paths": [],
+        "customization_relations": [],
+        "contract_tests": {},
+        "id_contract_consistency": {"consistent": True, "divergences": []},
+        "source_provenance": {},
+    }
+
+
 def _version_relation(base: str | None, target: str | None) -> str:
     if base is None or target is None:
         return "not_applicable"
@@ -43,48 +63,145 @@ def _version_relation(base: str | None, target: str | None) -> str:
 
 def _registration_metadata(path: Path | None) -> dict:
     if path is None or not path.is_dir():
-        return {
-            "ids": [],
-            "contract_ids": [],
-            "test_ids": [],
-            "shared_owners": {},
-            "source_provenance": {},
-        }
+        return _empty_registration_metadata()
     registry = path / "customization-registry.yaml"
     if not registry.is_file():
-        return {
-            "ids": [],
-            "contract_ids": [],
-            "test_ids": [],
-            "shared_owners": {},
-            "source_provenance": {},
-        }
+        return _empty_registration_metadata()
     data = yaml.safe_load(registry.read_text(encoding="utf-8")) or {}
+    contracts_path = path / "contracts.yaml"
+    contract_tests_sets: dict[str, set[str]] = {}
+    catalog_contracts_by_id: dict[str, set[str]] = {}
+    if contracts_path.is_file():
+        contracts_data = yaml.safe_load(contracts_path.read_text(encoding="utf-8")) or {}
+        for contract in contracts_data.get("contracts") or []:
+            if not isinstance(contract, dict) or not isinstance(contract.get("id"), str):
+                continue
+            contract_id = contract["id"]
+            contract_tests_sets.setdefault(contract_id, set()).update(
+                _sorted_strings(contract.get("required_tests"))
+            )
+            for customization_id in _sorted_strings(contract.get("customization_ids")):
+                catalog_contracts_by_id.setdefault(customization_id, set()).add(
+                    contract_id
+                )
+
     candidates = data.get("customizations") or data.get("entries") or []
     result: list[str] = []
+    customization_paths: set[str] = set()
+    relation_parts: dict[str, dict[str, set[str]]] = {}
+    registry_contracts_by_id: dict[str, set[str]] = {}
+    manifest_contracts_by_id: dict[str, set[str]] = {}
+    registration_root = path.resolve()
     if isinstance(candidates, list):
         for item in candidates:
             if isinstance(item, dict):
                 value = item.get("id") or item.get("customization_id")
-                if isinstance(value, str):
-                    result.append(value)
+                if not isinstance(value, str):
+                    continue
+                result.append(value)
+                registry_contracts = set(_sorted_strings(item.get("contracts")))
+                registry_contracts_by_id.setdefault(value, set()).update(
+                    registry_contracts
+                )
+                manifest_contracts_by_id.setdefault(value, set())
+                parts = relation_parts.setdefault(
+                    value,
+                    {
+                        "changed_paths": set(),
+                        "required_changed_paths": set(),
+                        "direct_tests": set(),
+                    },
+                )
+                manifest_value = item.get("manifest")
+                if not isinstance(manifest_value, str):
+                    raise PlanControlError(
+                        "REGISTRATION_MANIFEST_PATH_INVALID",
+                        "registered customization does not name a manifest file",
+                        details={"customization_id": value, "manifest": manifest_value},
+                    )
+                manifest = (path / manifest_value).resolve()
+                try:
+                    manifest.relative_to(registration_root)
+                except ValueError as exc:
+                    raise PlanControlError(
+                        "REGISTRATION_MANIFEST_PATH_INVALID",
+                        "registered manifest path escapes the registration directory",
+                        details={"customization_id": value, "manifest": manifest_value},
+                    ) from exc
+                if not manifest.is_file():
+                    raise PlanControlError(
+                        "REGISTRATION_MANIFEST_PATH_INVALID",
+                        "registered manifest file does not exist",
+                        details={"customization_id": value, "manifest": manifest_value},
+                    )
+                manifest_data = yaml.safe_load(
+                    manifest.read_text(encoding="utf-8")
+                ) or {}
+                implementation = manifest_data.get("implementation") or {}
+                changed_paths = set(
+                    _sorted_strings(implementation.get("changed_paths"))
+                )
+                required_changed_paths = set(
+                    _sorted_strings(implementation.get("required_changed_paths"))
+                )
+                assurance = manifest_data.get("assurance") or {}
+                manifest_contracts_by_id[value].update(
+                    _sorted_strings(assurance.get("contracts"))
+                )
+                parts["changed_paths"].update(changed_paths)
+                parts["required_changed_paths"].update(required_changed_paths)
+                parts["direct_tests"].update(
+                    _sorted_strings(assurance.get("direct_tests"))
+                )
+                customization_paths.update(changed_paths)
     elif isinstance(candidates, dict):
         result.extend(str(value) for value in candidates)
-    contracts_path = path / "contracts.yaml"
-    contract_ids: list[str] = []
-    test_ids: list[str] = []
-    if contracts_path.is_file():
-        contracts_data = yaml.safe_load(contracts_path.read_text(encoding="utf-8")) or {}
-        for contract in contracts_data.get("contracts") or []:
-            if not isinstance(contract, dict):
-                continue
-            if isinstance(contract.get("id"), str):
-                contract_ids.append(contract["id"])
-            test_ids.extend(
-                value
-                for value in contract.get("required_tests") or []
-                if isinstance(value, str)
-            )
+
+    customization_relations: list[dict[str, object]] = []
+    for customization_id in sorted(relation_parts):
+        parts = relation_parts[customization_id]
+        contracts = sorted(registry_contracts_by_id.get(customization_id, set()))
+        tests = set(parts["direct_tests"])
+        for contract_id in contracts:
+            tests.update(contract_tests_sets.get(contract_id, set()))
+        customization_relations.append(
+            {
+                "customization_id": customization_id,
+                "changed_paths": sorted(parts["changed_paths"]),
+                "required_changed_paths": sorted(parts["required_changed_paths"]),
+                "contracts": contracts,
+                "tests": sorted(tests),
+            }
+        )
+
+    consistency_ids = sorted(
+        set(registry_contracts_by_id)
+        | set(manifest_contracts_by_id)
+        | set(catalog_contracts_by_id)
+    )
+    divergences: list[dict[str, object]] = []
+    for customization_id in consistency_ids:
+        expected = registry_contracts_by_id.get(customization_id, set())
+        for source, actual in (
+            (
+                "manifest.assurance.contracts",
+                manifest_contracts_by_id.get(customization_id, set()),
+            ),
+            (
+                "contracts.yaml.customization_ids",
+                catalog_contracts_by_id.get(customization_id, set()),
+            ),
+        ):
+            if actual != expected:
+                divergences.append(
+                    {
+                        "customization_id": customization_id,
+                        "source": source,
+                        "expected_contracts": sorted(expected),
+                        "actual_contracts": sorted(actual),
+                    }
+                )
+
     shared_path = path / "shared-path-owners.yaml"
     shared_owners = {}
     if shared_path.is_file():
@@ -92,10 +209,26 @@ def _registration_metadata(path: Path | None) -> dict:
         if isinstance(loaded, dict):
             shared_owners = loaded
     return {
-        "ids": result,
-        "contract_ids": sorted(set(contract_ids)),
-        "test_ids": sorted(set(test_ids)),
+        "ids": sorted(result),
+        "contract_ids": sorted(contract_tests_sets),
+        "test_ids": sorted(
+            {
+                test_id
+                for tests in contract_tests_sets.values()
+                for test_id in tests
+            }
+        ),
         "shared_owners": shared_owners,
+        "customization_paths": sorted(customization_paths),
+        "customization_relations": customization_relations,
+        "contract_tests": {
+            contract_id: sorted(contract_tests_sets[contract_id])
+            for contract_id in sorted(contract_tests_sets)
+        },
+        "id_contract_consistency": {
+            "consistent": not divergences,
+            "divergences": divergences,
+        },
         # Historical source SHAs explain how the registration was created. They
         # are intentionally facts, not active candidate locks or block rules.
         "source_provenance": data.get("source")
@@ -348,6 +481,34 @@ class OpenMetadataPlanAdapter:
         )
         values.append(("registered-tests", "registered_tests", registration["test_ids"]))
         values.append(("shared-path-owners", "shared_path_owners", registration["shared_owners"]))
+        values.append(
+            (
+                "registered-customization-paths",
+                "registered_customization_paths",
+                registration["customization_paths"],
+            )
+        )
+        values.append(
+            (
+                "customization-relations",
+                "customization_relations",
+                registration["customization_relations"],
+            )
+        )
+        values.append(
+            (
+                "contract-tests",
+                "contract_tests",
+                registration["contract_tests"],
+            )
+        )
+        values.append(
+            (
+                "id-contract-consistency",
+                "id_contract_consistency",
+                registration["id_contract_consistency"],
+            )
+        )
         values.append(
             (
                 "registration-source-provenance",

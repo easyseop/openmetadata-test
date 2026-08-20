@@ -132,6 +132,7 @@ def _install_registration(
     duplicate: bool = False,
     shared_path: str | None = None,
     snapshot_sha: str | None = None,
+    manifest_paths: list[str] | None = None,
 ) -> Path:
     root = checker / "registration"
     root.mkdir()
@@ -140,7 +141,11 @@ def _install_registration(
         "schema_version": 1,
         "source": {"snapshot_sha": snapshot_sha} if snapshot_sha else {},
         "entries": [
-            {"customization_id": value, "contracts": [f"CONTRACT-{index}"]}
+            {
+                "customization_id": value,
+                "contracts": [f"CONTRACT-{index}"],
+                "manifest": f"manifests/{value}-{index}.yaml",
+            }
             for index, value in enumerate(ids, start=1)
         ],
     }
@@ -164,6 +169,19 @@ def _install_registration(
     (root / "shared-path-owners.yaml").write_text(
         yaml.safe_dump(shared), encoding="utf-8"
     )
+    manifests = root / "manifests"
+    manifests.mkdir()
+    for index, value in enumerate(ids, start=1):
+        (manifests / f"{value}-{index}.yaml").write_text(
+            yaml.safe_dump(
+                {
+                    "customization_id": value,
+                    "implementation": {"changed_paths": manifest_paths or []},
+                },
+                sort_keys=False,
+            ),
+            encoding="utf-8",
+        )
     _git(checker, "add", "registration")
     _git(checker, "commit", "-q", "-m", "add registration")
     return root
