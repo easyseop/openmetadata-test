@@ -598,6 +598,39 @@ class OpenMetadataPlanAdapter:
             if isinstance(claim, dict) and claim.get("required") is True and claim.get("result") in {"skip", "skipped", "not_run"}:
                 issues.append(f"required test was not executed: {test_id}")
 
+        if request.get("mode") == "change":
+            customization_id = request.get("customization_id")
+            relations = fact_values.get("customization-relations")
+            target_relation = next(
+                (
+                    relation
+                    for relation in relations
+                    if isinstance(relation, dict)
+                    and relation.get("customization_id") == customization_id
+                ),
+                None,
+            ) if isinstance(relations, list) else None
+            if target_relation is None:
+                issues.append(
+                    f"change target has no relation facts: {customization_id}"
+                )
+            else:
+                required = {
+                    selector
+                    for selector in target_relation.get("tests") or []
+                    if isinstance(selector, str)
+                }
+                run_list: set[str] = set()
+                for claim in required_test_claims:
+                    selector = claim.get("id") if isinstance(claim, dict) else claim
+                    if isinstance(selector, str):
+                        run_list.add(selector)
+                missing = sorted(required - run_list)
+                if missing:
+                    issues.append(
+                        f"registered tests for {customization_id} missing from run list: {missing}"
+                    )
+
         commit_inventory = fact_values.get("customization-commits") or []
         ambiguous = [
             item for item in commit_inventory if len(item.get("customization_ids") or []) != 1

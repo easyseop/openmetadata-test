@@ -133,6 +133,7 @@ def _install_registration(
     shared_path: str | None = None,
     snapshot_sha: str | None = None,
     manifest_paths: list[str] | None = None,
+    contract_tests: list[str] | None = None,
 ) -> Path:
     root = checker / "registration"
     root.mkdir()
@@ -154,7 +155,9 @@ def _install_registration(
         "contracts": [
             {
                 "id": "CONTRACT-1",
-                "required_tests": ["tests/contracts.py::test_one"],
+                "required_tests": contract_tests
+                if contract_tests is not None
+                else ["tests/contracts.py::test_one"],
                 "customization_ids": ["BANK-OM-001"],
             }
         ],
@@ -309,6 +312,24 @@ def _proposal_from_first_fact(run_dir: Path, *, owner_unresolved: bool = False) 
         proposal["questions"] = ["담당 owner를 지정하세요"]
         proposal["next_step_blocked"] = True
     (run_dir / "proposal" / "plan.yaml").write_text(
+        yaml.safe_dump(proposal, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+
+
+def _set_proposal_required_tests(run_dir: Path, test_ids: list[str]) -> None:
+    proposal_path = run_dir / "proposal" / "plan.yaml"
+    proposal = read_data(proposal_path)
+    proposal["decisions"][0]["required_tests"] = [
+        {
+            "id": test_id,
+            "status": "existing",
+            "required": False,
+            "result": "not_run",
+        }
+        for test_id in test_ids
+    ]
+    proposal_path.write_text(
         yaml.safe_dump(proposal, allow_unicode=True, sort_keys=False),
         encoding="utf-8",
     )
@@ -817,6 +838,185 @@ def test_c17_required_test_skip_is_not_a_pass(tmp_path: Path):
     assert run_validation(run_dir, OpenMetadataPlanAdapter())["verdict"] == "block"
 
 
+@pytest.mark.parametrize("post_change", [False, True])
+@pytest.mark.parametrize(
+    ("run_tests", "expected_verdict", "missing_test"),
+    [
+        (
+            [
+                "tests/contracts.py::test_one",
+                "tests/contracts.py::test_two",
+            ],
+            "approval",
+            None,
+        ),
+        (["tests/contracts.py::test_one"], "block", "tests/contracts.py::test_two"),
+    ],
+)
+def test_aprime_change_requires_every_test_registered_for_the_target_id(
+    tmp_path: Path,
+    post_change: bool,
+    run_tests: list[str],
+    expected_verdict: str,
+    missing_test: str | None,
+) -> None:
+    product, checker, _, baseline = _repos(tmp_path)
+    registration = _install_registration(
+        checker,
+        contract_tests=[
+            "tests/contracts.py::test_one",
+            "tests/contracts.py::test_two",
+        ],
+    )
+    candidate = (
+        _add_commit(product, "change.txt", "changed\n", "BANK-OM-001")
+        if post_change
+        else None
+    )
+    request = _feature_or_change_request(
+        tmp_path,
+        product,
+        checker,
+        baseline,
+        registration,
+        mode="change",
+        candidate=candidate,
+        customization_id="BANK-OM-001",
+    )
+    _, _, run_dir, _ = _run_requested_preflight(tmp_path, checker, request)
+    _proposal_from_first_fact(run_dir)
+    _set_proposal_required_tests(run_dir, run_tests)
+
+    result = run_validation(run_dir, OpenMetadataPlanAdapter())
+
+    assert result["verdict"] == expected_verdict
+    reasons = read_data(run_dir / result["attempts"][-1])["reasons"]
+    matching_reasons = [reason for reason in reasons if "missing from run list" in reason]
+    if missing_test is None:
+        assert matching_reasons == []
+    else:
+        assert matching_reasons == [
+            "registered tests for BANK-OM-001 missing from run list: "
+            f"['{missing_test}']"
+        ]
+
+
+def test_aprime_change_uses_only_the_target_ids_tests_and_allows_empty_list(
+    tmp_path: Path,
+) -> None:
+    product, checker, _, baseline = _repos(tmp_path)
+    registration = _install_registration(checker)
+    request = _feature_or_change_request(
+        tmp_path,
+        product,
+        checker,
+        baseline,
+        registration,
+        mode="change",
+        customization_id="BANK-OM-002",
+    )
+    _, _, run_dir, _ = _run_requested_preflight(tmp_path, checker, request)
+    facts = read_data(run_dir / "discovered-facts.json")
+    values = {
+        item["fact_id"]: item["value"]
+        for item in facts["canonical_payload"]["items"]
+    }
+    relation = next(
+        item
+        for item in values["customization-relations"]
+        if item["customization_id"] == "BANK-OM-002"
+    )
+    assert values["registered-tests"] == ["tests/contracts.py::test_one"]
+    assert relation["tests"] == []
+    _proposal_from_first_fact(run_dir)
+
+    assert run_validation(run_dir, OpenMetadataPlanAdapter())["verdict"] == "approval"
+
+
+@pytest.mark.parametrize("relations", [None, []])
+def test_aprime_change_fails_closed_without_target_relation_facts(
+    relations: list[dict] | None,
+) -> None:
+    items = [
+        {
+            "fact_id": "registered-customizations",
+            "value": ["BANK-OM-001"],
+        },
+        {
+            "fact_id": "registered-tests",
+            "value": ["tests/contracts.py::test_one"],
+        },
+    ]
+    if relations is not None:
+        items.append({"fact_id": "customization-relations", "value": relations})
+
+    issues = OpenMetadataPlanAdapter().validate_proposal(
+        {
+            "mode": "change",
+            "change_path": "pre_plan",
+            "customization_id": "BANK-OM-001",
+            "owner": "data-team",
+        },
+        [{"decisions": []}],
+        {"canonical_payload": {"items": items}},
+    )
+
+    assert "change target has no relation facts: BANK-OM-001" in issues
+
+
+@pytest.mark.parametrize("mode", ["initial", "feature", "upgrade"])
+def test_aprime_relation_rule_does_not_run_for_other_modes(mode: str) -> None:
+    issues = OpenMetadataPlanAdapter().validate_proposal(
+        {
+            "mode": mode,
+            "customization_id": "BANK-OM-001",
+            "owner": "data-team",
+        },
+        [{"decisions": []}],
+        {
+            "canonical_payload": {
+                "items": [
+                    {"fact_id": "registered-customizations", "value": []},
+                    {"fact_id": "registered-tests", "value": []},
+                ]
+            }
+        },
+    )
+
+    assert not any("change target has no relation facts" in issue for issue in issues)
+
+
+def test_aprime_change_does_not_treat_upgrade_top_level_required_tests_as_run_list(
+    tmp_path: Path,
+) -> None:
+    product, checker, _, baseline = _repos(tmp_path)
+    registration = _install_registration(checker)
+    request = _feature_or_change_request(
+        tmp_path,
+        product,
+        checker,
+        baseline,
+        registration,
+        mode="change",
+        customization_id="BANK-OM-001",
+    )
+    _, _, run_dir, _ = _run_requested_preflight(tmp_path, checker, request)
+    _proposal_from_first_fact(run_dir)
+    proposal_path = run_dir / "proposal" / "plan.yaml"
+    proposal = read_data(proposal_path)
+    proposal["required_tests"] = [{"id": "tests/contracts.py::test_one"}]
+    proposal_path.write_text(
+        yaml.safe_dump(proposal, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    result = run_validation(run_dir, OpenMetadataPlanAdapter())
+
+    assert result["verdict"] == "block"
+    reasons = read_data(run_dir / result["attempts"][-1])["reasons"]
+    assert any("missing from run list" in reason for reason in reasons)
+
+
 def test_c18_c45_observational_time_and_key_order_do_not_change_digest(tmp_path: Path):
     product, checker, official, custom = _repos(tmp_path)
     request_path = _initial_request(tmp_path, product, checker, official, custom)
@@ -899,6 +1099,7 @@ def test_c20_historical_provenance_sha_is_not_an_active_lock(tmp_path: Path):
     assert values["ref-custom_baseline"]["commit_sha"] == baseline
     assert official != baseline
     _proposal_from_first_fact(run_dir)
+    _set_proposal_required_tests(run_dir, ["tests/contracts.py::test_one"])
     assert run_validation(run_dir, OpenMetadataPlanAdapter())["verdict"] == "approval"
 
 
