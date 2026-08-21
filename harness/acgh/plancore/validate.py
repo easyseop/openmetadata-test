@@ -221,6 +221,40 @@ def _validate_required_decision_fields(documents: list[tuple[Path, dict]]) -> li
                 issues.append(
                     f"{path.name}: decisions[{index}] missing {', '.join(missing)}"
                 )
+            prefix = f"{path.name}: decisions[{index}]"
+            if "subject" in decision:
+                subject = decision["subject"]
+                if not isinstance(subject, str) or not subject.strip():
+                    issues.append(f"{prefix}.subject must be a non-empty string")
+            if "decision" in decision:
+                decision_value = decision["decision"]
+                if (
+                    not isinstance(decision_value, str)
+                    or not decision_value.strip()
+                ):
+                    issues.append(f"{prefix}.decision must be a non-empty string")
+            if "evidence_refs" in decision and not isinstance(
+                decision["evidence_refs"], list
+            ):
+                issues.append(f"{prefix}.evidence_refs must be a list")
+            if "affected_customization_ids" in decision:
+                affected_ids = decision["affected_customization_ids"]
+                if not isinstance(affected_ids, list) or not all(
+                    isinstance(customization_id, str)
+                    for customization_id in affected_ids
+                ):
+                    issues.append(
+                        f"{prefix}.affected_customization_ids must be a list of strings"
+                    )
+            if "required_follow_up" in decision:
+                required_follow_up = decision["required_follow_up"]
+                if (
+                    not isinstance(required_follow_up, list)
+                    and required_follow_up != "none"
+                ):
+                    issues.append(
+                        f"{prefix}.required_follow_up must be a list or 'none'"
+                    )
             if decision.get("decision_source") not in {
                 "proposed",
                 "human_input",

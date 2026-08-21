@@ -26,7 +26,10 @@ from acgh.plancore.preflight import collect_state
 from acgh.plancore.rerun import retry_decision
 from acgh.plancore.resume import resume_proposal_run
 from acgh.plancore.schema import read_data, validate
-from acgh.plancore.validate import run_validation as _run_validation
+from acgh.plancore.validate import (
+    _validate_required_decision_fields,
+    run_validation as _run_validation,
+)
 from acgh.verdict import canonical_digest
 from harness import om_workflow
 
@@ -304,7 +307,7 @@ def _proposal_from_first_fact(run_dir: Path, *, owner_unresolved: bool = False) 
                     {"ref": item["evidence_ref"], "expected": item["value"]}
                 ],
                 "affected_customization_ids": ["BANK-OM-001"],
-                "required_follow_up": "human review",
+                "required_follow_up": ["human review"],
             }
         ]
     }
@@ -315,6 +318,117 @@ def _proposal_from_first_fact(run_dir: Path, *, owner_unresolved: bool = False) 
         yaml.safe_dump(proposal, allow_unicode=True, sort_keys=False),
         encoding="utf-8",
     )
+
+
+def _complete_decision() -> dict:
+    return {
+        "subject": "retain customization",
+        "decision": "keep",
+        "decision_source": "proposed",
+        "evidence_refs": [],
+        "affected_customization_ids": ["BANK-OM-001"],
+        "required_follow_up": ["human review"],
+    }
+
+
+def _decision_field_issues(decision: dict) -> list[str]:
+    return _validate_required_decision_fields(
+        [(Path("plan.yaml"), {"decisions": [decision]})]
+    )
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("subject", "", "subject must be a non-empty string"),
+        ("subject", "   ", "subject must be a non-empty string"),
+        ("subject", [], "subject must be a non-empty string"),
+        ("decision", "", "decision must be a non-empty string"),
+        ("decision", {}, "decision must be a non-empty string"),
+        ("evidence_refs", "fact.json#/value", "evidence_refs must be a list"),
+        ("evidence_refs", {}, "evidence_refs must be a list"),
+        (
+            "affected_customization_ids",
+            "BANK-OM-001",
+            "affected_customization_ids must be a list of strings",
+        ),
+        (
+            "affected_customization_ids",
+            ["BANK-OM-001", 2],
+            "affected_customization_ids must be a list of strings",
+        ),
+        (
+            "affected_customization_ids",
+            ["BANK-OM-001", {}],
+            "affected_customization_ids must be a list of strings",
+        ),
+        (
+            "required_follow_up",
+            "human review",
+            "required_follow_up must be a list or 'none'",
+        ),
+        (
+            "required_follow_up",
+            {},
+            "required_follow_up must be a list or 'none'",
+        ),
+        (
+            "required_follow_up",
+            1,
+            "required_follow_up must be a list or 'none'",
+        ),
+    ],
+)
+def test_a2_invalid_decision_field_types_are_rejected(
+    field: str, value: object, message: str
+) -> None:
+    decision = _complete_decision()
+    decision[field] = value
+
+    assert _decision_field_issues(decision) == [
+        f"plan.yaml: decisions[0].{message}"
+    ]
+
+
+@pytest.mark.parametrize(
+    "required_follow_up",
+    [[], ["human review"], "none"],
+)
+def test_a2_valid_decision_field_types_are_accepted(
+    required_follow_up: object,
+) -> None:
+    decision = _complete_decision()
+    decision["required_follow_up"] = required_follow_up
+
+    assert _decision_field_issues(decision) == []
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "subject",
+        "decision",
+        "evidence_refs",
+        "affected_customization_ids",
+        "required_follow_up",
+    ],
+)
+def test_a2_missing_fields_are_not_reported_as_type_errors(field: str) -> None:
+    decision = _complete_decision()
+    decision.pop(field)
+
+    assert _decision_field_issues(decision) == [
+        f"plan.yaml: decisions[0] missing {field}"
+    ]
+
+
+def test_a2_existing_decision_source_enum_check_is_unchanged() -> None:
+    decision = _complete_decision()
+    decision["decision_source"] = "invented"
+
+    assert _decision_field_issues(decision) == [
+        "plan.yaml: decisions[0].decision_source is invalid"
+    ]
 
 
 def _set_proposal_required_tests(run_dir: Path, test_ids: list[str]) -> None:
@@ -397,6 +511,46 @@ def run_validation(run_dir: Path, adapter: OpenMetadataPlanAdapter) -> dict:
         adapter,
         expected_input_lock_digest=expected,
     )
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("subject", "  ", "subject must be a non-empty string"),
+        ("decision", {}, "decision must be a non-empty string"),
+        (
+            "affected_customization_ids",
+            "BANK-OM-001",
+            "affected_customization_ids must be a list of strings",
+        ),
+        (
+            "required_follow_up",
+            1,
+            "required_follow_up must be a list or 'none'",
+        ),
+    ],
+)
+def test_a2_decision_type_issue_blocks_full_validation(
+    tmp_path: Path,
+    field: str,
+    value: object,
+    message: str,
+) -> None:
+    *_, run_dir, _ = _preflight(tmp_path)
+    _proposal_from_first_fact(run_dir)
+    proposal_path = run_dir / "proposal" / "plan.yaml"
+    proposal = read_data(proposal_path)
+    proposal["decisions"][0][field] = value
+    proposal_path.write_text(
+        yaml.safe_dump(proposal, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    result = run_validation(run_dir, OpenMetadataPlanAdapter())
+
+    assert result["verdict"] == "block"
+    attempt = read_data(run_dir / result["attempts"][-1])
+    assert any(message in reason for reason in attempt["reasons"])
 
 
 def test_simplified_cli_runs_existing_preflight_and_validate_end_to_end(
@@ -1350,7 +1504,7 @@ def test_c32_missing_evidence_pointer_is_rejected(tmp_path: Path):
                 "decision_source": "proposed",
                 "evidence_refs": ["discovered-facts.json#/missing"],
                 "affected_customization_ids": [],
-                "required_follow_up": "review",
+                "required_follow_up": ["review"],
             }
         ]
     }

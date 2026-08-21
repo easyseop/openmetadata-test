@@ -470,7 +470,7 @@ def _prepare_cross_runner_validation(tmp_path: Path) -> tuple[Path, Path, str]:
                             }
                         ],
                         "affected_customization_ids": ["BANK-OM-001"],
-                        "required_follow_up": "human review",
+                        "required_follow_up": ["human review"],
                     }
                 ]
             },
