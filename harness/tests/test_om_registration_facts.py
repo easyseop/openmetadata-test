@@ -139,7 +139,6 @@ def test_a4_relations_preserve_per_id_paths_contracts_and_tests(tmp_path: Path):
             "contracts": ["CONTRACT-A"],
             "tests": [
                 "tests/contracts_a.py::test_roundtrip",
-                "tests/direct_a.py::test_guard",
             ],
         },
         {
@@ -170,6 +169,16 @@ def test_a4_relations_preserve_per_id_paths_contracts_and_tests(tmp_path: Path):
         "tests/contracts_a.py::test_roundtrip",
         "tests/contracts_b.py::test_roundtrip",
     ]
+    assert "tests/direct_a.py::test_guard" not in {
+        test_id
+        for relation in facts["customization-relations"]
+        for test_id in relation["tests"]
+    }
+    registered_tests = set(facts["registered-tests"])
+    assert all(
+        set(relation["tests"]) <= registered_tests
+        for relation in facts["customization-relations"]
+    )
     assert facts["shared-path-owners"] == {
         "product/shared.py": ["BANK-OM-001", "BANK-OM-002"]
     }

@@ -109,7 +109,6 @@ def _registration_metadata(path: Path | None) -> dict:
                     {
                         "changed_paths": set(),
                         "required_changed_paths": set(),
-                        "direct_tests": set(),
                     },
                 )
                 manifest_value = item.get("manifest")
@@ -150,9 +149,6 @@ def _registration_metadata(path: Path | None) -> dict:
                 )
                 parts["changed_paths"].update(changed_paths)
                 parts["required_changed_paths"].update(required_changed_paths)
-                parts["direct_tests"].update(
-                    _sorted_strings(assurance.get("direct_tests"))
-                )
                 customization_paths.update(changed_paths)
     elif isinstance(candidates, dict):
         result.extend(str(value) for value in candidates)
@@ -161,7 +157,7 @@ def _registration_metadata(path: Path | None) -> dict:
     for customization_id in sorted(relation_parts):
         parts = relation_parts[customization_id]
         contracts = sorted(registry_contracts_by_id.get(customization_id, set()))
-        tests = set(parts["direct_tests"])
+        tests: set[str] = set()
         for contract_id in contracts:
             tests.update(contract_tests_sets.get(contract_id, set()))
         customization_relations.append(
